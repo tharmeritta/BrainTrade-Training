@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/session';
-import { geminiModel } from '@/lib/gemini';
+import { getGeminiModel } from '@/lib/gemini';
 import { getAdminDb } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 
@@ -28,7 +28,7 @@ ${inputText}
 
 Respond ONLY with valid JSON, no markdown, no code blocks.`;
 
-    const result = await geminiModel.generateContent(prompt);
+    const result = await getGeminiModel().generateContent(prompt);
     const raw = result.response.text().trim();
     const parsed = JSON.parse(raw);
 
