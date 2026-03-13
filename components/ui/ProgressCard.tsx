@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { getDb } from '@/lib/firebase';
 import type { UserProgress } from '@/types';
 import { CheckCircle2, Circle, TrendingUp, Trophy } from 'lucide-react';
 
@@ -10,6 +10,7 @@ export default function ProgressCard({ userId }: { userId: string }) {
   const [progress, setProgress] = useState<UserProgress | null>(null);
 
   useEffect(() => {
+    const db = getDb();
     getDoc(doc(db, 'progress', userId)).then(snap => {
       if (snap.exists()) setProgress(snap.data() as UserProgress);
     });

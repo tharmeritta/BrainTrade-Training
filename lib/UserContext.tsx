@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import { getAuthClient, getDb } from '@/lib/firebase';
 import type { AppUser } from '@/types';
 
 type Mode = 'admin' | 'agent';
@@ -28,6 +28,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [mode, setModeState] = useState<Mode>('agent');
 
   useEffect(() => {
+    const auth = getAuthClient();
+    const db = getDb();
     const unsub = onAuthStateChanged(auth, async firebaseUser => {
       if (firebaseUser) {
         const snap = await getDoc(doc(db, 'users', firebaseUser.uid));
