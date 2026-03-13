@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/session';
-import { openai } from '@/lib/openai';
+import { getOpenAI } from '@/lib/openai';
 import { getAdminDb } from '@/lib/firebase-admin';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
       content: m.content,
     }));
 
+    const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
