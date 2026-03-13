@@ -3,13 +3,13 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'build', 
-      '-t', 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/app/$REPO_NAME:$COMMIT_SHA',
+      '-t', 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/app/braintrade-training:$COMMIT_SHA',
       '.'
     ]
   
   # Push the container image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/app/$REPO_NAME:$COMMIT_SHA']
+    args: ['push', 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/app/braintrade-training:$COMMIT_SHA']
   
   # Deploy container image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -19,7 +19,7 @@ steps:
       - 'deploy'
       - 'braintrade-training'
       - '--image'
-      - 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/app/$REPO_NAME:$COMMIT_SHA'
+      - 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/app/braintrade-training:$COMMIT_SHA'
       - '--region'
       - 'asia-southeast1'
       - '--allow-unauthenticated'
