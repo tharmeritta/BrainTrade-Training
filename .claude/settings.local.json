@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\bash.exe\":*)",
+      "Bash(gcloud version:*)",
+      "Bash(where gcloud:*)",
+      "Bash(powershell:*)"
+    ]
+  }
+}
