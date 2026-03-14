@@ -20,9 +20,14 @@ for (const line of envFile.split('\n')) {
 }
 
 // ─── CONFIGURE YOUR ADMIN HERE ───────────────────────────────────────────────
-const ADMIN_EMAIL    = 'tharme.ritta@tiebreakcore.com';
-const ADMIN_PASSWORD = 'Admin@1234';
-const ADMIN_NAME     = 'Admin';
+// Set ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_NAME in .env.local before running
+const ADMIN_EMAIL    = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const ADMIN_NAME     = process.env.ADMIN_NAME || 'Admin';
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  console.error('❌ ADMIN_EMAIL and ADMIN_PASSWORD must be set in .env.local');
+  process.exit(1);
+}
 // ─────────────────────────────────────────────────────────────────────────────
 
 initializeApp({
