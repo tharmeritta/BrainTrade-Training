@@ -25,6 +25,8 @@ export async function POST(req: NextRequest) {
     }));
 
     const openai = getOpenAI();
+
+    // Get customer AI reply
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -36,7 +38,34 @@ export async function POST(req: NextRequest) {
     });
 
     const reply = completion.choices[0].message.content ?? '';
-    return NextResponse.json({ reply });
+
+    // Detect if the customer has confirmed purchase AND payment/money reflection
+    let closedSale = false;
+    try {
+      const classifier = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a sales outcome classifier. Determine if the customer\'s message clearly indicates BOTH: (1) they have decided to purchase the product/course, AND (2) they have confirmed payment or that money has reflected in their account. Return only valid JSON with no extra text.',
+          },
+          {
+            role: 'user',
+            content: `Customer's latest message: "${reply}"\n\nRespond with: {"closedSale": true} or {"closedSale": false}`,
+          },
+        ],
+        max_tokens: 20,
+        temperature: 0,
+        response_format: { type: 'json_object' },
+      });
+      const parsed = JSON.parse(classifier.choices[0].message.content ?? '{"closedSale":false}');
+      closedSale = parsed.closedSale === true;
+    } catch {
+      closedSale = false;
+    }
+
+    return NextResponse.json({ reply, closedSale });
   } catch (err) {
     console.error('Pitch API error:', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
