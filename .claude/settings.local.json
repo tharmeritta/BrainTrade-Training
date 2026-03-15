@@ -10,7 +10,10 @@
       "Bash(node:*)",
       "Bash(cmd:*)",
       "Bash(npm audit:*)",
-      "Bash(dir C:\\\\Users\\\\Admin\\\\OneDrive - Tiebreak Solutions\\\\Documents\\\\Antigravity Workspace\\\\Antigravity Github Repo\\\\BrainTrade Training\\\\app:*)"
+      "Bash(dir C:\\\\Users\\\\Admin\\\\OneDrive - Tiebreak Solutions\\\\Documents\\\\Antigravity Workspace\\\\Antigravity Github Repo\\\\BrainTrade Training\\\\app:*)",
+      "Bash(powershell.exe:*)",
+      "Bash(dir C:\\\\Users\\\\Admin\\\\Downloads:*)",
+      "mcp__ide__executeCode"
     ]
   }
 }

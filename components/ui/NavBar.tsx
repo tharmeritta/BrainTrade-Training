@@ -8,7 +8,7 @@ import ThemeToggle from './ThemeToggle';
 const navLinks = [
   { label: 'Dashboard', href: '/dashboard',     icon: LayoutDashboard },
   { label: 'เรียนรู้',  href: '/learn/product', icon: GraduationCap   },
-  { label: 'Quiz',      href: '/quiz/product',  icon: ClipboardList   },
+  { label: 'Quiz',      href: '/quiz',           icon: ClipboardList   },
   { label: 'AI Eval',   href: '/ai-eval',       icon: Mic             },
   { label: 'Pitch',     href: '/pitch',         icon: PlayCircle      },
 ] as const;

@@ -75,8 +75,8 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
 
   return (
     <div
-      className="h-screen w-screen overflow-hidden flex"
-      style={{ background: C.bg, fontFamily: "'DM Sans', system-ui, sans-serif" }}
+      className="w-full overflow-hidden flex"
+      style={{ height: 'calc(100vh - 72px)', background: C.bg, fontFamily: "'DM Sans', system-ui, sans-serif" }}
     >
       {/* Background orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
