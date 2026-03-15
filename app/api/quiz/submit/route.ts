@@ -1,39 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/session';
-import { getAdminDb } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
+import { gcsAdd } from '@/lib/gcs';
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await requireAuth();
-    const { moduleId, score, totalQuestions, answers } = await req.json();
+    const { moduleId, score, totalQuestions, agentId, agentName } = await req.json();
+    const passed     = score / totalQuestions >= 0.7;
+    const percentage = Math.round((score / totalQuestions) * 100);
 
-    const adminDb = getAdminDb();
-    const resultRef = await adminDb.collection('quiz_results').add({
-      userId: user.uid,
-      moduleId,
-      score,
-      totalQuestions,
-      answers,
-      timestamp: FieldValue.serverTimestamp(),
-    });
-
-    const passed = score / totalQuestions >= 0.7;
-
-    if (passed) {
-      await adminDb.collection('progress').doc(user.uid).set(
-        {
-          [`modules.${moduleId}`]: {
-            completed: true,
-            score,
-            completedAt: FieldValue.serverTimestamp(),
-          },
-        },
-        { merge: true }
-      );
+    if (agentId && agentName) {
+      await gcsAdd('quiz_results', { agentId, agentName, moduleId, score, totalQuestions, passed, percentage });
     }
 
-    return NextResponse.json({ resultId: resultRef.id, passed, score, totalQuestions });
+    return NextResponse.json({ passed, score, totalQuestions });
   } catch {
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }

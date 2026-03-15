@@ -1,17 +1,25 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import AgentPicker from '@/components/ui/AgentPicker';
 import type { PitchMessage } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User as UserIcon, Bot, ChevronLeft, Play, Sparkles } from 'lucide-react';
 
-export default function PitchSimulator({ userId }: { userId: string }) {
-  const [level, setLevel] = useState<1 | 2 | 3>(1);
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<PitchMessage[]>([]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
+export default function PitchSimulator() {
+  const [level,      setLevel]      = useState<1 | 2 | 3>(1);
+  const [sessionId,  setSessionId]  = useState<string | null>(null);
+  const [messages,   setMessages]   = useState<PitchMessage[]>([]);
+  const [input,      setInput]      = useState('');
+  const [loading,    setLoading]    = useState(false);
+  const [agentId,    setAgentId]    = useState<string | null>(null);
+  const [agentName,  setAgentName]  = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setAgentId(localStorage.getItem('brainstrade_agent_id'));
+    setAgentName(localStorage.getItem('brainstrade_agent_name'));
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -21,7 +29,7 @@ export default function PitchSimulator({ userId }: { userId: string }) {
     const res = await fetch('/api/pitch/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ level }),
+      body: JSON.stringify({ level, agentId, agentName }),
     });
     const data = await res.json();
     setSessionId(data.sessionId);
@@ -54,6 +62,7 @@ export default function PitchSimulator({ userId }: { userId: string }) {
 
   return (
     <div className="max-w-4xl mx-auto animate-in">
+      <AgentPicker onSelected={(id, name) => { setAgentId(id); setAgentName(name); }} />
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Pitch Simulator</h1>

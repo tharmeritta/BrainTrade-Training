@@ -1,14 +1,10 @@
 import { getTranslations } from 'next-intl/server';
-import { getServerUser } from '@/lib/session';
 import { redirect } from 'next/navigation';
 
 const VALID_MODULES = ['product', 'process', 'payment'] as const;
 type Module = typeof VALID_MODULES[number];
 
 export default async function LearnPage({ params }: { params: Promise<{ module: string }> }) {
-  const user = await getServerUser();
-  if (!user) redirect('/login');
-
   const { module } = await params;
   if (!VALID_MODULES.includes(module as Module)) redirect('/dashboard');
 

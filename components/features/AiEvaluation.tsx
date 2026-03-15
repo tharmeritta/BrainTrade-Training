@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import AgentPicker from '@/components/ui/AgentPicker';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Send, Sparkles, CheckCircle2, AlertCircle, BarChart3, TrendingUp } from 'lucide-react';
 
@@ -11,11 +12,18 @@ interface EvalResult {
   overall: string;
 }
 
-export default function AiEvaluation({ userId }: { userId: string }) {
-  const [text, setText] = useState('');
-  const [result, setResult] = useState<EvalResult | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+export default function AiEvaluation() {
+  const [text,      setText]      = useState('');
+  const [result,    setResult]    = useState<EvalResult | null>(null);
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState('');
+  const [agentId,   setAgentId]   = useState<string | null>(null);
+  const [agentName, setAgentName] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAgentId(localStorage.getItem('brainstrade_agent_id'));
+    setAgentName(localStorage.getItem('brainstrade_agent_name'));
+  }, []);
 
   async function evaluate() {
     setLoading(true);
@@ -25,7 +33,7 @@ export default function AiEvaluation({ userId }: { userId: string }) {
       const res = await fetch('/api/ai-eval', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ inputText: text }),
+        body: JSON.stringify({ inputText: text, agentId, agentName }),
       });
       if (!res.ok) throw new Error('Evaluation failed');
       const data = await res.json();
@@ -39,6 +47,7 @@ export default function AiEvaluation({ userId }: { userId: string }) {
 
   return (
     <div className="max-w-4xl mx-auto animate-in space-y-10">
+      <AgentPicker onSelected={(id, name) => { setAgentId(id); setAgentName(name); }} />
       <header>
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-primary/10 text-primary rounded-lg">

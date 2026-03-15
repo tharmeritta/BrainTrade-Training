@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import AgentPicker from '@/components/ui/AgentPicker';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, XCircle, ChevronRight, HelpCircle, Trophy } from 'lucide-react';
 
@@ -28,9 +29,16 @@ const PLACEHOLDER_QUESTIONS: Question[] = [
 ];
 
 export default function QuizSystem({ moduleId }: { moduleId: string }) {
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [result, setResult] = useState<{ passed: boolean; score: number; total: number } | null>(null);
+  const [answers,    setAnswers]    = useState<Record<string, string>>({});
+  const [result,     setResult]     = useState<{ passed: boolean; score: number; total: number } | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [agentId,    setAgentId]    = useState<string | null>(null);
+  const [agentName,  setAgentName]  = useState<string | null>(null);
+
+  useEffect(() => {
+    setAgentId(localStorage.getItem('brainstrade_agent_id'));
+    setAgentName(localStorage.getItem('brainstrade_agent_name'));
+  }, []);
 
   async function handleSubmit() {
     setSubmitting(true);
@@ -40,10 +48,9 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        moduleId,
-        score,
+        moduleId, score,
         totalQuestions: PLACEHOLDER_QUESTIONS.length,
-        answers,
+        answers, agentId, agentName,
       }),
     });
     const data = await res.json();
@@ -90,6 +97,7 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
 
   return (
     <div className="max-w-2xl mx-auto animate-in">
+      <AgentPicker onSelected={(id, name) => { setAgentId(id); setAgentName(name); }} />
       <header className="mb-10">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-primary/10 text-primary rounded-lg">

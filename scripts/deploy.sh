@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-PROJECT_ID="braintrade-training"
+PROJECT_ID="gen-lang-client-0599640402"
 REGION="asia-southeast1"
 SERVICE="brainstrade-app"
 IMAGE="gcr.io/$PROJECT_ID/$SERVICE"

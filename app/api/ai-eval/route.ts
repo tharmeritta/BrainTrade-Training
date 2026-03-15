@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/session';
 import { getGeminiModel } from '@/lib/gemini';
-import { getAdminDb } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
+import { gcsAdd } from '@/lib/gcs';
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await requireAuth();
-    const { inputText } = await req.json();
+    const { inputText, agentId, agentName } = await req.json();
 
     if (!inputText || inputText.trim().length < 10) {
       return NextResponse.json({ error: 'Input too short' }, { status: 400 });
@@ -29,17 +26,11 @@ ${inputText}
 Respond ONLY with valid JSON, no markdown, no code blocks.`;
 
     const result = await getGeminiModel().generateContent(prompt);
-    const raw = result.response.text().trim();
-    const parsed = JSON.parse(raw);
+    const parsed = JSON.parse(result.response.text().trim());
 
-    const adminDb = getAdminDb();
-    await adminDb.collection('ai_eval_logs').add({
-      userId: user.uid,
-      inputText,
-      claudeScore: parsed.score,
-      feedback: JSON.stringify(parsed),
-      timestamp: FieldValue.serverTimestamp(),
-    });
+    if (agentId && agentName) {
+      await gcsAdd('ai_eval_logs', { agentId, agentName, score: parsed.score, feedback: parsed.overall });
+    }
 
     return NextResponse.json(parsed);
   } catch (err) {

@@ -6,7 +6,11 @@
       "Bash(where gcloud:*)",
       "Bash(powershell:*)",
       "Bash(git:*)",
-      "Bash(git version:*)"
+      "Bash(git version:*)",
+      "Bash(node:*)",
+      "Bash(cmd:*)",
+      "Bash(npm audit:*)",
+      "Bash(dir C:\\\\Users\\\\Admin\\\\OneDrive - Tiebreak Solutions\\\\Documents\\\\Antigravity Workspace\\\\Antigravity Github Repo\\\\BrainTrade Training\\\\app:*)"
     ]
   }
 }

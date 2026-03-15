@@ -1,23 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuth } from '@/lib/session';
-import { getAdminDb } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
+import { gcsAdd } from '@/lib/gcs';
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await requireAuth();
-    const { level } = await req.json();
+    const { level, agentId, agentName } = await req.json();
 
-    const adminDb = getAdminDb();
-    const sessionRef = await adminDb.collection('pitch_sessions').add({
-      userId: user.uid,
-      level,
-      messages: [],
-      outcome: 'ongoing',
-      timestamp: FieldValue.serverTimestamp(),
-    });
+    if (agentId && agentName) {
+      const record = await gcsAdd('pitch_sessions', { agentId, agentName, level });
+      return NextResponse.json({ sessionId: record.id, level });
+    }
 
-    return NextResponse.json({ sessionId: sessionRef.id });
+    return NextResponse.json({ sessionId: crypto.randomUUID(), level });
   } catch {
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
