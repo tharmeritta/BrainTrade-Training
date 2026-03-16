@@ -98,11 +98,14 @@ export async function POST(req: NextRequest) {
 
     const levelContext = `\n\nในการฝึกครั้งนี้ให้เริ่มต้นที่ Level ${level} ทันที`;
 
+    // Sliding window: only send the last 10 messages to cap token usage.
+    const windowedMessages = (messages as PitchMessage[]).slice(-10);
+
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT + levelContext },
-        ...messages.map((m: PitchMessage) => ({
+        ...windowedMessages.map((m: PitchMessage) => ({
           role: m.role as 'user' | 'assistant',
           content: m.content,
         })),
@@ -113,11 +116,12 @@ export async function POST(req: NextRequest) {
 
     const reply = completion.choices[0].message.content ?? '';
 
-    // Detect if the trainer has declared this round as passed
+    // Detect if the trainer has declared this round as passed.
+    // Uses gpt-4o-mini — simple yes/no classification doesn't need gpt-4o.
     let passed = false;
     try {
       const classifier = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',

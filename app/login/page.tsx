@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, ClipboardCheck, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 
@@ -97,13 +98,13 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-sm px-4">
         {/* Back link */}
-        <a href="/th/dashboard"
+        <Link href="/th/dashboard"
           className="flex items-center gap-1.5 text-xs mb-6 transition-colors"
           style={{ color: T.sub }}
           onMouseEnter={e => { e.currentTarget.style.color = T.text; }}
           onMouseLeave={e => { e.currentTarget.style.color = T.sub; }}>
           <ArrowLeft size={12} /> กลับหน้าหลัก
-        </a>
+        </Link>
 
         {/* Logo */}
         <div className="flex items-center gap-2 mb-7">

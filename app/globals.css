@@ -27,8 +27,46 @@
     --radius: 0.75rem;
   }
 
+  /* ── Agent Training Hub tokens (light) ── */
+  --hub-bg: #F0F4F8;
+  --hub-panel: rgba(255,255,255,0.92);
+  --hub-card: #FFFFFF;
+  --hub-border: rgba(0,0,0,0.08);
+  --hub-text: #0F172A;
+  --hub-muted: #64748B;
+  --hub-dim: #CBD5E1;
+  --hub-dim-border: rgba(203,213,225,0.5);
+  --hub-locked-bg: rgba(0,0,0,0.02);
+  --hub-locked-icon: rgba(0,0,0,0.04);
+  --hub-progress-bg: rgba(0,0,0,0.07);
+  --hub-ring-track: rgba(0,0,0,0.07);
+  --hub-grid-color: rgba(0,100,180,0.1);
+  --entry-card-bg: rgba(255,255,255,0.95);
+  --entry-input-bg: rgba(0,0,0,0.04);
+  --entry-tag-bg: rgba(0,0,0,0.04);
+  --entry-tag-border: rgba(0,0,0,0.08);
+
   /* ── Dark mode (default via JS script in layout.tsx) ── */
   .dark {
+  /* ── Agent Training Hub tokens (dark) ── */
+  --hub-bg: #05090F;
+  --hub-panel: rgba(8,14,28,0.8);
+  --hub-card: #0B1524;
+  --hub-border: rgba(255,255,255,0.07);
+  --hub-text: #EEF4FF;
+  --hub-muted: #4A6A8A;
+  --hub-dim: #1C3050;
+  --hub-dim-border: rgba(28,48,80,0.4);
+  --hub-locked-bg: rgba(255,255,255,0.015);
+  --hub-locked-icon: rgba(255,255,255,0.03);
+  --hub-progress-bg: rgba(255,255,255,0.05);
+  --hub-ring-track: rgba(255,255,255,0.06);
+  --hub-grid-color: rgba(0,180,216,0.9);
+  --entry-card-bg: rgba(10,20,36,0.92);
+  --entry-input-bg: rgba(255,255,255,0.04);
+  --entry-tag-bg: rgba(255,255,255,0.02);
+  --entry-tag-border: rgba(255,255,255,0.06);
+
     --background: 222 47% 6%;       /* deep navy #050B14 */
     --foreground: 210 40% 96%;
     --card: 222 47% 9%;

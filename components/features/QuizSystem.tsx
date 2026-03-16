@@ -1,135 +1,183 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { usePathname } from 'next/navigation';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, type CSSProperties } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, XCircle, Trophy, BookOpen, RotateCcw, ArrowRight, LayoutDashboard, ChevronLeft } from 'lucide-react';
+import { ChevronLeft, LayoutDashboard, RotateCcw } from 'lucide-react';
 import {
   MODULE_QUIZ_MAP, UI_STRINGS, PASS_THRESHOLD,
   type Language, type QuizDefinition, type QuestionData,
 } from '@/lib/quiz-data';
 
-// ─── Option label helper (A B C D) ───────────────────────────────────────────
+// ─── Light warm theme tokens (matches HTML prototype) ─────────────────────────
+const C = {
+  bg:            '#F5F4F0',
+  surface:       '#FFFFFF',
+  border:        '#E2E0DA',
+  borderHover:   '#C8C5BC',
+  text:          '#1A1917',
+  muted:         '#6B6860',
+  hint:          '#9E9B94',
+  successBg:     '#DCFCE7',
+  successBorder: '#86EFAC',
+  successText:   '#166534',
+  dangerBg:      '#FEE2E2',
+  dangerBorder:  '#FCA5A5',
+  dangerText:    '#991B1B',
+  warnBg:        '#FEF9C3',
+  warnBorder:    '#FDE047',
+  warnText:      '#854D0E',
+};
+
 const LABELS = ['A', 'B', 'C', 'D'];
 
 // ─── Result Screen ────────────────────────────────────────────────────────────
 function ResultScreen({
-  score, total, lang, agentName, quiz, onRestart, onDashboard,
+  questions, answered, lang, quiz, onRestart, onDashboard,
 }: {
-  score: number; total: number; lang: Language;
-  agentName: string; quiz: QuizDefinition;
-  onRestart: () => void; onDashboard: () => void;
+  questions: QuestionData[];
+  answered: Record<number, number>;
+  lang: Language;
+  quiz: QuizDefinition;
+  onRestart: () => void;
+  onDashboard: () => void;
 }) {
-  const ui = UI_STRINGS[lang];
-  const ov = quiz.uiOverrides;
-  const ratio = score / total;
-  const passed = ratio >= PASS_THRESHOLD;
-  const pct = Math.round(ratio * 100);
+  const ui    = UI_STRINGS[lang];
+  const total = questions.length;
+  const score = questions.filter((q, i) => answered[i] === q.correctIdx).length;
+  const pct   = Math.round((score / total) * 100);
+  const passed = score / total >= PASS_THRESHOLD;
 
-  const title   = ov?.finishTitle?.[lang]   ?? ui.finishTitle;
-  const sub     = ov?.finishSub?.[lang]     ?? ui.finishSub;
-  const message = ratio >= 0.8
-    ? (ov?.feedbackHigh?.[lang] ?? ui.msgHigh)
-    : ratio >= PASS_THRESHOLD
-    ? (ov?.feedbackMid?.[lang]  ?? ui.msgMed)
-    : (ov?.feedbackLow?.[lang]  ?? ui.msgLow);
+  const message = pct >= 90
+    ? (quiz.uiOverrides?.feedbackHigh?.[lang] ?? ui.msgHigh)
+    : pct >= 70
+    ? (quiz.uiOverrides?.feedbackMid?.[lang]  ?? ui.msgMed)
+    : (quiz.uiOverrides?.feedbackLow?.[lang]  ?? ui.msgLow);
 
-  const scoreLabel = ov?.scoreLabel?.[lang] ?? ui.scoreLabel;
+  const feedbackColor = pct >= 90 ? C.successText : pct >= 70 ? '#185FA5' : C.dangerText;
 
   return (
     <motion.div
-      className="w-full max-w-lg mx-auto"
-      initial={{ opacity: 0, y: 24 }}
+      className="w-full max-w-[660px] mx-auto"
+      style={{ fontFamily: "'DM Sans', sans-serif" }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
       {/* Score card */}
-      <div className="relative rounded-3xl overflow-hidden border p-8 text-center mb-4"
+      <div
+        className="rounded-[10px] text-center mb-4"
         style={{
-          background: passed ? 'rgba(52,211,153,0.05)' : 'rgba(248,113,113,0.05)',
-          borderColor: passed ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.2)',
-        }}>
-        {/* Radial glow */}
-        <div className="absolute inset-0 pointer-events-none"
-          style={{
-            background: passed
-              ? 'radial-gradient(circle at 50% 0%, rgba(52,211,153,0.08) 0%, transparent 65%)'
-              : 'radial-gradient(circle at 50% 0%, rgba(248,113,113,0.08) 0%, transparent 65%)',
-          }} />
+          background: C.surface,
+          border: `1px solid ${C.border}`,
+          overflow: 'hidden',
+        }}
+      >
+        <div className="px-8 py-10">
+          {/* Logo */}
+          <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, fontWeight: 500, color: C.hint, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+            BrainTrade · Internal Training
+          </p>
 
-        {/* Icon */}
-        <motion.div
-          className="relative w-20 h-20 rounded-2xl mx-auto mb-5 flex items-center justify-center"
-          style={{ background: passed ? 'rgba(52,211,153,0.15)' : 'rgba(248,113,113,0.12)' }}
-          initial={{ scale: 0.5 }} animate={{ scale: 1 }}
-          transition={{ delay: 0.15, type: 'spring', stiffness: 300, damping: 18 }}
-        >
-          {passed
-            ? <Trophy size={38} style={{ color: '#34D399' }} />
-            : <XCircle size={38} style={{ color: '#F87171' }} />}
-        </motion.div>
+          {/* Score number */}
+          <p style={{ fontSize: 12, color: C.hint, fontFamily: "'DM Mono', monospace", letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 6 }}>
+            {ui.yourScore}
+          </p>
+          <motion.div
+            style={{ fontSize: 64, fontWeight: 600, color: C.text, lineHeight: 1, marginBottom: 6 }}
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1, type: 'spring', stiffness: 220, damping: 18 }}
+          >
+            {score}
+            <span style={{ fontSize: 28, color: C.hint, fontWeight: 400 }}>/{total}</span>
+          </motion.div>
+          <p style={{ fontSize: 15, color: C.muted, marginBottom: 10 }}>
+            {pct}{ui.pctCorrect}
+          </p>
 
-        {/* Pass/Fail badge */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-3"
-          style={{
-            background: passed ? 'rgba(52,211,153,0.12)' : 'rgba(248,113,113,0.1)',
-            border: passed ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(248,113,113,0.25)',
-            color: passed ? '#34D399' : '#F87171',
-          }}>
-          {passed ? <CheckCircle2 size={11} /> : <XCircle size={11} />}
-          {passed ? ui.passed : ui.failed}
-        </div>
+          {/* Pass/Fail badge */}
+          <div className="inline-flex items-center gap-1.5 mb-5">
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
+              style={{
+                background: passed ? C.successBg : C.dangerBg,
+                border: `1px solid ${passed ? C.successBorder : C.dangerBorder}`,
+                color: passed ? C.successText : C.dangerText,
+              }}
+            >
+              {passed ? '✓' : '✕'} {passed ? ui.passed : ui.failed}
+            </span>
+          </div>
 
-        <h2 className="text-2xl font-black mb-1 text-foreground">{title}</h2>
-        <p className="text-sm text-muted-foreground mb-5">{ui.hello}, {agentName}! — {sub}</p>
+          {/* Feedback */}
+          <p style={{ fontSize: 16, fontWeight: 500, color: feedbackColor, marginBottom: 28 }}>
+            {message}
+          </p>
 
-        {/* Score ring */}
-        <div className="relative w-32 h-32 mx-auto mb-5">
-          <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" strokeWidth="8"
-              className="text-border opacity-40" />
-            <motion.circle
-              cx="50" cy="50" r="42" fill="none"
-              stroke={passed ? '#34D399' : '#F87171'}
-              strokeWidth="8" strokeLinecap="round"
-              strokeDasharray={`${2 * Math.PI * 42}`}
-              initial={{ strokeDashoffset: 2 * Math.PI * 42 }}
-              animate={{ strokeDashoffset: 2 * Math.PI * 42 * (1 - ratio) }}
-              transition={{ delay: 0.3, duration: 1.1, ease: 'easeOut' }}
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-black text-foreground">{pct}%</span>
-            <span className="text-xs text-muted-foreground mt-0.5">{score}/{total}</span>
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{scoreLabel}</span>
+          {/* Actions */}
+          <div className="flex flex-col gap-2 max-w-xs mx-auto">
+            <button
+              onClick={onDashboard}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[7px] font-medium text-sm transition-all hover:opacity-85 active:scale-[0.98]"
+              style={{ background: C.text, color: '#fff', border: `1px solid ${C.text}` }}
+            >
+              <LayoutDashboard size={14} />
+              {ui.backToHome}
+            </button>
+            <button
+              onClick={onRestart}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[7px] font-medium text-sm transition-all hover:opacity-85 active:scale-[0.98]"
+              style={{ background: C.surface, color: C.muted, border: `1px solid ${C.border}` }}
+            >
+              <RotateCcw size={13} />
+              {ui.tryAgain}
+            </button>
           </div>
         </div>
-
-        <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">{message}</p>
-        <p className="text-xs text-muted-foreground mt-2 opacity-60">{ui.passThreshold}</p>
       </div>
 
-      {/* Actions */}
-      <div className="flex gap-3">
-        <button
-          onClick={onRestart}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm border transition-all hover:scale-[1.02] active:scale-[0.98]"
-          style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+      {/* Answer Key */}
+      <div
+        className="rounded-[10px] overflow-hidden"
+        style={{ background: C.surface, border: `1px solid ${C.border}` }}
+      >
+        <div
+          className="px-5 py-3 border-b"
+          style={{ borderColor: C.border }}
         >
-          <RotateCcw size={15} /> {ui.tryAgain}
-        </button>
-        <button
-          onClick={onDashboard}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
-          style={{
-            background: 'linear-gradient(135deg, #00B4D8, #0055F0)',
-            color: '#fff',
-            boxShadow: '0 6px 20px rgba(0,180,216,0.22)',
-          }}
-        >
-          <LayoutDashboard size={15} /> {ui.backToHome}
-        </button>
+          <span style={{ fontSize: 11, fontWeight: 600, fontFamily: "'DM Mono', monospace", color: C.hint, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            {ui.answerKey}
+          </span>
+        </div>
+        <div className="divide-y" style={{ borderColor: C.border }}>
+          {questions.map((q, i) => {
+            const userIdx   = answered[i];
+            const correct   = q.correctIdx ?? 0;
+            const isCorrect = userIdx === correct;
+            const opts      = q.options?.[lang] ?? [];
+            const correctTxt = opts[correct] ?? '';
+            const userTxt    = userIdx !== undefined ? (opts[userIdx] ?? '—') : '—';
+
+            return (
+              <div key={i} className="px-5 py-3" style={{ fontSize: 13, color: C.muted, lineHeight: 1.5 }}>
+                <strong style={{ color: C.text }}>Q{i + 1}:</strong> {q[lang]}
+                <br />
+                <span style={{ color: C.successText, fontWeight: 500 }}>
+                  {isCorrect ? '✓' : `${ui.correctAnswer}`} {correctTxt}
+                </span>
+                {!isCorrect && (
+                  <span style={{ color: C.dangerText }}>
+                    {' · '}{ui.yourAnswer} {userTxt}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-center py-3" style={{ fontSize: 11, color: C.hint }}>
+          {ui.passThreshold}
+        </p>
       </div>
     </motion.div>
   );
@@ -137,181 +185,126 @@ function ResultScreen({
 
 // ─── Question Card ────────────────────────────────────────────────────────────
 function QuestionCard({
-  question, index, total, lang, score,
-  scoreLabel, onAnswer,
+  question, index, total, lang, phaseColor, phaseLight, phaseName,
+  answeredIdx, onAnswer,
 }: {
-  question: QuestionData; index: number; total: number;
-  lang: Language; score: number; scoreLabel: string;
-  onAnswer: (val: string, idx: number) => void;
+  question: QuestionData;
+  index: number;
+  total: number;
+  lang: Language;
+  phaseColor: string;
+  phaseLight: string;
+  phaseName: string;
+  answeredIdx: number | undefined;
+  onAnswer: (choiceIdx: number) => void;
 }) {
-  const ui = UI_STRINGS[lang];
-  const [selected, setSelected] = useState<number | null>(null);
-  const [locked, setLocked] = useState(false);
-  const [feedback, setFeedback] = useState<{ correct: boolean; msg: string } | null>(null);
-  const [inputVal, setInputVal] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-  const pct = (index / total) * 100;
+  const opts    = question.options?.[lang] ?? [];
+  const correct = question.correctIdx ?? 0;
+  const locked  = answeredIdx !== undefined;
 
-  // reset when question changes
-  useEffect(() => {
-    setSelected(null);
-    setLocked(false);
-    setFeedback(null);
-    setInputVal('');
-    setTimeout(() => inputRef.current?.focus(), 50);
-  }, [index]);
-
-  function submit(val: string, btnIdx: number) {
-    if (locked) return;
-    setLocked(true);
-    setSelected(btnIdx);
-
-    let correct = false;
-    let correctDisplay = '';
-
-    if (question.type === 'tf') {
-      correct = val === question.a;
-      correctDisplay = question.a === 'true' ? ui.trueTxt : ui.falseTxt;
-    } else if (question.type === 'mcq') {
-      const opts = question.options?.[lang] ?? [];
-      correctDisplay = opts[question.correctIdx ?? 0];
-      correct = val === correctDisplay;
-    } else if (question.type === 'fill') {
-      correct = val.trim().toLowerCase() === (question.a ?? '').toLowerCase();
-      correctDisplay = question.a ?? '';
-    }
-
-    setFeedback({
-      correct,
-      msg: correct ? ui.correct : `${ui.incorrect} ${correctDisplay}`,
-    });
-
-    setTimeout(() => onAnswer(val, btnIdx), 1600);
+  function choiceStyle(i: number): CSSProperties {
+    if (!locked) return { background: C.surface, borderColor: C.border, color: C.text };
+    if (i === correct) return { background: C.successBg, borderColor: C.successBorder, color: C.successText };
+    if (i === answeredIdx) return { background: C.dangerBg, borderColor: C.dangerBorder, color: C.dangerText };
+    return { background: C.surface, borderColor: C.border, color: C.muted };
   }
 
-  const opts = question.type === 'mcq'
-    ? (question.options?.[lang] ?? [])
-    : question.type === 'tf'
-    ? [ui.trueTxt, ui.falseTxt]
-    : [];
-
-  const tfValues = [ui.trueTxt, ui.falseTxt].map((_, i) => i === 0 ? 'true' : 'false');
+  function labelStyle(i: number): CSSProperties {
+    if (!locked) return { color: C.hint };
+    if (i === correct) return { color: C.successText };
+    if (i === answeredIdx) return { color: C.dangerText };
+    return { color: C.hint };
+  }
 
   return (
     <motion.div
       key={index}
-      className="w-full max-w-2xl mx-auto"
-      initial={{ opacity: 0, x: 32 }}
+      initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -32 }}
-      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-bold uppercase tracking-widest text-primary">
-          {ui.qLabel} {index + 1}/{total}
-        </span>
-        <span className="text-xs font-semibold text-muted-foreground">
-          {scoreLabel}: <span className="text-foreground font-black">{score}</span>
-        </span>
-      </div>
-
-      {/* Progress bar */}
-      <div className="h-1.5 rounded-full mb-6 overflow-hidden bg-border">
-        <motion.div
-          className="h-full rounded-full"
-          style={{ background: 'linear-gradient(90deg, #00B4D8, #7C3AED)' }}
-          initial={{ width: `${(index / total) * 100}%` }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.4 }}
-        />
-      </div>
-
-      {/* Question */}
-      <div className="bg-card border border-border rounded-2xl p-6 mb-4 shadow-sm">
-        <p className="text-base font-semibold text-foreground leading-relaxed">{question[lang]}</p>
-      </div>
-
-      {/* Options */}
-      <div className="space-y-2.5">
-        {question.type !== 'fill' && opts.map((label, i) => {
-          const val = question.type === 'tf' ? tfValues[i] : label;
-          const isSel = selected === i;
-          const isCorrectOpt = question.type === 'tf'
-            ? val === question.a
-            : i === question.correctIdx;
-
-          let borderColor = 'var(--border)';
-          let bg = 'var(--card)';
-          let textColor = 'var(--foreground)';
-
-          if (locked && isSel && feedback?.correct)   { borderColor = '#34D399'; bg = 'rgba(52,211,153,0.08)'; textColor = '#34D399'; }
-          if (locked && isSel && !feedback?.correct)  { borderColor = '#F87171'; bg = 'rgba(248,113,113,0.08)'; textColor = '#F87171'; }
-          if (locked && !isSel && isCorrectOpt)        { borderColor = '#34D39980'; bg = 'rgba(52,211,153,0.04)'; }
-
-          return (
-            <motion.button
-              key={i}
-              onClick={() => submit(val, i)}
-              disabled={locked}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-left transition-all text-sm font-medium"
-              style={{ borderColor, background: bg, color: textColor }}
-              whileHover={!locked ? { scale: 1.01 } : {}}
-              whileTap={!locked ? { scale: 0.98 } : {}}
-            >
-              <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black shrink-0"
-                style={{ background: isSel ? borderColor : 'var(--secondary)', color: isSel ? '#fff' : 'var(--muted-foreground)' }}>
-                {LABELS[i]}
-              </span>
-              <span className="flex-1">{label}</span>
-              {locked && isSel && feedback?.correct && <CheckCircle2 size={16} style={{ color: '#34D399' }} />}
-              {locked && isSel && !feedback?.correct  && <XCircle size={16} style={{ color: '#F87171' }} />}
-              {locked && !isSel && isCorrectOpt        && <CheckCircle2 size={16} style={{ color: '#34D399', opacity: 0.7 }} />}
-            </motion.button>
-          );
-        })}
-
-        {question.type === 'fill' && (
-          <div className="space-y-3">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputVal}
-              onChange={e => setInputVal(e.target.value)}
-              disabled={locked}
-              placeholder={ui.placeholder}
-              onKeyDown={e => { if (e.key === 'Enter' && inputVal.trim()) submit(inputVal, 0); }}
-              className="w-full px-4 py-3 rounded-xl border-2 text-sm font-medium outline-none transition-all bg-card text-foreground"
-              style={{ borderColor: locked ? (feedback?.correct ? '#34D399' : '#F87171') : 'var(--border)' }}
-            />
-            <button
-              onClick={() => submit(inputVal, 0)}
-              disabled={locked || !inputVal.trim()}
-              className="w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-40"
-              style={{ background: 'linear-gradient(135deg, #00B4D8, #0055F0)', color: '#fff' }}
-            >
-              {ui.submit} <ArrowRight size={14} />
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Feedback */}
-      <AnimatePresence>
-        {feedback && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="mt-4 px-4 py-3 rounded-xl flex items-center gap-2 text-sm font-semibold"
-            style={{
-              background: feedback.correct ? 'rgba(52,211,153,0.1)' : 'rgba(248,113,113,0.08)',
-              border: feedback.correct ? '1px solid rgba(52,211,153,0.3)' : '1px solid rgba(248,113,113,0.25)',
-              color: feedback.correct ? '#34D399' : '#F87171',
-            }}
+      {/* Question card */}
+      <div
+        className="rounded-[10px] mb-3"
+        style={{ background: C.surface, border: `1px solid ${C.border}` }}
+      >
+        {/* Meta row */}
+        <div className="flex items-center gap-2 px-5 pt-4 pb-3">
+          <span
+            className="text-[11px] font-medium px-2.5 py-1 rounded-full"
+            style={{ background: phaseLight, color: phaseColor }}
           >
-            {feedback.correct ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
-            {feedback.msg}
+            {phaseName}
+          </span>
+          {question.isNew && (
+            <span
+              className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+              style={{ background: C.warnBg, color: C.warnText, border: `1px solid ${C.warnBorder}` }}
+            >
+              New
+            </span>
+          )}
+          <span
+            className="ml-auto"
+            style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, color: C.hint }}
+          >
+            Q{index + 1} / {total}
+          </span>
+        </div>
+
+        {/* Question text */}
+        <p
+          className="px-5 pb-5"
+          style={{ fontSize: 15, fontWeight: 500, color: C.text, lineHeight: 1.55 }}
+        >
+          {question[lang]}
+        </p>
+      </div>
+
+      {/* Choices */}
+      <div className="space-y-1.5 mb-3">
+        {opts.map((opt, i) => (
+          <button
+            key={i}
+            disabled={locked}
+            onClick={() => onAnswer(i)}
+            className="w-full flex items-start gap-2.5 px-4 py-3 rounded-[7px] border text-left transition-colors"
+            style={choiceStyle(i)}
+          >
+            <span
+              className="shrink-0 text-[12px] font-semibold min-w-[16px] pt-[1px]"
+              style={{ fontFamily: "'DM Mono', monospace", ...labelStyle(i) }}
+            >
+              {LABELS[i]}
+            </span>
+            <span style={{ fontSize: 14, lineHeight: 1.45 }}>{opt}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Explanation */}
+      <AnimatePresence>
+        {locked && question.explain && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <div
+              className="rounded-[7px] px-4 py-3"
+              style={{
+                background: C.bg,
+                borderLeft: `3px solid ${C.borderHover}`,
+                fontSize: 13,
+                color: C.muted,
+                lineHeight: 1.6,
+              }}
+            >
+              {question.explain[lang]}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -325,13 +318,15 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
   const router   = useRouter();
   const locale   = pathname.split('/')[1] ?? 'th';
   const lang     = (locale === 'en' ? 'en' : 'th') as Language;
+  const ui       = UI_STRINGS[lang];
 
   const quiz = MODULE_QUIZ_MAP[moduleId];
 
   const [agentId,   setAgentId]   = useState<string | null>(null);
   const [agentName, setAgentName] = useState<string | null>(null);
-  const [idx,       setIdx]       = useState(0);
-  const [score,     setScore]     = useState(0);
+  const [activePhase, setActivePhase] = useState<number | null>(null);
+  const [current,   setCurrent]   = useState(0);
+  const [answered,  setAnswered]  = useState<Record<number, number>>({});
   const [finished,  setFinished]  = useState(false);
   const [saving,    setSaving]    = useState(false);
 
@@ -340,113 +335,225 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
     setAgentName(localStorage.getItem('brainstrade_agent_name'));
   }, []);
 
-  const ui = UI_STRINGS[lang];
+  // Filtered questions based on active phase
+  const filteredQuestions = activePhase === null
+    ? quiz?.questions ?? []
+    : (quiz?.questions ?? []).filter(q => q.phase === activePhase);
+
+  const total = filteredQuestions.length;
 
   // Save result when quiz finishes
   useEffect(() => {
-    if (!finished || !agentId) return;
+    if (!finished || !agentId || !quiz) return;
     setSaving(true);
-    const total = quiz.questions.length;
+    const score = filteredQuestions.filter((q, i) => answered[i] === q.correctIdx).length;
     fetch('/api/quiz/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         moduleId, agentId, agentName,
-        score, totalQuestions: total,
+        score,
+        totalQuestions: total,
         passed: score / total >= PASS_THRESHOLD,
       }),
     }).finally(() => setSaving(false));
-  }, [finished]);
+  }, [finished]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function handleAnswer(_val: string, _btnIdx: number) {
-    // Determine correct answer for scoring
-    const q = quiz.questions[idx];
-    let correct = false;
-    if (q.type === 'tf') correct = _val === q.a;
-    else if (q.type === 'mcq') {
-      const opts = q.options?.[lang] ?? [];
-      correct = _val === opts[q.correctIdx ?? 0];
-    } else if (q.type === 'fill') correct = _val.trim().toLowerCase() === (q.a ?? '').toLowerCase();
-
-    if (correct) setScore(s => s + 1);
-
-    if (idx < quiz.questions.length - 1) {
-      setIdx(i => i + 1);
-    } else {
-      setFinished(true);
-    }
-  }
-
-  function handleRestart() {
-    setIdx(0);
-    setScore(0);
+  function handlePhaseFilter(phase: number | null) {
+    setActivePhase(phase);
+    setCurrent(0);
+    setAnswered({});
     setFinished(false);
   }
 
-  // Unknown module
+  function handleAnswer(choiceIdx: number) {
+    setAnswered(prev => ({ ...prev, [current]: choiceIdx }));
+  }
+
+  function handleNext() {
+    if (current === total - 1) {
+      setFinished(true);
+    } else {
+      setCurrent(c => c + 1);
+    }
+  }
+
+  function handlePrev() {
+    if (current > 0) setCurrent(c => c - 1);
+  }
+
+  function handleRestart() {
+    setCurrent(0);
+    setAnswered({});
+    setFinished(false);
+  }
+
+  // Unknown module guard
   if (!quiz) {
     return (
-      <div className="max-w-xl mx-auto py-16 text-center">
-        <BookOpen size={48} className="mx-auto mb-4 text-muted-foreground opacity-40" />
-        <p className="text-muted-foreground">ไม่พบข้อมูลแบบทดสอบสำหรับโมดูลนี้</p>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: C.bg, fontFamily: "'DM Sans', sans-serif" }}
+      >
+        <p style={{ color: C.muted }}>ไม่พบข้อมูลแบบทดสอบสำหรับโมดูลนี้</p>
       </div>
     );
   }
 
-  const scoreLabel = quiz.uiOverrides?.scoreLabel?.[lang] ?? ui.scoreLabel;
-  const total = quiz.questions.length;
+  const phases      = quiz.phases ?? [];
+  const currentQ    = filteredQuestions[current];
+  const isAnswered  = answered[current] !== undefined;
+  const isLastQ     = current === total - 1;
+  const progressPct = total > 0 ? Math.round(((current + 1) / total) * 100) : 0;
 
-  if (finished) {
-    return (
-      <div className="max-w-2xl mx-auto py-8 px-4">
-        <ResultScreen
-          score={score} total={total} lang={lang}
-          agentName={agentName ?? ''}
-          quiz={quiz}
-          onRestart={handleRestart}
-          onDashboard={() => router.push(`/${locale}/dashboard`)}
-        />
-      </div>
-    );
-  }
+  // Determine phase color for current question
+  const qPhaseIdx   = currentQ?.phase ?? 0;
+  const qPhase      = phases[qPhaseIdx];
+  const phaseColor  = qPhase?.color  ?? C.hint;
+  const phaseLight  = qPhase?.light  ?? C.bg;
+  const phaseName   = qPhase?.name?.[lang] ?? '';
 
   return (
-    <div className="max-w-2xl mx-auto py-8 px-4">
-      {/* Quiz title header */}
-      <motion.div
-        className="mb-6"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <button
-          onClick={() => router.push(`/${locale}/quiz`)}
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mb-3"
-        >
-          <ChevronLeft size={14} />
-          {lang === 'th' ? 'เลือกแบบทดสอบ' : 'All Assessments'}
-        </button>
-        <div className="flex items-center gap-2 mb-1">
-          <BookOpen size={16} className="text-primary" />
-          <span className="text-xs font-bold text-primary uppercase tracking-widest">
-            {quiz.title[lang]}
-          </span>
-        </div>
-        <p className="text-xs text-muted-foreground">{quiz.description[lang]}</p>
-      </motion.div>
+    <div
+      className="min-h-screen py-8 px-4"
+      style={{ background: C.bg, fontFamily: "'DM Sans', sans-serif" }}
+    >
+      <div className="max-w-[660px] mx-auto">
 
-      <AnimatePresence mode="wait">
-        <QuestionCard
-          key={idx}
-          question={quiz.questions[idx]}
-          index={idx}
-          total={total}
-          lang={lang}
-          score={score}
-          scoreLabel={scoreLabel}
-          onAnswer={handleAnswer}
-        />
-      </AnimatePresence>
+        {finished ? (
+          <ResultScreen
+            questions={filteredQuestions}
+            answered={answered}
+            lang={lang}
+            quiz={quiz}
+            onRestart={handleRestart}
+            onDashboard={() => router.push(`/${locale}/dashboard`)}
+          />
+        ) : (
+          <>
+            {/* ── Header ──────────────────────────────────────────────── */}
+            <div className="mb-5">
+              {/* Back button */}
+              <button
+                onClick={() => router.push(`/${locale}/quiz`)}
+                className="inline-flex items-center gap-1 mb-4 text-sm transition-opacity hover:opacity-70"
+                style={{ color: C.muted }}
+              >
+                <ChevronLeft size={14} />
+                {lang === 'th' ? 'เลือกแบบทดสอบ' : 'All Assessments'}
+              </button>
+
+              {/* Logo + title */}
+              <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, fontWeight: 500, color: C.hint, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>
+                BrainTrade · Internal Training
+              </p>
+              <h1 style={{ fontSize: 22, fontWeight: 600, color: C.text, marginBottom: 2 }}>
+                {quiz.title[lang]}
+              </h1>
+              <p style={{ fontSize: 14, color: C.muted, marginBottom: 16 }}>
+                {quiz.description[lang]}
+              </p>
+
+              {/* Progress bar */}
+              <div
+                className="rounded-full overflow-hidden mb-4"
+                style={{ height: 3, background: C.border }}
+              >
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{ background: C.text }}
+                  animate={{ width: `${finished ? 100 : progressPct}%` }}
+                  transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                />
+              </div>
+
+              {/* Phase filter buttons — only shown when quiz has multiple phases */}
+              {phases.length > 1 && (
+                <div className="flex gap-1.5 flex-wrap">
+                  <button
+                    onClick={() => handlePhaseFilter(null)}
+                    className="px-3 py-1 rounded-full text-xs font-medium transition-all"
+                    style={{
+                      border: `1px solid ${activePhase === null ? C.text : C.border}`,
+                      background: activePhase === null ? C.text : C.surface,
+                      color: activePhase === null ? '#fff' : C.muted,
+                    }}
+                  >
+                    {ui.allPhases}
+                  </button>
+                  {phases.map((ph, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handlePhaseFilter(idx)}
+                      className="px-3 py-1 rounded-full text-xs font-medium transition-all"
+                      style={{
+                        border: `1px solid ${activePhase === idx ? ph.color : C.border}`,
+                        background: activePhase === idx ? ph.color : C.surface,
+                        color: activePhase === idx ? '#fff' : C.muted,
+                      }}
+                    >
+                      {ph.name[lang]}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ── Question ────────────────────────────────────────────── */}
+            <AnimatePresence mode="wait">
+              {currentQ && (
+                <QuestionCard
+                  key={`${activePhase}-${current}`}
+                  question={currentQ}
+                  index={current}
+                  total={total}
+                  lang={lang}
+                  phaseColor={phaseColor}
+                  phaseLight={phaseLight}
+                  phaseName={phaseName}
+                  answeredIdx={answered[current]}
+                  onAnswer={handleAnswer}
+                />
+              )}
+            </AnimatePresence>
+
+            {/* ── Nav row ─────────────────────────────────────────────── */}
+            <div className="flex items-center justify-between mt-2">
+              <button
+                disabled={current === 0}
+                onClick={handlePrev}
+                className="px-5 py-2 rounded-[7px] text-sm font-medium border transition-all disabled:opacity-30"
+                style={{ background: C.surface, color: C.text, borderColor: C.border }}
+              >
+                {ui.prev}
+              </button>
+
+              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 13, color: C.hint }}>
+                {current + 1} / {total}
+              </span>
+
+              <button
+                disabled={!isAnswered}
+                onClick={handleNext}
+                className="px-5 py-2 rounded-[7px] text-sm font-medium border transition-all disabled:opacity-30"
+                style={{
+                  background: isAnswered ? C.text : C.surface,
+                  color:      isAnswered ? '#fff' : C.text,
+                  borderColor: isAnswered ? C.text : C.border,
+                }}
+              >
+                {isLastQ ? ui.seeResults : ui.next}
+              </button>
+            </div>
+
+            {saving && (
+              <p className="text-center mt-3 text-xs" style={{ color: C.hint }}>
+                {lang === 'th' ? 'กำลังบันทึก...' : 'Saving...'}
+              </p>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,6 +1,12 @@
 export type Language = 'en' | 'th';
 export type QuestionType = 'tf' | 'mcq' | 'fill';
 
+export interface QuizPhase {
+  name: Record<Language, string>;
+  color: string;
+  light: string;
+}
+
 export interface QuestionData {
   en: string;
   th: string;
@@ -8,6 +14,9 @@ export interface QuestionData {
   a?: string;
   options?: { en: string[]; th: string[] };
   correctIdx?: number;
+  phase?: number;   // index into QuizDefinition.phases[]
+  isNew?: boolean;
+  explain?: { en: string; th: string };
 }
 
 export interface QuizUIOverrides {
@@ -24,6 +33,7 @@ export interface QuizDefinition {
   title: Record<Language, string>;
   description: Record<Language, string>;
   questions: QuestionData[];
+  phases?: QuizPhase[];
   uiOverrides?: QuizUIOverrides;
 }
 
@@ -33,379 +43,641 @@ export const UI_STRINGS: Record<Language, {
   placeholder: string; trueTxt: string; falseTxt: string;
   msgHigh: string; msgMed: string; msgLow: string; backToHome: string; hello: string;
   passed: string; failed: string; tryAgain: string; passThreshold: string;
+  selectQuiz: string; allPhases: string; seeResults: string; prev: string; next: string;
+  yourScore: string; pctCorrect: string; answerKey: string;
+  yourAnswer: string; correctAnswer: string;
 }> = {
   en: {
-    qLabel: 'Question', scoreLabel: 'Score', finishTitle: 'Assessment Completed',
-    finishSub: 'Your Performance Results', outOf: 'out of', correct: 'Correct ✓',
-    incorrect: 'Incorrect. The correct answer is:', submit: 'Submit Answer',
+    qLabel: 'Question', scoreLabel: 'Score', finishTitle: 'Quiz Complete',
+    finishSub: 'Your Results', outOf: 'out of', correct: 'Correct ✓',
+    incorrect: 'Incorrect. Correct answer:', submit: 'Submit',
     placeholder: 'Enter your answer...', trueTxt: 'True', falseTxt: 'False',
-    msgHigh: 'Outstanding! You demonstrate expert-level knowledge of The Brain Trade.',
-    msgMed: 'Great job. You have a solid understanding of our system.',
-    msgLow: 'Keep learning. We recommend reviewing The Brain Trade materials again.',
-    backToHome: 'Return to Dashboard', hello: 'Hello',
-    passed: 'PASSED', failed: 'NOT PASSED', tryAgain: 'Try Again',
+    msgHigh: 'Excellent — ready to close deals!',
+    msgMed: 'Strong — minor gaps to review.',
+    msgLow: 'Needs work — re-read the training material.',
+    backToHome: 'Back to Dashboard', hello: 'Hello',
+    passed: 'PASSED', failed: 'NOT PASSED', tryAgain: 'Retake Quiz',
     passThreshold: 'Passing score: 70%',
+    selectQuiz: 'Choose an Assessment',
+    allPhases: 'All Phases',
+    seeResults: 'See Results',
+    prev: '← Prev',
+    next: 'Next →',
+    yourScore: 'Your Score',
+    pctCorrect: '% correct',
+    answerKey: 'Answer Key',
+    yourAnswer: 'You answered:',
+    correctAnswer: 'Correct:',
   },
   th: {
-    qLabel: 'คำถามที่', scoreLabel: 'คะแนน', finishTitle: 'การประเมินเสร็จสมบูรณ์',
+    qLabel: 'ข้อที่', scoreLabel: 'คะแนน', finishTitle: 'ทำแบบทดสอบเสร็จแล้ว',
     finishSub: 'ผลลัพธ์ของคุณ', outOf: 'จาก', correct: 'ถูกต้อง ✓',
     incorrect: 'ไม่ถูกต้อง คำตอบที่ถูกคือ:', submit: 'ส่งคำตอบ',
     placeholder: 'กรุณาระบุคำตอบ...', trueTxt: 'จริง', falseTxt: 'เท็จ',
-    msgHigh: 'ยอดเยี่ยม! คุณมีความรู้ความเข้าใจในระดับผู้เชี่ยวชาญเกี่ยวกับ The Brain Trade',
-    msgMed: 'ทำได้ดีมาก คุณมีความเข้าใจระบบของเราเป็นอย่างดี',
-    msgLow: 'ควรศึกษาเพิ่มเติม เราแนะนำให้ทบทวนข้อมูลของ The Brain Trade อีกครั้ง',
+    msgHigh: 'ยอดเยี่ยม — พร้อมปิดดีลได้แล้ว!',
+    msgMed: 'ดีมาก — มีบางจุดที่ควรทบทวน',
+    msgLow: 'ต้องปรับปรุง — แนะนำให้อ่านเนื้อหาการอบรมอีกครั้ง',
     backToHome: 'กลับสู่แดชบอร์ด', hello: 'สวัสดี',
     passed: 'ผ่าน', failed: 'ไม่ผ่าน', tryAgain: 'ทำใหม่อีกครั้ง',
     passThreshold: 'เกณฑ์ผ่าน: 70%',
+    selectQuiz: 'เลือกแบบทดสอบ',
+    allPhases: 'ทุกขั้นตอน',
+    seeResults: 'ดูผลลัพธ์',
+    prev: '← ก่อนหน้า',
+    next: 'ถัดไป →',
+    yourScore: 'คะแนนของคุณ',
+    pctCorrect: '% ถูกต้อง',
+    answerKey: 'เฉลย',
+    yourAnswer: 'คุณตอบ:',
+    correctAnswer: 'คำตอบที่ถูก:',
   },
 };
 
-// ─── Quiz 1: System Understanding ────────────────────────────────────────────
-const UNDERSTANDING_DATA: QuestionData[] = [
+// ─── Phase 1: Opener ─────────────────────────────────────────────────────────
+const PHASE1_OPENER: QuestionData[] = [
   {
-    en: 'The parent company of The Brain Trade is headquartered in Bulgaria.',
-    th: 'สำนักงานใหญ่ของบริษัทแม่ The Brain Trade ตั้งอยู่ที่ประเทศบัลแกเรีย',
-    type: 'tf', a: 'true',
-  },
-  {
-    en: 'Which trading platform application do clients use to execute trades?',
-    th: 'ลูกค้าใช้งานแอปพลิเคชันแพลตฟอร์มใดในการดำเนินการซื้อขาย?',
+    phase: 0,
+    en: 'What is the correct order of the Phase 1 opener flow?',
+    th: 'ลำดับขั้นตอนที่ถูกต้องของ Phase 1 การเปิดการขายคืออะไร?',
     type: 'mcq',
     options: {
-      en: ['MetaTrader 4', 'cTrader', 'Zenstox (via BrainTrade website)', 'TradingView'],
-      th: ['MetaTrader 4', 'cTrader', 'Zenstox (ผ่านเว็บไซต์ BrainTrade)', 'TradingView'],
+      en: [
+        'Show packages → introduce SmartBrain AI → View Demo',
+        'Introduce SmartBrain AI → show 6 packages → use View Demo if price asked too early',
+        'Ask for budget → show packages → introduce SmartBrain AI',
+        'Introduce SmartBrain AI → View Demo → show packages',
+      ],
+      th: [
+        'แสดงแพ็คเกจ → แนะนำ SmartBrain AI → View Demo',
+        'แนะนำ SmartBrain AI → แสดง 6 แพ็คเกจ → ใช้ View Demo หากลูกค้าถามราคาเร็วเกินไป',
+        'ถามงบประมาณ → แสดงแพ็คเกจ → แนะนำ SmartBrain AI',
+        'แนะนำ SmartBrain AI → View Demo → แสดงแพ็คเกจ',
+      ],
     },
-    correctIdx: 2,
+    correctIdx: 1,
+    explain: {
+      en: 'Step 1: Introduce SmartBrain AI. Step 2: Show 6 Packages. Step 3: Use View Demo if customer asks for price too early.',
+      th: 'ขั้นที่ 1: แนะนำ SmartBrain AI  ขั้นที่ 2: แสดง 6 แพ็คเกจ  ขั้นที่ 3: ใช้ View Demo เมื่อลูกค้าถามราคาก่อนเห็นคุณค่าของสินค้า',
+    },
   },
   {
-    en: 'Clients are restricted to learning about trading exclusively through The Brain Trade.',
-    th: 'ลูกค้าถูกจำกัดให้เรียนรู้เกี่ยวกับการเทรดผ่าน The Brain Trade เท่านั้น',
-    type: 'tf', a: 'true',
-  },
-  {
-    en: 'Which communication channel does The Brain Trade\'s advisory team primarily use to contact clients?',
-    th: 'ทีมที่ปรึกษาของ The Brain Trade ใช้ช่องทางใดเป็นหลักในการติดต่อลูกค้า?',
+    phase: 0,
+    en: "Where is the 'View Demo' button located on the website?",
+    th: "ปุ่ม 'View Demo' อยู่ที่ไหนบนเว็บไซต์?",
     type: 'mcq',
     options: {
-      en: ['LINE', 'Facebook Messenger', 'Phone Call', 'Email'],
-      th: ['LINE', 'Facebook Messenger', 'โทรศัพท์', 'อีเมล'],
+      en: ['Top-right corner', 'Bottom-left footer', 'Center / middle of the screen', 'Left sidebar'],
+      th: ['มุมบนขวา', 'ส่วนท้ายด้านซ้าย', 'ตรงกลาง/กึ่งกลางหน้าจอ', 'แถบด้านซ้าย'],
     },
     correctIdx: 2,
+    explain: {
+      en: 'The View Demo button is in the center of the screen — used to refocus the customer on product value when they ask for price too early.',
+      th: 'ปุ่ม View Demo อยู่ตรงกลางของหน้าจอ — ใช้เพื่อดึงความสนใจลูกค้ากลับมาที่คุณค่าของสินค้า เมื่อลูกค้าถามราคาก่อนกำหนด',
+    },
   },
   {
-    en: 'Following a client\'s deposit, within what timeframe will the advisory team initiate contact?',
-    th: 'หลังจากลูกค้าดำเนินการฝากเงิน ทีมที่ปรึกษาจะติดต่อกลับภายในระยะเวลากี่ชั่วโมง?',
+    phase: 0,
+    en: "When should you use the 'View Demo' button as a sales tactic?",
+    th: "ควรใช้ปุ่ม 'View Demo' เป็นเทคนิคการขายเมื่อใด?",
+    type: 'mcq',
+    options: {
+      en: [
+        'At the very start before introducing any product',
+        'Whenever the customer seems bored',
+        "When the customer asks for price before you've shown product value",
+        'After confirming payment',
+      ],
+      th: [
+        'ตั้งแต่ต้น ก่อนแนะนำสินค้า',
+        'เมื่อลูกค้าดูเบื่อหน่าย',
+        'เมื่อลูกค้าถามราคาก่อนที่คุณจะได้แสดงคุณค่าของสินค้า',
+        'หลังยืนยันการชำระเงิน',
+      ],
+    },
+    correctIdx: 2,
+    explain: {
+      en: "Step 3: Use 'View Demo' to redirect the conversation back to product value if the customer asks for price too early.",
+      th: "ขั้นที่ 3: ใช้ 'View Demo' เพื่อเปลี่ยนทิศทางการสนทนากลับสู่คุณค่าของสินค้า หากลูกค้าถามราคาก่อนเวลาอันควร",
+    },
+  },
+];
+
+// ─── Phase 2: Demo Platform ───────────────────────────────────────────────────
+const PHASE2_DEMO: QuestionData[] = [
+  {
+    phase: 1,
+    en: 'Which two courses are recommended for complete beginners?',
+    th: 'คอร์สใดสองคอร์สที่แนะนำสำหรับผู้เริ่มต้นมือใหม่?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Technical Analysis & Risk Management',
+        'Brief History of Trading & Chart Patterns',
+        'Trading Psychology & Market Scanner',
+        'Economic Calendar & Campus Live Sessions',
+      ],
+      th: [
+        'Technical Analysis และ Risk Management',
+        'Brief History of Trading และ Chart Patterns',
+        'Trading Psychology และ Market Scanner',
+        'Economic Calendar และ Campus Live Sessions',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: "Step 6: Recommend 'Brief History of Trading' or 'Chart Patterns' for beginner customers.",
+      th: "ขั้นที่ 6: แนะนำ 'Brief History of Trading' หรือ 'Chart Patterns' สำหรับลูกค้าที่เพิ่งเริ่มต้น",
+    },
+  },
+  {
+    phase: 1,
+    en: 'A customer says they panic-sell every time the market drops. Which resource solves this?',
+    th: 'ลูกค้าบอกว่าตัวเองมักตื่นตระหนกและขายทุกครั้งที่ตลาดลง สิ่งใดแก้ปัญหานี้ได้?',
+    type: 'mcq',
+    options: {
+      en: ['Economic Calendar', 'Market Scanner', 'Trading Psychology (E-Book)', 'Daily Technical Analysis'],
+      th: ['Economic Calendar', 'Market Scanner', 'Trading Psychology (E-Book)', 'Daily Technical Analysis'],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'Step 8: Trading Psychology is the targeted solution for customers who struggle with panic selling.',
+      th: 'ขั้นที่ 8: Trading Psychology คือทางออกเฉพาะสำหรับลูกค้าที่มีปัญหาเรื่องการขายด้วยความตื่นตระหนก',
+    },
+  },
+  {
+    phase: 1,
+    en: 'What is the primary benefit of the Market Scanner tool?',
+    th: 'ประโยชน์หลักของเครื่องมือ Market Scanner คืออะไร?',
+    type: 'mcq',
+    options: {
+      en: [
+        'It teaches basic charting',
+        'It sends email alerts for news events',
+        'It automates trade detection — finds opportunities even while you sleep',
+        'It books 1-on-1 mentor sessions',
+      ],
+      th: [
+        'สอนการวิเคราะห์กราฟพื้นฐาน',
+        'ส่งอีเมลแจ้งเตือนเหตุการณ์ข่าว',
+        'ค้นหาโอกาสเทรดแบบอัตโนมัติ แม้กระทั่งขณะนอนหลับ',
+        'จองเซสชัน Mentor แบบตัวต่อตัว',
+      ],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'Step 11: The Market Scanner automates trade detection — finding opportunities around the clock, even while you sleep.',
+      th: 'ขั้นที่ 11: Market Scanner ค้นหาโอกาสการเทรดโดยอัตโนมัติตลอด 24 ชั่วโมง แม้กระทั่งขณะที่ลูกค้าหลับอยู่',
+    },
+  },
+  {
+    phase: 1,
+    en: 'How does the Economic Calendar protect a trader?',
+    th: 'Economic Calendar ปกป้องนักเทรดอย่างไร?',
+    type: 'mcq',
+    options: {
+      en: [
+        'It shows broker fee schedules',
+        'It helps traders avoid entering trades during high-impact news events',
+        'It tracks daily profit/loss automatically',
+        'It displays live broker spreads',
+      ],
+      th: [
+        'แสดงตารางค่าธรรมเนียมของโบรกเกอร์',
+        'ช่วยให้นักเทรดหลีกเลี่ยงการเข้าเทรดช่วงที่มีข่าวสำคัญที่ส่งผลกระทบสูง',
+        'ติดตามกำไร/ขาดทุนรายวันโดยอัตโนมัติ',
+        'แสดง Spread ของโบรกเกอร์แบบเรียลไทม์',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Step 12: The Economic Calendar flags high-impact news events, helping traders avoid entering positions during volatile periods.',
+      th: 'ขั้นที่ 12: Economic Calendar แสดงสัญญาณเตือนเหตุการณ์ข่าวที่ส่งผลกระทบสูง ช่วยให้นักเทรดหลีกเลี่ยงการเข้าเทรดในช่วงที่ตลาดผันผวน',
+    },
+  },
+  {
+    phase: 1,
+    en: 'The Trading Interface is described as comparable to which two professional platforms?',
+    th: 'Trading Interface ถูกเปรียบเทียบกับแพลตฟอร์มมืออาชีพใดสองแพลตฟอร์ม?',
+    type: 'mcq',
+    options: {
+      en: ['Bloomberg Terminal & Reuters Eikon', 'MetaTrader & TradingView', 'NinjaTrader & Webull', 'Thinkorswim & eToro'],
+      th: ['Bloomberg Terminal และ Reuters Eikon', 'MetaTrader และ TradingView', 'NinjaTrader และ Webull', 'Thinkorswim และ eToro'],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Step 13: The Trading Interface is professional-grade, comparable in quality to MetaTrader and TradingView.',
+      th: 'ขั้นที่ 13: Trading Interface มีมาตรฐานระดับมืออาชีพ มีคุณภาพเทียบเท่า MetaTrader และ TradingView',
+    },
+  },
+  {
+    phase: 1,
+    en: "What does 'The Campus' offer?",
+    th: "'The Campus' มีบริการอะไรบ้าง?",
+    type: 'mcq',
+    options: {
+      en: [
+        'Recorded weekend webinars only',
+        'Live pre-market sessions with experts, in local language with international coverage',
+        'A static video library with PDF downloads',
+        'Monthly one-on-one mentoring calls',
+      ],
+      th: [
+        'เฉพาะ Webinar ที่บันทึกไว้ในวันหยุดสุดสัปดาห์',
+        'เซสชันสดก่อนตลาดเปิด โดยผู้เชี่ยวชาญ เป็นภาษาท้องถิ่น ครอบคลุมตลาดต่างประเทศ',
+        'คลังวิดีโอพร้อม PDF สำหรับดาวน์โหลด',
+        'การโค้ชแบบ 1-ต่อ-1 รายเดือน',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Steps 14–15: The Campus offers live pre-market sessions led by experts, conducted in the local language and covering international markets.',
+      th: 'ขั้นที่ 14-15: The Campus มีเซสชันสดก่อนตลาดเปิดนำโดยผู้เชี่ยวชาญ ดำเนินการเป็นภาษาท้องถิ่น ครอบคลุมตลาดการเงินระหว่างประเทศ',
+    },
+  },
+];
+
+// ─── Phase 3: Packages & Pricing ──────────────────────────────────────────────
+const PHASE3_PACKAGES: QuestionData[] = [
+  {
+    phase: 0,
+    en: 'What is the price of the Expert (ผู้เชี่ยวชาญ) package?',
+    th: 'ราคาของแพ็คเกจ Expert (ผู้เชี่ยวชาญ) คือเท่าไหร่?',
+    type: 'mcq',
+    options: {
+      en: ['$2,000', '$2,500', '$3,000', '$3,500'],
+      th: ['2,000 USD', '2,500 USD', '3,000 USD', '3,500 USD'],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'Step 16: The Expert Package is $3,000 (original price was $3,500, now discounted).',
+      th: 'ขั้นที่ 16: แพ็คเกจ Expert ราคา 3,000 USD (ราคาเดิม 3,500 USD ลดราคาแล้ว)',
+    },
+  },
+  {
+    phase: 0,
+    en: 'What is the price of the Intermediate (ผู้เริ่มต้น) package?',
+    th: 'ราคาของแพ็คเกจ Intermediate (ผู้เริ่มต้น) คือเท่าไหร่?',
+    type: 'mcq',
+    options: {
+      en: ['$100', '$200', '$300', '$500'],
+      th: ['100 USD', '200 USD', '300 USD', '500 USD'],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Step 17: The Intermediate (ผู้เริ่มต้น) package is priced at $200.',
+      th: 'ขั้นที่ 17: แพ็คเกจ Intermediate (ผู้เริ่มต้น) ราคา 200 USD',
+    },
+  },
+  {
+    phase: 0,
+    en: 'How many AI queries per month does the $500 (ระดับกลาง) package include?',
+    th: 'แพ็คเกจ 500 USD (ระดับกลาง) รวมการสอบถาม AI กี่ครั้งต่อเดือน?',
+    type: 'mcq',
+    options: {
+      en: ['20', '30', '40', '50'],
+      th: ['20 ครั้ง', '30 ครั้ง', '40 ครั้ง', '50 ครั้ง'],
+    },
+    correctIdx: 2,
+    explain: {
+      en: '$100–$200 packages include 20 AI queries/month. The $500 package gets 40. Each tier upgrade adds 20 queries.',
+      th: 'แพ็คเกจ 100-200 USD ได้ 20 ครั้ง/เดือน แพ็คเกจ 500 USD ได้ 40 ครั้ง การอัปเกรดแต่ละระดับเพิ่มขึ้น 20 ครั้ง',
+    },
+  },
+  {
+    phase: 0,
+    en: 'A customer upgrades from $500 to $1,000. How many AI queries do they now get per month?',
+    th: 'ลูกค้าอัปเกรดจาก 500 USD เป็น 1,000 USD จะได้รับการสอบถาม AI กี่ครั้งต่อเดือน?',
+    type: 'mcq',
+    options: {
+      en: ['40', '50', '60', '80'],
+      th: ['40 ครั้ง', '50 ครั้ง', '60 ครั้ง', '80 ครั้ง'],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'AI queries increase by 20 per upgrade tier: $500 = 40 queries, $1,000 = 60 queries.',
+      th: 'การสอบถาม AI เพิ่มขึ้น 20 ครั้งต่อการอัปเกรดหนึ่งระดับ: 500 USD = 40 ครั้ง, 1,000 USD = 60 ครั้ง',
+    },
+  },
+  {
+    phase: 0,
+    en: 'Is a Dedicated Trainer included in the $100 Introductory (มือใหม่) package?',
+    th: 'แพ็คเกจ 100 USD มือใหม่ (Introductory) รวม Dedicated Trainer ด้วยหรือไม่?',
+    type: 'mcq',
+    options: {
+      en: [
+        'No — only from $500 and above',
+        'No — only from $200 and above',
+        'Yes — included even in the $100 package',
+        'Yes — but only for the first 30 days',
+      ],
+      th: [
+        'ไม่ — เฉพาะแพ็คเกจ 500 USD ขึ้นไป',
+        'ไม่ — เฉพาะแพ็คเกจ 200 USD ขึ้นไป',
+        'ใช่ — รวมอยู่แม้แต่ในแพ็คเกจ 100 USD',
+        'ใช่ — แต่เฉพาะ 30 วันแรกเท่านั้น',
+      ],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'Step 19: A Dedicated Trainer is included in every package tier, starting from the $100 Introductory package.',
+      th: 'ขั้นที่ 19: Dedicated Trainer รวมอยู่ในทุกแพ็คเกจ ตั้งแต่แพ็คเกจเริ่มต้น 100 USD ขึ้นไป',
+    },
+  },
+  {
+    phase: 0,
+    en: 'The มือใหม่ (Introductory) package is priced at $100. What was the original price?',
+    th: 'แพ็คเกจมือใหม่ (Introductory) ราคา 100 USD ราคาเดิมก่อนลดคือเท่าไหร่?',
+    type: 'mcq',
+    options: {
+      en: ['$129', '$149', '$159', '$179'],
+      th: ['129 USD', '149 USD', '159 USD', '179 USD'],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'The original price was $159, discounted to $100 as shown in the package pricing card.',
+      th: 'ราคาเดิมคือ 159 USD ลดเหลือ 100 USD ตามที่แสดงในการ์ดราคาของแพ็คเกจ',
+    },
+  },
+  {
+    phase: 0,
+    isNew: true,
+    en: 'How much bonus can an agent offer to a customer?',
+    th: 'เอเย่นต์สามารถเสนอโบนัสให้ลูกค้าได้เท่าไหร่?',
+    type: 'mcq',
+    options: {
+      en: ['25% only', '50% only', '100% only', '50% or 100% — both are valid options'],
+      th: ['25% เท่านั้น', '50% เท่านั้น', '100% เท่านั้น', '50% หรือ 100% — ทั้งสองตัวเลือกใช้ได้'],
+    },
+    correctIdx: 3,
+    explain: {
+      en: 'Agents have the flexibility to offer either a 50% or 100% bonus — both are valid depending on the situation.',
+      th: 'เอเย่นต์มีความยืดหยุ่นในการเสนอโบนัส 50% หรือ 100% ได้ โดยทั้งสองตัวเลือกนั้นถูกต้อง ขึ้นอยู่กับสถานการณ์',
+    },
+  },
+];
+
+// ─── Phase 4: Registration ────────────────────────────────────────────────────
+const PHASE4_REGISTRATION: QuestionData[] = [
+  {
+    phase: 1,
+    en: 'Where do you direct a customer who is ready to register?',
+    th: 'คุณส่งลูกค้าที่พร้อมลงทะเบียนไปที่เว็บไซต์ใด?',
+    type: 'mcq',
+    options: {
+      en: ['smartbrainai.com', 'thebraintrade.com', '200invest.com', 'zenstox.com/register'],
+      th: ['smartbrainai.com', 'thebraintrade.com', '200invest.com', 'zenstox.com/register'],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Step 20: Guide customers to thebraintrade.com to begin registration.',
+      th: 'ขั้นที่ 20: นำลูกค้าไปที่ thebraintrade.com เพื่อเริ่มต้นการลงทะเบียน',
+    },
+  },
+  {
+    phase: 1,
+    en: 'What are the password requirements for the platform?',
+    th: 'รหัสผ่านของแพลตฟอร์มมีข้อกำหนดอย่างไร?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Minimum 6 characters, 1 uppercase only',
+        'Minimum 8 characters, 1 uppercase, 1 lowercase, 1 number',
+        'Minimum 10 characters, 1 symbol, 1 number',
+        'Minimum 8 characters, 1 symbol only',
+      ],
+      th: [
+        'อย่างน้อย 6 ตัวอักษร ตัวพิมพ์ใหญ่ 1 ตัว',
+        'อย่างน้อย 8 ตัวอักษร ตัวพิมพ์ใหญ่ 1 ตัว ตัวพิมพ์เล็ก 1 ตัว ตัวเลข 1 ตัว',
+        'อย่างน้อย 10 ตัวอักษร 1 สัญลักษณ์ 1 ตัวเลข',
+        'อย่างน้อย 8 ตัวอักษร 1 สัญลักษณ์เท่านั้น',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Step 21: Password must be at least 8 characters with 1 uppercase letter, 1 lowercase letter, and 1 number.',
+      th: 'ขั้นที่ 21: รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวพิมพ์ใหญ่อย่างน้อย 1 ตัว ตัวพิมพ์เล็กอย่างน้อย 1 ตัว และตัวเลขอย่างน้อย 1 ตัว',
+    },
+  },
+  {
+    phase: 1,
+    en: 'How many free courses does a new free account receive?',
+    th: 'บัญชีฟรีใหม่ได้รับคอร์สเรียนฟรีกี่คอร์ส?',
+    type: 'mcq',
+    options: {
+      en: ['1 free course', '2 free courses', '3 free courses', 'No free courses'],
+      th: ['1 คอร์สฟรี', '2 คอร์สฟรี', '3 คอร์สฟรี', 'ไม่มีคอร์สฟรี'],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Step 22: New free accounts receive 2 free courses upon registration.',
+      th: 'ขั้นที่ 22: บัญชีฟรีใหม่จะได้รับ 2 คอร์สฟรีทันทีเมื่อลงทะเบียน',
+    },
+  },
+];
+
+// ─── Phase 5: Payment Mastery ─────────────────────────────────────────────────
+const PHASE5_PAYMENT: QuestionData[] = [
+  {
+    phase: 0,
+    en: 'Which tab does the system automatically open first in the payment flow?',
+    th: 'ระบบจะเปิดแท็บใดโดยอัตโนมัติแรกในขั้นตอนการชำระเงิน?',
+    type: 'mcq',
+    options: {
+      en: ['The 1st tab (Account)', 'The 2nd tab (Deposit)', 'The 3rd tab (Trade)', 'The 4th tab (Withdraw)'],
+      th: ['แท็บที่ 1 (Account)', 'แท็บที่ 2 (Deposit)', 'แท็บที่ 3 (Trade)', 'แท็บที่ 4 (Withdraw)'],
+    },
+    correctIdx: 2,
+    explain: {
+      en: "Step 23: The system automatically opens the 'Trade' tab (3rd tab) in the broker payment flow.",
+      th: "ขั้นที่ 23: ระบบจะเปิดแท็บ 'Trade' (แท็บที่ 3) โดยอัตโนมัติในขั้นตอนการชำระเงินกับโบรกเกอร์",
+    },
+  },
+  {
+    phase: 0,
+    en: 'Which broker should be selected for the deposit?',
+    th: 'ควรเลือกโบรกเกอร์ใดสำหรับการฝากเงิน?',
+    type: 'mcq',
+    options: {
+      en: ['IC Markets or Exness', 'Zenstox / 200 Invest', 'XM or FBS', 'Pepperstone or FP Markets'],
+      th: ['IC Markets หรือ Exness', 'Zenstox / 200 Invest', 'XM หรือ FBS', 'Pepperstone หรือ FP Markets'],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Step 24: Select Zenstox or 200 Invest as the official broker partner for the deposit.',
+      th: 'ขั้นที่ 24: เลือก Zenstox หรือ 200 Invest เป็นพาร์ทเนอร์โบรกเกอร์อย่างเป็นทางการสำหรับการฝากเงิน',
+    },
+  },
+  {
+    phase: 0,
+    en: 'What two actions must be completed on the broker page before proceeding?',
+    th: 'ต้องดำเนินการสองอย่างใดบนหน้าโบรกเกอร์ก่อนดำเนินการต่อ?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Enter promo code and select account type',
+        "Check Terms & Conditions and click 'Open Account'",
+        'Upload ID and verify email',
+        'Select leverage and deposit currency',
+      ],
+      th: [
+        'กรอกโค้ดโปรโมชั่นและเลือกประเภทบัญชี',
+        "ติ๊กยอมรับข้อกำหนดและเงื่อนไข แล้วคลิก 'Open Account'",
+        'อัปโหลด ID และยืนยันอีเมล',
+        'เลือก Leverage และสกุลเงินสำหรับฝาก',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: "Step 25: Tick the Terms & Conditions checkbox, then click 'Open Account' to proceed.",
+      th: "ขั้นที่ 25: ติ๊กยอมรับข้อกำหนดและเงื่อนไข จากนั้นคลิก 'Open Account' เพื่อดำเนินการต่อ",
+    },
+  },
+  {
+    phase: 0,
+    en: 'What status indicator confirms the broker account is live and ready?',
+    th: 'สัญญาณบ่งชี้สถานะใดยืนยันว่าบัญชีโบรกเกอร์พร้อมใช้งานแล้ว?',
+    type: 'mcq',
+    options: {
+      en: ["Blue 'Verified' badge", "Orange 'Processing' status", "Green 'Active Broker' status", "Yellow 'Pending Review' label"],
+      th: ["ป้าย 'Verified' สีน้ำเงิน", "สถานะ 'Processing' สีส้ม", "สถานะ 'Active Broker' สีเขียว", "ป้าย 'Pending Review' สีเหลือง"],
+    },
+    correctIdx: 2,
+    explain: {
+      en: "Step 26: Wait for the green 'Active Broker' status before proceeding with the deposit.",
+      th: "ขั้นที่ 26: รอจนกว่าสถานะ 'Active Broker' สีเขียวจะปรากฏก่อนดำเนินการฝากเงิน",
+    },
+  },
+  {
+    phase: 0,
+    en: 'In the financial info section, what specific checkbox must the customer tick?',
+    th: 'ในส่วนข้อมูลทางการเงิน ลูกค้าต้องติ๊กช่องกาเครื่องหมายใดโดยเฉพาะ?',
+    type: 'mcq',
+    options: {
+      en: [
+        "'I am a professional trader'",
+        "'I am not a U.S. citizen'",
+        "'I agree to margin trading'",
+        "'I am above 21 years old'",
+      ],
+      th: [
+        "'ฉันเป็นนักเทรดมืออาชีพ'",
+        "'ฉันไม่ใช่พลเมืองสหรัฐอเมริกา'",
+        "'ฉันยินยอมทำการเทรดด้วยมาร์จิ้น'",
+        "'ฉันมีอายุเกิน 21 ปี'",
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: "Step 27: The customer must tick 'Not a U.S. citizen' in the financial information section.",
+      th: "ขั้นที่ 27: ลูกค้าต้องติ๊กช่อง 'ไม่ใช่พลเมืองสหรัฐอเมริกา' ในส่วนข้อมูลทางการเงิน",
+    },
+  },
+  {
+    phase: 0,
+    en: 'How much should the customer enter as the deposit amount?',
+    th: 'ลูกค้าควรกรอกจำนวนเงินฝากเป็นเท่าไหร่?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Any round number above the package minimum',
+        'The exact USD price of their chosen package',
+        'A 10% deposit to hold the spot',
+        'Any amount between $50–$100 to start',
+      ],
+      th: [
+        'ตัวเลขกลมๆ ที่เกินกว่าราคาขั้นต่ำของแพ็คเกจ',
+        'ราคา USD ที่แน่นอนตรงตามแพ็คเกจที่เลือก',
+        'วางเงินมัดจำ 10% เพื่อจองสิทธิ์',
+        'จำนวนใดก็ได้ระหว่าง 50-100 USD เพื่อเริ่มต้น',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Step 28: Enter the exact USD price of the chosen package as the deposit amount — not more, not less.',
+      th: 'ขั้นที่ 28: กรอกราคา USD ที่แน่นอนของแพ็คเกจที่เลือกเป็นจำนวนเงินฝาก ไม่มากไม่น้อยกว่านั้น',
+    },
+  },
+  {
+    phase: 0,
+    en: "The customer doesn't have their ID ready during registration. What do you advise?",
+    th: 'ลูกค้าไม่มี ID พร้อมระหว่างการลงทะเบียน คุณแนะนำอย่างไร?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Ask them to come back another day',
+        'Tell them ID is mandatory — no exceptions',
+        "Click 'I'll do it later' to bypass KYC temporarily",
+        'Submit with a placeholder and update later',
+      ],
+      th: [
+        'ให้พวกเขากลับมาใหม่อีกวัน',
+        'บอกว่า ID จำเป็นต้องใช้ — ไม่มีข้อยกเว้น',
+        "คลิก 'I'll do it later' เพื่อข้าม KYC ชั่วคราว",
+        'ส่งข้อมูลสำรองไปก่อนแล้วอัปเดตภายหลัง',
+      ],
+    },
+    correctIdx: 2,
+    explain: {
+      en: "Step 29: If no ID is available, click 'I'll do it later' to temporarily bypass KYC and continue registration.",
+      th: "ขั้นที่ 29: หากไม่มี ID พร้อม ให้คลิก 'I'll do it later' เพื่อข้าม KYC ชั่วคราวและดำเนินการลงทะเบียนต่อไป",
+    },
+  },
+  {
+    phase: 0,
+    en: 'After completing registration, within how long is the customer guaranteed a mentor contact?',
+    th: 'หลังจากลงทะเบียนเสร็จสมบูรณ์ ลูกค้าได้รับการรับประกันว่าจะมี Mentor ติดต่อภายในกี่ชั่วโมง?',
     type: 'mcq',
     options: {
       en: ['24 hours', '48 hours', '72 hours', '1 week'],
       th: ['24 ชั่วโมง', '48 ชั่วโมง', '72 ชั่วโมง', '1 สัปดาห์'],
     },
     correctIdx: 2,
-  },
-  {
-    en: 'Clients must deposit a minimum of ______ USD to unlock the All-in-one Platform and receive a Free Trading Account.',
-    th: 'ลูกค้าต้องฝากเงินขั้นต่ำ ______ USD เพื่อปลดล็อกแพลตฟอร์ม All-in-one และรับบัญชีเทรดฟรี',
-    type: 'fill', a: '100',
-  },
-  {
-    en: 'Clients are eligible to request a 100% refund within 48 hours of their deposit.',
-    th: 'ลูกค้ามีสิทธิ์ขอคืนเงินเต็มจำนวน (100%) ภายใน 48 ชั่วโมงหลังจากทำรายการฝาก',
-    type: 'tf', a: 'true',
-  },
-  {
-    en: 'What are the maximum and minimum bonus percentages authorized for clients?',
-    th: 'อัตราโบนัสสูงสุดและต่ำสุดที่ได้รับอนุญาตให้นำเสนอกับลูกค้าคือเท่าใด?',
-    type: 'mcq',
-    options: {
-      en: ['Max 100% and Min 50%', 'Max 80% and Min 40%', 'Max 120% and Min 60%', 'Max 75% and Min 25%'],
-      th: ['สูงสุด 100% และต่ำสุด 50%', 'สูงสุด 80% และต่ำสุด 40%', 'สูงสุด 120% และต่ำสุด 60%', 'สูงสุด 75% และต่ำสุด 25%'],
+    explain: {
+      en: 'Step 30: Mentor contact is guaranteed within 72 hours of completing registration.',
+      th: 'ขั้นที่ 30: รับประกันว่า Mentor จะติดต่อภายใน 72 ชั่วโมงหลังจากลงทะเบียนเสร็จสมบูรณ์',
     },
-    correctIdx: 0,
-  },
-];
-
-// ─── Quiz 2: Sales Logic & Strategy ──────────────────────────────────────────
-const SALES_DATA: QuestionData[] = [
-  {
-    en: 'Client: "I don\'t want to lose money on trading courses. I\'ve failed before." What is the most strategic response?',
-    th: 'ลูกค้า: "ผมไม่อยากเสียเงินกับคอร์สเทรดอีก ผมเคยล้มเหลวมาก่อน" คำตอบเชิงกลยุทธ์ที่ดีที่สุดคือ?',
-    type: 'mcq',
-    options: {
-      en: ['Our course is different from others.', 'Many people fail but eventually profit.', 'The initial amount isn\'t a fee; it becomes your own trading capital.', 'If you don\'t try, you will never succeed.'],
-      th: ['คอร์สของเราแตกต่างจากที่อื่น', 'หลายคนเคยล้มเหลวแต่สุดท้ายก็ทำกำไรได้', 'เงินเริ่มต้นไม่ใช่ค่าธรรมเนียม แต่เป็นเงินทุนสำหรับเทรดของคุณเอง', 'ถ้าไม่ลอง คุณก็จะไม่มีวันประสบความสำเร็จ'],
-    },
-    correctIdx: 2,
-  },
-  {
-    en: 'Client: "So, what is the total cost I need to pay?" Which response aligns with BrainTrade logic?',
-    th: 'ลูกค้า: "สรุปแล้วผมต้องจ่ายทั้งหมดเท่าไหร่?" คำตอบใดสอดคล้องกับตรรกะของ BrainTrade?',
-    type: 'mcq',
-    options: {
-      en: ['The package costs $500.', 'This is a bundle including a course and account.', 'It is $500 in starting capital, fully available for you to trade.', 'The price is very valuable.'],
-      th: ['แพ็คเกจราคา 500 USD', 'นี่เป็นชุดรวมคอร์สและบัญชี', 'มันคือเงินทุนเริ่มต้น 500 USD ที่คุณนำไปเทรดได้เต็มจำนวน', 'ราคานี้คุ้มค่ามาก'],
-    },
-    correctIdx: 2,
-  },
-  {
-    en: 'Client: "Sounds too good to be true. Are there hidden fees?" Best response to build trust?',
-    th: 'ลูกค้า: "ฟังดูดีเกินจริง มีค่าใช้จ่ายแอบแฝงไหม?" คำตอบใดสร้างความเชื่อมั่นได้ดีที่สุด?',
-    type: 'mcq',
-    options: {
-      en: ['No hidden fees, I promise.', 'We are an established company with many clients.', 'We do not charge you for education; our revenue is generated from broker commissions when you trade.', 'Every business requires profit.'],
-      th: ['ไม่มีค่าใช้จ่ายแอบแฝงครับ ผมรับรอง', 'เราเป็นบริษัทที่มั่นคงและมีลูกค้ามากมาย', 'เราไม่คิดค่าสอนครับ รายได้ของเรามาจากค่าคอมมิชชั่นของโบรกเกอร์เมื่อคุณเทรด', 'ทุกธุรกิจต้องมีกำไรครับ'],
-    },
-    correctIdx: 2,
-  },
-  {
-    en: 'Client: "I already have a trading account elsewhere. Can I use that instead?" Most strategic response?',
-    th: 'ลูกค้า: "ผมมีบัญชีเทรดที่อื่นอยู่แล้ว ใช้บัญชีเดิมได้ไหม?" คำตอบเชิงกลยุทธ์ที่สุดคือ?',
-    type: 'mcq',
-    options: {
-      en: ['Our platform is easier to use.', 'It doesn\'t matter where you trade.', 'Using our integrated ecosystem allows our Mentors to accurately guide your portfolio.', 'Other brokers don\'t support this.'],
-      th: ['แพลตฟอร์มของเราใช้งานง่ายกว่า', 'เทรดที่ไหนก็เหมือนกันครับ', 'การใช้ระบบที่เชื่อมโยงกันจะช่วยให้ Mentor ของเราดูแลพอร์ตของคุณได้อย่างแม่นยำครับ', 'โบรกเกอร์อื่นไม่รองรับครับ'],
-    },
-    correctIdx: 2,
-  },
-  {
-    en: 'Client: "I don\'t want to switch everything, it\'s too much hassle." Best response?',
-    th: 'ลูกค้า: "ไม่อยากย้ายอะไรให้วุ่นวาย มันยุ่งยาก" คำตอบที่ดีที่สุดคือ?',
-    type: 'mcq',
-    options: {
-      en: ['You don\'t have to switch.', 'Just move once and it\'s done.', 'I understand. Since capital is critical, we designed this ecosystem so Mentors can fully support your growth.', 'Most clients switch.'],
-      th: ['ไม่จำเป็นต้องย้ายก็ได้ครับ', 'ย้ายแค่ครั้งเดียวก็จบครับ', 'เข้าใจครับ เพราะเงินทุนสำคัญ เราจึงออกแบบระบบนี้เพื่อให้ Mentor ดูแลคุณได้อย่างเต็มที่', 'ลูกค้าส่วนใหญ่ก็ย้ายกันครับ'],
-    },
-    correctIdx: 2,
-  },
-  {
-    en: 'Client: "I\'ll just start with $100." Response according to logic?',
-    th: 'ลูกค้า: "ขอเริ่มแค่ 100 USD ก่อนละกัน" คำตอบที่ตรงตามตรรกะคือ?',
-    type: 'mcq',
-    options: {
-      en: ['Sure, start small first.', '$100 is low risk.', '$100 is the minimum, but the level of support and education differs significantly from the $500 tier.', 'Most people start at $100.'],
-      th: ['ได้ครับ เริ่มเล็กๆ ก่อน', '100 USD ความเสี่ยงต่ำครับ', '100 USD คือขั้นต่ำครับ แต่ระดับการดูแลและความรู้ที่จะได้รับจะต่างจากระดับ 500 USD มากครับ', 'คนส่วนใหญ่ก็เริ่มที่ 100 USD ครับ'],
-    },
-    correctIdx: 2,
-  },
-  {
-    en: 'Client: "What if I trade and lose? Is my money gone?" Most safety-focused response?',
-    th: 'ลูกค้า: "ถ้าเทรดเสียล่ะ? เงินผมจะหายหมดไหม?" คำตอบที่เน้นความปลอดภัยมากที่สุด?',
-    type: 'mcq',
-    options: {
-      en: ['Investment always carries risk.', 'We have an excellent course.', 'You will have a Mentor guiding you; you won\'t be making isolated decisions.', 'Everyone loses sometimes.'],
-      th: ['การลงทุนมีความเสี่ยงเสมอครับ', 'เรามีคอร์สเรียนที่ดีเยี่ยม', 'คุณจะมี Mentor คอยแนะนำครับ คุณจะไม่ต้องตัดสินใจเพียงลำพัง', 'ใครๆ ก็เคยขาดทุนครับ'],
-    },
-    correctIdx: 2,
-  },
-  {
-    en: 'Client: "What do you get out of me?" Best trust-building response?',
-    th: 'ลูกค้า: "คุณได้อะไรจากผม?" คำตอบที่สร้างความเชื่อมั่นได้ดีที่สุด?',
-    type: 'mcq',
-    options: {
-      en: ['We sell packages.', 'We earn from the course fees.', 'We earn commissions from the broker only when you trade and remain active in the system.', 'It\'s company business.'],
-      th: ['เราขายแพ็คเกจครับ', 'เราได้รายได้จากค่าคอร์สครับ', 'เราได้รับค่าคอมมิชชั่นจากโบรกเกอร์ก็ต่อเมื่อคุณเทรดและยังอยู่ในระบบครับ', 'เป็นเรื่องธุรกิจของบริษัทครับ'],
-    },
-    correctIdx: 2,
-  },
-  {
-    en: 'Client: "I\'m still not sure if I should start." Soft close with strategic logic?',
-    th: 'ลูกค้า: "ยังไม่แน่ใจว่าจะเริ่มดีไหม" การปิดการขายแบบนุ่มนวลด้วยตรรกะเชิงกลยุทธ์?',
-    type: 'mcq',
-    options: {
-      en: ['Decide quickly.', 'Opportunities don\'t come often.', 'You aren\'t spending money; you are simply allocating capital to invest in yourself with a professional support team.', 'If you don\'t start, you won\'t see results.'],
-      th: ['รีบตัดสินใจนะครับ', 'โอกาสไม่ได้มีบ่อยๆ', 'คุณไม่ได้กำลังเสียเงินครับ คุณเพียงแค่จัดสรรเงินทุนเพื่อลงทุนในตัวเองโดยมีทีมงานมืออาชีพคอยดูแล', 'ถ้าไม่เริ่ม ก็ไม่เห็นผลลัพธ์ครับ'],
-    },
-    correctIdx: 2,
-  },
-  {
-    en: 'Summary: How would you succinctly describe the business model?',
-    th: 'สรุป: คุณจะอธิบายโมเดลธุรกิจนี้สั้นๆ ว่าอย่างไร?',
-    type: 'mcq',
-    options: {
-      en: ['It\'s an all-in-one trading course.', 'It\'s a package deal with an account.', 'You utilize your own capital to invest, while we provide systemized education and mentorship guidance.', 'Our system is superior.'],
-      th: ['เป็นคอร์สเทรดแบบครบวงจร', 'เป็นแพ็คเกจพร้อมบัญชี', 'คุณใช้เงินทุนของตัวเองในการลงทุน ส่วนเรามอบความรู้ที่เป็นระบบและคำแนะนำจาก Mentor', 'ระบบของเราดีที่สุด'],
-    },
-    correctIdx: 2,
-  },
-];
-
-// ─── Quiz 3: Process Mastery ──────────────────────────────────────────────────
-const PROCESS_DATA: QuestionData[] = [
-  {
-    en: 'As a new user, what is the mandatory first step to correctly initiate usage of BrainTrade?',
-    th: 'ในฐานะผู้ใช้งานใหม่ ขั้นตอนแรกที่จำเป็นเพื่อเริ่มใช้งาน BrainTrade อย่างถูกต้องคืออะไร?',
-    type: 'mcq',
-    options: {
-      en: ['Select a broker', 'Transfer funds to trading account', 'Register an account on the BrainTrade website', 'Contact support to request an account'],
-      th: ['เลือกโบรกเกอร์', 'โอนเงินเข้าบัญชีเทรด', 'ลงทะเบียนบัญชีบนเว็บไซต์ BrainTrade', 'ติดต่อฝ่ายสนับสนุนเพื่อขอเปิดบัญชี'],
-    },
-    correctIdx: 2,
-  },
-  {
-    en: 'Upon registration, why does the system restrict immediate trading access?',
-    th: 'เมื่อลงทะเบียนแล้ว ทำไมระบบจึงยังจำกัดไม่ให้เข้าเทรดได้ทันที?',
-    type: 'mcq',
-    options: {
-      en: ['A course package has not been selected yet', 'KYC identity verification is pending', 'Trading strategy configuration is missing', 'Market hours are closed'],
-      th: ['ยังไม่ได้เลือกแพ็คเกจคอร์ส', 'รอการยืนยันตัวตน (KYC)', 'ยังไม่ได้กำหนดกลยุทธ์การเทรด', 'ตลาดปิดทำการ'],
-    },
-    correctIdx: 0,
-  },
-  {
-    en: 'BrainTrade packages range from $100 to $2,000. What is the primary differentiator between these tiers?',
-    th: 'แพ็คเกจ BrainTrade มีราคาตั้งแต่ 100 ถึง 2,000 USD ความแตกต่างหลักระหว่างระดับเหล่านี้คืออะไร?',
-    type: 'mcq',
-    options: {
-      en: ['Withdrawal processing speed', 'Access to functions, tools, and usage rights', 'Internet connection speed for trading', 'Company advertising allocation'],
-      th: ['ความเร็วในการถอนเงิน', 'การเข้าถึงฟังก์ชัน เครื่องมือ และสิทธิ์การใช้งาน', 'ความเร็วอินเทอร์เน็ตสำหรับการเทรด', 'งบโฆษณาของบริษัท'],
-    },
-    correctIdx: 1,
-  },
-  {
-    en: 'If you purchase a $500 package, how is this capital utilized within the system?',
-    th: 'หากคุณซื้อแพ็คเกจ 500 USD เงินทุนส่วนนี้จะถูกนำไปใช้ในระบบอย่างไร?',
-    type: 'mcq',
-    options: {
-      en: ['Strictly as a tuition fee', 'As a monthly subscription fee', 'As accessible capital in your personal trading account', 'As a non-refundable security deposit'],
-      th: ['เป็นค่าเล่าเรียนทั้งหมด', 'เป็นค่าสมาชิกรายเดือน', 'เป็นเงินทุนที่ใช้ได้จริงในบัญชีเทรดส่วนตัวของคุณ', 'เป็นเงินประกันที่ไม่สามารถขอคืนได้'],
-    },
-    correctIdx: 2,
-  },
-  {
-    en: 'What occurs if the payment process is not fully completed?',
-    th: 'จะเกิดอะไรขึ้นหากขั้นตอนการชำระเงินยังไม่เสร็จสมบูรณ์?',
-    type: 'mcq',
-    options: {
-      en: ['The system generates a trading account automatically', 'Limited trading access is granted', 'Progression to trade account setup is blocked', 'Funds are credited via credit later'],
-      th: ['ระบบจะสร้างบัญชีเทรดโดยอัตโนมัติ', 'สามารถเทรดได้ในวงจำกัด', 'ไม่สามารถดำเนินการตั้งค่าบัญชีเทรดต่อได้', 'เงินจะถูกเครดิตให้ในภายหลัง'],
-    },
-    correctIdx: 2,
-  },
-  {
-    en: 'Which interface is displayed immediately following a successful payment?',
-    th: 'หน้าจอใดจะปรากฏขึ้นทันทีหลังจากชำระเงินสำเร็จ?',
-    type: 'mcq',
-    options: {
-      en: ['Broker selection interface', 'Payment Confirmation screen with a \'Done\' button', 'Trading Dashboard', 'Error log screen'],
-      th: ['หน้าเลือกโบรกเกอร์', 'หน้าจอยืนยันการชำระเงินพร้อมปุ่ม \'Done\'', 'แดชบอร์ดการเทรด', 'หน้าบันทึกข้อผิดพลาด'],
-    },
-    correctIdx: 1,
-  },
-  {
-    en: 'What is the critical function of the \'Done\' button on the confirmation screen?',
-    th: 'ฟังก์ชันสำคัญของปุ่ม \'Done\' บนหน้าจอยืนยันคืออะไร?',
-    type: 'mcq',
-    options: {
-      en: ['To initiate a refund', 'To revert to package selection', 'To advance to the trade account setup phase', 'To download the transaction receipt'],
-      th: ['เพื่อทำเรื่องขอคืนเงิน', 'เพื่อกลับไปเลือกแพ็คเกจ', 'เพื่อเข้าสู่ขั้นตอนการตั้งค่าบัญชีเทรด', 'เพื่อดาวน์โหลดใบเสร็จรับเงิน'],
-    },
-    correctIdx: 2,
-  },
-  {
-    en: 'After selecting \'Done\', the system redirects to the Trade page. What is the immediate next action?',
-    th: 'หลังจากกด \'Done\' ระบบจะเปลี่ยนไปหน้า Trade สิ่งที่ต้องทำทันทีคืออะไร?',
-    type: 'mcq',
-    options: {
-      en: ['Execute market orders immediately', 'Select the preferred broker to integrate', 'Configure withdrawal methods', 'Inject additional capital'],
-      th: ['ส่งคำสั่งซื้อขายทันที', 'เลือกโบรกเกอร์ที่ต้องการเชื่อมต่อ', 'ตั้งค่าวิธีการถอนเงิน', 'เพิ่มเงินทุน'],
-    },
-    correctIdx: 1,
-  },
-  {
-    en: 'Why is selecting a broker mandatory before a trading account is opened?',
-    th: 'ทำไมจึงจำเป็นต้องเลือกโบรกเกอร์ก่อนเปิดบัญชีเทรด?',
-    type: 'mcq',
-    options: {
-      en: ['To configure technical chart preferences', 'To establish the link between the trading account and the specific broker', 'To compute tax liabilities', 'To set the system language interface'],
-      th: ['เพื่อตั้งค่ากราฟเทคนิค', 'เพื่อเชื่อมโยงบัญชีเทรดกับโบรกเกอร์ที่เลือก', 'เพื่อคำนวณภาษี', 'เพื่อตั้งค่าภาษาของระบบ'],
-    },
-    correctIdx: 1,
-  },
-  {
-    en: 'What user action is required prior to clicking the \'Open Account\' button?',
-    th: 'ผู้ใช้ต้องทำอะไรก่อนคลิกปุ่ม \'Open Account\' (เปิดบัญชี)?',
-    type: 'mcq',
-    options: {
-      en: ['Fund the account with additional deposits', 'Acknowledge and accept the Terms & Conditions', 'Contact the Support Team', 'Upload identification documents'],
-      th: ['ฝากเงินเพิ่มเข้าบัญชี', 'ยอมรับข้อกำหนดและเงื่อนไข', 'ติดต่อทีมสนับสนุน', 'อัปโหลดเอกสารยืนยันตัวตน'],
-    },
-    correctIdx: 1,
-  },
-  {
-    en: 'Upon successful account creation, what is the primary metric to verify?',
-    th: 'เมื่อสร้างบัญชีสำเร็จแล้ว ข้อมูลหลักที่ควรตรวจสอบคืออะไร?',
-    type: 'mcq',
-    options: {
-      en: ['Total allowable trade volume', 'Current trading account balance', 'Historical withdrawal logs', 'Educational course progress'],
-      th: ['ปริมาณการซื้อขายทั้งหมดที่อนุญาต', 'ยอดเงินคงเหลือในบัญชีเทรดปัจจุบัน', 'ประวัติการถอนเงิน', 'ความคืบหน้าของคอร์สเรียน'],
-    },
-    correctIdx: 1,
-  },
-  {
-    en: 'If a $1,000 package was purchased and the account opened, what should the balance reflect?',
-    th: 'หากซื้อแพ็คเกจ 1,000 USD และเปิดบัญชีแล้ว ยอดเงินควรแสดงเป็นเท่าไหร่?',
-    type: 'mcq',
-    options: {
-      en: ['$0 USD', '$100 USD', '$1,000 USD', 'Zero balance pending first trade'],
-      th: ['0 USD', '100 USD', '1,000 USD', 'ยอดเป็นศูนย์จนกว่าจะเริ่มเทรด'],
-    },
-    correctIdx: 2,
-  },
-  {
-    en: 'Under which specific condition is immediate trading authorized?',
-    th: 'ภายใต้เงื่อนไขใดที่อนุญาตให้เริ่มเทรดได้ทันที?',
-    type: 'mcq',
-    options: {
-      en: ['Registration is finalized', 'Package selection is complete', 'Payment is made but account creation is pending', 'Account is successfully opened with visible balance'],
-      th: ['ลงทะเบียนเสร็จสมบูรณ์', 'เลือกแพ็คเกจเรียบร้อย', 'ชำระเงินแล้วแต่ยังไม่ได้สร้างบัญชี', 'เปิดบัญชีสำเร็จและมียอดเงินแสดง'],
-    },
-    correctIdx: 3,
-  },
-  {
-    en: 'True/False: Clients are permitted to commence trading without selecting a broker.',
-    th: 'จริง/เท็จ: ลูกค้าได้รับอนุญาตให้เริ่มเทรดได้โดยไม่ต้องเลือกโบรกเกอร์',
-    type: 'tf', a: 'false',
-  },
-  {
-    en: 'True/False: Funds paid for the package are fully allocated as usable trading capital in the client\'s account.',
-    th: 'จริง/เท็จ: เงินที่ชำระค่าแพ็คเกจจะถูกจัดสรรเป็นเงินทุนสำหรับเทรดในบัญชีของลูกค้าเต็มจำนวน',
-    type: 'tf', a: 'true',
   },
 ];
 
 // ─── Module → Quiz mapping ───────────────────────────────────────────────────
 export const MODULE_QUIZ_MAP: Record<string, QuizDefinition> = {
   product: {
-    id: 'understanding',
-    title: { en: 'System Understanding', th: 'ความเข้าใจระบบ' },
-    description: { en: 'Verify your comprehensive knowledge of The Brain Trade ecosystem.', th: 'ตรวจสอบความรู้ความเข้าใจเกี่ยวกับระบบนิเวศ The Brain Trade ของคุณ' },
-    questions: UNDERSTANDING_DATA,
+    id: 'sales-opener-platform',
+    title: { en: 'Sales Opener & Platform', th: 'การเปิดการขายและแพลตฟอร์ม' },
+    description: {
+      en: '9 questions across 2 phases — Opener flow and platform feature demos.',
+      th: '9 ข้อ ใน 2 ขั้นตอน — การเปิดการขายและการสาธิตฟีเจอร์บนแพลตฟอร์ม',
+    },
+    phases: [
+      { name: { en: 'Phase 1: Opener', th: 'ขั้นที่ 1: การเปิดการขาย' }, color: '#0F6E56', light: '#E1F5EE' },
+      { name: { en: 'Phase 2: Demo Platform', th: 'ขั้นที่ 2: การสาธิตแพลตฟอร์ม' }, color: '#185FA5', light: '#E6F1FB' },
+    ],
+    questions: [...PHASE1_OPENER, ...PHASE2_DEMO],
   },
   process: {
-    id: 'process-mastery',
-    title: { en: 'Process Mastery', th: 'ความเชี่ยวชาญในกระบวนการ' },
-    description: { en: 'Validate your expertise in the 1-Click Process, from registration to active trading.', th: 'ตรวจสอบความเชี่ยวชาญของคุณในกระบวนการ 1-Click ตั้งแต่การลงทะเบียนจนถึงการเทรดจริง' },
-    questions: PROCESS_DATA,
-    uiOverrides: {
-      finishTitle: { en: 'Proficiency Verified', th: 'ยืนยันความเชี่ยวชาญแล้ว' },
-      finishSub: { en: 'Process Adherence Score', th: 'คะแนนการปฏิบัติตามกระบวนการ' },
-      feedbackHigh: { en: 'Flawless. You have achieved total mastery of the operational workflow.', th: 'ไร้ที่ติ คุณมีความเชี่ยวชาญในขั้นตอนการทำงานอย่างสมบูรณ์' },
-      feedbackMid: { en: 'Satisfactory. You grasp the majority of the workflow steps.', th: 'น่าพอใจ คุณเข้าใจขั้นตอนการทำงานส่วนใหญ่' },
-      feedbackLow: { en: 'Review Necessary. Please re-examine the Standard Operating Procedures.', th: 'จำเป็นต้องทบทวน กรุณาตรวจสอบขั้นตอนการปฏิบัติงานมาตรฐานอีกครั้ง' },
+    id: 'packages-registration',
+    title: { en: 'Packages & Registration', th: 'แพ็คเกจ ราคา และการลงทะเบียน' },
+    description: {
+      en: '10 questions across 2 phases — Pricing tiers and the registration walkthrough.',
+      th: '10 ข้อ ใน 2 ขั้นตอน — ระดับราคาแพ็คเกจและขั้นตอนการลงทะเบียน',
     },
+    phases: [
+      { name: { en: 'Phase 3: Packages & Pricing', th: 'ขั้นที่ 3: แพ็คเกจและราคา' }, color: '#BA7517', light: '#FAEEDA' },
+      { name: { en: 'Phase 4: Registration', th: 'ขั้นที่ 4: การลงทะเบียน' }, color: '#534AB7', light: '#EEEDFE' },
+    ],
+    questions: [...PHASE3_PACKAGES, ...PHASE4_REGISTRATION],
   },
   payment: {
-    id: 'sales',
-    title: { en: 'Sales Logic & Strategy', th: 'ตรรกะและกลยุทธ์การขาย' },
-    description: { en: 'Advanced scenario-based evaluation focusing on strategic objection handling.', th: 'การประเมินตามสถานการณ์ขั้นสูง เน้นการจัดการข้อโต้แย้งเชิงกลยุทธ์' },
-    questions: SALES_DATA,
-    uiOverrides: {
-      scoreLabel: { en: 'Strategic Precision', th: 'ความแม่นยำเชิงกลยุทธ์' },
-      finishTitle: { en: 'Strategic Assessment Complete', th: 'การประเมินเชิงกลยุทธ์เสร็จสมบูรณ์' },
-      finishSub: { en: 'Logic Analysis Results', th: 'ผลการวิเคราะห์ตรรกะ' },
-      feedbackHigh: { en: 'Exceptional. You possess perfect command of system logic and objection handling.', th: 'ยอดเยี่ยม คุณมีความเชี่ยวชาญในตรรกะของระบบและการจัดการข้อโต้แย้งอย่างสมบูรณ์แบบ' },
-      feedbackMid: { en: "Competent. You understand the core concepts, but ensure to emphasize capital ownership.", th: 'มีความสามารถ คุณเข้าใจแนวคิดหลัก แต่ควรเน้นย้ำเรื่องความเป็นเจ้าของเงินทุนให้ชัดเจน' },
-      feedbackLow: { en: "Development Required. Focus on mastering the 'Self-funding' concept and revenue transparency.", th: "ต้องปรับปรุง มุ่งเน้นไปที่การทำความเข้าใจแนวคิด 'Self-funding' และความโปร่งใสของรายได้" },
+    id: 'payment-mastery',
+    title: { en: 'Payment Mastery', th: 'ความเชี่ยวชาญด้านการชำระเงิน' },
+    description: {
+      en: '8 questions — Broker selection, account activation, and deposit process.',
+      th: '8 ข้อ — การเลือกโบรกเกอร์ การเปิดใช้งานบัญชี และขั้นตอนการฝากเงิน',
     },
+    phases: [
+      { name: { en: 'Phase 5: Payment Mastery', th: 'ขั้นที่ 5: ความเชี่ยวชาญด้านการชำระเงิน' }, color: '#993C1D', light: '#FAECE7' },
+    ],
+    questions: PHASE5_PAYMENT,
   },
 };
 

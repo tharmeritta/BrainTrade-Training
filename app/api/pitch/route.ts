@@ -9,6 +9,9 @@ function loadPrompt(level: 1 | 2 | 3): string {
   return readFileSync(filePath, 'utf-8');
 }
 
+// Keep only the most recent messages to cap token usage as conversations grow.
+const HISTORY_WINDOW = 10;
+
 export async function POST(req: NextRequest) {
   try {
     const { level, messages } = await req.json();
@@ -19,7 +22,10 @@ export async function POST(req: NextRequest) {
 
     const systemPrompt = loadPrompt(level as 1 | 2 | 3);
 
-    const openaiMessages = messages.map((m: PitchMessage) => ({
+    // Sliding window: only send the last HISTORY_WINDOW messages to the AI.
+    // The system prompt provides enough context for the AI to remain coherent.
+    const windowedMessages = (messages as PitchMessage[]).slice(-HISTORY_WINDOW);
+    const openaiMessages = windowedMessages.map((m: PitchMessage) => ({
       role: m.role as 'user' | 'assistant',
       content: m.content,
     }));
@@ -39,11 +45,12 @@ export async function POST(req: NextRequest) {
 
     const reply = completion.choices[0].message.content ?? '';
 
-    // Detect if the customer has confirmed purchase AND payment/money reflection
+    // Detect if the customer has confirmed purchase AND payment/money reflection.
+    // Uses gpt-4o-mini — this is a simple yes/no classification, not a reasoning task.
     let closedSale = false;
     try {
       const classifier = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',

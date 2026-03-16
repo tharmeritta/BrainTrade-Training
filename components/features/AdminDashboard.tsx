@@ -1,21 +1,22 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Users, FileSpreadsheet, LogOut,
   TrendingUp, Award, Target, Activity, Plus, Search,
   Download, ChevronDown, Zap, ShieldCheck, Eye, EyeOff, Pencil, Trash2, X, Check,
+  ClipboardCheck, Star,
 } from 'lucide-react';
 import type { AdminOverviewData, AgentStats, StaffAccount } from '@/types';
 import ThemeToggle from '@/components/ui/ThemeToggle';
+import LangToggle  from '@/components/ui/LangToggle';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 const BADGE_CONFIG = {
   'elite':        { label: 'Elite',       bg: 'bg-purple-500/15', text: 'text-purple-400', dot: 'bg-purple-400' },
-  'strong':       { label: 'Strong',      bg: 'bg-emerald-500/15', text: 'text-emerald-400', dot: 'bg-emerald-400' },
+  'strong':       { label: 'Strong',      bg: 'bg-blue-500/15', text: 'text-blue-400', dot: 'bg-blue-400' },
   'developing':   { label: 'Developing',  bg: 'bg-amber-500/15',  text: 'text-amber-400',  dot: 'bg-amber-400'  },
   'needs-work':   { label: 'Needs Help',  bg: 'bg-red-500/15',    text: 'text-red-400',    dot: 'bg-red-400'    },
 };
@@ -24,13 +25,13 @@ const MODULE_LABELS: Record<string, string> = { product: 'Product', process: 'Pr
 
 function scoreColor(score: number | undefined) {
   if (!score) return 'text-muted-foreground';
-  if (score >= 70) return 'text-emerald-600';
-  if (score >= 50) return 'text-amber-600';
+  if (score >= 70) return 'text-blue-500';
+  if (score >= 50) return 'text-amber-500';
   return 'text-red-500';
 }
 function scoreBg(score: number | undefined) {
   if (!score) return 'bg-secondary';
-  if (score >= 70) return 'bg-emerald-500';
+  if (score >= 70) return 'bg-blue-500';
   if (score >= 50) return 'bg-amber-400';
   return 'bg-red-400';
 }
@@ -160,7 +161,7 @@ function OverviewTab() {
     <div className="space-y-8">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard label="Total Agents"    value={data.totalAgents}     sub={`${data.activeAgents} active this week`} icon={Users}     color="bg-blue-500" />
-        <KpiCard label="Quiz Pass Rate"  value={`${data.overallPassRate}%`}  sub="across all modules"             icon={Target}    color="bg-emerald-500" />
+        <KpiCard label="Quiz Pass Rate"  value={`${data.overallPassRate}%`}  sub="across all modules"             icon={Target}    color="bg-blue-500" />
         <KpiCard label="AI Eval Avg"     value={`${data.avgAiEvalScore}/100`} sub="speech evaluation"              icon={Award}     color="bg-purple-500" />
         <KpiCard label="Sessions / Week" value={data.weekSessions}    sub="quizzes + evals + pitches"           icon={Activity}  color="bg-orange-500" />
       </div>
@@ -411,7 +412,7 @@ function AgentsTab({ role }: { role: 'admin' | 'manager' }) {
                     </div>
                   </td>
                   <td className="px-4 py-4 text-center">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${a.agent.active ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'}`}>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${a.agent.active ? 'bg-blue-500/15 text-blue-400' : 'bg-red-500/15 text-red-400'}`}>
                       {a.agent.active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
@@ -493,7 +494,7 @@ function ReportsTab() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h3 className="font-bold text-lg flex items-center gap-2">
-              <FileSpreadsheet size={20} className="text-emerald-600" /> Overall Report
+              <FileSpreadsheet size={20} className="text-blue-600" /> Overall Report
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
               All agents · module scores · pass/fail · AI eval · pitch level · performance badge.<br />
@@ -503,7 +504,7 @@ function ReportsTab() {
           <button
             onClick={() => download('/api/admin/export', `BrainTrade_All_${new Date().toISOString().slice(0,10)}.xlsx`, setExportingAll)}
             disabled={exportingAll}
-            className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-3 rounded-xl font-semibold text-sm hover:bg-emerald-700 transition-colors shadow-md disabled:opacity-50 whitespace-nowrap"
+            className="flex items-center gap-2 bg-blue-500 text-white px-5 py-3 rounded-xl font-semibold text-sm hover:bg-blue-600 transition-colors shadow-md disabled:opacity-50 whitespace-nowrap"
           >
             <Download size={16} /> {exportingAll ? 'Exporting...' : 'Export All'}
           </button>
@@ -537,7 +538,7 @@ function ReportsTab() {
                 download(`/api/admin/export?agentId=${selected}`, `BrainTrade_${name}.xlsx`, setExportingOne);
               }}
               disabled={!selected || exportingOne}
-              className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-xl font-semibold text-sm hover:bg-blue-700 transition-colors shadow-md disabled:opacity-50"
+              className="flex items-center gap-2 bg-blue-500 text-white px-5 py-3 rounded-xl font-semibold text-sm hover:bg-blue-600 transition-colors shadow-md disabled:opacity-50"
             >
               <Download size={16} /> {exportingOne ? 'Exporting...' : 'Export'}
             </button>
@@ -776,14 +777,14 @@ function StaffTab() {
                         </select>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${s.active ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'}`}>
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${s.active ? 'bg-blue-500/15 text-blue-400' : 'bg-red-500/15 text-red-400'}`}>
                           {s.active ? 'Active' : 'Inactive'}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button onClick={saveEdit} disabled={saving}
-                            className="p-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors disabled:opacity-50">
+                            className="p-1.5 rounded-lg bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 transition-colors disabled:opacity-50">
                             <Check size={14} />
                           </button>
                           <button onClick={() => setEditing(null)}
@@ -819,8 +820,8 @@ function StaffTab() {
                           onClick={() => toggleStaffActive(s.id, s.active)}
                           className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${
                             s.active
-                              ? 'bg-emerald-500/15 text-emerald-400 hover:bg-red-500/15 hover:text-red-400'
-                              : 'bg-red-500/15 text-red-400 hover:bg-emerald-500/15 hover:text-emerald-400'
+                              ? 'bg-blue-500/15 text-blue-400 hover:bg-red-500/15 hover:text-red-400'
+                              : 'bg-red-500/15 text-red-400 hover:bg-blue-500/15 hover:text-blue-400'
                           }`}
                         >
                           {s.active ? 'Active' : 'Inactive'}
@@ -861,32 +862,188 @@ function StaffTab() {
   );
 }
 
+// ── Evaluations Tab ─────────────────────────────────────────────────────────
+
+interface AdminEval {
+  id: string;
+  agentId: string;
+  agentName: string;
+  evaluatorId: string;
+  evaluatorName: string;
+  criteria?: { redFlags?: Record<string, boolean> };
+  totalScore: number;
+  comments: string;
+  evaluatedAt: string;
+}
+
+function EvaluationsTab() {
+  const [evals,   setEvals]   = useState<AdminEval[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterEv, setFilterEv] = useState('');
+
+  useEffect(() => {
+    fetch('/api/admin/evaluations')
+      .then(r => r.json())
+      .then(d => setEvals(d.evaluations ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+    </div>
+  );
+
+  // Per-evaluator summary
+  const evMap = new Map<string, { name: string; count: number; totalScore: number; last: string }>();
+  for (const e of evals) {
+    const ex = evMap.get(e.evaluatorId) ?? { name: e.evaluatorName, count: 0, totalScore: 0, last: '' };
+    ex.count++;
+    ex.totalScore += e.totalScore;
+    if (!ex.last || e.evaluatedAt > ex.last) ex.last = e.evaluatedAt;
+    evMap.set(e.evaluatorId, ex);
+  }
+  const evaluatorSummaries = Array.from(evMap.entries()).map(([id, v]) => ({
+    id, name: v.name, count: v.count,
+    avgScore: Math.round(v.totalScore / v.count),
+    lastActive: v.last,
+  })).sort((a, b) => b.count - a.count);
+
+  const filtered = filterEv
+    ? evals.filter(e => e.evaluatorId === filterEv)
+    : evals;
+
+  const totalEvals = evals.length;
+  const globalAvg  = evals.length > 0
+    ? Math.round(evals.reduce((s, e) => s + e.totalScore, 0) / evals.length)
+    : 0;
+
+  return (
+    <div className="space-y-6">
+      {/* KPIs */}
+      <div className="grid grid-cols-3 gap-4">
+        <KpiCard label="Total Evaluations" value={totalEvals}   sub="by all evaluators"       icon={ClipboardCheck} color="bg-blue-500" />
+        <KpiCard label="Active Evaluators" value={evMap.size}   sub="have submitted scores"   icon={Users}          color="bg-blue-500" />
+        <KpiCard label="Avg Score Given"   value={globalAvg ? `${globalAvg}/100` : '—'} sub="across all evaluations" icon={Star} color="bg-amber-500" />
+      </div>
+
+      {/* Evaluator performance cards */}
+      {evaluatorSummaries.length > 0 && (
+        <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
+          <h3 className="font-bold text-base mb-4 flex items-center gap-2 text-foreground">
+            <ShieldCheck size={17} className="text-primary" /> Evaluator Performance
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {evaluatorSummaries.map(ev => (
+              <button
+                key={ev.id}
+                onClick={() => setFilterEv(filterEv === ev.id ? '' : ev.id)}
+                className={`text-left p-4 rounded-xl border transition-all ${
+                  filterEv === ev.id
+                    ? 'border-primary/40 bg-primary/5'
+                    : 'border-border hover:border-border/80 bg-secondary/30'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-black"
+                    style={{ background: 'rgba(96,165,250,0.1)', color: '#60A5FA' }}
+                  >
+                    {ev.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <span className={`text-sm font-black ${scoreColor(ev.avgScore)}`}>
+                    {ev.avgScore}/100
+                  </span>
+                </div>
+                <div className="text-sm font-semibold text-foreground truncate">{ev.name}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {ev.count} evaluation{ev.count !== 1 ? 's' : ''} · {timeAgo(ev.lastActive)}
+                </div>
+              </button>
+            ))}
+          </div>
+          {filterEv && (
+            <button
+              onClick={() => setFilterEv('')}
+              className="mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+            >
+              <X size={11} /> Clear filter
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Evaluations table */}
+      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+          <h3 className="font-bold text-base text-foreground flex items-center gap-2">
+            <ClipboardCheck size={17} className="text-primary" />
+            {filterEv ? `Evaluations by ${evMap.get(filterEv)?.name ?? ''}` : 'All Evaluations'}
+            <span className="text-xs font-normal text-muted-foreground ml-1">({filtered.length})</span>
+          </h3>
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className="text-center py-16 text-muted-foreground">
+            <ClipboardCheck size={32} className="mx-auto opacity-20 mb-3" />
+            <p className="text-sm">No evaluations yet</p>
+            <p className="text-xs mt-1">Evaluators can submit scores from the Evaluator Panel</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {filtered.map(ev => {
+              const redFlagCount = ev.criteria?.redFlags
+                ? Object.values(ev.criteria.redFlags).filter(Boolean).length
+                : 0;
+              return (
+                <div key={ev.id} className="px-6 py-4 flex items-center gap-4 hover:bg-secondary/20 transition-colors">
+                  <div className="w-12 text-center shrink-0">
+                    <span className={`text-sm font-black ${scoreColor(ev.totalScore)}`}>{ev.totalScore}</span>
+                    <div className="text-[9px] text-muted-foreground">/100</div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-semibold text-foreground">{ev.agentName}</span>
+                      <span className="text-xs text-muted-foreground">by</span>
+                      <span className="text-xs font-medium text-foreground">{ev.evaluatorName}</span>
+                      {redFlagCount > 0 && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20">
+                          {redFlagCount} 🚩 red flag{redFlagCount > 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </div>
+                    {ev.comments && <p className="text-xs text-muted-foreground truncate mt-0.5">{ev.comments}</p>}
+                  </div>
+                  <div className="text-xs text-muted-foreground shrink-0">{timeAgo(ev.evaluatedAt)}</div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main AdminDashboard ─────────────────────────────────────────────────────
 
-type Tab = 'overview' | 'agents' | 'reports' | 'staff';
+type Tab = 'overview' | 'agents' | 'reports' | 'staff' | 'evaluations';
 
-async function logout() {
-  await fetch('/api/auth/session', { method: 'DELETE' });
-  window.location.href = '/login';
+function logout() {
+  fetch('/api/auth/session', { method: 'DELETE' });
+  window.location.replace('/login');
 }
 
 export default function AdminDashboard({ role }: { role: 'admin' | 'manager' }) {
   const [tab, setTab] = useState<Tab>('overview');
-  const pathname = usePathname();
-  const router   = useRouter();
-  const locale   = pathname.split('/')[1] ?? 'th';
-
-  function switchLocale(next: string) {
-    const segs = pathname.split('/');
-    segs[1] = next;
-    router.push(segs.join('/'));
-  }
 
   const TABS: { id: Tab; label: string; icon: React.ElementType; adminOnly?: boolean }[] = [
-    { id: 'overview', label: 'Overview',        icon: LayoutDashboard },
-    { id: 'agents',   label: 'Agents',          icon: Users },
-    { id: 'reports',  label: 'Reports',         icon: FileSpreadsheet },
-    { id: 'staff',    label: 'Staff Accounts',  icon: ShieldCheck, adminOnly: true },
+    { id: 'overview',    label: 'Overview',       icon: LayoutDashboard },
+    { id: 'agents',      label: 'Agents',         icon: Users },
+    { id: 'evaluations', label: 'Evaluations',    icon: ClipboardCheck },
+    { id: 'reports',     label: 'Reports',        icon: FileSpreadsheet },
+    { id: 'staff',       label: 'Staff Accounts', icon: ShieldCheck, adminOnly: true },
   ];
 
   const visibleTabs = TABS.filter(t => !t.adminOnly || role === 'admin');
@@ -896,30 +1053,13 @@ export default function AdminDashboard({ role }: { role: 'admin' | 'manager' }) 
       {/* Top header */}
       <div className="bg-card border-b border-border px-6 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
         <div>
-          <h1 className="text-xl font-black text-foreground tracking-tight">BrainTrade Analytics</h1>
+          <h1 className="text-xl font-black text-foreground tracking-tight">BrainTrade Training Platform</h1>
           <p className="text-xs text-muted-foreground">
             {role === 'admin' ? 'Admin' : 'Manager'} Control Panel · {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {/* Language toggle */}
-          <div className="flex items-center gap-0.5 bg-secondary/60 rounded-lg p-1 border border-border">
-            {(['th', 'en'] as const).map(l => (
-              <button
-                key={l}
-                onClick={() => switchLocale(l)}
-                className={`px-2.5 py-1 rounded text-xs font-bold transition-all ${
-                  locale === l
-                    ? 'bg-card text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {l === 'th' ? 'TH' : 'EN'}
-              </button>
-            ))}
-          </div>
-
-          {/* Theme toggle */}
+          <LangToggle />
           <ThemeToggle />
 
           <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${role === 'admin' ? 'bg-purple-500/15 text-purple-400' : 'bg-blue-500/15 text-blue-400'}`}>
@@ -965,10 +1105,11 @@ export default function AdminDashboard({ role }: { role: 'admin' | 'manager' }) 
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
           >
-            {tab === 'overview' && <OverviewTab />}
-            {tab === 'agents'   && <AgentsTab role={role} />}
-            {tab === 'reports'  && <ReportsTab />}
-            {tab === 'staff'    && role === 'admin' && <StaffTab />}
+            {tab === 'overview'    && <OverviewTab />}
+            {tab === 'agents'      && <AgentsTab role={role} />}
+            {tab === 'evaluations' && <EvaluationsTab />}
+            {tab === 'reports'     && <ReportsTab />}
+            {tab === 'staff'       && role === 'admin' && <StaffTab />}
           </motion.div>
         </AnimatePresence>
       </div>

@@ -40,11 +40,11 @@ export default function ProgressCard({ userId }: { userId: string }) {
             className="group relative overflow-hidden bg-card rounded-3xl p-6 border border-border transition-all duration-300 hover:shadow-xl"
           >
             <div className="flex items-start justify-between mb-4">
-              <div className={`p-3 rounded-2xl ${isCompleted ? 'bg-emerald-50 text-emerald-600' : 'bg-secondary text-muted-foreground'}`}>
+              <div className={`p-3 rounded-2xl ${isCompleted ? 'bg-blue-50 text-blue-600' : 'bg-secondary text-muted-foreground'}`}>
                 {isCompleted ? <CheckCircle2 size={24} /> : <Circle size={24} />}
               </div>
               {isCompleted && (
-                <div className="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-lg uppercase tracking-wider">
+                <div className="px-2 py-1 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-lg uppercase tracking-wider">
                   Completed
                 </div>
               )}
@@ -57,7 +57,7 @@ export default function ProgressCard({ userId }: { userId: string }) {
 
             <div className="mt-6 h-1 w-full bg-secondary rounded-full overflow-hidden">
               <div
-                className={`h-full transition-all duration-1000 ${isCompleted ? 'w-full bg-emerald-500' : 'w-0 bg-primary/20'}`}
+                className={`h-full transition-all duration-1000 ${isCompleted ? 'w-full bg-blue-500' : 'w-0 bg-primary/20'}`}
               />
             </div>
           </div>

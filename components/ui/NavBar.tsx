@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, GraduationCap, ClipboardList, Mic, PlayCircle, Lock, ClipboardCheck } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import LangToggle  from './LangToggle';
 
 const navLinks = [
   { label: 'Dashboard', href: '/dashboard',     icon: LayoutDashboard },
@@ -61,13 +62,14 @@ export default function NavBar() {
           </div>
 
           {/* Right icons */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
+            <LangToggle />
             <ThemeToggle />
 
             {/* Evaluator login */}
             <Link
               href={`/${locale}/login`}
-              className="p-2 text-muted-foreground hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors rounded-lg hover:bg-emerald-500/10"
+              className="p-2 text-muted-foreground hover:text-blue-500 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-blue-500/10"
               title="Evaluator Login"
             >
               <ClipboardCheck size={17} />

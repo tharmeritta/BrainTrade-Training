@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { gcsGet, gcsSet } from '@/lib/gcs';
+import { gcsGet, gcsSet, gcsDelete } from '@/lib/gcs';
+import { getAgentStats } from '@/lib/agents';
 
 export interface ProgressRecord {
   agentId: string;
@@ -14,16 +15,17 @@ function defaults(agentId: string, agentName = ''): ProgressRecord {
   return { agentId, agentName, pitchCompletedLevels: [], evalCompletedLevels: [], evalSavedLevel: null };
 }
 
-// GET /api/agent/progress?agentId=xxx
+// GET /api/agent/progress?agentId=xxx&agentName=xxx
 export async function GET(req: NextRequest) {
-  const agentId = req.nextUrl.searchParams.get('agentId');
+  const agentId   = req.nextUrl.searchParams.get('agentId');
+  const agentName = req.nextUrl.searchParams.get('agentName') ?? '';
   if (!agentId) return NextResponse.json({ error: 'agentId required' }, { status: 400 });
 
   try {
-    const record = await gcsGet<ProgressRecord>('agent_progress', agentId);
-    return NextResponse.json(record ?? defaults(agentId));
+    const stats = await getAgentStats(agentId, agentName);
+    return NextResponse.json({ stats });
   } catch {
-    return NextResponse.json(defaults(agentId));
+    return NextResponse.json({ stats: null });
   }
 }
 
@@ -52,6 +54,20 @@ export async function POST(req: NextRequest) {
     };
 
     const saved = await gcsSet('agent_progress', agentId, merged);
+
+    // All 4 modules complete (Pitch L1-3 + AI Eval L1-4) — purge active chat history
+    const pitchDone = merged.pitchCompletedLevels.length >= 3 &&
+      [1, 2, 3].every(l => merged.pitchCompletedLevels.includes(l));
+    const evalDone  = merged.evalCompletedLevels.length >= 4 &&
+      [1, 2, 3, 4].every(l => merged.evalCompletedLevels.includes(l));
+
+    if (pitchDone && evalDone) {
+      await Promise.allSettled([
+        gcsDelete('pitch_active', agentId),
+        gcsDelete('aiev_active', agentId),
+      ]);
+    }
+
     return NextResponse.json(saved);
   } catch (err) {
     console.error('Progress save error:', err);

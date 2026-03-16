@@ -45,7 +45,7 @@ export default function DashboardPage() {
   // Fetch agent progress whenever agentId changes
   useEffect(() => {
     if (!agentId) return;
-    fetch(`/api/agent/progress?agentId=${agentId}`)
+    fetch(`/api/agent/progress?agentId=${agentId}&agentName=${encodeURIComponent(agentName ?? '')}`)
       .then(r => r.json())
       .then(d => setStats(d.stats ?? null))
       .catch(() => setStats(null));

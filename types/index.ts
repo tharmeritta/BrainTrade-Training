@@ -76,14 +76,37 @@ export interface Evaluator {
   createdAt: Date;
 }
 
-export interface EvaluationCriteria {
-  productKnowledge: number;   // 0–10
-  communication: number;      // 0–10
-  objectionHandling: number;  // 0–10
-  closingTechnique: number;   // 0–10
-  professionalism: number;    // 0–10
-  customerEmpathy: number;    // 0–10
+// ── Sales call evaluation schema ────────────────────────────────────────────
+
+export interface SalesCallPerformanceItem {
+  agentInvolve: boolean;   // Y = yes this item was observed
+  comment: string;
+  remark?: string;
 }
+
+export interface SalesCallCriteria {
+  // Section 1 – Agent Performance
+  performance: {
+    agentStruggle:         SalesCallPerformanceItem;
+    unhandledQuestions:    SalesCallPerformanceItem;
+    toneOfVoice:           SalesCallPerformanceItem;
+    chemistryFriendliness: SalesCallPerformanceItem;
+  };
+  // Section 2 – QA Thoughts
+  qaThoughts: string;
+  // Section 3 – Red Flags (true = agent mentioned it = red flag)
+  redFlags: {
+    officeLocation:         boolean;
+    withdrawalAfterDeposit: boolean;
+    exaggeratingProfit:     boolean;
+    actualCommission:       boolean;
+  };
+  // Overall evaluator remark
+  generalRemark: string;
+}
+
+/** Backward-compat alias — keep existing import sites working */
+export type EvaluationCriteria = SalesCallCriteria;
 
 export type EvaluationSessionType = 'pitch' | 'ai-eval' | 'live' | 'roleplay';
 
@@ -93,10 +116,10 @@ export interface AgentEvaluation {
   agentName: string;
   evaluatorId: string;
   evaluatorName: string;
-  criteria: EvaluationCriteria;
-  totalScore: number;          // 0–100 (avg of criteria × 10)
-  comments: string;
-  sessionNotes: string;
+  criteria: SalesCallCriteria;
+  totalScore: number;          // 0–100: 100 − (redFlagCount × 25)
+  comments: string;            // summary comment shown in lists
+  sessionNotes: string;        // private evaluator note
   sessionType: EvaluationSessionType;
   evaluatedAt: string;
   updatedAt?: string;

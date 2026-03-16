@@ -56,6 +56,8 @@ export default function AiEvaluation() {
   const [savedLevel,      setSavedLevel]      = useState<number | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const AIEV_SESSION_KEY = 'brainstrade_aiev_active';
+
   useEffect(() => {
     const id   = localStorage.getItem('brainstrade_agent_id');
     const name = localStorage.getItem('brainstrade_agent_name');
@@ -70,6 +72,27 @@ export default function AiEvaluation() {
     if (localSaved) {
       const n = parseInt(localSaved, 10);
       if (!localSet.has(n)) setSavedLevel(n);
+    }
+
+    // Check localStorage for an active session to restore
+    let hasLocalSession = false;
+    try {
+      const raw = localStorage.getItem(AIEV_SESSION_KEY);
+      if (raw && id) {
+        const saved = JSON.parse(raw);
+        const age = Date.now() - (saved.savedAt ?? 0);
+        if (saved.agentId === id && saved.messages?.length > 0 && age < 24 * 60 * 60 * 1000) {
+          setSessionId(saved.sessionId);
+          setLevel(saved.level);
+          setMessages(saved.messages);
+          setStep('chat');
+          hasLocalSession = true;
+        } else {
+          localStorage.removeItem(AIEV_SESSION_KEY);
+        }
+      }
+    } catch {
+      localStorage.removeItem(AIEV_SESSION_KEY);
     }
 
     // Then fetch from server and merge (server is source of truth)
@@ -91,6 +114,30 @@ export default function AiEvaluation() {
           }
         })
         .catch(() => { /* silently keep localStorage data */ });
+
+      // Server session fallback — only if localStorage had nothing
+      if (!hasLocalSession) {
+        fetch(`/api/ai-eval/active?agentId=${id}`)
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            const s = data?.session;
+            if (s && s.messages?.length > 0) {
+              const age = Date.now() - (s.savedAt ?? 0);
+              if (age < 24 * 60 * 60 * 1000) {
+                setSessionId(s.sessionId);
+                setLevel(s.level);
+                setMessages(s.messages);
+                setStep('chat');
+                // Repopulate localStorage from server
+                localStorage.setItem(AIEV_SESSION_KEY, JSON.stringify({
+                  agentId: id, sessionId: s.sessionId, level: s.level,
+                  messages: s.messages, savedAt: s.savedAt ?? Date.now(),
+                }));
+              }
+            }
+          })
+          .catch(() => {});
+      }
     }
   }, []);
 
@@ -171,18 +218,35 @@ export default function AiEvaluation() {
       });
       const data = await res.json();
       const aiMsg: PitchMessage = { role: 'assistant', content: data.reply, timestamp: new Date() };
-      setMessages(prev => [...prev, aiMsg]);
+      const finalMessages = [...newMessages, aiMsg];
+      setMessages(finalMessages);
 
       if (data.passed) {
         setPassed(true);
         markLevelCompleted(level);
+        // Clear active session — no longer needed after passing
+        localStorage.removeItem(AIEV_SESSION_KEY);
+        if (agentId) fetch(`/api/ai-eval/active?agentId=${agentId}`, { method: 'DELETE' }).catch(() => {});
+      } else if (sessionId && agentId) {
+        // Persist conversation so agent can resume
+        const snap = { agentId, sessionId, level, messages: finalMessages, savedAt: Date.now() };
+        localStorage.setItem(AIEV_SESSION_KEY, JSON.stringify(snap));
+        fetch('/api/ai-eval/active', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ agentId, sessionId, level, messages: finalMessages }),
+        }).catch(() => {});
       }
     } finally {
       setLoading(false);
     }
   }
 
-  function resetToSelect() {
+  function resetToSelect(clearHistory = false) {
+    if (clearHistory) {
+      localStorage.removeItem(AIEV_SESSION_KEY);
+      if (agentId) fetch(`/api/ai-eval/active?agentId=${agentId}`, { method: 'DELETE' }).catch(() => {});
+    }
     setSessionId(null);
     setMessages([]);
     setPassed(false);
@@ -264,12 +328,12 @@ export default function AiEvaluation() {
 
             {/* Pass/Fail rule */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-5">
-                <div className="flex items-center gap-2 mb-2 text-emerald-700 dark:text-emerald-400">
+              <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-5">
+                <div className="flex items-center gap-2 mb-2 text-blue-700 dark:text-blue-400">
                   <CheckCircle2 size={18} />
                   <span className="font-bold">ผ่าน (คะแนนรวม ≥ 7)</span>
                 </div>
-                <p className="text-xs text-emerald-800/70 dark:text-emerald-300/70 leading-relaxed">
+                <p className="text-xs text-blue-800/70 dark:text-blue-300/70 leading-relaxed">
                   เลื่อนไปยัง Level ถัดไปได้ทันที
                 </p>
               </div>
@@ -422,7 +486,7 @@ export default function AiEvaluation() {
                         <Lock size={12} className="text-muted-foreground/50" />
                       </span>
                     ) : completed ? (
-                      <span className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
+                      <span className="absolute -top-2 -right-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-sm">
                         <CheckCircle2 size={12} className="text-white" />
                       </span>
                     ) : null}
@@ -472,22 +536,22 @@ export default function AiEvaluation() {
         <div className="flex items-center justify-between px-8 py-5 border-b border-border/50 bg-white/80 dark:bg-card/80 backdrop-blur z-10 shrink-0">
           <div className="flex items-center gap-4">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold ${
-              passed ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary/10 text-primary'
+              passed ? 'bg-blue-500/10 text-blue-600' : 'bg-primary/10 text-primary'
             }`}>
               {passed ? <Trophy size={20} /> : `L${level}`}
             </div>
             <div>
               <span className="font-bold text-foreground">AI Evaluation — {LEVEL_LABELS[level].th}</span>
               <p className={`text-[10px] font-bold flex items-center gap-1 uppercase tracking-widest ${
-                passed ? 'text-emerald-500' : 'text-primary'
+                passed ? 'text-blue-500' : 'text-primary'
               }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${passed ? 'bg-emerald-500' : 'bg-primary animate-pulse'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${passed ? 'bg-blue-500' : 'bg-primary animate-pulse'}`} />
                 {passed ? 'ผ่านแล้ว ✓' : 'Live Simulation'}
               </p>
             </div>
           </div>
           <button
-            onClick={resetToSelect}
+            onClick={() => resetToSelect(passed)}
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-destructive transition-colors py-2 px-4 rounded-xl hover:bg-destructive/5"
           >
             <ChevronLeft size={16} />
@@ -544,7 +608,7 @@ export default function AiEvaluation() {
                 transition={{ type: 'spring', stiffness: 200, damping: 15 }}
                 className="flex flex-col items-center py-6"
               >
-                <div className="flex items-center gap-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-8 py-4 rounded-2xl shadow-xl shadow-emerald-500/20">
+                <div className="flex items-center gap-3 bg-gradient-to-r from-blue-500 to-blue-500 text-white px-8 py-4 rounded-2xl shadow-xl shadow-blue-500/20">
                   <Trophy size={24} />
                   <div>
                     <p className="font-black text-lg tracking-tight">ผ่าน Level {level} แล้ว!</p>
@@ -563,7 +627,7 @@ export default function AiEvaluation() {
                 className="flex flex-col sm:flex-row gap-3 pt-2"
               >
                 <button
-                  onClick={resetToSelect}
+                  onClick={() => resetToSelect(true)}
                   className="flex-1 flex items-center justify-center gap-2 bg-secondary/60 text-foreground hover:bg-secondary transition-all duration-200 px-6 py-4 rounded-2xl font-semibold"
                 >
                   <RotateCcw size={16} />
@@ -575,10 +639,7 @@ export default function AiEvaluation() {
                     onClick={() => {
                       const next = (level + 1) as 2 | 3 | 4;
                       setLevel(next);
-                      setSessionId(null);
-                      setMessages([]);
-                      setPassed(false);
-                      setStep('select');
+                      resetToSelect(true);
                     }}
                     className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 px-6 py-4 rounded-2xl font-bold shadow-lg shadow-primary/20"
                   >
@@ -586,7 +647,7 @@ export default function AiEvaluation() {
                     <ArrowRight size={18} />
                   </button>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-4 rounded-2xl font-bold shadow-lg shadow-emerald-500/20">
+                  <div className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-blue-500 text-white px-6 py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20">
                     <Trophy size={18} />
                     คุณผ่านการทดสอบระดับมืออาชีพแล้ว!
                   </div>

@@ -1,4 +1,4 @@
-import { gcsGetAll } from './gcs';
+import { gcsGet, gcsGetAll } from './gcs';
 import type { Agent, AgentStats, ModuleStat } from '@/types';
 
 const MODULES = ['product', 'process', 'payment'] as const;
@@ -25,6 +25,59 @@ export function computeOverallScore(stats: Omit<AgentStats, 'overallScore' | 'ba
   const evalLevels    = stats.evalCompletedLevels ?? [];
   const evalScore     = evalLevels.length > 0 ? (evalLevels.length / 4) * 100 : aiEval;
   return Math.round(avgQuiz * 0.4 + evalScore * 0.3 + pitchScore * 0.2 + aiEval * 0.1);
+}
+
+// ── Single-agent stats (used by /api/agent/progress GET) ──────────────────
+
+export async function getAgentStats(agentId: string, agentName: string): Promise<AgentStats> {
+  const [quizDocs, evalDocs, pitchDocs, progressDoc] = await Promise.all([
+    gcsGetAll<QuizRecord>('quiz_results'),
+    gcsGetAll<EvalRecord>('ai_eval_logs'),
+    gcsGetAll<PitchRecord>('pitch_sessions'),
+    gcsGet<ProgressRecord>('agent_progress', agentId).catch(() => null),
+  ]);
+
+  // Quiz per module
+  const quiz: AgentStats['quiz'] = {};
+  for (const mod of MODULES) {
+    const results = quizDocs.filter(r => r.agentId === agentId && r.moduleId === mod);
+    if (results.length > 0) {
+      quiz[mod] = {
+        bestScore: Math.max(...results.map(r => Math.round((r.score / r.totalQuestions) * 100))),
+        passed:    results.some(r => r.passed),
+        attempts:  results.length,
+      };
+    }
+  }
+
+  // AI Eval
+  const evals  = evalDocs.filter(e => e.agentId === agentId);
+  const aiEval = evals.length > 0
+    ? { avgScore: Math.round(evals.reduce((s, e) => s + e.score, 0) / evals.length), count: evals.length }
+    : null;
+
+  // Pitch
+  const pitches        = pitchDocs.filter(p => p.agentId === agentId);
+  const pitchCompleted = progressDoc?.pitchCompletedLevels ?? [];
+  const highestPitch   = pitchCompleted.length > 0
+    ? Math.max(...pitchCompleted)
+    : pitches.length > 0 ? Math.max(...pitches.map(p => p.level)) : 0;
+  const pitch = (pitches.length > 0 || pitchCompleted.length > 0)
+    ? { highestLevel: highestPitch, sessionCount: pitches.length, completedLevels: pitchCompleted }
+    : null;
+
+  const evalCompleted = progressDoc?.evalCompletedLevels ?? [];
+
+  const lastActive = [
+    ...quizDocs.filter(r => r.agentId === agentId),
+    ...evalDocs.filter(e => e.agentId === agentId),
+    ...pitchDocs.filter(p => p.agentId === agentId),
+  ].map(r => r.timestamp).filter(Boolean).sort().at(-1) ?? null;
+
+  const agent: Agent = { id: agentId, name: agentName, active: true, createdAt: new Date() };
+  const partial      = { agent, quiz, aiEval, pitch, lastActive, evalCompletedLevels: evalCompleted };
+  const overallScore = computeOverallScore(partial);
+  return { ...partial, overallScore, badge: computeBadge(overallScore) };
 }
 
 // ── Data types matching GCS records ───────────────────────────────────────

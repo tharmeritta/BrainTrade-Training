@@ -21,21 +21,14 @@ const MODULES = [
   { emoji: '🎯', label: 'Pitch'     },
 ];
 
-const C = {
-  bg:     '#070D1A',
-  border: 'rgba(0,180,216,0.12)',
-  cyan:   '#00B4D8',
-  text:   '#E8F4FF',
-  muted:  '#3D6080',
-  dim:    '#1A3A55',
-};
+const CYAN = '#00B4D8';
 
 export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
-  const [agents, setAgents]     = useState<AgentOption[]>([]);
-  const [name, setName]         = useState('');
-  const [loading, setLoading]   = useState(true);
+  const [agents, setAgents]         = useState<AgentOption[]>([]);
+  const [name, setName]             = useState('');
+  const [loading, setLoading]       = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError]       = useState('');
+  const [error, setError]           = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -45,7 +38,6 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
       .catch(() => {/* fail silently — validate on submit */})
       .finally(() => setLoading(false));
 
-    // auto-focus the input
     setTimeout(() => inputRef.current?.focus(), 400);
   }, []);
 
@@ -55,7 +47,6 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
     setSubmitting(true);
     setError('');
 
-    // Simulate a brief loading feel
     await new Promise(r => setTimeout(r, 350));
 
     const match = agents.find(
@@ -73,10 +64,12 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
     onAgentSelected(match.id, match.name);
   }
 
+  const canSubmit = !!name.trim() && !loading;
+
   return (
     <div
       className="w-full overflow-hidden flex"
-      style={{ height: 'calc(100vh - 72px)', background: C.bg, fontFamily: "'DM Sans', system-ui, sans-serif" }}
+      style={{ height: '100%', background: 'var(--hub-bg)', fontFamily: "'DM Sans', system-ui, sans-serif" }}
     >
       {/* Background orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -95,8 +88,8 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
           transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', repeatType: 'mirror' }}
         />
         <div style={{
-          position: 'absolute', inset: 0, opacity: 0.022,
-          backgroundImage: `linear-gradient(${C.cyan} 1px, transparent 1px), linear-gradient(90deg, ${C.cyan} 1px, transparent 1px)`,
+          position: 'absolute', inset: 0, opacity: 0.012,
+          backgroundImage: `linear-gradient(var(--hub-grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--hub-grid-color) 1px, transparent 1px)`,
           backgroundSize: '56px 56px',
         }} />
       </div>
@@ -109,9 +102,9 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="shrink-0 mb-4">
-          <span className="font-black text-base tracking-tight" style={{ color: C.text }}>BrainTrade</span>
+          <span className="font-black text-base tracking-tight" style={{ color: 'var(--hub-text)' }}>BrainTrade</span>
           <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full font-medium tracking-widest uppercase"
-            style={{ background: 'rgba(0,180,216,0.1)', border: `1px solid rgba(0,180,216,0.2)`, color: C.cyan }}>
+            style={{ background: 'rgba(0,180,216,0.1)', border: '1px solid rgba(0,180,216,0.2)', color: CYAN }}>
             Training
           </span>
         </div>
@@ -122,21 +115,21 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.65 }}
           >
-            <p className="text-[10px] font-semibold tracking-[0.22em] uppercase mb-2" style={{ color: C.cyan }}>
+            <p className="text-[10px] font-semibold tracking-[0.22em] uppercase mb-2" style={{ color: CYAN }}>
               Sales Excellence Academy
             </p>
             <h1 className="font-black leading-[0.88] mb-3"
-              style={{ fontSize: 'clamp(1.8rem, 3.5vw, 3.2rem)', color: C.text }}>
+              style={{ fontSize: 'clamp(1.8rem, 3.5vw, 3.2rem)', color: 'var(--hub-text)' }}>
               เสริมทักษะ
               <br />
               <span style={{
-                background: `linear-gradient(90deg, ${C.cyan} 0%, #7C3AED 100%)`,
+                background: `linear-gradient(90deg, ${CYAN} 0%, #7C3AED 100%)`,
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
               }}>การขาย</span>
               <br />
               ของคุณ
             </h1>
-            <p className="text-sm leading-relaxed max-w-[360px]" style={{ color: C.muted }}>
+            <p className="text-sm leading-relaxed max-w-[360px]" style={{ color: 'var(--hub-muted)' }}>
               โปรแกรมฝึกอบรมพัฒนาทักษะการขาย ผ่านการเรียนรู้แบบโต้ตอบและ AI ที่ชาญฉลาด
             </p>
           </motion.div>
@@ -147,11 +140,11 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
               <div key={i} className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
                   style={{ background: 'rgba(0,180,216,0.1)', border: '1px solid rgba(0,180,216,0.18)' }}>
-                  <s.Icon size={13} style={{ color: C.cyan }} />
+                  <s.Icon size={13} style={{ color: CYAN }} />
                 </div>
                 <div>
-                  <div className="text-base font-black leading-none" style={{ color: C.text }}>{s.value}</div>
-                  <div className="text-[10px] mt-0.5" style={{ color: C.muted }}>{s.label}</div>
+                  <div className="text-base font-black leading-none" style={{ color: 'var(--hub-text)' }}>{s.value}</div>
+                  <div className="text-[10px] mt-0.5" style={{ color: 'var(--hub-muted)' }}>{s.label}</div>
                 </div>
               </div>
             ))}
@@ -160,10 +153,10 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
 
         <motion.div className="flex items-center gap-2 flex-wrap shrink-0"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }}>
-          <span className="text-[10px] mr-1" style={{ color: C.dim }}>โมดูล</span>
+          <span className="text-[10px] mr-1" style={{ color: 'var(--hub-dim)' }}>โมดูล</span>
           {MODULES.map((m, i) => (
             <span key={i} className="flex items-center gap-1.5 text-[10px] px-2.5 py-0.5 rounded-full"
-              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', color: C.muted }}>
+              style={{ background: 'var(--entry-tag-bg)', border: '1px solid var(--entry-tag-border)', color: 'var(--hub-muted)' }}>
               <span className="text-xs">{m.emoji}</span>{m.label}
             </span>
           ))}
@@ -178,11 +171,11 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="w-full max-w-[380px]" style={{
-          background: 'rgba(10,20,36,0.92)',
-          border: `1px solid ${C.border}`,
+          background: 'var(--entry-card-bg)',
+          border: '1px solid rgba(0,180,216,0.12)',
           borderRadius: 24,
           backdropFilter: 'blur(20px)',
-          boxShadow: '0 24px 72px rgba(0,0,0,0.5)',
+          boxShadow: '0 24px 72px rgba(0,0,0,0.15)',
           padding: '32px',
         }}>
           {/* Icon */}
@@ -193,13 +186,13 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, type: 'spring', stiffness: 300, damping: 20 }}
           >
-            <User size={22} style={{ color: C.cyan }} />
+            <User size={22} style={{ color: CYAN }} />
           </motion.div>
 
           {/* Heading */}
           <div className="mb-6">
-            <h2 className="text-xl font-black mb-1" style={{ color: C.text }}>ยินดีต้อนรับ</h2>
-            <p className="text-xs leading-relaxed" style={{ color: C.muted }}>
+            <h2 className="text-xl font-black mb-1" style={{ color: 'var(--hub-text)' }}>ยินดีต้อนรับ</h2>
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--hub-muted)' }}>
               กรอกชื่อของคุณเพื่อเข้าสู่ระบบฝึกอบรม
             </p>
           </div>
@@ -208,7 +201,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5"
-                style={{ color: C.muted }}>ชื่อ-นามสกุล</label>
+                style={{ color: 'var(--hub-muted)' }}>ชื่อ-นามสกุล</label>
               <input
                 ref={inputRef}
                 type="text"
@@ -217,20 +210,20 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                 placeholder="กรอกชื่อของคุณ..."
                 autoComplete="off"
                 disabled={loading}
-                className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
+                className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all placeholder:text-[color:var(--hub-muted)]"
                 style={{
-                  background: 'rgba(255,255,255,0.04)',
+                  background: 'var(--entry-input-bg)',
                   border: error
                     ? '1px solid rgba(248,113,113,0.5)'
-                    : '1px solid rgba(255,255,255,0.08)',
-                  color: C.text,
+                    : '1px solid var(--hub-border)',
+                  color: 'var(--hub-text)',
                   opacity: loading ? 0.6 : 1,
                 }}
                 onFocus={e => {
-                  if (!error) e.currentTarget.style.borderColor = `${C.cyan}50`;
+                  if (!error) e.currentTarget.style.borderColor = `${CYAN}50`;
                 }}
                 onBlur={e => {
-                  if (!error) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                  if (!error) e.currentTarget.style.borderColor = 'var(--hub-border)';
                 }}
               />
             </div>
@@ -255,18 +248,18 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
             {/* Submit */}
             <motion.button
               type="submit"
-              disabled={!name.trim() || submitting || loading}
+              disabled={!canSubmit || submitting}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all"
               style={{
-                background: name.trim() && !loading
-                  ? `linear-gradient(135deg, ${C.cyan}, #0055F0)`
-                  : 'rgba(255,255,255,0.04)',
-                color: name.trim() && !loading ? '#fff' : C.dim,
-                cursor: name.trim() && !loading ? 'pointer' : 'not-allowed',
-                boxShadow: name.trim() && !loading ? `0 6px 20px rgba(0,180,216,0.22)` : 'none',
+                background: canSubmit
+                  ? `linear-gradient(135deg, ${CYAN}, #0055F0)`
+                  : 'var(--hub-locked-bg)',
+                color: canSubmit ? '#fff' : 'var(--hub-dim)',
+                cursor: canSubmit ? 'pointer' : 'not-allowed',
+                boxShadow: canSubmit ? `0 6px 20px rgba(0,180,216,0.22)` : 'none',
               }}
-              whileHover={name.trim() && !loading ? { scale: 1.01 } : {}}
-              whileTap={name.trim() && !loading ? { scale: 0.98 } : {}}
+              whileHover={canSubmit ? { scale: 1.01 } : {}}
+              whileTap={canSubmit ? { scale: 0.98 } : {}}
             >
               {submitting
                 ? <Loader2 size={15} className="animate-spin" />
@@ -278,12 +271,12 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
 
           {/* Footer */}
           <div className="mt-5 pt-4 flex items-center justify-between"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <span className="text-[10px]" style={{ color: C.dim }}>
+            style={{ borderTop: '1px solid var(--hub-border)' }}>
+            <span className="text-[10px]" style={{ color: 'var(--hub-dim)' }}>
               ไม่พบชื่อ? ติดต่อผู้จัดการ
             </span>
             <a href="/login" className="text-[10px] transition-opacity hover:opacity-80"
-              style={{ color: C.muted }}>
+              style={{ color: 'var(--hub-muted)' }}>
               Admin / Evaluator →
             </a>
           </div>

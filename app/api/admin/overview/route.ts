@@ -28,8 +28,12 @@ export async function GET() {
       gcsGetAll<{ agentId: string; timestamp: string }>('pitch_sessions'),
     ]);
 
-    const passed         = quizDocs.filter(d => d.passed).length;
-    const overallPassRate = quizDocs.length > 0 ? Math.round((passed / quizDocs.length) * 100) : 0;
+    // Pass rate = agents who passed ALL 3 quiz modules (not individual attempt count)
+    const quizModuleStat  = moduleStats.find(m => m.moduleId === 'quiz');
+    const passedAgents    = quizModuleStat?.passCount ?? 0;
+    const totalAgents     = allStats.length;
+    const overallPassRate = totalAgents > 0 ? Math.round((passedAgents / totalAgents) * 100) : 0;
+
     const avgAiEvalScore  = evalDocs.length > 0
       ? Math.round(evalDocs.reduce((s, e) => s + e.score, 0) / evalDocs.length) : 0;
 
@@ -41,14 +45,14 @@ export async function GET() {
     );
 
     const data: AdminOverviewData = {
-      totalAgents: allStats.length,
+      totalAgents,
       activeAgents: activeIds.size,
       overallPassRate,
       avgAiEvalScore,
       weekSessions,
       moduleStats,
       leaderboard: allStats.sort((a, b) => b.overallScore - a.overallScore),
-      passFail: { passed, failed: quizDocs.length - passed },
+      passFail: { passed: passedAgents, failed: totalAgents - passedAgents },
     };
 
     return NextResponse.json(data);
