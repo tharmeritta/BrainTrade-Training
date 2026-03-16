@@ -7,7 +7,7 @@ import { BookOpen, ClipboardList, Mic, PlayCircle, BarChart3 } from 'lucide-reac
 
 const modules = [
   { label: 'เรียนรู้', href: '/learn/product', sub: 'ศึกษาข้อมูลผลิตภัณฑ์', icon: BookOpen, color: 'bg-blue-500' },
-  { label: 'แบบทดสอบ', href: '/quiz/product', sub: 'วัดความรู้ของคุณ', icon: ClipboardList, color: 'bg-indigo-500' },
+  { label: 'แบบทดสอบ', href: '/quiz', sub: 'วัดความรู้ของคุณ', icon: ClipboardList, color: 'bg-indigo-500' },
   { label: 'AI ประเมินผล', href: '/ai-eval', sub: 'วิเคราะห์การนำเสนอ', icon: BarChart3, color: 'bg-emerald-500' },
   { label: 'ฝึกพิช', href: '/pitch', sub: 'จำลองการขายเสมือนจริง', icon: PlayCircle, color: 'bg-orange-500' },
 ];

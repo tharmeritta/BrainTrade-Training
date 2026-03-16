@@ -1,10 +1,38 @@
 import { cookies } from 'next/headers';
+import type { UserRole } from '@/types';
 
-export async function getServerUser() {
+// Session cookie format: `${SECRET}|${role}|${uid}|${encodeURIComponent(name)}`
+// Legacy format (admin only): just `${SECRET}`
+
+export async function getServerUser(): Promise<{ uid: string; name: string; role: UserRole } | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get('session')?.value;
-  if (!token || token !== process.env.SESSION_SECRET) return null;
-  return { uid: 'admin', role: 'admin' };
+  if (!token) return null;
+
+  const secret = process.env.SESSION_SECRET!;
+
+  // Legacy: bare secret = admin
+  if (token === secret) return { uid: 'admin', name: 'Admin', role: 'admin' };
+
+  // New format: secret|role|uid|encodedName
+  if (token.startsWith(secret + '|')) {
+    const rest  = token.slice(secret.length + 1);
+    const parts = rest.split('|');
+    if (parts.length >= 3) {
+      const [role, uid, ...nameParts] = parts;
+      const name = decodeURIComponent(nameParts.join('|'));
+      if (['admin', 'manager', 'evaluator', 'agent'].includes(role)) {
+        return { uid, name, role: role as UserRole };
+      }
+    }
+  }
+
+  return null;
+}
+
+export function makeSessionToken(role: UserRole, uid: string, name: string): string {
+  const secret = process.env.SESSION_SECRET!;
+  return `${secret}|${role}|${uid}|${encodeURIComponent(name)}`;
 }
 
 export async function requireAuth() {
@@ -16,5 +44,17 @@ export async function requireAuth() {
 export async function requireAdmin() {
   const user = await requireAuth();
   if (user.role !== 'admin') throw new Error('Forbidden');
+  return user;
+}
+
+export async function requireAdminOrManager() {
+  const user = await requireAuth();
+  if (user.role !== 'admin' && user.role !== 'manager') throw new Error('Forbidden');
+  return user;
+}
+
+export async function requireEvaluator() {
+  const user = await requireAuth();
+  if (user.role !== 'evaluator') throw new Error('Forbidden');
   return user;
 }

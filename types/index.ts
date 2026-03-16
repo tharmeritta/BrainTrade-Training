@@ -1,4 +1,14 @@
-export type UserRole = 'admin' | 'agent' | 'evaluator';
+export type UserRole = 'admin' | 'manager' | 'agent' | 'evaluator';
+
+export interface StaffAccount {
+  id: string;
+  username: string;
+  password: string;
+  name: string;
+  role: 'manager' | 'evaluator';
+  active: boolean;
+  createdAt: string;
+}
 
 export interface PitchMessage {
   role: 'user' | 'assistant';
@@ -29,7 +39,8 @@ export interface AgentStats {
     payment?: ModuleQuizStat;
   };
   aiEval: { avgScore: number; count: number } | null;
-  pitch: { highestLevel: number; sessionCount: number } | null;
+  pitch: { highestLevel: number; sessionCount: number; completedLevels?: number[] } | null;
+  evalCompletedLevels?: number[];
   overallScore: number;
   badge: 'elite' | 'strong' | 'developing' | 'needs-work';
   lastActive: string | null;
@@ -38,11 +49,11 @@ export interface AgentStats {
 // ── Admin API response shapes ───────────────────────────────────────────────
 
 export interface ModuleStat {
-  moduleId: 'product' | 'process' | 'payment';
+  moduleId: string;          // 'learn' | 'quiz' | 'ai-eval' | 'pitch'
   label: string;
-  avgScore: number;
-  passCount: number;
-  totalAttempts: number;
+  avgScore: number;          // completion rate 0–100
+  passCount: number;         // agents who completed this module
+  totalAttempts: number;     // total active agents
 }
 
 export interface AdminOverviewData {

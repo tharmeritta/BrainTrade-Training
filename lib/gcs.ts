@@ -73,3 +73,18 @@ export async function gcsUpdate<T extends object>(
 export async function gcsDelete(collection: string, id: string): Promise<void> {
   await bucket().file(`${collection}/${id}.json`).delete();
 }
+
+// Upsert by a deterministic key (e.g. agentId) instead of a random UUID.
+// Useful for records that should be updated in-place rather than appended.
+export async function gcsSet<T extends object>(
+  collection: string,
+  key: string,
+  data: T
+): Promise<T & { updatedAt: string }> {
+  const updatedAt = new Date().toISOString();
+  const record    = { ...data, updatedAt };
+  await bucket()
+    .file(`${collection}/${key}.json`)
+    .save(JSON.stringify(record), { contentType: 'application/json', resumable: false });
+  return record;
+}

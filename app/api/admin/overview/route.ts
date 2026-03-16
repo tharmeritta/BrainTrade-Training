@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/session';
+import { requireAdminOrManager } from '@/lib/session';
 import { gcsGetAll } from '@/lib/gcs';
 import { getAllAgentStats, getModuleStats } from '@/lib/agents';
 import type { AdminOverviewData } from '@/types';
@@ -8,15 +8,16 @@ const EMPTY: AdminOverviewData = {
   totalAgents: 0, activeAgents: 0, overallPassRate: 0,
   avgAiEvalScore: 0, weekSessions: 0,
   moduleStats: [
-    { moduleId: 'product', label: 'Product', avgScore: 0, passCount: 0, totalAttempts: 0 },
-    { moduleId: 'process', label: 'Process', avgScore: 0, passCount: 0, totalAttempts: 0 },
-    { moduleId: 'payment', label: 'Payment', avgScore: 0, passCount: 0, totalAttempts: 0 },
+    { moduleId: 'learn',   label: 'Learn',   avgScore: 0, passCount: 0, totalAttempts: 0 },
+    { moduleId: 'quiz',    label: 'Quiz',    avgScore: 0, passCount: 0, totalAttempts: 0 },
+    { moduleId: 'ai-eval', label: 'AI Eval', avgScore: 0, passCount: 0, totalAttempts: 0 },
+    { moduleId: 'pitch',   label: 'Pitch',   avgScore: 0, passCount: 0, totalAttempts: 0 },
   ],
   leaderboard: [], passFail: { passed: 0, failed: 0 },
 };
 
 export async function GET() {
-  try { await requireAdmin(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { await requireAdminOrManager(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   try {
     const [allStats, moduleStats, quizDocs, evalDocs, pitchDocs] = await Promise.all([

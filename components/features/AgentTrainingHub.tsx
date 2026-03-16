@@ -120,7 +120,7 @@ function deriveSteps(stats: AgentStats | null): Record<StepId, StepState> {
     pitch: {
       locked:    !aiEvalDone,
       passed:    pitchDone,
-      bestScore: stats?.pitch ? Math.min(100, stats.pitch.highestLevel * 33) : undefined,
+      bestScore: stats?.pitch ? (stats.pitch.highestLevel >= 3 ? 100 : stats.pitch.highestLevel * 33) : undefined,
     },
   };
 }
@@ -271,7 +271,7 @@ export default function AgentTrainingHub({ agentName, agentId, stats, onLogout }
 
   return (
     <div
-      className="w-full overflow-hidden flex flex-col"
+      className="w-full overflow-hidden flex flex-col relative"
       style={{ height: 'calc(100vh - 72px)', background: T.bg, fontFamily: "'DM Sans', system-ui, sans-serif" }}
     >
       {/* Background */}
@@ -372,7 +372,7 @@ export default function AgentTrainingHub({ agentName, agentId, stats, onLogout }
           <span className="text-[10px]" style={{ color: T.dim }}>{done} / {NAV_STEPS.length} สำเร็จ</span>
         </div>
 
-        <div className="flex gap-3 flex-1 min-h-0">
+        <div className="flex flex-col lg:flex-row gap-3 flex-1 min-h-0 overflow-y-auto lg:overflow-hidden">
           {NAV_STEPS.map((step, i) => (
             <StepCard
               key={step.id}

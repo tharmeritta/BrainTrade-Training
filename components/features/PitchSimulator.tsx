@@ -3,9 +3,11 @@
 import { useState, useRef, useEffect } from 'react';
 import type { PitchMessage } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   Send, User as UserIcon, Bot, ChevronLeft, Play, Sparkles,
   CheckCircle2, Trophy, ThumbsUp, TrendingUp, RotateCcw, Loader2,
+  ArrowRight, LayoutDashboard, Lock,
 } from 'lucide-react';
 
 const LEVEL_LABELS: Record<1 | 2 | 3, { th: string; desc: string }> = {
@@ -21,22 +23,78 @@ interface Evaluation {
 }
 
 export default function PitchSimulator() {
+  const router   = useRouter();
+  const pathname = usePathname();
+  const locale   = pathname.split('/')[1] ?? 'th';
+
   const [level,      setLevel]      = useState<1 | 2 | 3>(1);
   const [sessionId,  setSessionId]  = useState<string | null>(null);
   const [messages,   setMessages]   = useState<PitchMessage[]>([]);
   const [input,      setInput]      = useState('');
   const [loading,    setLoading]    = useState(false);
-  const [agentId,    setAgentId]    = useState<string | null>(null);
-  const [agentName,  setAgentName]  = useState<string | null>(null);
-  const [closedSale, setClosedSale] = useState(false);
-  const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
-  const [evaluating, setEvaluating] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const [agentId,         setAgentId]         = useState<string | null>(null);
+  const [agentName,       setAgentName]       = useState<string | null>(null);
+  const [closedSale,      setClosedSale]      = useState(false);
+  const [evaluation,      setEvaluation]      = useState<Evaluation | null>(null);
+  const [evaluating,      setEvaluating]      = useState(false);
+  const [completedLevels, setCompletedLevels] = useState<Set<number>>(new Set());
+  const [startError, setStartError] = useState('');
+  const [chatError,  setChatError]  = useState('');
+  const bottomRef   = useRef<HTMLDivElement>(null);
+  const evalAbortRef = useRef(false);
 
   useEffect(() => {
-    setAgentId(localStorage.getItem('brainstrade_agent_id'));
-    setAgentName(localStorage.getItem('brainstrade_agent_name'));
+    const id   = localStorage.getItem('brainstrade_agent_id');
+    const name = localStorage.getItem('brainstrade_agent_name');
+    setAgentId(id);
+    setAgentName(name);
+
+    // Seed from localStorage immediately (instant UX)
+    const local = localStorage.getItem('brainstrade_completed_levels');
+    const localSet: Set<number> = local ? new Set(JSON.parse(local)) : new Set();
+    if (localSet.size > 0) setCompletedLevels(localSet);
+
+    // Then fetch from server and merge (server is source of truth)
+    if (id) {
+      fetch(`/api/agent/progress?agentId=${id}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (!data) return;
+          const merged = new Set([...localSet, ...(data.pitchCompletedLevels ?? [])]);
+          setCompletedLevels(merged);
+          localStorage.setItem('brainstrade_completed_levels', JSON.stringify([...merged]));
+        })
+        .catch(() => { /* silently keep localStorage data */ });
+    }
   }, []);
+
+  function syncToServer(completedSet: Set<number>, id: string | null, name: string | null) {
+    if (!id) return;
+    fetch('/api/agent/progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        agentId: id,
+        agentName: name ?? '',
+        pitchCompletedLevels: [...completedSet],
+      }),
+    }).catch(() => { /* localStorage already updated — server sync best-effort */ });
+  }
+
+  function markLevelCompleted(l: number) {
+    setCompletedLevels(prev => {
+      const next = new Set(prev);
+      next.add(l);
+      localStorage.setItem('brainstrade_completed_levels', JSON.stringify([...next]));
+      syncToServer(next, agentId, agentName);
+      return next;
+    });
+  }
+
+  function isLocked(l: number) {
+    if (l === 1) return false;
+    return !completedLevels.has(l - 1);
+  }
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -44,18 +102,23 @@ export default function PitchSimulator() {
 
   async function startSession() {
     setLoading(true);
+    setStartError('');
+    evalAbortRef.current = false;
     try {
       const res = await fetch('/api/pitch/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ level, agentId, agentName }),
       });
+      if (!res.ok) throw new Error('Start failed');
       const data = await res.json();
       setSessionId(data.sessionId);
       setMessages([]);
       setClosedSale(false);
       setEvaluation(null);
       setEvaluating(false);
+    } catch {
+      setStartError('ไม่สามารถเริ่มเซสชันได้ กรุณาลองใหม่อีกครั้ง');
     } finally {
       setLoading(false);
     }
@@ -68,6 +131,7 @@ export default function PitchSimulator() {
     setMessages(newMessages);
     setInput('');
     setLoading(true);
+    setChatError('');
 
     try {
       const res = await fetch('/api/pitch', {
@@ -75,6 +139,7 @@ export default function PitchSimulator() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, level, messages: newMessages }),
       });
+      if (!res.ok) throw new Error('Send failed');
       const data = await res.json();
       const aiMsg: PitchMessage = { role: 'assistant', content: data.reply, timestamp: new Date() };
       const finalMessages = [...newMessages, aiMsg];
@@ -83,8 +148,10 @@ export default function PitchSimulator() {
       if (data.closedSale) {
         setClosedSale(true);
         setLoading(false);
+        markLevelCompleted(level);
         // Fetch evaluation after a short delay so the sale message renders first
         setTimeout(async () => {
+          if (evalAbortRef.current) return;
           setEvaluating(true);
           try {
             const evalRes = await fetch('/api/pitch/evaluate', {
@@ -93,13 +160,15 @@ export default function PitchSimulator() {
               body: JSON.stringify({ messages: finalMessages, level }),
             });
             const evalData = await evalRes.json();
-            setEvaluation(evalData);
+            if (!evalAbortRef.current) setEvaluation(evalData);
           } finally {
-            setEvaluating(false);
+            if (!evalAbortRef.current) setEvaluating(false);
           }
         }, 800);
         return;
       }
+    } catch {
+      setChatError('เกิดข้อผิดพลาดในการส่งข้อความ กรุณาลองใหม่');
     } finally {
       setLoading(false);
     }
@@ -124,7 +193,7 @@ export default function PitchSimulator() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-card rounded-[2rem] shadow-xl border border-border p-10 text-center relative overflow-hidden"
+          className="bg-card rounded-[2rem] shadow-xl border border-border p-10 text-center relative"
         >
           <div className="relative z-10">
             <div className="w-20 h-20 bg-primary/10 text-primary rounded-3xl flex items-center justify-center mx-auto mb-6">
@@ -136,39 +205,69 @@ export default function PitchSimulator() {
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 mb-10">
-              {([1, 2, 3] as const).map(l => (
-                <button
-                  key={l}
-                  onClick={() => setLevel(l)}
-                  className={`group relative px-8 py-4 rounded-2xl font-bold transition-all duration-300 border ${
-                    level === l
-                      ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105'
-                      : 'bg-secondary/50 text-muted-foreground border-transparent hover:border-primary/30 hover:bg-white'
-                  }`}
-                >
-                  <span className="relative z-10 text-lg">Level {l}</span>
-                  <span className="block text-[10px] opacity-60 font-medium">{LEVEL_LABELS[l].th}</span>
-                  {level === l && (
-                    <p className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground whitespace-nowrap">
-                      {LEVEL_LABELS[l].desc}
-                    </p>
-                  )}
-                </button>
-              ))}
+              {([1, 2, 3] as const).map(l => {
+                const locked    = isLocked(l);
+                const completed = completedLevels.has(l);
+                const selected  = level === l;
+                return (
+                  <button
+                    key={l}
+                    onClick={() => !locked && setLevel(l)}
+                    disabled={locked}
+                    className={`group relative px-8 py-4 rounded-2xl font-bold transition-all duration-300 border ${
+                      locked
+                        ? 'bg-secondary/30 text-muted-foreground/40 border-transparent cursor-not-allowed'
+                        : selected
+                        ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105'
+                        : 'bg-secondary/50 text-muted-foreground border-transparent hover:border-primary/30 hover:bg-white'
+                    }`}
+                  >
+                    {/* Status badge */}
+                    {locked ? (
+                      <span className="absolute -top-2 -right-2 w-6 h-6 bg-muted-foreground/20 rounded-full flex items-center justify-center">
+                        <Lock size={12} className="text-muted-foreground/50" />
+                      </span>
+                    ) : completed ? (
+                      <span className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
+                        <CheckCircle2 size={12} className="text-white" />
+                      </span>
+                    ) : null}
+
+                    <span className="relative z-10 text-lg">Level {l}</span>
+                    <span className="block text-[10px] opacity-60 font-medium">{LEVEL_LABELS[l].th}</span>
+                    {selected && !locked && (
+                      <p className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground whitespace-nowrap">
+                        {LEVEL_LABELS[l].desc}
+                      </p>
+                    )}
+                    {locked && (
+                      <p className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground/50 whitespace-nowrap">
+                        ต้องผ่าน Level {l - 1} ก่อน
+                      </p>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             <button
               onClick={startSession}
-              disabled={loading}
+              disabled={loading || isLocked(level)}
               className="group mt-4 flex items-center justify-center gap-2 bg-foreground text-background px-10 py-4 rounded-2xl font-bold text-lg hover:bg-primary hover:text-white transition-all duration-300 shadow-xl disabled:opacity-50"
             >
               <Play size={20} className="fill-current" />
               {loading ? 'กำลังเริ่ม...' : 'เริ่มการจำลอง'}
             </button>
+            {startError && (
+              <p className="mt-3 text-sm text-red-500">{startError}</p>
+            )}
           </div>
 
-          <div className="absolute top-0 left-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full -translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 right-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full translate-x-1/2 translate-y-1/2" />
+          {/* Blobs in overflow-hidden wrapper so they don't clip button tooltips */}
+          <div className="absolute inset-0 overflow-hidden rounded-[2rem] pointer-events-none">
+            <div className="absolute top-0 left-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full -translate-x-1/2 -translate-y-1/2" />
+            <div className="absolute bottom-0 right-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full translate-x-1/2 translate-y-1/2" />
+          </div>
         </motion.div>
       </div>
     );
@@ -178,7 +277,7 @@ export default function PitchSimulator() {
   return (
     <div className="max-w-4xl mx-auto animate-in">
       <div className="bg-card rounded-[2rem] shadow-2xl border border-border flex flex-col overflow-hidden relative"
-        style={{ height: closedSale ? 'auto' : '700px', maxHeight: closedSale ? 'none' : '700px' }}>
+        style={{ height: closedSale ? 'auto' : 'min(700px, calc(100vh - 180px))', maxHeight: closedSale ? 'none' : 'min(700px, calc(100vh - 180px))' }}>
 
         {/* Header */}
         <div className="flex items-center justify-between px-8 py-5 border-b border-border/50 bg-white/80 dark:bg-card/80 backdrop-blur z-10 shrink-0">
@@ -190,16 +289,14 @@ export default function PitchSimulator() {
             </div>
             <div>
               <span className="font-bold text-foreground">Pitch Session — {LEVEL_LABELS[level].th}</span>
-              <p className={`text-[10px] font-bold flex items-center gap-1 uppercase tracking-widest ${
-                closedSale ? 'text-emerald-500' : 'text-emerald-500'
-              }`}>
+              <p className="text-[10px] font-bold flex items-center gap-1 uppercase tracking-widest text-emerald-500">
                 <span className={`w-1.5 h-1.5 rounded-full ${closedSale ? 'bg-emerald-500' : 'bg-emerald-500 animate-pulse'}`} />
                 {closedSale ? 'Sale Closed ✓' : 'Live Simulation'}
               </p>
             </div>
           </div>
           <button
-            onClick={() => { setSessionId(null); setMessages([]); setClosedSale(false); setEvaluation(null); }}
+            onClick={() => { evalAbortRef.current = true; setSessionId(null); setMessages([]); setClosedSale(false); setEvaluation(null); setChatError(''); }}
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-destructive transition-colors py-2 px-4 rounded-xl hover:bg-destructive/5"
           >
             <ChevronLeft size={16} />
@@ -339,14 +436,65 @@ export default function PitchSimulator() {
                   </ul>
                 </div>
 
-                {/* Restart button */}
-                <button
-                  onClick={() => { setSessionId(null); setMessages([]); setClosedSale(false); setEvaluation(null); }}
-                  className="w-full flex items-center justify-center gap-2 bg-foreground text-background hover:bg-primary hover:text-white transition-all duration-300 px-6 py-4 rounded-2xl font-bold shadow-lg"
-                >
-                  <RotateCcw size={18} />
-                  เริ่มเซสชันใหม่
-                </button>
+                {/* Action buttons */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {/* Retry same level */}
+                  <button
+                    onClick={() => { evalAbortRef.current = true; setSessionId(null); setMessages([]); setClosedSale(false); setEvaluation(null); setChatError(''); }}
+                    className="flex-1 flex items-center justify-center gap-2 bg-secondary/60 text-foreground hover:bg-secondary transition-all duration-200 px-6 py-4 rounded-2xl font-semibold"
+                  >
+                    <RotateCcw size={16} />
+                    ลองอีกครั้ง Level {level}
+                  </button>
+
+                  {/* Next level or dashboard */}
+                  {level < 3 ? (
+                    <button
+                      onClick={() => {
+                        evalAbortRef.current = true;
+                        const next = (level + 1) as 2 | 3;
+                        setLevel(next);
+                        setSessionId(null);
+                        setMessages([]);
+                        setClosedSale(false);
+                        setEvaluation(null);
+                        setChatError('');
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 px-6 py-4 rounded-2xl font-bold shadow-lg shadow-primary/20"
+                    >
+                      Level {level + 1} — {LEVEL_LABELS[(level + 1) as 2 | 3].th}
+                      <ArrowRight size={18} />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => router.push(`/${locale}/dashboard`)}
+                      className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 text-white hover:bg-emerald-500 transition-all duration-200 px-6 py-4 rounded-2xl font-bold shadow-lg shadow-emerald-600/20"
+                    >
+                      <LayoutDashboard size={18} />
+                      กลับไปหน้า Dashboard
+                    </button>
+                  )}
+                </div>
+
+                {/* Collapsible transcript */}
+                <details className="rounded-2xl border border-border overflow-hidden">
+                  <summary className="px-6 py-3 cursor-pointer text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors select-none">
+                    บทสนทนาทั้งหมด ({messages.length} ข้อความ)
+                  </summary>
+                  <div className="border-t border-border max-h-64 overflow-y-auto px-6 py-4 space-y-3 bg-slate-50/50 dark:bg-background/30">
+                    {messages.map((m, i) => (
+                      <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[80%] text-xs px-4 py-2 rounded-xl leading-relaxed whitespace-pre-wrap ${
+                          m.role === 'user'
+                            ? 'bg-primary/90 text-primary-foreground'
+                            : 'bg-white dark:bg-card border border-border text-foreground'
+                        }`}>
+                          {m.content}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </details>
               </motion.div>
             )}
           </AnimatePresence>
@@ -371,6 +519,9 @@ export default function PitchSimulator() {
         {/* Input — hidden when sale is closed */}
         {!closedSale && (
           <div className="p-6 bg-white dark:bg-card border-t border-border z-10 shrink-0">
+            {chatError && (
+              <p className="text-xs text-red-500 text-center mb-3">{chatError}</p>
+            )}
             <div className="relative flex items-center gap-3 bg-secondary/30 p-2 rounded-2xl border border-transparent focus-within:border-primary/20 focus-within:bg-white dark:focus-within:bg-card transition-all duration-200">
               <input
                 value={input}

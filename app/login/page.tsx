@@ -1,20 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, ClipboardCheck, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 
-type Role = 'admin' | 'evaluator';
+type Tab = 'admin' | 'evaluator';
 
-const ROLES = {
+const TABS = {
   admin: {
     Icon: Lock,
     labelTh: 'ผู้จัดการ',
     accent: '#00B4D8',
     glow: 'rgba(0,180,216,0.12)',
     redirect: '/th/admin',
-    desc: 'จัดการเอเจนต์ ดูสถิติ ส่งออกรายงาน',
+    desc: 'Admin / Manager · จัดการเอเจนต์ ดูสถิติ ส่งออกรายงาน',
   },
   evaluator: {
     Icon: ClipboardCheck,
@@ -36,16 +36,16 @@ const T = {
 };
 
 export default function LoginPage() {
-  const [role, setRole]         = useState<Role>('admin');
+  const [role, setRole]         = useState<Tab>('admin');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
   const router = useRouter();
-  const cfg = ROLES[role];
+  const cfg = TABS[role];
 
-  function switchRole(r: Role) {
+  function switchRole(r: Tab) {
     setRole(r);
     setError('');
     setUsername('');
@@ -60,10 +60,13 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, role }),
+        body: JSON.stringify({ username, password }),
       });
       if (!res.ok) throw new Error();
-      router.push(cfg.redirect);
+      const data = await res.json();
+      // manager and admin both use the admin panel
+      const redirect = (data.role === 'manager' || data.role === 'admin') ? '/th/admin' : cfg.redirect;
+      router.push(redirect);
     } catch {
       setError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
     } finally {
@@ -121,8 +124,8 @@ export default function LoginPage() {
           {/* Tab switcher */}
           <div className="flex gap-1 p-1 rounded-xl mb-6"
             style={{ background: 'rgba(255,255,255,0.04)' }}>
-            {(['admin', 'evaluator'] as Role[]).map(r => {
-              const c = ROLES[r];
+            {(['admin', 'evaluator'] as Tab[]).map(r => {
+              const c = TABS[r];
               const Icon = c.Icon;
               const active = role === r;
               return (

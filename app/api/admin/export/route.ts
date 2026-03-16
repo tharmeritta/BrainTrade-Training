@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/session';
+import { requireAdminOrManager } from '@/lib/session';
 import { getAllAgentStats } from '@/lib/agents';
 import type { AgentStats } from '@/types';
 import * as XLSX from 'xlsx';
@@ -77,7 +77,7 @@ function buildIndividualSheet(stat: AgentStats) {
 }
 
 export async function GET(req: NextRequest) {
-  try { await requireAdmin(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { await requireAdminOrManager(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   try {
     const { searchParams } = new URL(req.url);

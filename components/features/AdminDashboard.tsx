@@ -1,22 +1,23 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Users, FileSpreadsheet, LogOut,
   TrendingUp, Award, Target, Activity, Plus, Search,
-  CheckCircle2, XCircle, Download, RefreshCw, ChevronDown,
-  ShieldAlert, Star, Zap, Clock,
+  Download, ChevronDown, Zap, ShieldCheck, Eye, EyeOff, Pencil, Trash2, X, Check,
 } from 'lucide-react';
-import type { AdminOverviewData, AgentStats } from '@/types';
+import type { AdminOverviewData, AgentStats, StaffAccount } from '@/types';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 const BADGE_CONFIG = {
-  'elite':        { label: 'Elite',       bg: 'bg-purple-100', text: 'text-purple-700', dot: 'bg-purple-500' },
-  'strong':       { label: 'Strong',      bg: 'bg-emerald-100', text: 'text-emerald-700', dot: 'bg-emerald-500' },
-  'developing':   { label: 'Developing',  bg: 'bg-amber-100',  text: 'text-amber-700',  dot: 'bg-amber-400'  },
-  'needs-work':   { label: 'Needs Help',  bg: 'bg-red-100',    text: 'text-red-700',    dot: 'bg-red-500'    },
+  'elite':        { label: 'Elite',       bg: 'bg-purple-500/15', text: 'text-purple-400', dot: 'bg-purple-400' },
+  'strong':       { label: 'Strong',      bg: 'bg-emerald-500/15', text: 'text-emerald-400', dot: 'bg-emerald-400' },
+  'developing':   { label: 'Developing',  bg: 'bg-amber-500/15',  text: 'text-amber-400',  dot: 'bg-amber-400'  },
+  'needs-work':   { label: 'Needs Help',  bg: 'bg-red-500/15',    text: 'text-red-400',    dot: 'bg-red-400'    },
 };
 
 const MODULE_LABELS: Record<string, string> = { product: 'Product', process: 'Process', payment: 'Payment' };
@@ -37,8 +38,12 @@ function scoreBg(score: number | undefined) {
 function timeAgo(iso: string | null) {
   if (!iso) return 'Never';
   const diff = Date.now() - new Date(iso).getTime();
-  const d = Math.floor(diff / 86400000);
-  if (d === 0) return 'Today';
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'Just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
   if (d === 1) return 'Yesterday';
   return `${d}d ago`;
 }
@@ -75,15 +80,15 @@ function DonutChart({ passed, failed }: { passed: number; failed: number }) {
   return (
     <div className="flex flex-col items-center justify-center">
       <svg width={110} height={110} viewBox="0 0 110 110">
-        <circle cx={55} cy={55} r={r} fill="none" stroke="#f1f5f9" strokeWidth={14} />
+        <circle cx={55} cy={55} r={r} fill="none" stroke="hsl(var(--border))" strokeWidth={14} />
         <circle cx={55} cy={55} r={r} fill="none" stroke="#10b981" strokeWidth={14}
           strokeDasharray={`${dash} ${c}`} strokeLinecap="round"
           transform="rotate(-90 55 55)" />
-        <text x={55} y={59} textAnchor="middle" fontSize={18} fontWeight={800} fill="#0f172a">{pct}%</text>
+        <text x={55} y={59} textAnchor="middle" fontSize={18} fontWeight={800} fill="hsl(var(--foreground))">{pct}%</text>
       </svg>
       <div className="flex gap-4 mt-2 text-xs font-medium">
         <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />Passed ({passed})</span>
-        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-slate-200 inline-block" />Failed ({failed})</span>
+        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-muted-foreground/40 inline-block" />Failed ({failed})</span>
       </div>
     </div>
   );
@@ -106,7 +111,7 @@ function ModuleBar({ label, avgScore, passCount, totalAttempts }: {
           className={`h-full rounded-full ${scoreBg(avgScore)}`}
         />
       </div>
-      <p className="text-xs text-muted-foreground">{passCount} of {totalAttempts} attempts passed</p>
+      <p className="text-xs text-muted-foreground">{passCount} of {totalAttempts} agents completed</p>
     </div>
   );
 }
@@ -153,7 +158,6 @@ function OverviewTab() {
 
   return (
     <div className="space-y-8">
-      {/* KPI Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard label="Total Agents"    value={data.totalAgents}     sub={`${data.activeAgents} active this week`} icon={Users}     color="bg-blue-500" />
         <KpiCard label="Quiz Pass Rate"  value={`${data.overallPassRate}%`}  sub="across all modules"             icon={Target}    color="bg-emerald-500" />
@@ -161,12 +165,10 @@ function OverviewTab() {
         <KpiCard label="Sessions / Week" value={data.weekSessions}    sub="quizzes + evals + pitches"           icon={Activity}  color="bg-orange-500" />
       </div>
 
-      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Module performance */}
         <div className="lg:col-span-2 bg-card rounded-2xl border border-border p-6 shadow-sm">
           <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
-            <TrendingUp size={20} className="text-primary" /> Module Performance
+            <TrendingUp size={20} className="text-primary" /> Training Completion
           </h3>
           <div className="space-y-6">
             {data.moduleStats.map(m => (
@@ -175,15 +177,13 @@ function OverviewTab() {
           </div>
         </div>
 
-        {/* Pass/Fail donut */}
         <div className="bg-card rounded-2xl border border-border p-6 shadow-sm flex flex-col items-center justify-center">
           <h3 className="font-bold text-lg mb-4 self-start">Overall Result</h3>
           <DonutChart passed={data.passFail.passed} failed={data.passFail.failed} />
-          <p className="text-xs text-muted-foreground mt-4 text-center">Total quiz attempts across all agents and modules</p>
+          <p className="text-xs text-muted-foreground mt-4 text-center">Quiz pass / fail across all agents and modules</p>
         </div>
       </div>
 
-      {/* Leaderboard */}
       <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="px-6 py-5 border-b border-border flex items-center justify-between">
           <h3 className="font-bold text-lg flex items-center gap-2">
@@ -200,7 +200,6 @@ function OverviewTab() {
               transition={{ delay: i * 0.05 }}
               className="px-6 py-4 flex items-center gap-4 hover:bg-secondary/30 transition-colors"
             >
-              {/* Rank */}
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black shrink-0 ${
                 i === 0 ? 'bg-amber-400 text-white' :
                 i === 1 ? 'bg-slate-300 text-slate-700' :
@@ -208,7 +207,6 @@ function OverviewTab() {
                 'bg-secondary text-muted-foreground'
               }`}>{i + 1}</div>
 
-              {/* Name + badge */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-foreground truncate">{agent.agent.name}</span>
@@ -223,7 +221,6 @@ function OverviewTab() {
                 </div>
               </div>
 
-              {/* Score bar */}
               <div className="w-32 hidden sm:block">
                 <div className="flex justify-between text-xs mb-1">
                   <span className="text-muted-foreground">Overall</span>
@@ -248,13 +245,14 @@ function OverviewTab() {
 
 // ── Agents Tab ──────────────────────────────────────────────────────────────
 
-function AgentsTab() {
+function AgentsTab({ role }: { role: 'admin' | 'manager' }) {
   const [agents,   setAgents]   = useState<AgentStats[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [search,   setSearch]   = useState('');
   const [newName,  setNewName]  = useState('');
   const [adding,   setAdding]   = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [agentErr, setAgentErr] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -273,13 +271,19 @@ function AgentsTab() {
     e.preventDefault();
     if (!newName.trim()) return;
     setAdding(true);
-    await fetch('/api/admin/agents', {
+    setAgentErr('');
+    const res = await fetch('/api/admin/agents', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: newName.trim() }),
     });
-    setNewName(''); setShowForm(false);
-    await load();
+    if (res.ok) {
+      setNewName(''); setShowForm(false);
+      await load();
+    } else {
+      const d = await res.json();
+      setAgentErr(d.error ?? 'Failed to add agent');
+    }
     setAdding(false);
   }
 
@@ -290,6 +294,14 @@ function AgentsTab() {
       body: JSON.stringify({ active: !active }),
     });
     await load();
+  }
+
+  async function deleteAgent(id: string, name: string) {
+    if (!confirm(`Permanently delete "${name}"? This cannot be undone.`)) return;
+    setAgentErr('');
+    const res = await fetch(`/api/admin/agents/${id}`, { method: 'DELETE' });
+    if (!res.ok) setAgentErr('Failed to delete agent.');
+    else await load();
   }
 
   const ModuleCell = ({ stat }: { stat: AgentStats['quiz'][keyof AgentStats['quiz']] }) => {
@@ -304,7 +316,6 @@ function AgentsTab() {
 
   return (
     <div className="space-y-6">
-      {/* Header controls */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -323,7 +334,6 @@ function AgentsTab() {
         </button>
       </div>
 
-      {/* Add agent form */}
       <AnimatePresence>
         {showForm && (
           <motion.form
@@ -337,7 +347,7 @@ function AgentsTab() {
               value={newName}
               onChange={e => setNewName(e.target.value)}
               placeholder="Agent full name..."
-              className="flex-1 bg-white border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="flex-1 bg-secondary/40 border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground placeholder:text-muted-foreground"
               required autoFocus
             />
             <button type="submit" disabled={adding}
@@ -350,7 +360,10 @@ function AgentsTab() {
         )}
       </AnimatePresence>
 
-      {/* Agents table */}
+      {agentErr && (
+        <p className="text-sm text-red-500 bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3">{agentErr}</p>
+      )}
+
       <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -392,19 +405,29 @@ function AgentsTab() {
                       : <span className="text-muted-foreground">–</span>}
                   </td>
                   <td className="px-4 py-4 text-center">
-                    <span className={`font-black text-base ${scoreColor(a.overallScore)}`}>{a.overallScore}%</span>
-                    <BadgePill badge={a.badge} />
+                    <div className="flex flex-col items-center gap-1">
+                      <span className={`font-black text-base ${scoreColor(a.overallScore)}`}>{a.overallScore}%</span>
+                      <BadgePill badge={a.badge} />
+                    </div>
                   </td>
                   <td className="px-4 py-4 text-center">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${a.agent.active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}`}>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${a.agent.active ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'}`}>
                       {a.agent.active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td className="px-4 py-4">
-                    <button onClick={() => toggleActive(a.agent.id, a.agent.active)}
-                      className="text-xs text-muted-foreground hover:text-destructive transition-colors whitespace-nowrap">
-                      {a.agent.active ? 'Deactivate' : 'Reactivate'}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => toggleActive(a.agent.id, a.agent.active)}
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
+                        {a.agent.active ? 'Deactivate' : 'Reactivate'}
+                      </button>
+                      {role === 'admin' && (
+                        <button onClick={() => deleteAgent(a.agent.id, a.agent.name)}
+                          className="p-1 rounded text-muted-foreground hover:text-red-600 hover:bg-red-500/10 transition-colors">
+                          <Trash2 size={13} />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -413,7 +436,6 @@ function AgentsTab() {
         </div>
       </div>
 
-      {/* Performance summary */}
       {agents.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {(['elite','strong','developing','needs-work'] as const).map(b => {
@@ -436,9 +458,11 @@ function AgentsTab() {
 // ── Reports Tab ─────────────────────────────────────────────────────────────
 
 function ReportsTab() {
-  const [agents,     setAgents]     = useState<{ id: string; name: string }[]>([]);
-  const [selected,   setSelected]   = useState('');
-  const [exporting,  setExporting]  = useState(false);
+  const [agents,      setAgents]      = useState<{ id: string; name: string }[]>([]);
+  const [selected,    setSelected]    = useState('');
+  const [exportingAll, setExportingAll] = useState(false);
+  const [exportingOne, setExportingOne] = useState(false);
+  const [exportErr,   setExportErr]   = useState('');
 
   useEffect(() => {
     fetch('/api/admin/agents')
@@ -447,8 +471,9 @@ function ReportsTab() {
       .catch(() => {});
   }, []);
 
-  async function download(url: string, filename: string) {
-    setExporting(true);
+  async function download(url: string, filename: string, setLoading: (v: boolean) => void) {
+    setLoading(true);
+    setExportErr('');
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error('Export failed');
@@ -458,14 +483,13 @@ function ReportsTab() {
       a.download = filename;
       a.click();
       URL.revokeObjectURL(a.href);
-    } catch { alert('Export failed. Please try again.'); }
-    setExporting(false);
+    } catch { setExportErr('Export failed. Please try again.'); }
+    setLoading(false);
   }
 
   return (
     <div className="space-y-6 max-w-2xl">
       <div className="bg-card rounded-2xl border border-border p-8 shadow-sm space-y-6">
-        {/* Overall export */}
         <div className="flex items-start justify-between gap-4">
           <div>
             <h3 className="font-bold text-lg flex items-center gap-2">
@@ -477,17 +501,16 @@ function ReportsTab() {
             </p>
           </div>
           <button
-            onClick={() => download('/api/admin/export', `BrainTrade_All_${new Date().toISOString().slice(0,10)}.xlsx`)}
-            disabled={exporting}
+            onClick={() => download('/api/admin/export', `BrainTrade_All_${new Date().toISOString().slice(0,10)}.xlsx`, setExportingAll)}
+            disabled={exportingAll}
             className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-3 rounded-xl font-semibold text-sm hover:bg-emerald-700 transition-colors shadow-md disabled:opacity-50 whitespace-nowrap"
           >
-            <Download size={16} /> Export All
+            <Download size={16} /> {exportingAll ? 'Exporting...' : 'Export All'}
           </button>
         </div>
 
         <div className="border-t border-border" />
 
-        {/* Individual export */}
         <div>
           <h3 className="font-bold text-lg flex items-center gap-2 mb-3">
             <Users size={20} className="text-blue-600" /> Individual Report
@@ -511,24 +534,327 @@ function ReportsTab() {
               onClick={() => {
                 if (!selected) return;
                 const name = agents.find(a => a.id === selected)?.name ?? selected;
-                download(`/api/admin/export?agentId=${selected}`, `BrainTrade_${name}.xlsx`);
+                download(`/api/admin/export?agentId=${selected}`, `BrainTrade_${name}.xlsx`, setExportingOne);
               }}
-              disabled={!selected || exporting}
+              disabled={!selected || exportingOne}
               className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-xl font-semibold text-sm hover:bg-blue-700 transition-colors shadow-md disabled:opacity-50"
             >
-              <Download size={16} /> Export
+              <Download size={16} /> {exportingOne ? 'Exporting...' : 'Export'}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Info card */}
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-sm text-amber-800">
+      {exportErr && (
+        <p className="text-sm text-red-500 bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3">{exportErr}</p>
+      )}
+
+      <div className="bg-amber-500/10 border border-amber-500/25 rounded-2xl p-5 text-sm text-amber-400">
         <p className="font-semibold mb-1 flex items-center gap-2"><Zap size={16} /> Excel Report Notes</p>
-        <ul className="space-y-1 text-amber-700 list-disc list-inside">
+        <ul className="space-y-1 text-amber-400/80 list-disc list-inside">
           <li>Scores ≥ 70% highlighted green, 50–69% amber, &lt;50% red</li>
-          <li>Overall score = Quiz 50% + AI Eval 30% + Pitch Level 20%</li>
-          <li>Run <code className="bg-amber-100 px-1 rounded">npm install</code> if exports fail (requires xlsx package)</li>
+          <li>Overall score = Quiz 40% + AI Eval 30% + Pitch 20% + Eval Avg 10%</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// ── Staff Accounts Tab (admin only) ─────────────────────────────────────────
+
+interface EditState {
+  id: string;
+  username: string;
+  password: string;
+  name: string;
+  role: 'manager' | 'evaluator';
+}
+
+function StaffTab() {
+  const [staff,    setStaff]    = useState<StaffAccount[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editing,  setEditing]  = useState<EditState | null>(null);
+  const [saving,   setSaving]   = useState(false);
+  const [showPw,   setShowPw]   = useState<Record<string, boolean>>({});
+  const [staffErr, setStaffErr] = useState('');
+
+  // New account form state
+  const [newUser, setNewUser] = useState({ username: '', password: '', name: '', role: 'manager' as 'manager' | 'evaluator' });
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/staff');
+      if (res.ok) { const d = await res.json(); setStaff(d.staff ?? []); }
+    } catch { /* empty */ }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function createStaff(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setStaffErr('');
+    const res = await fetch('/api/admin/staff', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newUser),
+    });
+    if (res.ok) {
+      setNewUser({ username: '', password: '', name: '', role: 'manager' });
+      setShowForm(false);
+      await load();
+    } else {
+      const d = await res.json();
+      setStaffErr(d.error ?? 'Failed to create account');
+    }
+    setSaving(false);
+  }
+
+  async function saveEdit() {
+    if (!editing) return;
+    setSaving(true);
+    setStaffErr('');
+    const res = await fetch(`/api/admin/staff/${editing.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: editing.username,
+        password: editing.password,
+        name: editing.name,
+        role: editing.role,
+      }),
+    });
+    if (res.ok) {
+      setEditing(null);
+      await load();
+    } else {
+      const d = await res.json();
+      setStaffErr(d.error ?? 'Failed to save');
+    }
+    setSaving(false);
+  }
+
+  async function toggleStaffActive(id: string, active: boolean) {
+    await fetch(`/api/admin/staff/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ active: !active }),
+    });
+    await load();
+  }
+
+  async function deleteStaff(id: string, name: string) {
+    if (!confirm(`Delete account "${name}"? This cannot be undone.`)) return;
+    await fetch(`/api/admin/staff/${id}`, { method: 'DELETE' });
+    await load();
+  }
+
+  const ROLE_COLORS: Record<string, string> = {
+    manager:   'bg-blue-500/15 text-blue-400',
+    evaluator: 'bg-emerald-500/15 text-emerald-400',
+  };
+
+  return (
+    <div className="space-y-6 max-w-3xl">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+            <ShieldCheck size={20} className="text-blue-600" /> Staff Accounts
+          </h2>
+          <p className="text-sm text-muted-foreground mt-0.5">Manage Manager and Evaluator credentials</p>
+        </div>
+        <button
+          onClick={() => setShowForm(f => !f)}
+          className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
+        >
+          <Plus size={16} /> Add Account
+        </button>
+      </div>
+
+      {/* Create form */}
+      <AnimatePresence>
+        {showForm && (
+          <motion.form
+            onSubmit={createStaff}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-primary/5 border border-primary/20 rounded-2xl p-5 space-y-4"
+          >
+            <p className="font-semibold text-sm text-foreground">New Staff Account</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground font-medium block mb-1">Display Name</label>
+                <input value={newUser.name} onChange={e => setNewUser(v => ({ ...v, name: e.target.value }))}
+                  placeholder="e.g. Sarah Manager" required
+                  className="w-full bg-secondary/40 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground font-medium block mb-1">Role</label>
+                <select value={newUser.role} onChange={e => setNewUser(v => ({ ...v, role: e.target.value as 'manager' | 'evaluator' }))}
+                  className="w-full bg-secondary/40 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20">
+                  <option value="manager">Manager</option>
+                  <option value="evaluator">Evaluator</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground font-medium block mb-1">Username</label>
+                <input value={newUser.username} onChange={e => setNewUser(v => ({ ...v, username: e.target.value }))}
+                  placeholder="login username" required
+                  className="w-full bg-secondary/40 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground font-medium block mb-1">Password</label>
+                <input value={newUser.password} onChange={e => setNewUser(v => ({ ...v, password: e.target.value }))}
+                  placeholder="password" required type="text"
+                  className="w-full bg-secondary/40 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button type="submit" disabled={saving}
+                className="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50">
+                {saving ? 'Creating...' : 'Create Account'}
+              </button>
+              <button type="button" onClick={() => setShowForm(false)}
+                className="text-muted-foreground hover:text-foreground px-4 py-2.5 text-sm">Cancel</button>
+            </div>
+          </motion.form>
+        )}
+      </AnimatePresence>
+
+      {staffErr && (
+        <p className="text-sm text-red-500 bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3">{staffErr}</p>
+      )}
+
+      {/* Staff table */}
+      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+        {loading ? (
+          <div className="text-center py-12 text-muted-foreground text-sm">Loading...</div>
+        ) : staff.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground text-sm">
+            No staff accounts yet. Click "Add Account" to create one.
+          </div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-secondary/50 border-b border-border">
+                <th className="text-left px-6 py-4 font-semibold text-muted-foreground">Name</th>
+                <th className="text-left px-4 py-4 font-semibold text-muted-foreground">Username</th>
+                <th className="text-left px-4 py-4 font-semibold text-muted-foreground">Password</th>
+                <th className="text-center px-4 py-4 font-semibold text-muted-foreground">Role</th>
+                <th className="text-center px-4 py-4 font-semibold text-muted-foreground">Status</th>
+                <th className="px-4 py-4 text-right" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {staff.map(s => (
+                <tr key={s.id} className="hover:bg-secondary/20 transition-colors">
+                  {editing?.id === s.id ? (
+                    // Edit row
+                    <>
+                      <td className="px-6 py-3">
+                        <input value={editing.name} onChange={e => setEditing(v => v && ({ ...v, name: e.target.value }))}
+                          className="w-full bg-secondary/40 border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <input value={editing.username} onChange={e => setEditing(v => v && ({ ...v, username: e.target.value }))}
+                          className="w-full bg-secondary/40 border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <input value={editing.password} onChange={e => setEditing(v => v && ({ ...v, password: e.target.value }))}
+                          className="w-full bg-secondary/40 border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <select value={editing.role} onChange={e => setEditing(v => v && ({ ...v, role: e.target.value as 'manager' | 'evaluator' }))}
+                          className="bg-secondary/40 border border-border rounded-lg px-2 py-1.5 text-xs focus:outline-none">
+                          <option value="manager">Manager</option>
+                          <option value="evaluator">Evaluator</option>
+                        </select>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${s.active ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'}`}>
+                          {s.active ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button onClick={saveEdit} disabled={saving}
+                            className="p-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors disabled:opacity-50">
+                            <Check size={14} />
+                          </button>
+                          <button onClick={() => setEditing(null)}
+                            className="p-1.5 rounded-lg bg-secondary text-muted-foreground hover:bg-secondary/80 transition-colors">
+                            <X size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </>
+                  ) : (
+                    // View row
+                    <>
+                      <td className="px-6 py-4 font-semibold text-foreground">{s.name}</td>
+                      <td className="px-4 py-4 font-mono text-sm text-foreground">{s.username}</td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-sm text-foreground">
+                            {showPw[s.id] ? s.password : '••••••••'}
+                          </span>
+                          <button onClick={() => setShowPw(v => ({ ...v, [s.id]: !v[s.id] }))}
+                            className="text-muted-foreground hover:text-foreground transition-colors">
+                            {showPw[s.id] ? <EyeOff size={13} /> : <Eye size={13} />}
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold capitalize ${ROLE_COLORS[s.role]}`}>
+                          {s.role}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <button
+                          onClick={() => toggleStaffActive(s.id, s.active)}
+                          className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${
+                            s.active
+                              ? 'bg-emerald-500/15 text-emerald-400 hover:bg-red-500/15 hover:text-red-400'
+                              : 'bg-red-500/15 text-red-400 hover:bg-emerald-500/15 hover:text-emerald-400'
+                          }`}
+                        >
+                          {s.active ? 'Active' : 'Inactive'}
+                        </button>
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => setEditing({ id: s.id, username: s.username, password: s.password, name: s.name, role: s.role })}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-blue-600 hover:bg-blue-500/10 transition-colors">
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            onClick={() => deleteStaff(s.id, s.name)}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-500/10 transition-colors">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <div className="bg-blue-500/10 border border-blue-500/25 rounded-2xl p-5 text-sm text-blue-400">
+        <p className="font-semibold mb-1 flex items-center gap-2"><ShieldCheck size={16} /> About Staff Accounts</p>
+        <ul className="space-y-1 text-blue-400/80 list-disc list-inside">
+          <li>Manager — full admin visibility, cannot delete records</li>
+          <li>Evaluator — accesses the Evaluator panel to score agents</li>
+          <li>Admin credentials are managed via environment variables</li>
         </ul>
       </div>
     </div>
@@ -537,41 +863,80 @@ function ReportsTab() {
 
 // ── Main AdminDashboard ─────────────────────────────────────────────────────
 
-type Tab = 'overview' | 'agents' | 'reports';
-
-const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
-  { id: 'overview', label: 'Overview',  icon: LayoutDashboard },
-  { id: 'agents',   label: 'Agents',    icon: Users },
-  { id: 'reports',  label: 'Reports',   icon: FileSpreadsheet },
-];
+type Tab = 'overview' | 'agents' | 'reports' | 'staff';
 
 async function logout() {
   await fetch('/api/auth/session', { method: 'DELETE' });
   window.location.href = '/login';
 }
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ role }: { role: 'admin' | 'manager' }) {
   const [tab, setTab] = useState<Tab>('overview');
+  const pathname = usePathname();
+  const router   = useRouter();
+  const locale   = pathname.split('/')[1] ?? 'th';
+
+  function switchLocale(next: string) {
+    const segs = pathname.split('/');
+    segs[1] = next;
+    router.push(segs.join('/'));
+  }
+
+  const TABS: { id: Tab; label: string; icon: React.ElementType; adminOnly?: boolean }[] = [
+    { id: 'overview', label: 'Overview',        icon: LayoutDashboard },
+    { id: 'agents',   label: 'Agents',          icon: Users },
+    { id: 'reports',  label: 'Reports',         icon: FileSpreadsheet },
+    { id: 'staff',    label: 'Staff Accounts',  icon: ShieldCheck, adminOnly: true },
+  ];
+
+  const visibleTabs = TABS.filter(t => !t.adminOnly || role === 'admin');
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
+    <div className="min-h-screen bg-background">
       {/* Top header */}
-      <div className="bg-white border-b border-border px-6 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+      <div className="bg-card border-b border-border px-6 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
         <div>
           <h1 className="text-xl font-black text-foreground tracking-tight">BrainTrade Analytics</h1>
-          <p className="text-xs text-muted-foreground">Manager Control Panel · {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+          <p className="text-xs text-muted-foreground">
+            {role === 'admin' ? 'Admin' : 'Manager'} Control Panel · {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+          </p>
         </div>
-        <button onClick={logout}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-destructive transition-colors border border-border px-3 py-2 rounded-xl hover:border-destructive/30"
-        >
-          <LogOut size={16} /> Sign out
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Language toggle */}
+          <div className="flex items-center gap-0.5 bg-secondary/60 rounded-lg p-1 border border-border">
+            {(['th', 'en'] as const).map(l => (
+              <button
+                key={l}
+                onClick={() => switchLocale(l)}
+                className={`px-2.5 py-1 rounded text-xs font-bold transition-all ${
+                  locale === l
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {l === 'th' ? 'TH' : 'EN'}
+              </button>
+            ))}
+          </div>
+
+          {/* Theme toggle */}
+          <ThemeToggle />
+
+          <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${role === 'admin' ? 'bg-purple-500/15 text-purple-400' : 'bg-blue-500/15 text-blue-400'}`}>
+            {role === 'admin' ? 'Admin' : 'Manager'}
+          </span>
+          <button onClick={logout}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-destructive transition-colors border border-border px-3 py-2 rounded-xl hover:border-destructive/30"
+          >
+            <LogOut size={16} /> Sign out
+          </button>
+        </div>
       </div>
 
       {/* Tab bar */}
-      <div className="bg-white border-b border-border px-6">
+      <div className="bg-card border-b border-border px-6">
         <div className="flex gap-1">
-          {TABS.map(t => {
+          {visibleTabs.map(t => {
             const Icon = t.icon;
             return (
               <button
@@ -601,8 +966,9 @@ export default function AdminDashboard() {
             transition={{ duration: 0.2 }}
           >
             {tab === 'overview' && <OverviewTab />}
-            {tab === 'agents'   && <AgentsTab />}
+            {tab === 'agents'   && <AgentsTab role={role} />}
             {tab === 'reports'  && <ReportsTab />}
+            {tab === 'staff'    && role === 'admin' && <StaffTab />}
           </motion.div>
         </AnimatePresence>
       </div>

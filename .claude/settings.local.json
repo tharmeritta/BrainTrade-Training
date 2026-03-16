@@ -13,7 +13,8 @@
       "Bash(dir C:\\\\Users\\\\Admin\\\\OneDrive - Tiebreak Solutions\\\\Documents\\\\Antigravity Workspace\\\\Antigravity Github Repo\\\\BrainTrade Training\\\\app:*)",
       "Bash(powershell.exe:*)",
       "Bash(dir C:\\\\Users\\\\Admin\\\\Downloads:*)",
-      "mcp__ide__executeCode"
+      "mcp__ide__executeCode",
+      "Bash(npx tsc:*)"
     ]
   }
 }

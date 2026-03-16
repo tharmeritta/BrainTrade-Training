@@ -294,17 +294,6 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName }: Evalu
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [editingEval, setEditingEval] = useState<AgentEvaluation | null>(null);
 
-  // Load Google Fonts
-  useEffect(() => {
-    const id = 'brainstrade-fonts';
-    if (document.getElementById(id)) return;
-    const link = document.createElement('link');
-    link.id   = id;
-    link.rel  = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap';
-    document.head.appendChild(link);
-  }, []);
-
   // Fetch agents
   useEffect(() => {
     fetch('/api/agents')
