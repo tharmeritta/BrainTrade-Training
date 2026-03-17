@@ -42,7 +42,7 @@ export default function NavBar() {
               <span className="text-white font-bold text-xl">B</span>
             </div>
             <span className="font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-brand-dark">
-              BrainTrade
+              BrainTrade Training Platform
             </span>
           </div>
 

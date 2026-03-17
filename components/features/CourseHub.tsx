@@ -84,20 +84,17 @@ export default function CourseHub() {
                            cursor-pointer"
                 onClick={() => start(mod.id)}
               >
-                {/* Card gradient header */}
-                <div className={`relative h-36 bg-gradient-to-br ${mod.gradient} flex items-center justify-center overflow-hidden`}>
-                  {/* Decorative circles */}
-                  <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/8 rounded-full" />
-                  <div className="absolute -bottom-8 -left-4 w-24 h-24 bg-black/15 rounded-full" />
-
-                  <div className="relative z-10 p-4 bg-white/15 rounded-2xl backdrop-blur-sm
-                                  group-hover:scale-110 transition-transform duration-300">
-                    <BookOpen size={28} className="text-white" />
-                  </div>
-
+                {/* Card thumbnail header */}
+                <div className={`relative h-40 bg-gradient-to-br ${mod.gradient} overflow-hidden`}>
+                  <img
+                    src={`https://drive.google.com/thumbnail?id=${pres.presentationId}&sz=w640`}
+                    alt={title}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                  />
                   {/* Slide count badge */}
-                  <div className="absolute top-3 right-3 px-2.5 py-1 bg-black/30 backdrop-blur-sm
-                                  rounded-full text-[10px] font-semibold text-white/80">
+                  <div className="absolute top-3 right-3 px-2.5 py-1 bg-black/50 backdrop-blur-sm
+                                  rounded-full text-[10px] font-semibold text-white/90 z-10">
                     {pres.totalSlides} slides
                   </div>
                 </div>
