@@ -21,6 +21,7 @@ export interface PitchMessage {
 export interface Agent {
   id: string;
   name: string;
+  stageName?: string;
   active: boolean;
   createdAt: Date;
 }

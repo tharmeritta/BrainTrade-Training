@@ -12,7 +12,7 @@
  * Score = 100 − (redFlagCount × 25)
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -299,6 +299,41 @@ function ScoreRing({ score, size = 'md' }: { score: number; size?: 'sm' | 'md' }
   );
 }
 
+// ── ModuleSection ──────────────────────────────────────────────────────────
+
+function ModuleSection({
+  icon: Icon, color, title, completedCount, totalCount, children,
+}: {
+  icon: React.ElementType; color: string; title: string;
+  completedCount: number; totalCount: number; children: React.ReactNode;
+}) {
+  const isComplete = completedCount >= totalCount;
+  return (
+    <div className="rounded-xl overflow-hidden border border-border">
+      <div className="px-3 py-2 flex items-center gap-2 border-b border-border" style={{ background: `${color}08` }}>
+        <div className="p-1 rounded-md" style={{ background: `${color}18` }}>
+          <Icon size={10} style={{ color }} />
+        </div>
+        <span className="text-[10px] font-black uppercase tracking-wider text-foreground" style={{ fontFamily: "'Syne', sans-serif" }}>
+          {title}
+        </span>
+        <div className="ml-auto flex items-center gap-1">
+          <span className="text-[10px] font-bold" style={{ color: isComplete ? '#60A5FA' : completedCount > 0 ? color : 'hsl(var(--muted-foreground) / 0.3)' }}>
+            {completedCount}/{totalCount}
+          </span>
+          {isComplete
+            ? <CheckCircle2 size={10} className="text-blue-500" />
+            : <Circle size={10} className="text-muted-foreground/25" />
+          }
+        </div>
+      </div>
+      <div className="bg-card px-3 py-2.5 space-y-1.5">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 // ── AgentPerformancePanel ──────────────────────────────────────────────────
 
 function AgentPerformancePanel({
@@ -326,22 +361,20 @@ function AgentPerformancePanel({
   };
   const badge = BADGE_STYLE[stats.badge] ?? BADGE_STYLE['needs-work'];
 
-  function moduleScore(key: string): number {
-    if (!stats) return 0;
-    if (key === 'learn')   return Object.keys(stats.quiz).length > 0 ? 100 : 0;
-    if (key === 'quiz')    return Math.round((['product','process','payment'] as const).filter(m => stats.quiz[m]?.passed).length / 3 * 100);
-    if (key === 'ai-eval') return stats.aiEval ? Math.min(100, Math.round(stats.aiEval.count / 4 * 100)) : 0;
-    if (key === 'pitch')   return Math.round((stats.pitch?.completedLevels?.length ?? 0) / 3 * 100);
-    return 0;
-  }
+  const quizTopics          = ['product', 'process', 'payment'] as const;
+  const learnAccessed       = quizTopics.filter(m => !!stats.quiz[m]).length;
+  const quizPassedCount     = quizTopics.filter(m => stats.quiz[m]?.passed).length;
+  const completedPitchLevels = stats.pitch?.completedLevels ?? [];
+  const completedEvalLevels  = stats.evalCompletedLevels ?? [];
 
   return (
-    <div className="space-y-3">
-      {/* Overall */}
-      <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-4">
+    <div className="space-y-2.5">
+
+      {/* Overall score */}
+      <div className="bg-card border border-border rounded-xl p-3.5 flex items-center gap-3">
         <ScoreRing score={stats.overallScore} />
         <div className="flex-1 min-w-0">
-          <div className="text-xs text-muted-foreground mb-1">{t.trainingScore}</div>
+          <div className="text-[10px] text-muted-foreground mb-1">{t.trainingScore}</div>
           <div className="text-xs font-bold px-2 py-0.5 rounded-full inline-block" style={{ background: badge.bg, color: badge.color }}>
             {badge.label}
           </div>
@@ -354,73 +387,118 @@ function AgentPerformancePanel({
         </div>
       </div>
 
-      {/* Module bars */}
-      <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
-        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t.trainingProgress}</span>
-        {MODULE_ORDER.map(mod => {
-          const pct = moduleScore(mod.key);
-          const Icon = mod.icon;
-          const label = lang === 'th' ? mod.labelTh : mod.labelEn;
+      {/* Module 1: Learn — Courses */}
+      <ModuleSection icon={BookOpen} color="#60A5FA" title={lang === 'th' ? 'เรียนรู้ — คอร์ส' : 'Learn — Courses'} completedCount={learnAccessed} totalCount={3}>
+        {quizTopics.map(m => {
+          const accessed = !!stats.quiz[m];
+          const passed   = stats.quiz[m]?.passed;
           return (
-            <div key={mod.key} className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Icon size={11} style={{ color: mod.color }} />
-                  <span className="text-xs text-muted-foreground">{label}</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {pct === 100
-                    ? <CheckCircle2 size={10} className="text-blue-500" />
-                    : <Circle size={10} className="text-border" />
-                  }
-                  <span
-                    className={`text-xs font-bold ${pct === 0 ? 'text-muted-foreground/40' : ''}`}
-                    style={{ color: pct > 0 ? (pct === 100 ? '#60A5FA' : mod.color) : undefined }}
-                  >{pct}%</span>
-                </div>
+            <div key={m} className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                {accessed
+                  ? <CheckCircle2 size={9} style={{ color: passed ? '#60A5FA' : '#FBBF24' }} />
+                  : <Circle size={9} className="text-muted-foreground/25" />
+                }
+                <span className="text-[11px] capitalize text-foreground">{m}</span>
               </div>
-              <div className="h-1.5 rounded-full bg-secondary">
-                <motion.div className="h-full rounded-full" style={{ background: `linear-gradient(90deg, ${mod.color}60, ${mod.color})` }}
-                  initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.6, ease: 'easeOut' }}
-                />
-              </div>
+              <span className="text-[10px] font-medium" style={{ color: accessed ? (passed ? '#60A5FA' : '#FBBF24') : 'hsl(var(--muted-foreground) / 0.3)' }}>
+                {accessed
+                  ? (lang === 'th' ? 'เข้าถึงแล้ว' : 'Accessed')
+                  : (lang === 'th' ? 'ยังไม่เริ่ม' : 'Not started')}
+              </span>
             </div>
           );
         })}
-      </div>
+      </ModuleSection>
 
-      {/* Quiz detail */}
-      {Object.keys(stats.quiz).length > 0 && (
-        <div className="bg-secondary/30 border border-border rounded-2xl p-3.5 space-y-2">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t.quizDetail}</span>
-          {(['product', 'process', 'payment'] as const).map(m => {
-            const qs = stats.quiz[m];
+      {/* Module 2: Quiz */}
+      <ModuleSection icon={Target} color="#FBBF24" title={lang === 'th' ? 'แบบทดสอบ' : 'Quiz'} completedCount={quizPassedCount} totalCount={3}>
+        {quizTopics.map(m => {
+          const qs = stats.quiz[m];
+          return (
+            <div key={m} className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                {qs?.passed
+                  ? <CheckCircle2 size={9} className="text-blue-500" />
+                  : qs
+                    ? <AlertTriangle size={9} className="text-amber-400" />
+                    : <Circle size={9} className="text-muted-foreground/25" />
+                }
+                <span className="text-[11px] capitalize text-foreground">{m}</span>
+              </div>
+              {qs ? (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] font-bold" style={{ color: qs.passed ? '#60A5FA' : '#F87171' }}>{qs.bestScore}%</span>
+                  <span className="text-[9px] px-1 py-0.5 rounded font-medium" style={{ background: qs.passed ? 'rgba(96,165,250,0.1)' : 'rgba(248,113,113,0.1)', color: qs.passed ? '#60A5FA' : '#F87171' }}>
+                    {qs.passed ? t.passedLabel : t.failedLabel}
+                  </span>
+                  <span className="text-[9px] text-muted-foreground/50">{qs.attempts}×</span>
+                </div>
+              ) : (
+                <span className="text-[10px] text-muted-foreground/30">—</span>
+              )}
+            </div>
+          );
+        })}
+      </ModuleSection>
+
+      {/* Module 3: AI Eval */}
+      <ModuleSection icon={Zap} color="#A78BFA" title={lang === 'th' ? 'AI ประเมิน' : 'AI Eval'} completedCount={completedEvalLevels.length} totalCount={4}>
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] text-muted-foreground">{t.aiEvalAvg}</span>
+          {stats.aiEval
+            ? <span className="text-[11px] font-bold" style={{ color: scoreHex(stats.aiEval.avgScore) }}>{stats.aiEval.avgScore}/100</span>
+            : <span className="text-[10px] text-muted-foreground/30">—</span>
+          }
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] text-muted-foreground">{lang === 'th' ? 'เซสชัน' : 'Sessions'}</span>
+          <span className="text-[11px] text-foreground">{stats.aiEval?.count ?? 0}</span>
+        </div>
+        <div className="flex items-center gap-1.5 pt-0.5">
+          <span className="text-[10px] text-muted-foreground">{lang === 'th' ? 'ระดับ:' : 'Levels:'}</span>
+          {[1, 2, 3, 4].map(l => {
+            const done = completedEvalLevels.includes(l);
             return (
-              <div key={m} className="flex items-center justify-between">
-                <span className="text-[11px] text-muted-foreground capitalize">{m}</span>
-                {qs ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-semibold" style={{ color: qs.passed ? '#60A5FA' : '#F87171' }}>{qs.bestScore}%</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded" style={{ background: qs.passed ? 'rgba(96,165,250,0.1)' : 'rgba(248,113,113,0.1)', color: qs.passed ? '#60A5FA' : '#F87171' }}>
-                      {qs.passed ? t.passedLabel : t.failedLabel}
-                    </span>
-                  </div>
-                ) : <span className="text-[11px] text-muted-foreground/30">—</span>}
+              <div key={l} className="w-5 h-5 rounded flex items-center justify-center text-[9px] font-black"
+                style={{
+                  background: done ? 'rgba(167,139,250,0.15)' : 'hsl(var(--secondary))',
+                  color: done ? '#A78BFA' : 'hsl(var(--muted-foreground) / 0.3)',
+                  border: `1px solid ${done ? 'rgba(167,139,250,0.3)' : 'hsl(var(--border))'}`,
+                }}
+              >
+                {done ? <Check size={7} /> : l}
               </div>
             );
           })}
         </div>
-      )}
+      </ModuleSection>
 
-      {/* AI Eval */}
-      {stats.aiEval && (
-        <div className="bg-secondary/30 border border-border rounded-2xl p-3 flex items-center gap-3">
-          <Zap size={13} style={{ color: '#A78BFA' }} />
-          <div className="flex-1 text-xs text-muted-foreground">{t.aiEvalAvg}</div>
-          <span className="text-xs font-bold" style={{ color: scoreHex(stats.aiEval.avgScore) }}>{stats.aiEval.avgScore}/100</span>
-          <span className="text-[10px] text-muted-foreground/50">({t.sessions(stats.aiEval.count)})</span>
+      {/* Module 4: Pitch Simulator */}
+      <ModuleSection icon={TrendingUp} color="#FB923C" title={lang === 'th' ? 'พิช ซิมูเลเตอร์' : 'Pitch Simulator'} completedCount={completedPitchLevels.length} totalCount={3}>
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] text-muted-foreground">{lang === 'th' ? 'เซสชัน' : 'Sessions'}</span>
+          <span className="text-[11px] text-foreground">{stats.pitch?.sessionCount ?? 0}</span>
         </div>
-      )}
+        <div className="flex items-center gap-1.5 pt-0.5">
+          <span className="text-[10px] text-muted-foreground">{lang === 'th' ? 'ระดับ:' : 'Levels:'}</span>
+          {[1, 2, 3].map(l => {
+            const done = completedPitchLevels.includes(l);
+            return (
+              <div key={l} className="w-5 h-5 rounded flex items-center justify-center text-[9px] font-black"
+                style={{
+                  background: done ? 'rgba(251,146,60,0.15)' : 'hsl(var(--secondary))',
+                  color: done ? '#FB923C' : 'hsl(var(--muted-foreground) / 0.3)',
+                  border: `1px solid ${done ? 'rgba(251,146,60,0.3)' : 'hsl(var(--border))'}`,
+                }}
+              >
+                {done ? <Check size={7} /> : l}
+              </div>
+            );
+          })}
+        </div>
+      </ModuleSection>
+
     </div>
   );
 }
@@ -806,78 +884,128 @@ function AgentOverviewCard({
             exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.22 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 pt-1 border-t border-border space-y-3">
-              {/* Module progress bars with labels */}
-              <div className="space-y-2">
-                <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">{t.trainingProgress}</div>
-                {MODULE_ORDER.map(mod => {
-                  const pct = moduleScore(mod.key);
-                  const Icon = mod.icon;
-                  const label = lang === 'th' ? mod.labelTh : mod.labelEn;
-                  return (
-                    <div key={mod.key} className="flex items-center gap-2">
-                      <Icon size={10} style={{ color: mod.color }} />
-                      <span className="text-[10px] text-muted-foreground w-16 shrink-0">{label}</span>
-                      <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
-                        <motion.div
-                          className="h-full rounded-full"
-                          style={{ background: `linear-gradient(90deg, ${mod.color}60, ${mod.color})` }}
-                          initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.5 }}
-                        />
+            <div className="px-4 pb-4 pt-2 border-t border-border space-y-3">
+
+              {/* Courses — confirm all topics accessed */}
+              <div>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <BookOpen size={9} style={{ color: '#60A5FA' }} />
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
+                    {lang === 'th' ? 'คอร์ส' : 'Courses'}
+                  </span>
+                </div>
+                <div className="flex gap-1.5 flex-wrap">
+                  {(['product', 'process', 'payment'] as const).map(m => {
+                    const accessed = !!stats.quiz[m];
+                    const passed   = stats.quiz[m]?.passed;
+                    return (
+                      <div key={m} className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-medium"
+                        style={{
+                          background: accessed ? (passed ? 'rgba(96,165,250,0.1)' : 'rgba(251,191,36,0.1)') : 'hsl(var(--secondary))',
+                          color: accessed ? (passed ? '#60A5FA' : '#FBBF24') : 'hsl(var(--muted-foreground) / 0.4)',
+                          border: `1px solid ${accessed ? (passed ? 'rgba(96,165,250,0.25)' : 'rgba(251,191,36,0.25)') : 'transparent'}`,
+                        }}>
+                        {accessed ? <CheckCircle2 size={7} /> : <Circle size={7} />}
+                        <span className="capitalize ml-0.5">{m}</span>
                       </div>
-                      <span className="text-[10px] font-bold w-8 text-right shrink-0"
-                        style={{ color: pct === 0 ? undefined : pct === 100 ? '#60A5FA' : mod.color }}>
-                        {pct}%
-                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Quiz per topic */}
+              <div>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Target size={9} style={{ color: '#FBBF24' }} />
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
+                    {lang === 'th' ? 'แบบทดสอบ' : 'Quiz'}
+                  </span>
+                </div>
+                {(['product', 'process', 'payment'] as const).map(m => {
+                  const qs = stats.quiz[m];
+                  return (
+                    <div key={m} className="flex items-center justify-between mb-0.5">
+                      <div className="flex items-center gap-1.5">
+                        {qs?.passed ? <CheckCircle2 size={8} className="text-blue-500" />
+                          : qs ? <AlertTriangle size={8} className="text-amber-400" />
+                          : <Circle size={8} className="text-muted-foreground/25" />
+                        }
+                        <span className="text-[10px] text-muted-foreground capitalize">{m}</span>
+                      </div>
+                      {qs ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold" style={{ color: qs.passed ? '#60A5FA' : '#F87171' }}>{qs.bestScore}%</span>
+                          <span className="text-[8px] px-1 py-0.5 rounded" style={{ background: qs.passed ? 'rgba(96,165,250,0.1)' : 'rgba(248,113,113,0.1)', color: qs.passed ? '#60A5FA' : '#F87171' }}>
+                            {qs.passed ? t.passedLabel : t.failedLabel}
+                          </span>
+                          <span className="text-[9px] text-muted-foreground/50">{qs.attempts}×</span>
+                        </div>
+                      ) : <span className="text-[10px] text-muted-foreground/30">—</span>}
                     </div>
                   );
                 })}
               </div>
 
-              {/* Quiz detail */}
-              {Object.keys(stats.quiz).length > 0 && (
-                <div className="rounded-xl p-2.5 bg-secondary/30 space-y-1.5">
-                  <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">{t.quizDetail}</div>
-                  {(['product', 'process', 'payment'] as const).map(m => {
-                    const qs = stats.quiz[m];
-                    return (
-                      <div key={m} className="flex items-center justify-between">
-                        <span className="text-[10px] text-muted-foreground capitalize">{m}</span>
-                        {qs ? (
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] font-semibold" style={{ color: qs.passed ? '#60A5FA' : '#F87171' }}>{qs.bestScore}%</span>
-                            <span className="text-[8px] px-1 py-0.5 rounded" style={{ background: qs.passed ? 'rgba(96,165,250,0.1)' : 'rgba(248,113,113,0.1)', color: qs.passed ? '#60A5FA' : '#F87171' }}>
-                              {qs.passed ? t.passedLabel : t.failedLabel}
-                            </span>
-                          </div>
-                        ) : <span className="text-[10px] text-muted-foreground/30">—</span>}
-                      </div>
-                    );
-                  })}
+              {/* AI Eval + Pitch side by side */}
+              <div className="flex gap-2">
+                <div className="flex-1 rounded-lg p-2 bg-secondary/30">
+                  <div className="flex items-center gap-1 mb-1.5">
+                    <Zap size={9} style={{ color: '#A78BFA' }} />
+                    <span className="text-[9px] font-bold text-muted-foreground uppercase">AI Eval</span>
+                  </div>
+                  {stats.aiEval ? (
+                    <span className="text-[11px] font-bold" style={{ color: scoreHex(stats.aiEval.avgScore) }}>
+                      {stats.aiEval.avgScore}/100
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground/40">—</span>
+                  )}
+                  {stats.aiEval && <span className="text-[9px] text-muted-foreground/50 ml-1">{t.sessions(stats.aiEval.count)}</span>}
+                  <div className="flex gap-0.5 mt-1.5">
+                    {[1, 2, 3, 4].map(l => {
+                      const done = (stats.evalCompletedLevels ?? []).includes(l);
+                      return (
+                        <div key={l} className="w-4 h-4 rounded text-[8px] flex items-center justify-center font-bold"
+                          style={{
+                            background: done ? 'rgba(167,139,250,0.2)' : 'hsl(var(--secondary))',
+                            color: done ? '#A78BFA' : 'hsl(var(--muted-foreground) / 0.3)',
+                          }}>
+                          {done ? '✓' : l}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              )}
+                <div className="flex-1 rounded-lg p-2 bg-secondary/30">
+                  <div className="flex items-center gap-1 mb-1.5">
+                    <TrendingUp size={9} style={{ color: '#FB923C' }} />
+                    <span className="text-[9px] font-bold text-muted-foreground uppercase">Pitch</span>
+                  </div>
+                  {stats.pitch ? (
+                    <span className="text-[11px] text-muted-foreground">
+                      {lang === 'th' ? 'เซสชัน: ' : 'Sessions: '}
+                      <span className="font-bold text-foreground">{stats.pitch.sessionCount}</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground/40">—</span>
+                  )}
+                  <div className="flex gap-0.5 mt-1.5">
+                    {[1, 2, 3].map(l => {
+                      const done = (stats.pitch?.completedLevels ?? []).includes(l);
+                      return (
+                        <div key={l} className="w-4 h-4 rounded text-[8px] flex items-center justify-center font-bold"
+                          style={{
+                            background: done ? 'rgba(251,146,60,0.2)' : 'hsl(var(--secondary))',
+                            color: done ? '#FB923C' : 'hsl(var(--muted-foreground) / 0.3)',
+                          }}>
+                          {done ? '✓' : l}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
 
-              {/* AI Eval */}
-              {stats.aiEval && (
-                <div className="rounded-xl p-2.5 bg-secondary/30 flex items-center gap-2">
-                  <Zap size={11} style={{ color: '#A78BFA' }} />
-                  <span className="text-[10px] text-muted-foreground flex-1">{t.aiEvalAvg}</span>
-                  <span className="text-[10px] font-bold" style={{ color: scoreHex(stats.aiEval.avgScore) }}>{stats.aiEval.avgScore}/100</span>
-                  <span className="text-[9px] text-muted-foreground/50">({t.sessions(stats.aiEval.count)})</span>
-                </div>
-              )}
-
-              {/* Pitch */}
-              {stats.pitch && (
-                <div className="rounded-xl p-2.5 bg-secondary/30 flex items-center gap-2">
-                  <TrendingUp size={11} style={{ color: '#60A5FA' }} />
-                  <span className="text-[10px] text-muted-foreground flex-1">Pitch</span>
-                  <span className="text-[10px] font-bold text-foreground">
-                    {lang === 'th' ? `ระดับ ${stats.pitch.highestLevel}` : `Level ${stats.pitch.highestLevel}`}
-                  </span>
-                  <span className="text-[9px] text-muted-foreground/50">({stats.pitch.sessionCount} sessions)</span>
-                </div>
-              )}
             </div>
           </motion.div>
         )}
@@ -944,36 +1072,143 @@ function OverviewPanel({
         })}
       </div>
 
-      {/* Module completion rates */}
+      {/* Module completion rates — per topic/level breakdown */}
       {totalAgents > 0 && (
-        <div className="bg-card border border-border rounded-2xl p-4">
-          <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">{t.moduleCompletion}</div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {MODULE_ORDER.map(mod => {
-              const pct = moduleCompletionRate(mod.key);
-              const Icon = mod.icon;
-              const label = lang === 'th' ? mod.labelTh : mod.labelEn;
-              const completedCount = Math.round(pct / 100 * totalAgents);
-              return (
-                <div key={mod.key} className="space-y-2">
-                  <div className="flex items-center gap-1.5">
-                    <Icon size={12} style={{ color: mod.color }} />
-                    <span className="text-xs text-muted-foreground font-medium">{label}</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                    <motion.div
-                      className="h-full rounded-full"
-                      style={{ background: `linear-gradient(90deg, ${mod.color}60, ${mod.color})` }}
-                      initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.6, ease: 'easeOut' }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-muted-foreground/60">{t.agentsCompleted(completedCount, totalAgents)}</span>
-                    <span className="text-xs font-black" style={{ color: pct === 0 ? undefined : pct === 100 ? '#60A5FA' : mod.color }}>{pct}%</span>
-                  </div>
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-5">{t.moduleCompletion}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+            {/* Learn: per topic */}
+            <div>
+              <div className="flex items-center gap-1.5 mb-3">
+                <div className="p-1 rounded-md" style={{ background: '#60A5FA18' }}>
+                  <BookOpen size={11} style={{ color: '#60A5FA' }} />
                 </div>
-              );
-            })}
+                <span className="text-xs font-semibold text-foreground">{lang === 'th' ? 'เรียนรู้' : 'Learn'}</span>
+                <span className="text-[10px] text-muted-foreground/50 ml-auto">
+                  {t.agentsCompleted(Math.round(moduleCompletionRate('learn') / 100 * totalAgents), totalAgents)}
+                </span>
+              </div>
+              <div className="space-y-2 pl-3 border-l-2 border-blue-400/20">
+                {(['product', 'process', 'payment'] as const).map(m => {
+                  const count = allAgentStats.filter(s => !!s.quiz[m]).length;
+                  const pct   = Math.round(count / totalAgents * 100);
+                  return (
+                    <div key={m}>
+                      <div className="flex justify-between text-[11px] mb-1">
+                        <span className="capitalize text-muted-foreground">{m}</span>
+                        <span className="font-bold" style={{ color: pct > 0 ? '#60A5FA' : undefined }}>{count}/{totalAgents}</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                        <motion.div className="h-full rounded-full" style={{ background: '#60A5FA' }}
+                          initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.6 }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Quiz: per topic pass rate */}
+            <div>
+              <div className="flex items-center gap-1.5 mb-3">
+                <div className="p-1 rounded-md" style={{ background: '#FBBF2418' }}>
+                  <Target size={11} style={{ color: '#FBBF24' }} />
+                </div>
+                <span className="text-xs font-semibold text-foreground">{lang === 'th' ? 'แบบทดสอบ' : 'Quiz'}</span>
+                <span className="text-[10px] text-muted-foreground/50 ml-auto">
+                  {t.agentsCompleted(Math.round(moduleCompletionRate('quiz') / 100 * totalAgents), totalAgents)}
+                </span>
+              </div>
+              <div className="space-y-2 pl-3 border-l-2 border-amber-400/20">
+                {(['product', 'process', 'payment'] as const).map(m => {
+                  const passCount = allAgentStats.filter(s => s.quiz[m]?.passed).length;
+                  const attempted = allAgentStats.filter(s => s.quiz[m]);
+                  const avgScore  = attempted.length > 0 ? Math.round(attempted.reduce((s, a) => s + (a.quiz[m]?.bestScore ?? 0), 0) / attempted.length) : 0;
+                  const pct = Math.round(passCount / totalAgents * 100);
+                  return (
+                    <div key={m}>
+                      <div className="flex justify-between text-[11px] mb-1">
+                        <span className="capitalize text-muted-foreground">{m}</span>
+                        <div className="flex items-center gap-2">
+                          {avgScore > 0 && <span className="text-[10px] text-muted-foreground/60">avg {avgScore}%</span>}
+                          <span className="font-bold" style={{ color: pct > 0 ? '#FBBF24' : undefined }}>
+                            {passCount}/{totalAgents} {lang === 'th' ? 'ผ่าน' : 'pass'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                        <motion.div className="h-full rounded-full" style={{ background: '#FBBF24' }}
+                          initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.6 }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* AI Eval: per level */}
+            <div>
+              <div className="flex items-center gap-1.5 mb-3">
+                <div className="p-1 rounded-md" style={{ background: '#A78BFA18' }}>
+                  <Zap size={11} style={{ color: '#A78BFA' }} />
+                </div>
+                <span className="text-xs font-semibold text-foreground">{lang === 'th' ? 'AI ประเมิน' : 'AI Eval'}</span>
+                <span className="text-[10px] text-muted-foreground/50 ml-auto">
+                  {t.agentsCompleted(Math.round(moduleCompletionRate('ai-eval') / 100 * totalAgents), totalAgents)}
+                </span>
+              </div>
+              <div className="space-y-2 pl-3 border-l-2 border-purple-400/20">
+                {[1, 2, 3, 4].map(level => {
+                  const count = allAgentStats.filter(s => s.evalCompletedLevels?.includes(level)).length;
+                  const pct   = Math.round(count / totalAgents * 100);
+                  return (
+                    <div key={level}>
+                      <div className="flex justify-between text-[11px] mb-1">
+                        <span className="text-muted-foreground">{lang === 'th' ? `ระดับ ${level}` : `Level ${level}`}</span>
+                        <span className="font-bold" style={{ color: pct > 0 ? '#A78BFA' : undefined }}>{count}/{totalAgents}</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                        <motion.div className="h-full rounded-full" style={{ background: '#A78BFA' }}
+                          initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.6 }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Pitch: per level */}
+            <div>
+              <div className="flex items-center gap-1.5 mb-3">
+                <div className="p-1 rounded-md" style={{ background: '#FB923C18' }}>
+                  <TrendingUp size={11} style={{ color: '#FB923C' }} />
+                </div>
+                <span className="text-xs font-semibold text-foreground">{lang === 'th' ? 'พิช' : 'Pitch'}</span>
+                <span className="text-[10px] text-muted-foreground/50 ml-auto">
+                  {t.agentsCompleted(Math.round(moduleCompletionRate('pitch') / 100 * totalAgents), totalAgents)}
+                </span>
+              </div>
+              <div className="space-y-2 pl-3 border-l-2 border-orange-400/20">
+                {[1, 2, 3].map(level => {
+                  const count = allAgentStats.filter(s => s.pitch?.completedLevels?.includes(level)).length;
+                  const pct   = Math.round(count / totalAgents * 100);
+                  return (
+                    <div key={level}>
+                      <div className="flex justify-between text-[11px] mb-1">
+                        <span className="text-muted-foreground">{lang === 'th' ? `ระดับ ${level}` : `Level ${level}`}</span>
+                        <span className="font-bold" style={{ color: pct > 0 ? '#FB923C' : undefined }}>{count}/{totalAgents}</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                        <motion.div className="h-full rounded-full" style={{ background: '#FB923C' }}
+                          initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.6 }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
           </div>
         </div>
       )}

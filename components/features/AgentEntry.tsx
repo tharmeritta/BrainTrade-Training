@@ -7,8 +7,8 @@ import {
   BookOpen, Settings, CreditCard, Bot, Target, Zap, CheckCircle2,
 } from 'lucide-react';
 
-interface AgentOption { id: string; name: string; }
-interface AgentEntryProps { onAgentSelected: (id: string, name: string) => void; }
+interface AgentOption { id: string; name: string; stageName?: string; }
+interface AgentEntryProps { onAgentSelected: (id: string, name: string, stageName: string) => void; }
 
 const STATS_CONFIG = [
   { Icon: Users,  target: 100, suffix: '+', label: 'เอเจนต์' },
@@ -63,14 +63,15 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
   const [loading, setLoading]           = useState(true);
   const [submitting, setSubmitting]     = useState(false);
   const [error, setError]               = useState('');
-  const [returning, setReturning]       = useState<{ id: string; name: string } | null>(null);
+  const [returning, setReturning]       = useState<{ id: string; name: string; stageName: string } | null>(null);
   const [inputFocused, setInputFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const savedId   = localStorage.getItem('brainstrade_agent_id');
-    const savedName = localStorage.getItem('brainstrade_agent_name');
-    if (savedId && savedName) setReturning({ id: savedId, name: savedName });
+    const savedId        = localStorage.getItem('brainstrade_agent_id');
+    const savedName      = localStorage.getItem('brainstrade_agent_name');
+    const savedStageName = localStorage.getItem('brainstrade_agent_stage_name') ?? '';
+    if (savedId && savedName) setReturning({ id: savedId, name: savedName, stageName: savedStageName });
 
     fetch('/api/agents')
       .then(r => r.json())
@@ -97,7 +98,8 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
     }
     localStorage.setItem('brainstrade_agent_id', match.id);
     localStorage.setItem('brainstrade_agent_name', match.name);
-    onAgentSelected(match.id, match.name);
+    localStorage.setItem('brainstrade_agent_stage_name', match.stageName ?? '');
+    onAgentSelected(match.id, match.name, match.stageName ?? '');
   }
 
   const canSubmit  = !!name.trim() && !loading;
@@ -354,11 +356,16 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                             <div className="text-sm font-bold truncate" style={{ color: 'var(--hub-text)' }}>
                               {returning.name}
                             </div>
+                            {returning.stageName && (
+                              <div className="text-[10px] font-medium truncate" style={{ color: CYAN, opacity: 0.8 }}>
+                                "{returning.stageName}"
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="flex gap-2">
                           <motion.button
-                            onClick={() => onAgentSelected(returning.id, returning.name)}
+                            onClick={() => onAgentSelected(returning.id, returning.name, returning.stageName)}
                             className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold"
                             style={{
                               background: `linear-gradient(135deg, ${CYAN}, #0055F0)`,
@@ -467,7 +474,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                       className="absolute left-4 font-medium pointer-events-none"
                       style={{ color: floatLabel ? CYAN : 'var(--hub-muted)', lineHeight: 1 }}
                     >
-                      ชื่อที่ใช้ทำงาน
+                      ชื่อ-นามสกุล (ภาษาอังกฤษ)
                     </motion.label>
                   </div>
 

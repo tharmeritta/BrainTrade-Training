@@ -21,7 +21,10 @@
       "Bash(next build:*)",
       "Bash(dir C:\\\\Users\\\\Admin\\\\OneDrive - Tiebreak Solutions\\\\Documents\\\\Antigravity Workspace\\\\Antigravity Github Repo\\\\BrainTrade Training:*)",
       "Bash(node_modules/.bin/next build:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(New-Item:*)",
+      "Read(//c//**)",
+      "Bash(mkdir -p \"/c/Temp\")"
     ]
   }
 }

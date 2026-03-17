@@ -7,7 +7,7 @@ export async function GET() {
     const agents = await gcsGetAll<Agent>('agents');
     const active = agents
       .filter(a => a.active)
-      .map(a => ({ id: a.id, name: a.name }))
+      .map(a => ({ id: a.id, name: a.name, stageName: a.stageName ?? '' }))
       .sort((a, b) => a.name.localeCompare(b.name));
     return NextResponse.json({ agents: active });
   } catch {

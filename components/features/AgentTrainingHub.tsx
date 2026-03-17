@@ -210,9 +210,9 @@ function SectionDivider({ label }: { label: string }) {
 }
 
 // ── Main ───────────────────────────────────────────────────────────────────────
-interface Props { agentName: string; agentId: string; stats: AgentStats | null; onLogout: () => void; }
+interface Props { agentName: string; agentId: string; agentStageName?: string; stats: AgentStats | null; onLogout: () => void; }
 
-export default function AgentTrainingHub({ agentName, stats, onLogout }: Props) {
+export default function AgentTrainingHub({ agentName, agentStageName, stats, onLogout }: Props) {
   const pathname  = usePathname();
   const locale    = pathname.split('/')[1] ?? 'th';
   const derived   = deriveSteps(stats);
@@ -293,7 +293,7 @@ export default function AgentTrainingHub({ agentName, stats, onLogout }: Props) 
 
           {/* Name */}
           <motion.h2
-            className="text-lg font-black text-center leading-snug mb-1"
+            className="text-lg font-black text-center leading-snug mb-0.5"
             style={{ color: 'var(--hub-text)' }}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
@@ -301,6 +301,17 @@ export default function AgentTrainingHub({ agentName, stats, onLogout }: Props) 
           >
             {agentName}
           </motion.h2>
+          {agentStageName && (
+            <motion.p
+              className="text-xs font-semibold text-center mb-1"
+              style={{ color: ringColor, opacity: 0.85 }}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 0.85, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              "{agentStageName}"
+            </motion.p>
+          )}
 
           {/* Status pill */}
           <div className="mb-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full"

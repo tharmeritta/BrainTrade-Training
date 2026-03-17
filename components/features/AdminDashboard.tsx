@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, FileSpreadsheet, LogOut,
   TrendingUp, Award, Target, Activity, Plus, Search,
   Download, ChevronDown, Zap, ShieldCheck, Eye, EyeOff, Pencil, Trash2, X, Check,
-  ClipboardCheck, Star,
+  ClipboardCheck, Star, BookOpen,
 } from 'lucide-react';
 import type { AdminOverviewData, AgentStats, StaffAccount } from '@/types';
 import ThemeToggle from '@/components/ui/ThemeToggle';
@@ -171,10 +171,122 @@ function OverviewTab() {
           <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
             <TrendingUp size={20} className="text-primary" /> Training Completion
           </h3>
-          <div className="space-y-6">
-            {data.moduleStats.map(m => (
-              <ModuleBar key={m.moduleId} label={m.label} avgScore={m.avgScore} passCount={m.passCount} totalAttempts={m.totalAttempts} />
-            ))}
+          <div className="space-y-7">
+
+            {/* Learn — per topic */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <BookOpen size={15} className="text-blue-400" />
+                <span className="font-semibold text-sm text-foreground">Learn — Courses</span>
+                <span className="text-xs text-muted-foreground ml-auto">
+                  {data.moduleStats.find(m => m.moduleId === 'learn')?.passCount ?? 0} / {data.totalAgents} agents
+                </span>
+              </div>
+              <div className="space-y-2.5 pl-5 border-l-2 border-blue-400/20">
+                {(['product', 'process', 'payment'] as const).map(topic => {
+                  const count = data.leaderboard.filter(a => !!a.quiz[topic]).length;
+                  const pct   = data.totalAgents > 0 ? Math.round(count / data.totalAgents * 100) : 0;
+                  return (
+                    <div key={topic} className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="capitalize text-muted-foreground">{topic}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground/60">{count}/{data.totalAgents}</span>
+                          <span className={`font-bold ${scoreColor(pct)}`}>{pct}%</span>
+                        </div>
+                      </div>
+                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: 'easeOut' }}
+                          className="h-full rounded-full bg-blue-400" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Quiz — per topic pass rate */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Target size={15} className="text-amber-400" />
+                <span className="font-semibold text-sm text-foreground">Quiz</span>
+                <span className="text-xs text-muted-foreground ml-auto">
+                  {data.moduleStats.find(m => m.moduleId === 'quiz')?.passCount ?? 0} / {data.totalAgents} passed all
+                </span>
+              </div>
+              <div className="space-y-2.5 pl-5 border-l-2 border-amber-400/20">
+                {(['product', 'process', 'payment'] as const).map(topic => {
+                  const attempted = data.leaderboard.filter(a => !!a.quiz[topic]);
+                  const passed    = attempted.filter(a => a.quiz[topic]?.passed).length;
+                  const avgScore  = attempted.length > 0 ? Math.round(attempted.reduce((s, a) => s + (a.quiz[topic]?.bestScore ?? 0), 0) / attempted.length) : 0;
+                  const pct       = data.totalAgents > 0 ? Math.round(passed / data.totalAgents * 100) : 0;
+                  return (
+                    <div key={topic} className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="capitalize text-muted-foreground">{topic}</span>
+                        <div className="flex items-center gap-3">
+                          {avgScore > 0 && <span className={`${scoreColor(avgScore)}`}>avg {avgScore}%</span>}
+                          <span className={`font-bold ${scoreColor(pct)}`}>{passed}/{data.totalAgents} pass</span>
+                        </div>
+                      </div>
+                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: 'easeOut' }}
+                          className={`h-full rounded-full ${scoreBg(pct)}`} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* AI Eval */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Zap size={15} className="text-purple-400" />
+                <span className="font-semibold text-sm text-foreground">AI Eval</span>
+                <span className="text-xs text-muted-foreground ml-auto">
+                  {data.moduleStats.find(m => m.moduleId === 'ai-eval')?.passCount ?? 0} / {data.totalAgents} started
+                  {data.avgAiEvalScore > 0 && <span className={` ml-2 font-bold ${scoreColor(data.avgAiEvalScore)}`}>· avg {data.avgAiEvalScore}/100</span>}
+                </span>
+              </div>
+              <div className="pl-5 border-l-2 border-purple-400/20">
+                <ModuleBar label="" avgScore={data.moduleStats.find(m => m.moduleId === 'ai-eval')?.avgScore ?? 0}
+                  passCount={data.moduleStats.find(m => m.moduleId === 'ai-eval')?.passCount ?? 0} totalAttempts={data.totalAgents} />
+              </div>
+            </div>
+
+            {/* Pitch — per level */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp size={15} className="text-orange-400" />
+                <span className="font-semibold text-sm text-foreground">Pitch Simulator</span>
+                <span className="text-xs text-muted-foreground ml-auto">
+                  {data.moduleStats.find(m => m.moduleId === 'pitch')?.passCount ?? 0} / {data.totalAgents} all levels
+                </span>
+              </div>
+              <div className="space-y-2.5 pl-5 border-l-2 border-orange-400/20">
+                {[1, 2, 3].map(level => {
+                  const count = data.leaderboard.filter(a => a.pitch?.completedLevels?.includes(level)).length;
+                  const pct   = data.totalAgents > 0 ? Math.round(count / data.totalAgents * 100) : 0;
+                  return (
+                    <div key={level} className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">Level {level}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground/60">{count}/{data.totalAgents}</span>
+                          <span className={`font-bold ${scoreColor(pct)}`}>{pct}%</span>
+                        </div>
+                      </div>
+                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: 'easeOut' }}
+                          className="h-full rounded-full bg-orange-400" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -247,13 +359,15 @@ function OverviewTab() {
 // ── Agents Tab ──────────────────────────────────────────────────────────────
 
 function AgentsTab({ role }: { role: 'admin' | 'manager' }) {
-  const [agents,   setAgents]   = useState<AgentStats[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [search,   setSearch]   = useState('');
-  const [newName,  setNewName]  = useState('');
-  const [adding,   setAdding]   = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [agentErr, setAgentErr] = useState('');
+  const [agents,       setAgents]       = useState<AgentStats[]>([]);
+  const [loading,      setLoading]      = useState(true);
+  const [search,       setSearch]       = useState('');
+  const [newName,      setNewName]      = useState('');
+  const [adding,       setAdding]       = useState(false);
+  const [showForm,     setShowForm]     = useState(false);
+  const [agentErr,     setAgentErr]     = useState('');
+  const [editingAgent, setEditingAgent] = useState<{ id: string; name: string; stageName: string } | null>(null);
+  const [savingAgent,  setSavingAgent]  = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -266,7 +380,29 @@ function AgentsTab({ role }: { role: 'admin' | 'manager' }) {
 
   useEffect(() => { load(); }, [load]);
 
-  const filtered = agents.filter(a => a.agent.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = agents.filter(a =>
+    a.agent.name.toLowerCase().includes(search.toLowerCase()) ||
+    (a.agent.stageName ?? '').toLowerCase().includes(search.toLowerCase())
+  );
+
+  async function saveAgentEdit() {
+    if (!editingAgent) return;
+    setSavingAgent(true);
+    setAgentErr('');
+    const res = await fetch(`/api/admin/agents/${editingAgent.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: editingAgent.name, stageName: editingAgent.stageName }),
+    });
+    if (res.ok) {
+      setEditingAgent(null);
+      await load();
+    } else {
+      const d = await res.json();
+      setAgentErr(d.error ?? 'Failed to save');
+    }
+    setSavingAgent(false);
+  }
 
   async function addAgent(e: React.FormEvent) {
     e.preventDefault();
@@ -365,6 +501,65 @@ function AgentsTab({ role }: { role: 'admin' | 'manager' }) {
         <p className="text-sm text-red-500 bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3">{agentErr}</p>
       )}
 
+      {/* Edit Agent Modal */}
+      <AnimatePresence>
+        {editingAgent && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            onClick={e => { if (e.target === e.currentTarget) setEditingAgent(null); }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-bold text-lg text-foreground">Edit Agent Info</h3>
+                <button onClick={() => setEditingAgent(null)} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1.5">Full Name</label>
+                  <input
+                    value={editingAgent.name}
+                    onChange={e => setEditingAgent(prev => prev ? { ...prev, name: e.target.value } : null)}
+                    className="w-full bg-secondary/40 border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
+                    placeholder="Agent full name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1.5">Stage Name <span className="text-muted-foreground/60 font-normal">(optional)</span></label>
+                  <input
+                    value={editingAgent.stageName}
+                    onChange={e => setEditingAgent(prev => prev ? { ...prev, stageName: e.target.value } : null)}
+                    className="w-full bg-secondary/40 border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
+                    placeholder="e.g. Sales King, The Closer..."
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={saveAgentEdit}
+                  disabled={savingAgent || !editingAgent.name.trim()}
+                  className="flex-1 bg-primary text-primary-foreground py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50 hover:bg-primary/90 transition-colors"
+                >
+                  {savingAgent ? 'Saving...' : 'Save Changes'}
+                </button>
+                <button onClick={() => setEditingAgent(null)} className="px-5 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -390,6 +585,9 @@ function AgentsTab({ role }: { role: 'admin' | 'manager' }) {
                 <tr key={a.agent.id} className="hover:bg-secondary/20 transition-colors">
                   <td className="px-6 py-4">
                     <div className="font-semibold text-foreground">{a.agent.name}</div>
+                    {a.agent.stageName && (
+                      <div className="text-xs text-primary/70 font-medium mt-0.5">"{a.agent.stageName}"</div>
+                    )}
                     <div className="text-xs text-muted-foreground mt-0.5">{timeAgo(a.lastActive)}</div>
                   </td>
                   <td className="px-4 py-4"><ModuleCell stat={a.quiz.product} /></td>
@@ -421,6 +619,13 @@ function AgentsTab({ role }: { role: 'admin' | 'manager' }) {
                       <button onClick={() => toggleActive(a.agent.id, a.agent.active)}
                         className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
                         {a.agent.active ? 'Deactivate' : 'Reactivate'}
+                      </button>
+                      <button
+                        onClick={() => setEditingAgent({ id: a.agent.id, name: a.agent.name, stageName: a.agent.stageName ?? '' })}
+                        className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                        title="Edit agent info"
+                      >
+                        <Pencil size={13} />
                       </button>
                       {role === 'admin' && (
                         <button onClick={() => deleteAgent(a.agent.id, a.agent.name)}
