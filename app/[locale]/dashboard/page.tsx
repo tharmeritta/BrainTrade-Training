@@ -81,6 +81,7 @@ export default function DashboardPage() {
       ) : (
         <motion.div
           key="hub"
+          className="h-full"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}

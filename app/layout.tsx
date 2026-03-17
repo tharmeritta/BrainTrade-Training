@@ -22,7 +22,7 @@ const themeScript = `
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th" className="dark">
+    <html lang="th" className="dark" suppressHydrationWarning>
       <head>
         {/* Theme: must run before paint to prevent flash */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}

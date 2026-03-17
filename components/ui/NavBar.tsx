@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, GraduationCap, ClipboardList, Mic, PlayCircle, Lock, ClipboardCheck } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { LayoutDashboard, GraduationCap, ClipboardList, Mic, PlayCircle, Lock, ClipboardCheck, Loader2 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import LangToggle  from './LangToggle';
 
 const navLinks = [
   { label: 'Dashboard', href: '/dashboard',     icon: LayoutDashboard },
-  { label: 'เรียนรู้',  href: '/learn/product', icon: GraduationCap   },
+  { label: 'Course',    href: '/learn',          icon: GraduationCap   },
   { label: 'Quiz',      href: '/quiz',           icon: ClipboardList   },
   { label: 'AI Eval',   href: '/ai-eval',       icon: Mic             },
   { label: 'Pitch',     href: '/pitch',         icon: PlayCircle      },
@@ -17,6 +18,12 @@ const navLinks = [
 export default function NavBar() {
   const pathname = usePathname();
   const locale   = pathname.split('/')[1] ?? 'th';
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  // Clear pending state once navigation completes
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname]);
 
   return (
     <>
@@ -44,17 +51,24 @@ export default function NavBar() {
             {navLinks.map(l => {
               const Icon = l.icon;
               const isActive = pathname.includes(l.href);
+              const isPending = pendingHref === l.href;
               return (
                 <Link
                   key={l.href}
                   href={`/${locale}${l.href}`}
+                  onClick={() => { if (!isActive) setPendingHref(l.href); }}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive
                       ? 'bg-white dark:bg-white/10 text-primary shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-white/60 dark:hover:bg-white/8'
+                      : isPending
+                        ? 'bg-white/60 dark:bg-white/8 text-primary opacity-80'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-white/60 dark:hover:bg-white/8'
                   }`}
                 >
-                  <Icon size={16} />
+                  {isPending
+                    ? <Loader2 size={16} className="animate-spin" />
+                    : <Icon size={16} />
+                  }
                   {l.label}
                 </Link>
               );
@@ -93,15 +107,17 @@ export default function NavBar() {
           {navLinks.map(l => {
             const Icon = l.icon;
             const isActive = pathname.includes(l.href);
+            const isPending = pendingHref === l.href;
             return (
               <Link
                 key={l.href}
                 href={`/${locale}${l.href}`}
+                onClick={() => { if (!isActive) setPendingHref(l.href); }}
                 className={`flex flex-col items-center gap-0.5 py-2 px-3 rounded-xl transition-all ${
-                  isActive ? 'text-primary' : 'text-muted-foreground'
+                  isActive ? 'text-primary' : isPending ? 'text-primary opacity-70' : 'text-muted-foreground'
                 }`}
               >
-                <Icon size={19} />
+                {isPending ? <Loader2 size={19} className="animate-spin" /> : <Icon size={19} />}
                 <span className="text-[9px] font-medium">{l.label}</span>
               </Link>
             );

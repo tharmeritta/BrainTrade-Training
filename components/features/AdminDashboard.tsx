@@ -82,13 +82,13 @@ function DonutChart({ passed, failed }: { passed: number; failed: number }) {
     <div className="flex flex-col items-center justify-center">
       <svg width={110} height={110} viewBox="0 0 110 110">
         <circle cx={55} cy={55} r={r} fill="none" stroke="hsl(var(--border))" strokeWidth={14} />
-        <circle cx={55} cy={55} r={r} fill="none" stroke="#10b981" strokeWidth={14}
+        <circle cx={55} cy={55} r={r} fill="none" stroke="#3B82F6" strokeWidth={14}
           strokeDasharray={`${dash} ${c}`} strokeLinecap="round"
           transform="rotate(-90 55 55)" />
         <text x={55} y={59} textAnchor="middle" fontSize={18} fontWeight={800} fill="hsl(var(--foreground))">{pct}%</text>
       </svg>
       <div className="flex gap-4 mt-2 text-xs font-medium">
-        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />Passed ({passed})</span>
+        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />Passed ({passed})</span>
         <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-muted-foreground/40 inline-block" />Failed ({failed})</span>
       </div>
     </div>
@@ -655,7 +655,7 @@ function StaffTab() {
 
   const ROLE_COLORS: Record<string, string> = {
     manager:   'bg-blue-500/15 text-blue-400',
-    evaluator: 'bg-emerald-500/15 text-emerald-400',
+    evaluator: 'bg-violet-500/15 text-violet-400',
   };
 
   return (

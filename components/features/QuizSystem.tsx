@@ -18,9 +18,9 @@ const C = {
   text:          '#1A1917',
   muted:         '#6B6860',
   hint:          '#9E9B94',
-  successBg:     '#DCFCE7',
-  successBorder: '#86EFAC',
-  successText:   '#166534',
+  successBg:     '#DBEAFE',
+  successBorder: '#93C5FD',
+  successText:   '#1D4ED8',
   dangerBg:      '#FEE2E2',
   dangerBorder:  '#FCA5A5',
   dangerText:    '#991B1B',
@@ -33,7 +33,7 @@ const LABELS = ['A', 'B', 'C', 'D'];
 
 // ─── Result Screen ────────────────────────────────────────────────────────────
 function ResultScreen({
-  questions, answered, lang, quiz, onRestart, onDashboard,
+  questions, answered, lang, quiz, onRestart, onDashboard, isPractice,
 }: {
   questions: QuestionData[];
   answered: Record<number, number>;
@@ -41,12 +41,14 @@ function ResultScreen({
   quiz: QuizDefinition;
   onRestart: () => void;
   onDashboard: () => void;
+  isPractice?: boolean;
 }) {
   const ui    = UI_STRINGS[lang];
   const total = questions.length;
   const score = questions.filter((q, i) => answered[i] === q.correctIdx).length;
   const pct   = Math.round((score / total) * 100);
-  const passed = score / total >= PASS_THRESHOLD;
+  const threshold = quiz.passThreshold ?? PASS_THRESHOLD;
+  const passed = score / total >= threshold;
 
   const message = pct >= 90
     ? (quiz.uiOverrides?.feedbackHigh?.[lang] ?? ui.msgHigh)
@@ -97,7 +99,7 @@ function ResultScreen({
           </p>
 
           {/* Pass/Fail badge */}
-          <div className="inline-flex items-center gap-1.5 mb-5">
+          <div className="inline-flex flex-col items-center gap-2 mb-5">
             <span
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
               style={{
@@ -108,6 +110,14 @@ function ResultScreen({
             >
               {passed ? '✓' : '✕'} {passed ? ui.passed : ui.failed}
             </span>
+            {isPractice && (
+              <span
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium"
+                style={{ background: C.warnBg, border: `1px solid ${C.warnBorder}`, color: C.warnText }}
+              >
+                {lang === 'th' ? '⚠ โหมดฝึกซ้อม — ไม่บันทึกผล' : '⚠ Practice mode — progress not saved'}
+              </span>
+            )}
           </div>
 
           {/* Feedback */}
@@ -176,7 +186,9 @@ function ResultScreen({
           })}
         </div>
         <p className="text-center py-3" style={{ fontSize: 11, color: C.hint }}>
-          {ui.passThreshold}
+          {lang === 'th'
+            ? `เกณฑ์ผ่าน: ${Math.round(threshold * 100)}%`
+            : `Passing score: ${Math.round(threshold * 100)}%`}
         </p>
       </div>
     </motion.div>
@@ -342,19 +354,22 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
 
   const total = filteredQuestions.length;
 
-  // Save result when quiz finishes
+  // Save result when quiz finishes — only when viewing all questions (not a phase filter)
   useEffect(() => {
     if (!finished || !agentId || !quiz) return;
+    if (activePhase !== null) return; // phase filter = practice mode, don't record progress
     setSaving(true);
-    const score = filteredQuestions.filter((q, i) => answered[i] === q.correctIdx).length;
+    const allQuestions = quiz.questions ?? [];
+    const allTotal = allQuestions.length;
+    const score = allQuestions.filter((q, i) => answered[i] === q.correctIdx).length;
     fetch('/api/quiz/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         moduleId, agentId, agentName,
         score,
-        totalQuestions: total,
-        passed: score / total >= PASS_THRESHOLD,
+        totalQuestions: allTotal,
+        passed: score / allTotal >= (quiz.passThreshold ?? PASS_THRESHOLD),
       }),
     }).finally(() => setSaving(false));
   }, [finished]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -428,6 +443,7 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
             quiz={quiz}
             onRestart={handleRestart}
             onDashboard={() => router.push(`/${locale}/dashboard`)}
+            isPractice={activePhase !== null}
           />
         ) : (
           <>

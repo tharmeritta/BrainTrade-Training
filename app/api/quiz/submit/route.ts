@@ -3,8 +3,7 @@ import { gcsAdd } from '@/lib/gcs';
 
 export async function POST(req: NextRequest) {
   try {
-    const { moduleId, score, totalQuestions, agentId, agentName } = await req.json();
-    const passed     = score / totalQuestions >= 0.7;
+    const { moduleId, score, totalQuestions, passed, agentId, agentName } = await req.json();
     const percentage = Math.round((score / totalQuestions) * 100);
 
     if (agentId && agentName) {

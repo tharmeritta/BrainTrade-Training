@@ -35,6 +35,7 @@ export interface QuizDefinition {
   questions: QuestionData[];
   phases?: QuizPhase[];
   uiOverrides?: QuizUIOverrides;
+  passThreshold?: number; // override global 0.7 default
 }
 
 export const UI_STRINGS: Record<Language, {
@@ -639,8 +640,750 @@ const PHASE5_PAYMENT: QuestionData[] = [
   },
 ];
 
+// ─── Foundation: Part 1 — หุ้นและตลาดการเงิน ─────────────────────────────────
+const FOUND_PART1: QuestionData[] = [
+  {
+    phase: 0,
+    en: 'What is a Stock?',
+    th: 'หุ้น (Stock) คืออะไร?',
+    type: 'mcq',
+    options: {
+      en: [
+        'A loan contract between a company and investor',
+        'A share of ownership in a company',
+        'A bank deposit certificate',
+        'A forward commodity contract',
+      ],
+      th: [
+        'สัญญากู้ยืมเงินระหว่างบริษัทและนักลงทุน',
+        'ส่วนหนึ่งของความเป็นเจ้าของในบริษัท',
+        'ใบรับรองการฝากเงินกับธนาคาร',
+        'สัญญาซื้อขายสินค้าล่วงหน้า',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'A stock represents partial ownership in a company. Shareholders own a proportional share of the business.',
+      th: 'หุ้นคือการแบ่งบริษัทออกเป็นชิ้นเล็กๆ เพื่อขายให้นักลงทุน ผู้ถือหุ้นจึงเป็นเจ้าของบริษัทในสัดส่วนที่ถือ',
+    },
+  },
+  {
+    phase: 0,
+    en: 'What benefits does a shareholder receive? (Choose the most comprehensive answer)',
+    th: 'ผู้ถือหุ้นได้รับสิทธิประโยชน์อะไรบ้าง? (เลือกคำตอบที่ครอบคลุมที่สุด)',
+    type: 'mcq',
+    options: {
+      en: [
+        'Monthly interest from the company',
+        'Dividends, capital gains, and voting rights',
+        'Guaranteed return of principal at maturity',
+        'Free use of the company\'s products and services',
+      ],
+      th: [
+        'รับดอกเบี้ยรายเดือนจากบริษัท',
+        'ได้รับเงินปันผล กำไรจากราคาหุ้น และสิทธิ์ออกเสียง',
+        'ได้รับประกันคืนเงินต้นเมื่อถึงกำหนด',
+        'ได้ใช้สินค้าและบริการของบริษัทฟรี',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Shareholders receive 3 key benefits: Dividends, Capital Gains (from rising stock prices), and Voting Rights.',
+      th: 'ผู้ถือหุ้นได้รับ 3 สิ่งหลัก: เงินปันผล (Dividend), กำไรจากราคาหุ้นที่สูงขึ้น (Capital Gain) และสิทธิ์ออกเสียง (Voting Rights)',
+    },
+  },
+  {
+    phase: 0,
+    en: 'Which stock exchange(s) have the highest combined Market Cap in the world?',
+    th: 'ตลาดหุ้นใดมีมูลค่าตลาด (Market Cap) รวมกันสูงที่สุดในโลก?',
+    type: 'mcq',
+    options: {
+      en: ['SET and HKEX', 'LSE and Nikkei', 'NYSE and NASDAQ', 'SSE and TSE'],
+      th: ['SET และ HKEX', 'LSE และ Nikkei', 'NYSE และ NASDAQ', 'SSE และ TSE'],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'NYSE and NASDAQ (USA) are the world\'s largest exchanges with a combined market cap exceeding $40 trillion.',
+      th: 'NYSE และ NASDAQ ของสหรัฐอเมริกาเป็นตลาดที่ใหญ่ที่สุดในโลก มูลค่ารวมกันกว่า $40 ล้านล้าน',
+    },
+  },
+  {
+    phase: 0,
+    en: 'When does the Thai stock exchange SET open?',
+    th: 'ตลาดหุ้นไทย SET เปิดทำการตามเวลาใด?',
+    type: 'mcq',
+    options: {
+      en: ['08:00 – 17:00', '09:00 – 16:00', '10:00 – 16:30', '09:30 – 16:30'],
+      th: ['08:00 – 17:00 น.', '09:00 – 16:00 น.', '10:00 – 16:30 น.', '09:30 – 16:30 น.'],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'The Stock Exchange of Thailand (SET) operates from 10:00 – 16:30 Thai time (ICT).',
+      th: 'ตลาดหลักทรัพย์แห่งประเทศไทย (SET) เปิดทำการ 10:00 – 16:30 น. ตามเวลาไทย (ICT)',
+    },
+  },
+];
+
+// ─── Foundation: Part 2 — การเทรดและสไตล์การลงทุน ────────────────────────────
+const FOUND_PART2: QuestionData[] = [
+  {
+    phase: 1,
+    en: 'How does Trading differ from long-term investing?',
+    th: 'การเทรด (Trading) แตกต่างจากการลงทุนระยะยาวอย่างไร?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Trading buys for dividends; investing buys to resell',
+        'Trading uses Fundamental Analysis; investing uses Technical Analysis',
+        'Trading aims for short-term price-difference profits; investing aims for long-term growth',
+        'Trading and investing have no difference',
+      ],
+      th: [
+        'การเทรดซื้อเพื่อรับเงินปันผล ส่วนการลงทุนซื้อเพื่อขายต่อ',
+        'การเทรดใช้ Fundamental Analysis ส่วนการลงทุนใช้ Technical Analysis',
+        'การเทรดมุ่งกำไรจากส่วนต่างราคาในระยะสั้น ส่วนการลงทุนมุ่งการเติบโตระยะยาว',
+        'การเทรดและการลงทุนไม่มีความแตกต่างกัน',
+      ],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'Trading focuses on short-term price differences (seconds to days); long-term investing targets growth and dividends over months or years.',
+      th: 'การเทรดเน้นกำไรจากส่วนต่างราคาในระยะสั้น (วินาที – หลายวัน) ส่วนการลงทุนระยะยาวมุ่งการเติบโตของมูลค่าและเงินปันผลในระยะเวลาหลายเดือนหรือหลายปี',
+    },
+  },
+  {
+    phase: 1,
+    en: 'What is Day Trading?',
+    th: 'Day Trade คืออะไร?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Buying stocks and holding for exactly 1 full day',
+        'Opening and closing positions within the same day — no overnight hold',
+        'Trading only during daytime hours',
+        'Buying and selling stocks exactly once per day',
+      ],
+      th: [
+        'การซื้อหุ้นแล้วถือไว้ 1 วันเต็ม',
+        'การเปิดและปิดสถานะซื้อขายภายในวันเดียวกัน ไม่ค้างข้ามคืน',
+        'การเทรดได้เฉพาะช่วงกลางวันเท่านั้น',
+        'การซื้อขายหุ้น 1 ครั้งต่อวัน',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Day Trading means opening and closing all positions within the same trading day — no overnight positions, so no Swap fees.',
+      th: 'Day Trade คือการเปิดและปิดสถานะทั้งหมดภายในวันเดียวกัน ไม่ค้างสถานะข้ามคืน จึงไม่เสียค่า Swap',
+    },
+  },
+  {
+    phase: 1,
+    en: 'What must a Day Trader always do?',
+    th: 'ข้อใดคือสิ่งที่ Day Trader ต้องมีและปฏิบัติทุกครั้ง?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Always follow friends\' stock tips',
+        'Set Stop Loss on every order and follow the plan with discipline',
+        'Keep a computer running 24 hours a day',
+        'Invest in the same stocks every day',
+      ],
+      th: [
+        'ซื้อหุ้นตามคำแนะนำของเพื่อนเสมอ',
+        'ตั้ง Stop Loss ทุกออเดอร์และมีวินัยในการปิดตามแผน',
+        'เปิดคอมพิวเตอร์ตลอด 24 ชั่วโมง',
+        'ลงทุนในหุ้นเดิมซ้ำทุกวัน',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Day Traders must be disciplined: set a Stop Loss on every order and close positions according to their plan, not emotions.',
+      th: 'Day Trader ต้องมีวินัยเหล็ก ตั้ง Stop Loss ทุกออเดอร์ และปิดสถานะตามแผน ไม่ใช่ตามอารมณ์',
+    },
+  },
+  {
+    phase: 1,
+    en: 'How does a Value Investor most clearly differ from a Day Trader?',
+    th: 'Value Investor แตกต่างจาก Day Trader อย่างไรที่ชัดเจนที่สุด?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Value Investors use higher leverage',
+        'Value Investors trade more frequently than Day Traders',
+        'Value Investors hold long-term, focus on true business value, and ignore short-term price swings',
+        'Value Investors only trade in the Forex market',
+      ],
+      th: [
+        'Value Investor ใช้ Leverage สูงกว่า',
+        'Value Investor เทรดบ่อยกว่า Day Trader มาก',
+        'Value Investor ถือหุ้นระยะยาว มองมูลค่าที่แท้จริงของธุรกิจ ไม่สนราคาระยะสั้น',
+        'Value Investor ซื้อขายเฉพาะในตลาด Forex',
+      ],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'Value Investors (like Warren Buffett) hold stocks long-term (months–decades), look for stocks priced below intrinsic value, and ignore daily volatility.',
+      th: 'Value Investor แบบ Warren Buffett ถือหุ้นระยะยาว (เดือน – ทศวรรษ) มองหาหุ้นที่ราคาต่ำกว่า Intrinsic Value และไม่สนใจความผันผวนรายวัน',
+    },
+  },
+  {
+    phase: 1,
+    en: 'What does "Margin of Safety" mean in Value Investing?',
+    th: 'Margin of Safety ในแนวคิด Value Investing หมายความว่าอะไร?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Setting a Stop Loss on every order',
+        'Buying stocks at least 30% below their intrinsic value',
+        'Keeping at least 30% cash in the portfolio',
+        'Diversifying into at least 30 different stocks',
+      ],
+      th: [
+        'การตั้ง Stop Loss ในทุกออเดอร์',
+        'การซื้อหุ้นในราคาที่ต่ำกว่ามูลค่าที่แท้จริงอย่างน้อย 30%',
+        'การเก็บเงินสดไว้อย่างน้อย 30% ของพอร์ต',
+        'การกระจายความเสี่ยงในหุ้นอย่างน้อย 30 ตัว',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Margin of Safety means buying stocks at a price significantly below their intrinsic value (at least 30%) to create a safety buffer.',
+      th: 'Margin of Safety คือหลักการซื้อหุ้นในราคาที่ต่ำกว่า Intrinsic Value อย่างมีนัยสำคัญ (อย่างน้อย 30%) เพื่อสร้างส่วนต่างความปลอดภัย',
+    },
+  },
+  {
+    phase: 1,
+    en: 'What analysis tools do Value Investors primarily use?',
+    th: 'นักลงทุนแนว Value Investing ใช้เครื่องมือวิเคราะห์ใดเป็นหลัก?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Candlestick charts and RSI',
+        'Bollinger Bands and Moving Average',
+        'P/E Ratio, P/B Ratio, Dividend Yield, and Free Cash Flow',
+        'Fibonacci Retracement and MACD',
+      ],
+      th: [
+        'กราฟแท่งเทียน (Candlestick Chart) และ RSI',
+        'Bollinger Band และ Moving Average',
+        'P/E Ratio, P/B Ratio, Dividend Yield และ Free Cash Flow',
+        'Fibonacci Retracement และ MACD',
+      ],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'Value Investors use Fundamental Analysis: P/E Ratio, P/B Ratio, Dividend Yield, and Free Cash Flow — not technical chart tools.',
+      th: 'Value Investor ใช้ Fundamental Analysis ได้แก่ P/E Ratio (ราคาต่อกำไร), P/B Ratio (ราคาต่อมูลค่าตามบัญชี), Dividend Yield และ Free Cash Flow',
+    },
+  },
+];
+
+// ─── Foundation: Part 3 — โบรกเกอร์ Pip Spread และ Swap ──────────────────────
+const FOUND_PART3: QuestionData[] = [
+  {
+    phase: 2,
+    en: 'Why should you only choose a Regulated broker?',
+    th: 'เหตุใดจึงต้องเลือกโบรกเกอร์ที่ Regulated เท่านั้น?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Regulated brokers have the lowest commissions',
+        'Regulated brokers keep client funds in segregated accounts, offer legal protection, and have complaint channels',
+        'Regulated brokers offer the highest leverage',
+        'Regulated brokers have the best platform only',
+      ],
+      th: [
+        'เพราะโบรกเกอร์ที่ Regulated มีค่าคอมมิชชั่นต่ำที่สุด',
+        'เพราะโบรกเกอร์ที่ Regulated เก็บเงินลูกค้าในบัญชีแยก มีกฎหมายคุ้มครอง และมีช่องทางร้องเรียน',
+        'เพราะโบรกเกอร์ที่ Regulated ให้ Leverage สูงสุด',
+        'เพราะโบรกเกอร์ที่ Regulated มีแพลตฟอร์มที่ดีที่สุดเท่านั้น',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Regulated brokers (FCA, ASIC, CySEC) keep client funds in Segregated Accounts — your money is safe if the broker becomes insolvent, and you have a regulatory body to file complaints with.',
+      th: 'โบรกเกอร์ที่ Regulated (FCA, ASIC, CySEC) เก็บเงินลูกค้าในบัญชีแยก (Segregated Account) ซึ่งหมายความว่าเงินของลูกค้าปลอดภัยหากโบรกเกอร์ล้มละลาย และมีหน่วยงานกำกับดูแลรับเรื่องร้องเรียน',
+    },
+  },
+  {
+    phase: 2,
+    en: 'What does a Pip measure?',
+    th: 'Pip คือหน่วยวัดอะไร?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Trading volume',
+        'Overnight interest rate',
+        'The smallest price movement in Forex (4th decimal place)',
+        'Portfolio risk',
+      ],
+      th: [
+        'หน่วยวัดปริมาณการซื้อขาย (Volume)',
+        'หน่วยวัดอัตราดอกเบี้ยค้างคืน',
+        'หน่วยวัดการเปลี่ยนแปลงราคาที่เล็กที่สุดในตลาด Forex (ทศนิยมตำแหน่งที่ 4)',
+        'หน่วยวัดความเสี่ยงของพอร์ต',
+      ],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'A Pip (Percentage in Point) is the smallest price move in Forex. E.g., EUR/USD moves from 1.1050 to 1.1051 = 1 Pip (4th decimal). JPY pairs use the 2nd decimal.',
+      th: 'Pip (Percentage in Point) คือหน่วยวัดการเปลี่ยนแปลงราคาขั้นต่ำในตลาด Forex เช่น EUR/USD เคลื่อนจาก 1.1050 ไป 1.1051 = 1 Pip (ทศนิยมตำแหน่งที่ 4) ยกเว้นคู่สกุลเงิน JPY ใช้ทศนิยมตำแหน่งที่ 2',
+    },
+  },
+  {
+    phase: 2,
+    en: 'If you Buy EUR/USD 1 Standard Lot and price rises 50 pips, what is your profit?',
+    th: 'ถ้าเปิด Buy EUR/USD 1 Standard Lot แล้วราคาขึ้น 50 pip จะได้กำไรเท่าไร?',
+    type: 'mcq',
+    options: {
+      en: ['$5', '$50', '$500', '$5,000'],
+      th: ['$5', '$50', '$500', '$5,000'],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'For EUR/USD Standard Lot: 1 Pip = $10. So 50 pips × $10/pip × 1 Lot = $500.',
+      th: 'Standard Lot EUR/USD มีมูลค่า 1 Pip = $10 ดังนั้น 50 pip × $10/pip × 1 Lot = $500',
+    },
+  },
+  {
+    phase: 2,
+    en: 'What is a Spread?',
+    th: 'Spread คืออะไร?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Interest charged for holding a position overnight',
+        'The difference between the Ask (buy) and Bid (sell) price — the trader\'s transaction cost',
+        'Commission paid to the agent',
+        'The leverage ratio of an order',
+      ],
+      th: [
+        'ดอกเบี้ยที่เกิดขึ้นเมื่อถือสถานะข้ามคืน',
+        'ส่วนต่างระหว่างราคาซื้อ (Ask) และราคาขาย (Bid) ซึ่งเป็นต้นทุนของนักเทรด',
+        'ค่าคอมมิชชั่นที่จ่ายให้เอเจนต์',
+        'อัตราการใช้ Leverage ของออเดอร์',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Spread is the gap between the Ask price (what you pay to buy) and the Bid price (what you receive when selling) — it\'s a hidden transaction fee.',
+      th: 'Spread คือความต่างระหว่างราคา Ask (ราคาที่เราต้องจ่ายเพื่อซื้อ) และ Bid (ราคาที่เราได้รับเมื่อขาย) เปรียบเหมือนค่าธรรมเนียมแฝงในการเทรด',
+    },
+  },
+  {
+    phase: 2,
+    en: 'What is a Swap in Forex trading?',
+    th: 'Swap ในการเทรด Forex คืออะไร?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Switching a position from Buy to Sell',
+        'Overnight interest charged for holding a position, because Forex uses leverage (borrowed funds)',
+        'A withdrawal fee charged by the broker',
+        'The base currency exchange rate',
+      ],
+      th: [
+        'การสลับสถานะจาก Buy เป็น Sell',
+        'ดอกเบี้ยที่เกิดขึ้นเมื่อถือสถานะข้ามคืน เพราะการเทรด Forex ใช้ Leverage (ยืมเงิน)',
+        'ค่าธรรมเนียมการถอนเงินจากโบรกเกอร์',
+        'อัตราแลกเปลี่ยนสกุลเงินพื้นฐาน',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Swap (Overnight Fee) is charged because Forex trading uses leverage — essentially borrowed money. Day Traders avoid Swap by closing all positions daily.',
+      th: 'Swap หรือ Overnight Fee เกิดขึ้นเพราะการเทรด Forex ใช้ Leverage ซึ่งเท่ากับการยืมเงิน เมื่อถือสถานะข้ามคืนจึงเกิดดอกเบี้ย Day Trader ไม่เสีย Swap เพราะปิดสถานะทุกวัน',
+    },
+  },
+  {
+    phase: 2,
+    en: 'Who is an Islamic Account (Swap-Free Account) best suited for?',
+    th: 'Islamic Account (Swap-Free Account) เหมาะกับใคร?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Beginner traders with no experience',
+        'Traders who want the highest leverage',
+        'Muslim traders or those who do not want to pay interest',
+        'Traders who only trade gold',
+      ],
+      th: [
+        'นักเทรดที่เพิ่งเริ่มต้นและยังไม่มีประสบการณ์',
+        'นักเทรดที่ต้องการ Leverage สูงสุด',
+        'นักเทรดที่นับถือศาสนาอิสลามหรือไม่ต้องการจ่ายดอกเบี้ย',
+        'นักเทรดที่เทรดเฉพาะทองคำ',
+      ],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'Islamic Accounts (Swap-Free) are designed for Muslim traders whose religion prohibits paying or receiving interest (Riba).',
+      th: 'Islamic Account หรือ Swap-Free Account ออกแบบมาสำหรับนักเทรดที่นับถือศาสนาอิสลาม ซึ่งหลักการศาสนาห้ามรับหรือจ่ายดอกเบี้ย',
+    },
+  },
+];
+
+// ─── Foundation: Part 4 — Forex Crypto และ CFD ───────────────────────────────
+const FOUND_PART4: QuestionData[] = [
+  {
+    phase: 3,
+    en: 'What is the Forex market\'s average daily trading volume according to BIS 2022?',
+    th: 'ตลาด Forex มีปริมาณซื้อขายเฉลี่ยต่อวันเท่าไรตามข้อมูล BIS ปี 2022?',
+    type: 'mcq',
+    options: {
+      en: ['$750 billion', '$7.5 trillion', '$750 million', '$75 trillion'],
+      th: ['$750 พันล้าน', '$7.5 ล้านล้าน (Trillion)', '$750 ล้าน', '$75 ล้านล้าน'],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'The Forex market averages $7.5 Trillion in daily trading volume per BIS 2022 — making it the world\'s largest financial market.',
+      th: 'ตลาด Forex มีปริมาณซื้อขายเฉลี่ยวันละ $7.5 Trillion ตามรายงาน BIS (Bank for International Settlements) ปี 2022 ทำให้เป็นตลาดการเงินที่ใหญ่ที่สุดในโลก',
+    },
+  },
+  {
+    phase: 3,
+    en: 'When should Thai Forex traders trade the most, due to peak volatility?',
+    th: 'ช่วงเวลาใดที่นักเทรด Forex ในไทยควรเทรดมากที่สุด เพราะความผันผวนสูงสุด?',
+    type: 'mcq',
+    options: {
+      en: [
+        '07:00 – 09:00 (Asian Session)',
+        '10:00 – 13:00 (Tokyo Session)',
+        '21:30 – 00:00 (London–NY Overlap)',
+        '03:00 – 05:00 (Late NY Session)',
+      ],
+      th: [
+        '07:00 – 09:00 น. (Asian Session)',
+        '10:00 – 13:00 น. (Tokyo Session)',
+        '21:30 – 00:00 น. (London-NY Overlap)',
+        '03:00 – 05:00 น. (Late NY Session)',
+      ],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'The London–New York overlap (21:30 – 00:00 ICT) has the highest volume and volatility of the trading day — ideal for Thai Day Traders.',
+      th: 'Overlap ระหว่าง London Session และ New York Session (21:30 – 00:00 ICT) คือช่วงที่มีความผันผวนและ Volume การซื้อขายสูงที่สุดในรอบวัน เหมาะที่สุดสำหรับ Day Trader ไทย',
+    },
+  },
+  {
+    phase: 3,
+    en: 'What are Major Pairs in Forex?',
+    th: 'Currency Pair ประเภท Major Pairs คืออะไร?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Currency pairs without USD, such as EUR/GBP or AUD/JPY',
+        'Currency pairs with USD as one currency, such as EUR/USD or GBP/USD — low spread, high volume',
+        'Emerging-market currency pairs such as USD/THB',
+        'Only the highest-value currency pairs',
+      ],
+      th: [
+        'คู่สกุลเงินที่ไม่มี USD เช่น EUR/GBP, AUD/JPY',
+        'คู่สกุลเงินที่มี USD เป็นสกุลหนึ่ง เช่น EUR/USD, GBP/USD มี Spread ต่ำและ Volume สูง',
+        'คู่สกุลเงินของประเทศเศรษฐกิจเกิดใหม่ เช่น USD/THB',
+        'คู่สกุลเงินที่มีมูลค่าสูงที่สุดเท่านั้น',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Major Pairs always include USD (e.g., EUR/USD, GBP/USD, USD/JPY) — they have consistent volatility, low spreads, and highest volume. Best for beginners.',
+      th: 'Major Pairs คือคู่สกุลเงินที่มี USD เป็นสกุลหนึ่งเสมอ เช่น EUR/USD, GBP/USD, USD/JPY มีความผันผวนสม่ำเสมอ Spread ต่ำ และ Volume สูงสุด เหมาะสำหรับมือใหม่',
+    },
+  },
+  {
+    phase: 3,
+    en: 'How does Cryptocurrency differ from Forex?',
+    th: 'Cryptocurrency แตกต่างจาก Forex อย่างไร?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Crypto trades Mon–Fri only, like Forex',
+        'Crypto trades 24/7 with no holidays, is far more volatile than Forex, and has no central bank control',
+        'Crypto is less volatile than Forex, making it safer',
+        'Crypto can only be traded in US markets',
+      ],
+      th: [
+        'Crypto เปิดซื้อขายเฉพาะวันจันทร์ – ศุกร์ เหมือน Forex',
+        'Crypto เปิดซื้อขาย 24/7 ไม่มีวันหยุด ผันผวนสูงกว่า Forex มากและไม่มีธนาคารกลางควบคุม',
+        'Crypto มีความผันผวนต่ำกว่า Forex ทำให้ปลอดภัยกว่า',
+        'Crypto ซื้อขายได้เฉพาะในตลาดสหรัฐอเมริกา',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Crypto is open 24/7 (Forex closes Sat–Sun), far more volatile (BTC can move 10–20% in a day), and is decentralized with no central bank control.',
+      th: 'Crypto เปิด 24/7 (Forex ปิดเสาร์-อาทิตย์), ผันผวนสูงกว่ามาก (BTC อาจขึ้น-ลง 10-20% ต่อวัน) และเป็น Decentralized ไม่มีธนาคารกลางควบคุม',
+    },
+  },
+  {
+    phase: 3,
+    en: 'What is a CFD (Contract for Difference)?',
+    th: 'CFD (Contract for Difference) คืออะไร?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Buying actual stocks and receiving ownership transfer',
+        'A contract between trader and broker to profit/lose from the price difference — without owning the underlying asset',
+        'Depositing funds with a broker to earn interest',
+        'An asset exchange between two companies',
+      ],
+      th: [
+        'การซื้อหุ้นจริงๆ และรับโอนกรรมสิทธิ์',
+        'สัญญาระหว่างนักเทรดและโบรกเกอร์ที่ทำกำไร/ขาดทุนจากส่วนต่างราคา โดยไม่ต้องถือสินทรัพย์จริง',
+        'การฝากเงินกับโบรกเกอร์เพื่อรับดอกเบี้ย',
+        'การแลกเปลี่ยนสินทรัพย์ระหว่างสองบริษัท',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'CFD profits/losses come from the difference between open and close prices — you never own the actual asset. E.g., you can trade Apple\'s stock price without holding real Apple shares.',
+      th: 'CFD คือสัญญาที่ทำกำไร/ขาดทุนจากส่วนต่างระหว่างราคาเปิดและปิดสถานะ โดยไม่ต้องซื้อสินทรัพย์จริง เช่น เทรดราคาหุ้น Apple โดยไม่ต้องมีบัญชีที่อเมริกาหรือถือหุ้น Apple จริง',
+    },
+  },
+  {
+    phase: 3,
+    en: 'Which assets can be traded through CFDs?',
+    th: 'สินทรัพย์ใดที่สามารถเทรดผ่าน CFD ได้บ้าง?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Forex only',
+        'Stocks and gold only',
+        'Forex, stocks, gold, oil, indices, and Crypto',
+        'Commodities only',
+      ],
+      th: [
+        'เฉพาะ Forex เท่านั้น',
+        'เฉพาะหุ้นและทองคำ',
+        'Forex หุ้น ทองคำ น้ำมัน ดัชนี และ Crypto',
+        'เฉพาะสินค้าโภคภัณฑ์ (Commodities) เท่านั้น',
+      ],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'CFDs cover a wide range: Forex (EUR/USD etc.), international stocks (AAPL, TSLA), Gold (XAU/USD), Oil (WTI, Brent), indices (S&P 500, NASDAQ), and Crypto (BTC, ETH).',
+      th: 'CFD ครอบคลุมสินทรัพย์หลากหลาย: Forex (EUR/USD ฯลฯ), หุ้นต่างประเทศ (AAPL, TSLA), ทองคำ (XAU/USD), น้ำมัน (WTI, Brent), ดัชนี (S&P 500, NASDAQ) และ Crypto (BTC, ETH)',
+    },
+  },
+];
+
+// ─── Foundation: Part 5 — Sales Skill และการเริ่มต้น ──────────────────────────
+const FOUND_PART5: QuestionData[] = [
+  {
+    phase: 4,
+    en: 'What is the most common customer Pain Point when selling a trading course?',
+    th: 'ข้อใดคือ Pain Point ของลูกค้าที่พบบ่อยที่สุดในการขายคอร์สเทรด?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Customer wants an expensive laptop',
+        'Living paycheck-to-paycheck, afraid of losing money, no time, and wants extra income',
+        'Customer wants to move abroad',
+        'Customer wants to start their own company',
+      ],
+      th: [
+        'ลูกค้าอยากได้ Laptop ราคาแพง',
+        'ลูกค้ามีเงินเดือนชนเดือน กลัวเสียเงิน ไม่มีเวลา และต้องการรายได้เสริม',
+        'ลูกค้าอยากย้ายไปอยู่ต่างประเทศ',
+        'ลูกค้าต้องการเปิดบริษัทของตัวเอง',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Key pain points trading solves: paycheck-to-paycheck income, desire for location freedom, lack of time, stagnant savings, and fear of losing money (solved via Demo Account).',
+      th: 'Pain Points หลักที่การเทรดแก้ได้: รายได้เดือนชนเดือน, ต้องการ Location Freedom, ไม่มีเวลา, เงินออมไม่โต และกลัวเสียเงิน (ซึ่งแก้ด้วย Demo Account)',
+    },
+  },
+  {
+    phase: 4,
+    en: "When a customer says 'I'm afraid of losing money', how should an agent respond?",
+    th: "เมื่อลูกค้าบอกว่า 'กลัวจะเสียเงิน' เอเจนต์ควรตอบว่าอย่างไร?",
+    type: 'mcq',
+    options: {
+      en: [
+        '"Don\'t worry, just try it first — you\'ll get used to it"',
+        '"We practice on a Demo Account first — virtual money, not a single real baht lost"',
+        '"If you\'re scared, you don\'t have to trade"',
+        '"The market isn\'t risky at all — trading is easy"',
+      ],
+      th: [
+        "'ไม่เป็นไร ลองดูก่อนเลย เดี๋ยวก็ชิน'",
+        "'เราฝึกบน Demo Account ก่อน ใช้เงินจำลอง ไม่เสียเงินจริงสักบาทเดียว'",
+        "'ถ้ากลัวก็ไม่ต้องเทรดก็ได้'",
+        "'ตลาดไม่เสี่ยงหรอก ซื้อขายสบายมาก'",
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'A Demo Account uses virtual funds (e.g., $10,000 simulated) so the customer can practice without risking any real money — the perfect answer to fear of losing.',
+      th: 'Demo Account คือบัญชีจำลองที่ให้ฝึกด้วยเงิน Virtual (เช่น $10,000 จำลอง) โดยไม่เสียเงินจริงเลย เป็นคำตอบที่ดีที่สุดสำหรับข้อกังวลเรื่องความกลัว',
+    },
+  },
+  {
+    phase: 4,
+    en: 'What is the correct starting sequence for a beginner?',
+    th: 'ขั้นตอนที่ถูกต้องในการเริ่มต้นสำหรับมือใหม่คือข้อใด?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Open real account → Deposit → Trade',
+        'Learn basics → Choose Regulated broker → Open Demo → Practice 30 days → Open real account',
+        'Watch YouTube → Deposit → Trade immediately',
+        'Open Demo → Trade immediately → Learn later',
+      ],
+      th: [
+        'เปิดบัญชีจริงทันที → Deposit → เทรด',
+        'เรียนพื้นฐาน → เลือกโบรกเกอร์ Regulated → เปิด Demo → ฝึก 30 วัน → เปิดบัญชีจริง',
+        'ดู YouTube → Deposit → เทรดทันที',
+        'เปิด Demo → เทรดทันที → เรียนทีหลัง',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Correct order: (1) Learn basics → (2) Choose a Regulated broker → (3) Open Demo Account → (4) Practice at least 30 days until consistently profitable 2+ weeks → (5) Open real account.',
+      th: 'ลำดับที่ถูกต้อง: (1) เรียนพื้นฐาน (2) เลือกโบรกเกอร์ Regulated (3) เปิด Demo Account (4) ฝึกอย่างน้อย 30 วันจนกำไรสม่ำเสมอ 2+ สัปดาห์ (5) จึงเปิดบัญชีจริง',
+    },
+  },
+  {
+    phase: 4,
+    en: 'Which platform is recommended first for beginners wanting to trade Forex?',
+    th: 'แพลตฟอร์มใดที่แนะนำสำหรับมือใหม่ที่ต้องการเทรด Forex เป็นอันดับแรก?',
+    type: 'mcq',
+    options: {
+      en: ['TradingView', 'Bloomberg Terminal', 'MetaTrader 4 (MT4)', 'Excel'],
+      th: ['TradingView', 'Bloomberg Terminal', 'MetaTrader 4 (MT4)', 'Excel'],
+    },
+    correctIdx: 2,
+    explain: {
+      en: 'MetaTrader 4 (MT4) is the most recommended platform for beginners — easy to use, Forex-focused, has a Demo system, and is the industry standard.',
+      th: 'MetaTrader 4 (MT4) คือแพลตฟอร์มที่แนะนำที่สุดสำหรับมือใหม่ เพราะใช้งานง่าย รองรับ Forex เป็นหลัก มีระบบ Demo และเป็นมาตรฐานอุตสาหกรรม',
+    },
+  },
+  {
+    phase: 4,
+    en: 'What is the first Golden Rule every trader must follow?',
+    th: 'Golden Rule ข้อแรกที่นักเทรดทุกคนต้องปฏิบัติคืออะไร?',
+    type: 'mcq',
+    options: {
+      en: [
+        'Make a profit on every order',
+        'Set a Stop Loss on every order — no exceptions',
+        'Trade every day consistently',
+        'Invest at least $10,000',
+      ],
+      th: [
+        'ต้องทำกำไรทุกออเดอร์',
+        'ต้องตั้ง Stop Loss ทุกออเดอร์โดยไม่มีข้อยกเว้น',
+        'ต้องเทรดทุกวันอย่างสม่ำเสมอ',
+        'ต้องลงทุนด้วยเงินอย่างน้อย $10,000',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Golden Rule #1: Stop Loss on every order — no exceptions. A Stop Loss protects capital and prevents total loss of funds.',
+      th: 'Golden Rule ข้อ 1: Stop Loss ทุกออเดอร์ ห้ามเทรดโดยไม่มี SL เด็ดขาด เพราะ Stop Loss คือเครื่องมือปกป้องทุน ป้องกันการขาดทุนจนเกินทุน',
+    },
+  },
+  {
+    phase: 4,
+    en: 'What should an agent qualify from a customer before presenting Crypto?',
+    th: 'เอเจนต์ควร Qualify อะไรจากลูกค้าก่อนนำเสนอ Crypto?',
+    type: 'mcq',
+    options: {
+      en: [
+        "Customer's age and height",
+        "Customer's risk tolerance level — because Crypto is highly volatile",
+        "Number of friends on customer's Social Media",
+        "Brand of phone customer uses",
+      ],
+      th: [
+        'อายุและส่วนสูงของลูกค้า',
+        'ระดับความสามารถในการรับความเสี่ยงของลูกค้า เพราะ Crypto ผันผวนสูงมาก',
+        'จำนวนเพื่อนใน Social Media ของลูกค้า',
+        'ยี่ห้อโทรศัพท์ที่ลูกค้าใช้',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'Crypto is extremely volatile (BTC can move 10–20% in a day), so agents must assess the customer\'s risk tolerance before presenting it.',
+      th: 'Crypto มีความผันผวนสูงมาก (BTC อาจขึ้น-ลง 10-20% ต่อวัน) ดังนั้นเอเจนต์ต้องประเมิน Risk Tolerance ของลูกค้าก่อนเสมอ ไม่เหมาะกับผู้ที่รับความเสี่ยงสูงไม่ได้',
+    },
+  },
+  {
+    phase: 4,
+    en: 'What is the tagline of the BrainTrade Thailand training program?',
+    th: 'ข้อใดคือ Tagline ของหลักสูตร BrainTrade Thailand?',
+    type: 'mcq',
+    options: {
+      en: [
+        'เทรดดี มีกำไร ทุกวัน',
+        'รู้จริง แนะนำเป็น ปิดได้',
+        'ลงทุนง่าย ได้เงินไว',
+        'เรียนฟรี เทรดได้ ไม่เสียเงิน',
+      ],
+      th: [
+        'เทรดดี มีกำไร ทุกวัน',
+        'รู้จริง แนะนำเป็น ปิดได้',
+        'ลงทุนง่าย ได้เงินไว',
+        'เรียนฟรี เทรดได้ ไม่เสียเงิน',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: "BrainTrade Thailand's tagline is 'รู้จริง แนะนำเป็น ปิดได้' — meaning agents must truly know the material, advise confidently, and close the sale.",
+      th: "Tagline ของ BrainTrade Thailand คือ 'รู้จริง แนะนำเป็น ปิดได้' หมายถึงเอเจนต์ต้องรู้จริงก่อน จึงจะแนะนำลูกค้าได้อย่างมั่นใจและปิดการขายได้",
+    },
+  },
+  {
+    phase: 4,
+    en: 'Which are reliable Regulator bodies for Forex brokers?',
+    th: 'ข้อใดคือหน่วยงาน Regulator ที่น่าเชื่อถือสำหรับโบรกเกอร์ Forex?',
+    type: 'mcq',
+    options: {
+      en: [
+        'SEC Thailand and กลต.',
+        'FCA (UK), ASIC (Australia) and CySEC (Cyprus)',
+        'Bank of Thailand (BOT)',
+        'US Treasury Department',
+      ],
+      th: [
+        'SEC ไทย และ กลต.',
+        'FCA (UK), ASIC (Australia) และ CySEC (Cyprus)',
+        'ธนาคารแห่งประเทศไทย (BOT)',
+        'กระทรวงการคลังสหรัฐอเมริกา',
+      ],
+    },
+    correctIdx: 1,
+    explain: {
+      en: 'The most trusted international Forex regulators are FCA (UK Financial Conduct Authority), ASIC (Australian Securities and Investments Commission), and CySEC (Cyprus Securities and Exchange Commission).',
+      th: 'หน่วยงาน Regulator ระดับนานาชาติที่ได้รับการยอมรับสูงสุดในวงการ Forex คือ FCA (Financial Conduct Authority ของ UK), ASIC (Australian Securities and Investments Commission) และ CySEC (Cyprus Securities and Exchange Commission)',
+    },
+  },
+];
+
 // ─── Module → Quiz mapping ───────────────────────────────────────────────────
 export const MODULE_QUIZ_MAP: Record<string, QuizDefinition> = {
+  foundation: {
+    id: 'foundation-knowledge',
+    title: { en: 'Foundation Knowledge', th: 'ความรู้พื้นฐาน' },
+    description: {
+      en: '30 questions across 5 topics — Stocks, Trading, Brokers, Forex/Crypto/CFD, and Sales Skills.',
+      th: '30 ข้อ ใน 5 หัวข้อ — หุ้น การเทรด โบรกเกอร์ Forex/Crypto/CFD และทักษะการขาย',
+    },
+    passThreshold: 0.8,
+    phases: [
+      { name: { en: 'Part 1: Stocks & Markets', th: 'ส่วนที่ 1: หุ้นและตลาดการเงิน' }, color: '#D97706', light: '#FEF3C7' },
+      { name: { en: 'Part 2: Trading Styles', th: 'ส่วนที่ 2: การเทรดและสไตล์การลงทุน' }, color: '#185FA5', light: '#E6F1FB' },
+      { name: { en: 'Part 3: Broker, Pip, Spread & Swap', th: 'ส่วนที่ 3: โบรกเกอร์ Pip Spread และ Swap' }, color: '#BA7517', light: '#FAEEDA' },
+      { name: { en: 'Part 4: Forex, Crypto & CFD', th: 'ส่วนที่ 4: Forex Crypto และ CFD' }, color: '#534AB7', light: '#EEEDFE' },
+      { name: { en: 'Part 5: Sales Skills', th: 'ส่วนที่ 5: Sales Skill และการเริ่มต้น' }, color: '#993C1D', light: '#FAECE7' },
+    ],
+    uiOverrides: {
+      feedbackHigh: { en: 'Excellent — ready to pitch customers!', th: 'ยอดเยี่ยม — พร้อม Pitch ลูกค้าได้เต็มรูปแบบ!' },
+      feedbackMid:  { en: 'Passed — review the questions you missed.', th: 'ผ่าน — แนะนำทบทวนส่วนที่ผิด' },
+      feedbackLow:  { en: 'Needs improvement — re-study the relevant slides, then retake.', th: 'ต้องปรับปรุง — เรียนซ้ำสไลด์ที่เกี่ยวข้อง แล้วสอบใหม่' },
+    },
+    questions: [...FOUND_PART1, ...FOUND_PART2, ...FOUND_PART3, ...FOUND_PART4, ...FOUND_PART5],
+  },
   product: {
     id: 'sales-opener-platform',
     title: { en: 'Sales Opener & Platform', th: 'การเปิดการขายและแพลตฟอร์ม' },

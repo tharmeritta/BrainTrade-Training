@@ -1,21 +1,21 @@
-import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
+import PresentationViewer from '@/components/features/PresentationViewer';
+import { COURSE_MODULES, type CourseLang } from '@/lib/courses';
 
-const VALID_MODULES = ['product', 'process', 'payment'] as const;
-type Module = typeof VALID_MODULES[number];
+export default async function LearnPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string; module: string }>;
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  const { locale, module } = await params;
+  const { lang } = await searchParams;
 
-export default async function LearnPage({ params }: { params: Promise<{ module: string }> }) {
-  const { module } = await params;
-  if (!VALID_MODULES.includes(module as Module)) redirect('/dashboard');
+  const course = COURSE_MODULES[module];
+  if (!course) redirect('/dashboard');
 
-  const t = await getTranslations('learn');
+  const initialLang: CourseLang = lang === 'en' ? 'en' : 'th';
 
-  return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">{t(module as Module)}</h1>
-      <div className="bg-white rounded-xl shadow p-6">
-        <p className="text-gray-500">Content for {module} module coming soon.</p>
-      </div>
-    </div>
-  );
+  return <PresentationViewer module={course} locale={locale} initialLang={initialLang} />;
 }

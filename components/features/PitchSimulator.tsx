@@ -21,7 +21,7 @@ interface SavedSession {
 }
 
 const LEVEL_COLORS: Record<1 | 2 | 3, { accent: string; glow: string; bg: string; border: string; label: string }> = {
-  1: { accent: '#34D399', glow: 'rgba(52,211,153,0.18)',  bg: 'rgba(52,211,153,0.08)',  border: 'rgba(52,211,153,0.3)',  label: 'Beginner'     },
+  1: { accent: '#22D3EE', glow: 'rgba(34,211,238,0.18)',  bg: 'rgba(34,211,238,0.08)',  border: 'rgba(34,211,238,0.3)',  label: 'Beginner'     },
   2: { accent: '#60A5FA', glow: 'rgba(96,165,250,0.18)',  bg: 'rgba(96,165,250,0.08)',  border: 'rgba(96,165,250,0.3)',  label: 'Standard'     },
   3: { accent: '#F472B6', glow: 'rgba(244,114,182,0.18)', bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.3)', label: 'Advanced'     },
 };
@@ -414,9 +414,9 @@ export default function PitchSimulator() {
                   {/* Status badge */}
                   <div className="absolute top-3 right-3">
                     {locked ? (
-                      <span className="w-6 h-6 rounded-full flex items-center justify-center"
+                      <span className="w-9 h-9 rounded-full flex items-center justify-center"
                         style={{ background: 'var(--hub-locked-icon)' }}>
-                        <Lock size={11} style={{ color: 'var(--hub-dim)' }} />
+                        <Lock size={18} style={{ color: 'var(--hub-dim)' }} />
                       </span>
                     ) : completed ? (
                       <span className="w-6 h-6 rounded-full flex items-center justify-center"
