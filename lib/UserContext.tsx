@@ -4,7 +4,12 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { getAuthClient, getDb } from '@/lib/firebase';
-import type { AppUser } from '@/types';
+export interface AppUser {
+  uid: string;
+  role: 'admin' | 'manager' | 'agent' | 'evaluator';
+  name?: string;
+  email?: string;
+}
 
 type Mode = 'admin' | 'agent';
 

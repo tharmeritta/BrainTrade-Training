@@ -327,6 +327,7 @@ function AgentPerformancePanel({
   const badge = BADGE_STYLE[stats.badge] ?? BADGE_STYLE['needs-work'];
 
   function moduleScore(key: string): number {
+    if (!stats) return 0;
     if (key === 'learn')   return Object.keys(stats.quiz).length > 0 ? 100 : 0;
     if (key === 'quiz')    return Math.round((['product','process','payment'] as const).filter(m => stats.quiz[m]?.passed).length / 3 * 100);
     if (key === 'ai-eval') return stats.aiEval ? Math.min(100, Math.round(stats.aiEval.count / 4 * 100)) : 0;

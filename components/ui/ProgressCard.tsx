@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { getDb } from '@/lib/firebase';
-import type { UserProgress } from '@/types';
+export interface UserProgress {
+  pitchLevel?: number;
+  modules?: Record<string, { completed?: boolean; score?: number }>;
+}
 import { CheckCircle2, Circle, TrendingUp, Trophy } from 'lucide-react';
 
 export default function ProgressCard({ userId }: { userId: string }) {
