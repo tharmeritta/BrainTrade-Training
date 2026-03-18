@@ -165,6 +165,31 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/pitch/active/route.js"
+    ],
+    "/[locale]/evaluator/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/evaluator/layout.js"
+    ],
+    "/[locale]/evaluator/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/evaluator/page.js"
+    ],
+    "/api/evaluator/evaluations/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/evaluator/evaluations/route.js"
+    ],
+    "/api/evaluator/all-agent-stats/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/evaluator/all-agent-stats/route.js"
+    ],
+    "/api/evaluator/agent-stats/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/evaluator/agent-stats/route.js"
     ]
   }
 }
