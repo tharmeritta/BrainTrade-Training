@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminOrManager } from '@/lib/session';
+import { requireAdminOrManager, requireAdminManagerOrTrainer } from '@/lib/session';
 import { gcsAdd } from '@/lib/gcs';
 import { getAllAgentStats } from '@/lib/agents';
 
 export async function GET() {
-  try { await requireAdminOrManager(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   try {
     const agents = await getAllAgentStats();
     return NextResponse.json({ agents });

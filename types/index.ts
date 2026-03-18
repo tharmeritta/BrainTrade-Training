@@ -1,11 +1,11 @@
-export type UserRole = 'admin' | 'manager' | 'agent' | 'evaluator';
+export type UserRole = 'admin' | 'manager' | 'agent' | 'evaluator' | 'trainer';
 
 export interface StaffAccount {
   id: string;
   username: string;
   password: string;
   name: string;
-  role: 'manager' | 'evaluator';
+  role: 'manager' | 'evaluator' | 'trainer';
   active: boolean;
   createdAt: string;
 }
@@ -148,4 +148,48 @@ export interface TrainingModule {
 export interface AgentProgress {
   agent: Pick<Agent, 'id' | 'name'>;
   stats: AgentStats;
+}
+
+// ── Trainer ────────────────────────────────────────────────────────────────
+
+export interface TrainingPeriod {
+  id: string;
+  name: string;           // e.g. "March 2026 Batch"
+  agentIds: string[];
+  agentNames: Record<string, string>; // agentId -> name
+  totalDays: number;      // configurable, starts at 5, can be increased/decreased
+  startDate: string;      // YYYY-MM-DD
+  trainerId: string;
+  trainerName: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface TrainingDayRecord {
+  id: string;
+  trainingPeriodId: string;
+  agentId: string;
+  dayNumber: number;      // 1-based
+  date: string;           // YYYY-MM-DD
+  attendance: 'present' | 'late' | 'absent';
+  topics: string;
+  notes: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export type DisciplineType = 'late' | 'sick_leave' | 'personal_leave' | 'absent_no_reason' | 'other';
+
+export interface DisciplineRecord {
+  id: string;
+  agentId: string;
+  agentName: string;
+  trainingPeriodId: string;
+  trainerId: string;
+  trainerName: string;
+  date: string;           // YYYY-MM-DD
+  type: DisciplineType;
+  description: string;
+  createdAt: string;
 }

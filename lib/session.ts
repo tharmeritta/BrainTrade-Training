@@ -21,7 +21,7 @@ export async function getServerUser(): Promise<{ uid: string; name: string; role
     if (parts.length >= 3) {
       const [role, uid, ...nameParts] = parts;
       const name = decodeURIComponent(nameParts.join('|'));
-      if (['admin', 'manager', 'evaluator', 'agent'].includes(role)) {
+      if (['admin', 'manager', 'evaluator', 'agent', 'trainer'].includes(role)) {
         return { uid, name, role: role as UserRole };
       }
     }
@@ -56,5 +56,17 @@ export async function requireAdminOrManager() {
 export async function requireEvaluator() {
   const user = await requireAuth();
   if (user.role !== 'evaluator') throw new Error('Forbidden');
+  return user;
+}
+
+export async function requireAdminManagerOrTrainer() {
+  const user = await requireAuth();
+  if (!['admin', 'manager', 'trainer'].includes(user.role)) throw new Error('Forbidden');
+  return user;
+}
+
+export async function requireTrainer() {
+  const user = await requireAuth();
+  if (!['admin', 'manager', 'trainer'].includes(user.role)) throw new Error('Forbidden');
   return user;
 }

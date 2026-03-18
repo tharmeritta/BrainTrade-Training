@@ -6,8 +6,9 @@ import {
   LayoutDashboard, Users, FileSpreadsheet, LogOut,
   TrendingUp, Award, Target, Activity, Plus, Search,
   Download, ChevronDown, Zap, ShieldCheck, Eye, EyeOff, Pencil, Trash2, X, Check,
-  ClipboardCheck, Star, BookOpen,
+  ClipboardCheck, Star, BookOpen, GraduationCap,
 } from 'lucide-react';
+import TrainerPanel from '@/components/features/TrainerPanel';
 import type { AdminOverviewData, AgentStats, StaffAccount } from '@/types';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import LangToggle  from '@/components/ui/LangToggle';
@@ -358,7 +359,7 @@ function OverviewTab() {
 
 // ── Agents Tab ──────────────────────────────────────────────────────────────
 
-function AgentsTab({ role }: { role: 'admin' | 'manager' }) {
+function AgentsTab({ role }: { role: 'admin' | 'manager' | 'trainer' }) {
   const [agents,       setAgents]       = useState<AgentStats[]>([]);
   const [loading,      setLoading]      = useState(true);
   const [search,       setSearch]       = useState('');
@@ -463,16 +464,18 @@ function AgentsTab({ role }: { role: 'admin' | 'manager' }) {
             className="pl-9 pr-4 py-2.5 bg-secondary/40 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 w-64"
           />
         </div>
-        <button
-          onClick={() => setShowForm(f => !f)}
-          className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors shadow-md shadow-primary/20"
-        >
-          <Plus size={18} /> Add Agent
-        </button>
+        {role !== 'trainer' && (
+          <button
+            onClick={() => setShowForm(f => !f)}
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors shadow-md shadow-primary/20"
+          >
+            <Plus size={18} /> Add Agent
+          </button>
+        )}
       </div>
 
       <AnimatePresence>
-        {showForm && (
+        {showForm && role !== 'trainer' && (
           <motion.form
             onSubmit={addAgent}
             initial={{ opacity: 0, height: 0 }}
@@ -773,7 +776,7 @@ interface EditState {
   username: string;
   password: string;
   name: string;
-  role: 'manager' | 'evaluator';
+  role: 'manager' | 'evaluator' | 'trainer';
 }
 
 function StaffTab() {
@@ -786,7 +789,7 @@ function StaffTab() {
   const [staffErr, setStaffErr] = useState('');
 
   // New account form state
-  const [newUser, setNewUser] = useState({ username: '', password: '', name: '', role: 'manager' as 'manager' | 'evaluator' });
+  const [newUser, setNewUser] = useState({ username: '', password: '', name: '', role: 'manager' as 'manager' | 'evaluator' | 'trainer' });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -861,6 +864,7 @@ function StaffTab() {
   const ROLE_COLORS: Record<string, string> = {
     manager:   'bg-blue-500/15 text-blue-400',
     evaluator: 'bg-violet-500/15 text-violet-400',
+    trainer:   'bg-amber-500/15 text-amber-400',
   };
 
   return (
@@ -871,7 +875,7 @@ function StaffTab() {
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
             <ShieldCheck size={20} className="text-blue-600" /> Staff Accounts
           </h2>
-          <p className="text-sm text-muted-foreground mt-0.5">Manage Manager and Evaluator credentials</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Manage Manager, Trainer, and Evaluator credentials</p>
         </div>
         <button
           onClick={() => setShowForm(f => !f)}
@@ -901,10 +905,11 @@ function StaffTab() {
               </div>
               <div>
                 <label className="text-xs text-muted-foreground font-medium block mb-1">Role</label>
-                <select value={newUser.role} onChange={e => setNewUser(v => ({ ...v, role: e.target.value as 'manager' | 'evaluator' }))}
+                <select value={newUser.role} onChange={e => setNewUser(v => ({ ...v, role: e.target.value as 'manager' | 'evaluator' | 'trainer' }))}
                   className="w-full bg-secondary/40 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20">
                   <option value="manager">Manager</option>
                   <option value="evaluator">Evaluator</option>
+                  <option value="trainer">Trainer</option>
                 </select>
               </div>
               <div>
@@ -975,10 +980,11 @@ function StaffTab() {
                           className="w-full bg-secondary/40 border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <select value={editing.role} onChange={e => setEditing(v => v && ({ ...v, role: e.target.value as 'manager' | 'evaluator' }))}
+                        <select value={editing.role} onChange={e => setEditing(v => v && ({ ...v, role: e.target.value as 'manager' | 'evaluator' | 'trainer' }))}
                           className="bg-secondary/40 border border-border rounded-lg px-2 py-1.5 text-xs focus:outline-none">
                           <option value="manager">Manager</option>
                           <option value="evaluator">Evaluator</option>
+                          <option value="trainer">Trainer</option>
                         </select>
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -1035,7 +1041,7 @@ function StaffTab() {
                       <td className="px-4 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
-                            onClick={() => setEditing({ id: s.id, username: s.username, password: s.password, name: s.name, role: s.role })}
+                            onClick={() => setEditing({ id: s.id, username: s.username, password: s.password, name: s.name, role: s.role as 'manager' | 'evaluator' | 'trainer' })}
                             className="p-1.5 rounded-lg text-muted-foreground hover:text-blue-600 hover:bg-blue-500/10 transition-colors">
                             <Pencil size={14} />
                           </button>
@@ -1059,6 +1065,7 @@ function StaffTab() {
         <p className="font-semibold mb-1 flex items-center gap-2"><ShieldCheck size={16} /> About Staff Accounts</p>
         <ul className="space-y-1 text-blue-400/80 list-disc list-inside">
           <li>Manager — full admin visibility, cannot delete records</li>
+          <li>Trainer — manages training periods, daily records, and discipline</li>
           <li>Evaluator — accesses the Evaluator panel to score agents</li>
           <li>Admin credentials are managed via environment variables</li>
         </ul>
@@ -1231,27 +1238,38 @@ function EvaluationsTab() {
   );
 }
 
+// ── Training Tab ─────────────────────────────────────────────────────────────
+
+function TrainingTab({ role }: { role: 'admin' | 'manager' | 'trainer' }) {
+  return <TrainerPanel role={role} />;
+}
+
 // ── Main AdminDashboard ─────────────────────────────────────────────────────
 
-type Tab = 'overview' | 'agents' | 'reports' | 'staff' | 'evaluations';
+type Tab = 'overview' | 'agents' | 'reports' | 'staff' | 'evaluations' | 'training';
 
 function logout() {
   fetch('/api/auth/session', { method: 'DELETE' });
   window.location.replace('/login');
 }
 
-export default function AdminDashboard({ role }: { role: 'admin' | 'manager' }) {
-  const [tab, setTab] = useState<Tab>('overview');
+export default function AdminDashboard({ role }: { role: 'admin' | 'manager' | 'trainer' }) {
+  const [tab, setTab] = useState<Tab>(role === 'trainer' ? 'training' : 'overview');
 
-  const TABS: { id: Tab; label: string; icon: React.ElementType; adminOnly?: boolean }[] = [
-    { id: 'overview',    label: 'Overview',       icon: LayoutDashboard },
+  const TABS: { id: Tab; label: string; icon: React.ElementType; adminOnly?: boolean; hideForTrainer?: boolean }[] = [
+    { id: 'overview',    label: 'Overview',       icon: LayoutDashboard,  hideForTrainer: false },
     { id: 'agents',      label: 'Agents',         icon: Users },
-    { id: 'evaluations', label: 'Evaluations',    icon: ClipboardCheck },
-    { id: 'reports',     label: 'Reports',        icon: FileSpreadsheet },
-    { id: 'staff',       label: 'Staff Accounts', icon: ShieldCheck, adminOnly: true },
+    { id: 'training',    label: 'Training',       icon: GraduationCap },
+    { id: 'evaluations', label: 'Evaluations',    icon: ClipboardCheck,   hideForTrainer: true },
+    { id: 'reports',     label: 'Reports',        icon: FileSpreadsheet,  hideForTrainer: true },
+    { id: 'staff',       label: 'Staff Accounts', icon: ShieldCheck,      adminOnly: true },
   ];
 
-  const visibleTabs = TABS.filter(t => !t.adminOnly || role === 'admin');
+  const visibleTabs = TABS.filter(t => {
+    if (t.adminOnly && role !== 'admin') return false;
+    if (t.hideForTrainer && role === 'trainer') return false;
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -1260,15 +1278,19 @@ export default function AdminDashboard({ role }: { role: 'admin' | 'manager' }) 
         <div>
           <h1 className="text-xl font-black text-foreground tracking-tight">BrainTrade Training Platform</h1>
           <p className="text-xs text-muted-foreground">
-            {role === 'admin' ? 'Admin' : 'Manager'} Control Panel · {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+            {role === 'admin' ? 'Admin' : role === 'trainer' ? 'Trainer' : 'Manager'} Control Panel · {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <LangToggle />
           <ThemeToggle />
 
-          <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${role === 'admin' ? 'bg-purple-500/15 text-purple-400' : 'bg-blue-500/15 text-blue-400'}`}>
-            {role === 'admin' ? 'Admin' : 'Manager'}
+          <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+            role === 'admin' ? 'bg-purple-500/15 text-purple-400' :
+            role === 'trainer' ? 'bg-amber-500/15 text-amber-400' :
+            'bg-blue-500/15 text-blue-400'
+          }`}>
+            {role === 'admin' ? 'Admin' : role === 'trainer' ? 'Trainer' : 'Manager'}
           </span>
           <button onClick={logout}
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-destructive transition-colors border border-border px-3 py-2 rounded-xl hover:border-destructive/30"
@@ -1312,6 +1334,7 @@ export default function AdminDashboard({ role }: { role: 'admin' | 'manager' }) 
           >
             {tab === 'overview'    && <OverviewTab />}
             {tab === 'agents'      && <AgentsTab role={role} />}
+            {tab === 'training'    && <TrainingTab role={role} />}
             {tab === 'evaluations' && <EvaluationsTab />}
             {tab === 'reports'     && <ReportsTab />}
             {tab === 'staff'       && role === 'admin' && <StaffTab />}

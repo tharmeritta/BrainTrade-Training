@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, ClipboardCheck, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Lock, ClipboardCheck, GraduationCap, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 
-type Tab = 'admin' | 'evaluator';
+type Tab = 'admin' | 'trainer' | 'evaluator';
 
 const TABS = {
   admin: {
@@ -16,6 +16,14 @@ const TABS = {
     glow: 'rgba(0,180,216,0.12)',
     redirect: '/th/admin',
     desc: 'Admin / Manager · จัดการเอเจนต์ ดูสถิติ ส่งออกรายงาน',
+  },
+  trainer: {
+    Icon: GraduationCap,
+    labelTh: 'ผู้ฝึกสอน',
+    accent: '#F59E0B',
+    glow: 'rgba(245,158,11,0.12)',
+    redirect: '/th/admin',
+    desc: 'Trainer · บันทึกการฝึก ติดตามวินัย รายงานผลประจำวัน',
   },
   evaluator: {
     Icon: ClipboardCheck,
@@ -65,8 +73,8 @@ export default function LoginPage() {
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      // manager and admin both use the admin panel
-      const redirect = (data.role === 'manager' || data.role === 'admin') ? '/th/admin' : cfg.redirect;
+      // manager, admin, and trainer all use the admin panel
+      const redirect = (['manager', 'admin', 'trainer'].includes(data.role)) ? '/th/admin' : cfg.redirect;
       router.push(redirect);
     } catch {
       setError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
@@ -125,7 +133,7 @@ export default function LoginPage() {
           {/* Tab switcher */}
           <div className="flex gap-1 p-1 rounded-xl mb-6"
             style={{ background: 'rgba(255,255,255,0.04)' }}>
-            {(['admin', 'evaluator'] as Tab[]).map(r => {
+            {(['admin', 'trainer', 'evaluator'] as Tab[]).map(r => {
               const c = TABS[r];
               const Icon = c.Icon;
               const active = role === r;
@@ -207,7 +215,7 @@ export default function LoginPage() {
               type="submit" disabled={loading}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold mt-1"
               style={{
-                background: `linear-gradient(135deg, ${cfg.accent}, ${role === 'admin' ? '#0050E0' : '#059669'})`,
+                background: `linear-gradient(135deg, ${cfg.accent}, ${role === 'admin' ? '#0050E0' : role === 'trainer' ? '#D97706' : '#059669'})`,
                 color: '#fff',
                 boxShadow: `0 6px 20px ${cfg.glow}`,
                 opacity: loading ? 0.7 : 1,

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireAdminOrManager } from '@/lib/session';
+import { requireAdminManagerOrTrainer } from '@/lib/session';
 import { gcsGetAll } from '@/lib/gcs';
 import { getAllAgentStats, getModuleStats } from '@/lib/agents';
 import type { AdminOverviewData } from '@/types';
@@ -17,7 +17,7 @@ const EMPTY: AdminOverviewData = {
 };
 
 export async function GET() {
-  try { await requireAdminOrManager(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   try {
     const [allStats, moduleStats, quizDocs, evalDocs, pitchDocs] = await Promise.all([

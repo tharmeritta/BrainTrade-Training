@@ -21,8 +21,8 @@ export async function POST(req: NextRequest) {
   if (!username?.trim() || !password?.trim() || !name?.trim()) {
     return NextResponse.json({ error: 'username, password, and name are required' }, { status: 400 });
   }
-  if (role !== 'manager' && role !== 'evaluator') {
-    return NextResponse.json({ error: 'role must be manager or evaluator' }, { status: 400 });
+  if (!['manager', 'evaluator', 'trainer'].includes(role)) {
+    return NextResponse.json({ error: 'role must be manager, evaluator, or trainer' }, { status: 400 });
   }
 
   // Check for duplicate username
