@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     trainerId: user.uid,
     trainerName: user.name,
     active: true,
+    createdAt: new Date().toISOString(),
   });
   return NextResponse.json(period);
 }

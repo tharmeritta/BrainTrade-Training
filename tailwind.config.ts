@@ -46,6 +46,8 @@ const config: Config = {
         brand: {
           primary: '#1a56db',
           dark: '#0f3460',
+          cyan: '#00B4D8',
+          purple: '#7C3AED',
         },
       },
       borderRadius: {

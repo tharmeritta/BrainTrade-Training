@@ -283,13 +283,14 @@ function ScoreRing({ score, size = 'md' }: { score: number; size?: 'sm' | 'md' }
   return (
     <div className="relative flex items-center justify-center shrink-0" style={{ width: dim, height: dim }}>
       <svg className="absolute inset-0" viewBox={`0 0 ${dim} ${dim}`} style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx={dim/2} cy={dim/2} r={r} fill="none" stroke="hsl(var(--border))" strokeWidth={sw} />
+        <circle cx={dim/2} cy={dim/2} r={r} fill="none" stroke="currentColor" className="text-muted-foreground/15" strokeWidth={sw} />
         <motion.circle
           cx={dim/2} cy={dim/2} r={r} fill="none" stroke={clr} strokeWidth={sw}
           strokeLinecap="round" strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
           animate={{ strokeDashoffset: circ - dash }}
-          transition={{ duration: 0.7, ease: 'easeOut' }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          style={{ filter: `drop-shadow(0 0 4px ${clr}50)` }}
         />
       </svg>
       <span className="font-black" style={{ fontFamily: "'Syne', sans-serif", color: clr, fontSize: fs }}>
@@ -817,8 +818,9 @@ function AgentOverviewCard({
   return (
     <motion.div
       layout
-      className="bg-card border border-border rounded-2xl overflow-hidden hover:border-blue-500/30 transition-colors"
+      className="bg-card/60 backdrop-blur-md border border-white/10 dark:border-white/5 rounded-2xl overflow-hidden hover:border-blue-500/40 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 relative group"
     >
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       {/* Card header */}
       <div className="p-4 flex items-start gap-3">
         <ScoreRing score={stats.overallScore} size="sm" />
@@ -859,8 +861,7 @@ function AgentOverviewCard({
       <div className="px-4 pb-3 flex items-center gap-2">
         <button
           onClick={() => onEvaluate(stats.agent)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all"
-          style={{ background: 'linear-gradient(135deg, #60A5FA, #2563EB)', color: '#fff' }}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-[0.98] relative z-10"
         >
           <ClipboardCheck size={12} />
           {t.evaluate}
@@ -1063,10 +1064,13 @@ function OverviewPanel({
         ].map(k => {
           const Icon = k.icon;
           return (
-            <div key={k.label} className="bg-card border border-border rounded-2xl p-4 flex flex-col gap-2">
-              <Icon size={16} style={{ color: k.color }} />
-              <div className="text-2xl font-black text-foreground" style={{ fontFamily: "'Syne', sans-serif" }}>{k.value}</div>
-              <div className="text-[11px] text-muted-foreground">{k.label}</div>
+            <div key={k.label} className="bg-card/60 backdrop-blur-md border border-white/10 dark:border-white/5 rounded-2xl p-4 flex flex-col gap-2 relative overflow-hidden group hover:border-white/20 dark:hover:border-white/10 transition-colors shadow-sm">
+              <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none" style={{ background: k.color, transform: 'translate(30%, -30%)' }} />
+              <div className="p-2 rounded-xl w-fit" style={{ background: `${k.color}15` }}>
+                <Icon size={16} style={{ color: k.color }} />
+              </div>
+              <div className="text-2xl font-black text-foreground mt-1" style={{ fontFamily: "'Syne', sans-serif" }}>{k.value}</div>
+              <div className="text-[11px] font-medium text-muted-foreground">{k.label}</div>
             </div>
           );
         })}
@@ -1395,16 +1399,23 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName }: Evalu
   const evaluatedIds   = new Set(myEvals.map(e => e.agentId));
 
   return (
-    <div className="min-h-screen flex flex-col bg-background" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      {/* Ambient background glows */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-500/10 dark:bg-blue-500/20 blur-[120px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/10 dark:bg-purple-500/20 blur-[120px] rounded-full mix-blend-screen" />
+      </div>
 
       {/* ── Header ── */}
-      <div className="px-5 py-3.5 flex items-center gap-3 shrink-0 bg-card border-b border-border shadow-sm">
-        <ClipboardCheck size={18} className="text-blue-500" />
-        <span className="font-black text-lg text-foreground" style={{ fontFamily: "'Syne', sans-serif" }}>{t.panelTitle}</span>
-        <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-600 dark:text-blue-400 ml-1">
+      <div className="px-5 py-3.5 flex items-center gap-3 shrink-0 bg-card/60 backdrop-blur-xl border-b border-white/10 dark:border-white/5 shadow-sm z-10 relative">
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <ClipboardCheck size={16} className="text-white" />
+        </div>
+        <span className="font-black text-lg bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70" style={{ fontFamily: "'Syne', sans-serif" }}>{t.panelTitle}</span>
+        <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-600 dark:text-blue-400 ml-1">
           {evaluatorName}
         </span>
-        <span className="text-[10px] px-2 py-1 rounded-lg bg-secondary border border-border text-muted-foreground hidden sm:block">
+        <span className="text-[10px] font-semibold px-2 py-1 rounded-lg bg-secondary/80 border border-white/5 text-muted-foreground hidden sm:block">
           {t.roleLabel}
         </span>
 
@@ -1426,7 +1437,7 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName }: Evalu
       <div className="flex flex-1 overflow-hidden">
 
         {/* Left: Agent sidebar */}
-        <div className="w-60 xl:w-64 shrink-0 flex flex-col bg-card border-r border-border">
+        <div className="w-60 xl:w-64 shrink-0 flex flex-col bg-card/40 backdrop-blur-md border-r border-white/10 dark:border-white/5 relative z-10">
           <div className="p-3">
             <div className="relative">
               <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none" />
@@ -1475,13 +1486,13 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName }: Evalu
         </div>
 
         {/* Right: Main area */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto relative z-10">
           {!selectedAgent ? (
             <OverviewPanel myEvals={myEvals} agents={agents} allAgentStats={allAgentStats} lang={lang} onEvaluate={handleSelectAgent} />
           ) : (
             <div className="h-full flex flex-col">
               {/* Agent bar */}
-              <div className="px-5 py-3 flex items-center gap-3 shrink-0 bg-card border-b border-border">
+              <div className="px-5 py-3 flex items-center gap-3 shrink-0 bg-card/60 backdrop-blur-md border-b border-white/10 dark:border-white/5">
                 <button onClick={() => setSelectedAgent(null)} className="text-muted-foreground hover:text-foreground transition-colors">
                   <ArrowLeft size={15} />
                 </button>
@@ -1533,15 +1544,13 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName }: Evalu
                         {/* Save button */}
                         <motion.button
                           onClick={handleSave} disabled={saving || saveSuccess}
-                          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all"
-                          style={{
-                            fontFamily: "'Syne', sans-serif",
-                            background: saveSuccess ? 'rgba(96,165,250,0.15)' : 'linear-gradient(135deg, #60A5FA, #2563EB)',
-                            color: saveSuccess ? '#60A5FA' : '#fff',
-                            border: saveSuccess ? '1px solid rgba(96,165,250,0.4)' : 'none',
-                            boxShadow: saveSuccess ? 'none' : '0 8px 24px rgba(96,165,250,0.2)',
-                          }}
-                          whileHover={!saving && !saveSuccess ? { scale: 1.01 } : {}}
+                          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all ${
+                            saveSuccess
+                              ? 'bg-blue-500/15 text-blue-500 border border-blue-500/40 shadow-none'
+                              : 'bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40 relative z-10'
+                          }`}
+                          style={{ fontFamily: "'Syne', sans-serif" }}
+                          whileHover={!saving && !saveSuccess ? { scale: 1.02 } : {}}
                           whileTap={!saving && !saveSuccess ? { scale: 0.99 } : {}}
                         >
                           {saving ? <Loader2 size={16} className="animate-spin" />

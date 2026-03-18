@@ -1,0 +1,73 @@
+
+> brainstrade-training@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.12
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · serverActions
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 8.8s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/29) ...
+   Generating static pages (7/29) 
+   Generating static pages (14/29) 
+   Generating static pages (21/29) 
+ ✓ Generating static pages (29/29)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                     Size  First Load JS
+┌ ○ /                                          224 B         102 kB
+├ ƒ /api/admin/agents                          224 B         102 kB
+├ ƒ /api/admin/agents/[id]                     224 B         102 kB
+├ ƒ /api/admin/create-user                     224 B         102 kB
+├ ƒ /api/admin/evaluations                     224 B         102 kB
+├ ƒ /api/admin/export                          224 B         102 kB
+├ ƒ /api/admin/overview                        224 B         102 kB
+├ ƒ /api/admin/staff                           224 B         102 kB
+├ ƒ /api/admin/staff/[id]                      224 B         102 kB
+├ ƒ /api/agent/progress                        224 B         102 kB
+├ ƒ /api/agents                                224 B         102 kB
+├ ƒ /api/ai-eval                               224 B         102 kB
+├ ƒ /api/ai-eval/active                        224 B         102 kB
+├ ƒ /api/ai-eval/start                         224 B         102 kB
+├ ƒ /api/auth/session                          224 B         102 kB
+├ ƒ /api/evaluator/agent-stats                 224 B         102 kB
+├ ƒ /api/evaluator/all-agent-stats             224 B         102 kB
+├ ƒ /api/evaluator/evaluations                 224 B         102 kB
+├ ƒ /api/evaluator/evaluations/[id]            224 B         102 kB
+├ ƒ /api/pitch                                 224 B         102 kB
+├ ƒ /api/pitch/abandon                         224 B         102 kB
+├ ƒ /api/pitch/active                          224 B         102 kB
+├ ƒ /api/pitch/evaluate                        224 B         102 kB
+├ ƒ /api/pitch/start                           224 B         102 kB
+├ ƒ /api/quiz/status                           224 B         102 kB
+├ ƒ /api/quiz/submit                           224 B         102 kB
+├ ƒ /api/trainer/discipline                    224 B         102 kB
+├ ƒ /api/trainer/discipline/[id]               224 B         102 kB
+├ ƒ /api/trainer/training-periods              224 B         102 kB
+├ ƒ /api/trainer/training-periods/[id]         224 B         102 kB
+├ ƒ /api/trainer/training-periods/[id]/days    224 B         102 kB
+├ ƒ /[locale]/admin                            18 kB         163 kB
+├ ƒ /[locale]/ai-eval                         6.5 kB         151 kB
+├ ƒ /[locale]/dashboard                      10.8 kB         158 kB
+├ ƒ /[locale]/evaluator                      13.5 kB         159 kB
+├ ƒ /[locale]/learn                          3.77 kB         106 kB
+├ ƒ /[locale]/learn/[module]                 5.25 kB         147 kB
+├ ƒ /[locale]/pitch                          6.83 kB         152 kB
+├ ƒ /[locale]/quiz                           3.21 kB         164 kB
+├ ƒ /[locale]/quiz/[module]                  6.08 kB         166 kB
+├ ○ /login                                   3.14 kB         151 kB
+└ ○ /_not-found                                999 B         103 kB
++ First Load JS shared by all                 102 kB
+  ├ chunks/1255-a390e12b70b4a9fb.js            46 kB
+  ├ chunks/4bd1b696-f785427dddbba9fb.js      54.2 kB
+  └ other shared chunks (total)                 2 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

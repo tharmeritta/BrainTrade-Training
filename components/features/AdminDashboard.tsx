@@ -52,23 +52,30 @@ function timeAgo(iso: string | null) {
 
 // ── Sub-components ─────────────────────────────────────────────────────────
 
-function KpiCard({ label, value, sub, icon: Icon, color }: {
+function KpiCard({ label, value, sub, icon: Icon, themeColor }: {
   label: string; value: string | number; sub?: string;
-  icon: React.ElementType; color: string;
+  icon: React.ElementType; themeColor: 'blue' | 'purple' | 'orange' | 'amber';
 }) {
+  const gradients = {
+    blue: 'from-blue-400 to-blue-600 shadow-blue-500/20',
+    purple: 'from-purple-400 to-purple-600 shadow-purple-500/20',
+    orange: 'from-orange-400 to-orange-600 shadow-orange-500/20',
+    amber: 'from-amber-400 to-amber-600 shadow-amber-500/20',
+  };
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card rounded-2xl border border-border p-6 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow"
+      whileHover={{ y: -4, scale: 1.02 }}
+      className="bg-card/40 backdrop-blur-md rounded-2xl border border-border/50 p-6 flex items-start gap-4 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300"
     >
-      <div className={`p-3 rounded-xl ${color}`}>
+      <div className={`p-3 rounded-xl bg-gradient-to-br ${gradients[themeColor]} shadow-lg`}>
         <Icon size={22} className="text-white" />
       </div>
       <div>
-        <p className="text-sm text-muted-foreground font-medium">{label}</p>
-        <p className="text-3xl font-black text-foreground mt-0.5">{value}</p>
-        {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
+        <p className="text-sm text-foreground/70 font-medium">{label}</p>
+        <p className="text-3xl font-black text-foreground mt-0.5 tracking-tight" style={{ fontFamily: "'Syne', sans-serif" }}>{value}</p>
+        {sub && <p className="text-xs text-muted-foreground mt-1 font-medium">{sub}</p>}
       </div>
     </motion.div>
   );
@@ -146,8 +153,12 @@ function OverviewTab() {
   useEffect(() => { load(); }, [load]);
 
   if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+    <div className="flex flex-col items-center justify-center h-64 gap-4">
+      <div className="relative">
+        <div className="w-10 h-10 border-4 border-primary/20 rounded-full" />
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin absolute inset-0" />
+      </div>
+      <p className="text-sm font-medium text-muted-foreground animate-pulse">Loading overview...</p>
     </div>
   );
 
@@ -161,10 +172,10 @@ function OverviewTab() {
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Total Agents"    value={data.totalAgents}     sub={`${data.activeAgents} active this week`} icon={Users}     color="bg-blue-500" />
-        <KpiCard label="Quiz Pass Rate"  value={`${data.overallPassRate}%`}  sub="across all modules"             icon={Target}    color="bg-blue-500" />
-        <KpiCard label="AI Eval Avg"     value={`${data.avgAiEvalScore}/100`} sub="speech evaluation"              icon={Award}     color="bg-purple-500" />
-        <KpiCard label="Sessions / Week" value={data.weekSessions}    sub="quizzes + evals + pitches"           icon={Activity}  color="bg-orange-500" />
+        <KpiCard label="Total Agents"    value={data.totalAgents}     sub={`${data.activeAgents} active this week`} icon={Users}     themeColor="blue" />
+        <KpiCard label="Quiz Pass Rate"  value={`${data.overallPassRate}%`}  sub="across all modules"             icon={Target}    themeColor="blue" />
+        <KpiCard label="AI Eval Avg"     value={`${data.avgAiEvalScore}/100`} sub="speech evaluation"              icon={Award}     themeColor="purple" />
+        <KpiCard label="Sessions / Week" value={data.weekSessions}    sub="quizzes + evals + pitches"           icon={Activity}  themeColor="orange" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -565,75 +576,75 @@ function AgentsTab({ role }: { role: 'admin' | 'manager' | 'trainer' }) {
 
       <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm border-separate border-spacing-y-2 px-2">
             <thead>
-              <tr className="bg-secondary/50 border-b border-border">
-                <th className="text-left px-6 py-4 font-semibold text-muted-foreground">Agent</th>
-                <th className="text-center px-4 py-4 font-semibold text-muted-foreground">Product</th>
-                <th className="text-center px-4 py-4 font-semibold text-muted-foreground">Process</th>
-                <th className="text-center px-4 py-4 font-semibold text-muted-foreground">Payment</th>
-                <th className="text-center px-4 py-4 font-semibold text-muted-foreground">AI Eval</th>
-                <th className="text-center px-4 py-4 font-semibold text-muted-foreground">Pitch</th>
-                <th className="text-center px-4 py-4 font-semibold text-muted-foreground">Overall</th>
-                <th className="text-center px-4 py-4 font-semibold text-muted-foreground">Status</th>
-                <th className="px-4 py-4" />
+              <tr className="text-muted-foreground">
+                <th className="text-left px-5 py-3 font-bold uppercase tracking-wider text-[10px]">Agent</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Product</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Process</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Payment</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">AI Eval</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Pitch</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Overall</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Status</th>
+                <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody>
               {loading ? (
-                <tr><td colSpan={9} className="text-center py-12 text-muted-foreground">Loading...</td></tr>
+                <tr><td colSpan={9} className="text-center py-16"><div className="flex flex-col items-center gap-3"><div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /><span className="text-sm text-muted-foreground animate-pulse">Loading agents...</span></div></td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={9} className="text-center py-12 text-muted-foreground">No agents found.</td></tr>
+                <tr><td colSpan={9} className="text-center py-12 text-muted-foreground bg-card/40 backdrop-blur-sm rounded-2xl">No agents found.</td></tr>
               ) : filtered.map(a => (
-                <tr key={a.agent.id} className="hover:bg-secondary/20 transition-colors">
-                  <td className="px-6 py-4">
+                <tr key={a.agent.id} className="bg-card/60 backdrop-blur-md hover:bg-card hover:shadow-md transition-all group">
+                  <td className="px-5 py-4 rounded-l-2xl border-y border-l border-border/50 group-hover:border-primary/20">
                     <div className="font-semibold text-foreground">{a.agent.name}</div>
                     {a.agent.stageName && (
                       <div className="text-xs text-primary/70 font-medium mt-0.5">"{a.agent.stageName}"</div>
                     )}
-                    <div className="text-xs text-muted-foreground mt-0.5">{timeAgo(a.lastActive)}</div>
+                    <div className="text-[10px] text-muted-foreground mt-1">{timeAgo(a.lastActive)}</div>
                   </td>
-                  <td className="px-4 py-4"><ModuleCell stat={a.quiz.product} /></td>
-                  <td className="px-4 py-4"><ModuleCell stat={a.quiz.process} /></td>
-                  <td className="px-4 py-4"><ModuleCell stat={a.quiz.payment} /></td>
-                  <td className="px-4 py-4 text-center">
+                  <td className="px-4 py-4 border-y border-border/50 group-hover:border-y-primary/20"><ModuleCell stat={a.quiz.product} /></td>
+                  <td className="px-4 py-4 border-y border-border/50 group-hover:border-y-primary/20"><ModuleCell stat={a.quiz.process} /></td>
+                  <td className="px-4 py-4 border-y border-border/50 group-hover:border-y-primary/20"><ModuleCell stat={a.quiz.payment} /></td>
+                  <td className="px-4 py-4 text-center border-y border-border/50 group-hover:border-y-primary/20">
                     {a.aiEval
                       ? <span className={`font-bold ${scoreColor(a.aiEval.avgScore)}`}>{a.aiEval.avgScore}/100</span>
-                      : <span className="text-muted-foreground">–</span>}
+                      : <span className="text-muted-foreground/40">–</span>}
                   </td>
-                  <td className="px-4 py-4 text-center">
+                  <td className="px-4 py-4 text-center border-y border-border/50 group-hover:border-y-primary/20">
                     {a.pitch
-                      ? <span className="font-bold text-indigo-600">L{a.pitch.highestLevel}</span>
-                      : <span className="text-muted-foreground">–</span>}
+                      ? <span className="font-bold text-orange-500">L{a.pitch.highestLevel}</span>
+                      : <span className="text-muted-foreground/40">–</span>}
                   </td>
-                  <td className="px-4 py-4 text-center">
-                    <div className="flex flex-col items-center gap-1">
-                      <span className={`font-black text-base ${scoreColor(a.overallScore)}`}>{a.overallScore}%</span>
+                  <td className="px-4 py-4 text-center border-y border-border/50 group-hover:border-y-primary/20">
+                    <div className="flex flex-col items-center gap-1.5">
+                      <span className={`font-black text-base tracking-tight ${scoreColor(a.overallScore)}`} style={{ fontFamily: "'Syne', sans-serif" }}>{a.overallScore}%</span>
                       <BadgePill badge={a.badge} />
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-center">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${a.agent.active ? 'bg-blue-500/15 text-blue-400' : 'bg-red-500/15 text-red-400'}`}>
+                  <td className="px-4 py-4 text-center border-y border-border/50 group-hover:border-y-primary/20">
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold ${a.agent.active ? 'bg-blue-500/15 text-blue-400' : 'bg-red-500/15 text-red-400'}`}>
                       {a.agent.active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2">
+                  <td className="px-4 py-4 rounded-r-2xl border-y border-r border-border/50 group-hover:border-primary/20">
+                    <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={() => toggleActive(a.agent.id, a.agent.active)}
-                        className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
+                        className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap px-2 py-1.5 bg-secondary/50 rounded-lg">
                         {a.agent.active ? 'Deactivate' : 'Reactivate'}
                       </button>
                       <button
                         onClick={() => setEditingAgent({ id: a.agent.id, name: a.agent.name, stageName: a.agent.stageName ?? '' })}
-                        className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                         title="Edit agent info"
                       >
-                        <Pencil size={13} />
+                        <Pencil size={14} />
                       </button>
                       {role === 'admin' && (
                         <button onClick={() => deleteAgent(a.agent.id, a.agent.name)}
-                          className="p-1 rounded text-muted-foreground hover:text-red-600 hover:bg-red-500/10 transition-colors">
-                          <Trash2 size={13} />
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-500/10 transition-colors">
+                          <Trash2 size={14} />
                         </button>
                       )}
                     </div>
@@ -942,44 +953,47 @@ function StaffTab() {
       )}
 
       {/* Staff table */}
-      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+      <div className="bg-card/40 backdrop-blur-md rounded-2xl border border-border/50 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="text-center py-12 text-muted-foreground text-sm">Loading...</div>
+          <div className="text-center py-16 flex flex-col items-center gap-3">
+            <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+            <span className="text-sm text-muted-foreground animate-pulse">Loading staff...</span>
+          </div>
         ) : staff.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground text-sm">
             No staff accounts yet. Click "Add Account" to create one.
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full text-sm border-separate border-spacing-y-2 px-2">
             <thead>
-              <tr className="bg-secondary/50 border-b border-border">
-                <th className="text-left px-6 py-4 font-semibold text-muted-foreground">Name</th>
-                <th className="text-left px-4 py-4 font-semibold text-muted-foreground">Username</th>
-                <th className="text-left px-4 py-4 font-semibold text-muted-foreground">Password</th>
-                <th className="text-center px-4 py-4 font-semibold text-muted-foreground">Role</th>
-                <th className="text-center px-4 py-4 font-semibold text-muted-foreground">Status</th>
-                <th className="px-4 py-4 text-right" />
+              <tr className="text-muted-foreground">
+                <th className="text-left px-5 py-3 font-bold uppercase tracking-wider text-[10px]">Name</th>
+                <th className="text-left px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Username</th>
+                <th className="text-left px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Password</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Role</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Status</th>
+                <th className="px-4 py-3 text-right" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody>
               {staff.map(s => (
-                <tr key={s.id} className="hover:bg-secondary/20 transition-colors">
+                <tr key={s.id} className="bg-card/60 backdrop-blur-md hover:bg-card hover:shadow-md transition-all group">
                   {editing?.id === s.id ? (
                     // Edit row
                     <>
-                      <td className="px-6 py-3">
+                      <td className="px-5 py-3 rounded-l-2xl border-y border-l border-border/50 group-hover:border-primary/20">
                         <input value={editing.name} onChange={e => setEditing(v => v && ({ ...v, name: e.target.value }))}
                           className="w-full bg-secondary/40 border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 border-y border-border/50 group-hover:border-y-primary/20">
                         <input value={editing.username} onChange={e => setEditing(v => v && ({ ...v, username: e.target.value }))}
                           className="w-full bg-secondary/40 border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 border-y border-border/50 group-hover:border-y-primary/20">
                         <input value={editing.password} onChange={e => setEditing(v => v && ({ ...v, password: e.target.value }))}
                           className="w-full bg-secondary/40 border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                       </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-4 py-3 text-center border-y border-border/50 group-hover:border-y-primary/20">
                         <select value={editing.role} onChange={e => setEditing(v => v && ({ ...v, role: e.target.value as 'manager' | 'evaluator' | 'trainer' }))}
                           className="bg-secondary/40 border border-border rounded-lg px-2 py-1.5 text-xs focus:outline-none">
                           <option value="manager">Manager</option>
@@ -987,13 +1001,13 @@ function StaffTab() {
                           <option value="trainer">Trainer</option>
                         </select>
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${s.active ? 'bg-blue-500/15 text-blue-400' : 'bg-red-500/15 text-red-400'}`}>
+                      <td className="px-4 py-3 text-center border-y border-border/50 group-hover:border-y-primary/20">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold ${s.active ? 'bg-blue-500/15 text-blue-400' : 'bg-red-500/15 text-red-400'}`}>
                           {s.active ? 'Active' : 'Inactive'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="px-4 py-3 text-right rounded-r-2xl border-y border-r border-border/50 group-hover:border-primary/20">
+                        <div className="flex items-center justify-end gap-1.5 pt-0.5">
                           <button onClick={saveEdit} disabled={saving}
                             className="p-1.5 rounded-lg bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 transition-colors disabled:opacity-50">
                             <Check size={14} />
@@ -1008,9 +1022,9 @@ function StaffTab() {
                   ) : (
                     // View row
                     <>
-                      <td className="px-6 py-4 font-semibold text-foreground">{s.name}</td>
-                      <td className="px-4 py-4 font-mono text-sm text-foreground">{s.username}</td>
-                      <td className="px-4 py-4">
+                      <td className="px-5 py-4 rounded-l-2xl border-y border-l border-border/50 group-hover:border-primary/20 font-semibold text-foreground">{s.name}</td>
+                      <td className="px-4 py-4 border-y border-border/50 group-hover:border-y-primary/20 font-mono text-sm text-foreground">{s.username}</td>
+                      <td className="px-4 py-4 border-y border-border/50 group-hover:border-y-primary/20">
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-sm text-foreground">
                             {showPw[s.id] ? s.password : '••••••••'}
@@ -1021,15 +1035,15 @@ function StaffTab() {
                           </button>
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-center">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold capitalize ${ROLE_COLORS[s.role]}`}>
+                      <td className="px-4 py-4 text-center border-y border-border/50 group-hover:border-y-primary/20">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold capitalize ${ROLE_COLORS[s.role]}`}>
                           {s.role}
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-4 text-center border-y border-border/50 group-hover:border-y-primary/20">
                         <button
                           onClick={() => toggleStaffActive(s.id, s.active)}
-                          className={`px-2.5 py-1 rounded-full text-xs font-bold transition-colors ${
+                          className={`px-2.5 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold transition-colors ${
                             s.active
                               ? 'bg-blue-500/15 text-blue-400 hover:bg-red-500/15 hover:text-red-400'
                               : 'bg-red-500/15 text-red-400 hover:bg-blue-500/15 hover:text-blue-400'
@@ -1038,8 +1052,8 @@ function StaffTab() {
                           {s.active ? 'Active' : 'Inactive'}
                         </button>
                       </td>
-                      <td className="px-4 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="px-4 py-4 text-right rounded-r-2xl border-y border-r border-border/50 group-hover:border-primary/20">
+                        <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => setEditing({ id: s.id, username: s.username, password: s.password, name: s.name, role: s.role as 'manager' | 'evaluator' | 'trainer' })}
                             className="p-1.5 rounded-lg text-muted-foreground hover:text-blue-600 hover:bg-blue-500/10 transition-colors">
@@ -1102,8 +1116,12 @@ function EvaluationsTab() {
   }, []);
 
   if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+    <div className="flex flex-col items-center justify-center h-64 gap-4">
+      <div className="relative">
+        <div className="w-10 h-10 border-4 border-primary/20 rounded-full" />
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin absolute inset-0" />
+      </div>
+      <p className="text-sm font-medium text-muted-foreground animate-pulse">Loading evaluations...</p>
     </div>
   );
 
@@ -1135,9 +1153,9 @@ function EvaluationsTab() {
     <div className="space-y-6">
       {/* KPIs */}
       <div className="grid grid-cols-3 gap-4">
-        <KpiCard label="Total Evaluations" value={totalEvals}   sub="by all evaluators"       icon={ClipboardCheck} color="bg-blue-500" />
-        <KpiCard label="Active Evaluators" value={evMap.size}   sub="have submitted scores"   icon={Users}          color="bg-blue-500" />
-        <KpiCard label="Avg Score Given"   value={globalAvg ? `${globalAvg}/100` : '—'} sub="across all evaluations" icon={Star} color="bg-amber-500" />
+        <KpiCard label="Total Evaluations" value={totalEvals}   sub="by all evaluators"       icon={ClipboardCheck} themeColor="blue" />
+        <KpiCard label="Active Evaluators" value={evMap.size}   sub="have submitted scores"   icon={Users}          themeColor="blue" />
+        <KpiCard label="Avg Score Given"   value={globalAvg ? `${globalAvg}/100` : '—'} sub="across all evaluations" icon={Star} themeColor="amber" />
       </div>
 
       {/* Evaluator performance cards */}
@@ -1203,31 +1221,31 @@ function EvaluationsTab() {
             <p className="text-xs mt-1">Evaluators can submit scores from the Evaluator Panel</p>
           </div>
         ) : (
-          <div className="divide-y divide-border">
+          <div className="p-4 space-y-2">
             {filtered.map(ev => {
               const redFlagCount = ev.criteria?.redFlags
                 ? Object.values(ev.criteria.redFlags).filter(Boolean).length
                 : 0;
               return (
-                <div key={ev.id} className="px-6 py-4 flex items-center gap-4 hover:bg-secondary/20 transition-colors">
-                  <div className="w-12 text-center shrink-0">
-                    <span className={`text-sm font-black ${scoreColor(ev.totalScore)}`}>{ev.totalScore}</span>
-                    <div className="text-[9px] text-muted-foreground">/100</div>
+                <div key={ev.id} className="px-6 py-4 flex items-center gap-5 bg-card/60 backdrop-blur-md hover:bg-card hover:shadow-md border border-border/50 hover:border-primary/20 rounded-2xl transition-all group">
+                  <div className="w-14 text-center shrink-0">
+                    <span className={`text-xl tracking-tight font-black ${scoreColor(ev.totalScore)}`} style={{ fontFamily: "'Syne', sans-serif" }}>{ev.totalScore}</span>
+                    <div className="text-[10px] uppercase font-bold text-muted-foreground mt-0.5">/100</div>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-semibold text-foreground">{ev.agentName}</span>
-                      <span className="text-xs text-muted-foreground">by</span>
-                      <span className="text-xs font-medium text-foreground">{ev.evaluatorName}</span>
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mx-1">evaluated by</span>
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-secondary text-foreground">{ev.evaluatorName}</span>
                       {redFlagCount > 0 && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20">
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-red-500/10 text-red-500 border border-red-500/20 uppercase tracking-wider">
                           {redFlagCount} 🚩 red flag{redFlagCount > 1 ? 's' : ''}
                         </span>
                       )}
                     </div>
-                    {ev.comments && <p className="text-xs text-muted-foreground truncate mt-0.5">{ev.comments}</p>}
+                    {ev.comments && <p className="text-xs text-muted-foreground truncate mt-1.5">{ev.comments}</p>}
                   </div>
-                  <div className="text-xs text-muted-foreground shrink-0">{timeAgo(ev.evaluatedAt)}</div>
+                  <div className="text-[10px] font-medium text-muted-foreground shrink-0 px-3 py-1.5 bg-secondary/30 rounded-lg">{timeAgo(ev.evaluatedAt)}</div>
                 </div>
               );
             })}
@@ -1272,11 +1290,19 @@ export default function AdminDashboard({ role }: { role: 'admin' | 'manager' | '
   });
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Top header */}
-      <div className="bg-card border-b border-border px-6 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
-        <div>
-          <h1 className="text-xl font-black text-foreground tracking-tight">BrainTrade Training Platform</h1>
+    <div className="min-h-screen bg-background relative selection:bg-primary/20">
+      {/* Ambient background */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[100px]" />
+        <div className="absolute top-[40%] right-[-10%] w-[30%] h-[40%] bg-purple-500/10 rounded-full blur-[100px]" />
+        <div className="absolute -bottom-[10%] left-[20%] w-[30%] h-[30%] bg-amber-500/10 rounded-full blur-[100px]" />
+      </div>
+
+      <div className="relative z-10 flex flex-col min-h-screen">
+        {/* Top header */}
+        <div className="bg-background/60 backdrop-blur-2xl border-b border-white/5 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+          <div>
+            <h1 className="text-xl font-black text-foreground tracking-tight" style={{ fontFamily: "'Syne', sans-serif" }}>BrainTrade Training Platform</h1>
           <p className="text-xs text-muted-foreground">
             {role === 'admin' ? 'Admin' : role === 'trainer' ? 'Trainer' : 'Manager'} Control Panel · {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
           </p>
@@ -1301,21 +1327,22 @@ export default function AdminDashboard({ role }: { role: 'admin' | 'manager' | '
       </div>
 
       {/* Tab bar */}
-      <div className="bg-card border-b border-border px-6">
-        <div className="flex gap-1">
+      <div className="px-6 mt-6 w-full max-w-7xl mx-auto">
+        <div className="inline-flex max-w-full overflow-x-auto gap-1 p-1.5 bg-secondary/50 backdrop-blur-md rounded-2xl border border-border/50 shadow-sm scrollbar-hide">
           {visibleTabs.map(t => {
             const Icon = t.icon;
+            const active = tab === t.id;
             return (
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`flex items-center gap-2 px-5 py-4 text-sm font-semibold border-b-2 transition-all ${
-                  tab === t.id
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all whitespace-nowrap ${
+                  active
+                    ? 'bg-background shadow-sm text-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
                 }`}
               >
-                <Icon size={16} /> {t.label}
+                <Icon size={16} className={active ? "text-primary" : ""} /> {t.label}
               </button>
             );
           })}
@@ -1340,6 +1367,7 @@ export default function AdminDashboard({ role }: { role: 'admin' | 'manager' | '
             {tab === 'staff'       && role === 'admin' && <StaffTab />}
           </motion.div>
         </AnimatePresence>
+      </div>
       </div>
     </div>
   );

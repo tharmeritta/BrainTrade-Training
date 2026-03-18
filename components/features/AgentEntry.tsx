@@ -6,6 +6,8 @@ import {
   ArrowRight, Loader2, AlertCircle, Users, Award, Layers, User,
   BookOpen, Settings, CreditCard, Bot, Target, Zap, CheckCircle2,
 } from 'lucide-react';
+import { StatCounter } from '@/components/ui/StatCounter';
+import { EASE, TRANSITION } from '@/lib/animations';
 
 interface AgentOption { id: string; name: string; stageName?: string; }
 interface AgentEntryProps { onAgentSelected: (id: string, name: string, stageName: string) => void; }
@@ -39,23 +41,6 @@ function getInitials(n: string) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-function StatCounter({ target, suffix, delay }: { target: number; suffix: string; delay: number }) {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    const t = setTimeout(() => {
-      const start = Date.now();
-      const duration = 1400;
-      const tick = () => {
-        const p = Math.min((Date.now() - start) / duration, 1);
-        setCount(Math.round(target * (1 - Math.pow(1 - p, 3))));
-        if (p < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    }, delay);
-    return () => clearTimeout(t);
-  }, [target, delay]);
-  return <>{count}{suffix}</>;
-}
 
 export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
   const [agents, setAgents]             = useState<AgentOption[]>([]);
@@ -135,8 +120,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
           transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', repeatType: 'mirror' }}
         />
         {/* Subtle grid */}
-        <div style={{
-          position: 'absolute', inset: 0, opacity: 0.016,
+        <div className="absolute inset-0 opacity-[0.016]" style={{
           backgroundImage: `linear-gradient(var(--hub-grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--hub-grid-color) 1px, transparent 1px)`,
           backgroundSize: '56px 56px',
         }} />
@@ -163,14 +147,9 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
           transition={{ duration: 0.5 }}
           className="relative z-10"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full"
-            style={{
-              background: 'rgba(0,180,216,0.08)',
-              border: '1px solid rgba(0,180,216,0.2)',
-            }}
-          >
-            <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: CYAN }} />
-            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase" style={{ color: CYAN }}>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-cyan/10 border border-brand-cyan/20">
+            <div className="w-1.5 h-1.5 rounded-full animate-pulse bg-brand-cyan" />
+            <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-brand-cyan">
               Sales Excellence Academy
             </span>
           </div>
@@ -181,18 +160,11 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
           className="relative z-10 flex flex-col gap-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ delay: 0.1, ...TRANSITION.slow }}
         >
           {/* Headline */}
           <div>
-            <h1 style={{
-              fontSize: 'clamp(2rem, 3.5vw, 3rem)',
-              fontWeight: 900,
-              lineHeight: 1.15,
-              letterSpacing: '-0.02em',
-              color: 'var(--hub-text)',
-              marginBottom: '0.75rem',
-            }}>
+            <h1 className="text-4xl md:text-5xl lg:text-5xl font-black leading-tight tracking-tight text-[color:var(--hub-text)] mb-3">
               เสริมทักษะ{' '}
               <span style={{
                 background: `linear-gradient(100deg, ${CYAN} 0%, ${PURPLE} 100%)`,
@@ -222,14 +194,13 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                   minWidth: 88,
                 }}
               >
-                <div className="w-6 h-6 rounded-lg flex items-center justify-center mb-2"
-                  style={{ background: 'rgba(0,180,216,0.1)' }}>
-                  <s.Icon size={12} style={{ color: CYAN }} />
+                <div className="w-6 h-6 rounded-lg flex items-center justify-center mb-2 bg-brand-cyan/10">
+                  <s.Icon size={12} className="text-brand-cyan" />
                 </div>
-                <div className="text-2xl font-black leading-none mb-0.5" style={{ color: 'var(--hub-text)' }}>
+                <div className="text-2xl font-black leading-none mb-0.5 text-[color:var(--hub-text)]">
                   <StatCounter target={s.target} suffix={s.suffix} delay={300 + i * 120} />
                 </div>
-                <div className="text-[10px] font-medium" style={{ color: 'var(--hub-muted)' }}>{s.label}</div>
+                <div className="text-[10px] font-medium text-[color:var(--hub-muted)]">{s.label}</div>
               </motion.div>
             ))}
           </div>
@@ -243,8 +214,8 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
           >
             {TRUST_POINTS.map((pt, i) => (
               <div key={i} className="flex items-center gap-2.5">
-                <CheckCircle2 size={13} style={{ color: CYAN, flexShrink: 0 }} />
-                <span className="text-xs" style={{ color: 'var(--hub-muted)' }}>{pt}</span>
+                <CheckCircle2 size={13} className="text-brand-cyan shrink-0" />
+                <span className="text-xs text-[color:var(--hub-muted)]">{pt}</span>
               </div>
             ))}
           </motion.div>
@@ -289,11 +260,11 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
           className="relative z-10 w-full max-w-[380px]"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.15, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ delay: 0.15, ...TRANSITION.slow }}
         >
           {/* Mobile-only header */}
           <div className="lg:hidden mb-6 text-center">
-            <p className="text-[10px] font-semibold tracking-[0.2em] uppercase mb-1" style={{ color: CYAN }}>
+            <p className="text-[10px] font-semibold tracking-[0.2em] uppercase mb-1 text-brand-cyan">
               Sales Excellence Academy
             </p>
             <h1 className="text-xl font-black" style={{ color: 'var(--hub-text)' }}>
@@ -350,14 +321,14 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                             {getInitials(returning.name)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: CYAN }}>
+                            <div className="text-[10px] font-semibold uppercase tracking-wider mb-0.5 text-brand-cyan">
                               ยินดีต้อนรับกลับมา
                             </div>
                             <div className="text-sm font-bold truncate" style={{ color: 'var(--hub-text)' }}>
                               {returning.name}
                             </div>
                             {returning.stageName && (
-                              <div className="text-[10px] font-medium truncate" style={{ color: CYAN, opacity: 0.8 }}>
+                              <div className="text-[10px] font-medium truncate text-brand-cyan/80">
                                 "{returning.stageName}"
                               </div>
                             )}
@@ -413,7 +384,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                     }}
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.3, type: 'spring', stiffness: 300, damping: 20 }}
+                    transition={{ delay: 0.3, ...EASE.spring }}
                   >
                     <AnimatePresence mode="wait">
                       {initials ? (
@@ -426,7 +397,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                         <motion.div key="icon"
                           initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                           exit={{ scale: 0.5, opacity: 0 }} transition={{ duration: 0.12 }}>
-                          <User size={20} style={{ color: CYAN }} />
+                          <User size={20} className="text-brand-cyan" />
                         </motion.div>
                       )}
                     </AnimatePresence>

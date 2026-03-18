@@ -8,6 +8,8 @@ import {
   Trophy, RotateCcw, ArrowRight, LogOut, Zap,
 } from 'lucide-react';
 import type { AgentStats } from '@/types';
+import { ScoreRing } from '@/components/ui/ScoreRing';
+import { EASE, TRANSITION } from '@/lib/animations';
 
 const STEPS = [
   { id: 'learn'   as const, step: 1, label: 'เรียนรู้',  sublabel: 'Study',   desc: 'ผลิตภัณฑ์ · กระบวนการขาย', Icon: GraduationCap, color: '#818CF8', glow: 'rgba(129,140,248,0.18)' },
@@ -44,25 +46,6 @@ function deriveSteps(stats: AgentStats | null): Record<StepId, StepState> {
   };
 }
 
-// ── Score Ring ─────────────────────────────────────────────────────────────────
-function ScoreRing({ score, color, size }: { score: number; color: string; size: number }) {
-  const sw = 7, r = (size - sw) / 2, circ = 2 * Math.PI * r;
-  const arc = (score / 100) * circ * 0.75;
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <circle cx={size/2} cy={size/2} r={r} fill="none"
-        stroke="var(--hub-ring-track)" strokeWidth={sw} strokeLinecap="round"
-        strokeDasharray={`${circ * 0.75} ${circ * 0.25}`}
-        transform={`rotate(135 ${size/2} ${size/2})`} />
-      <motion.circle cx={size/2} cy={size/2} r={r} fill="none"
-        stroke={color} strokeWidth={sw} strokeLinecap="round"
-        transform={`rotate(135 ${size/2} ${size/2})`}
-        initial={{ strokeDasharray: `0 ${circ}` }}
-        animate={{ strokeDasharray: `${arc} ${circ}` }}
-        transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.4 }} />
-    </svg>
-  );
-}
 
 // ── Mission Card ───────────────────────────────────────────────────────────────
 function MissionCard({ step, state, index, href }: {
@@ -78,7 +61,7 @@ function MissionCard({ step, state, index, href }: {
       className="group relative flex items-stretch rounded-2xl overflow-hidden"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.18 + index * 0.09, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ delay: 0.18 + index * 0.09, ...TRANSITION.base }}
       style={{
         background: locked ? 'var(--hub-locked-bg)' : 'var(--hub-card)',
         border: `1px solid ${locked ? 'var(--hub-dim-border)' : passed ? color + '38' : hasFailed ? 'rgba(248,113,113,0.35)' : isNext ? color + '28' : 'var(--hub-border)'}`,
@@ -274,7 +257,7 @@ export default function AgentTrainingHub({ agentName, agentStageName, stats, onL
         style={{ background: 'var(--hub-panel)' }}
         initial={{ opacity: 0, x: -16 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ ...TRANSITION.base }}
       >
         {/* ── Avatar + ring ── */}
         <div className="flex flex-col items-center w-full">
@@ -338,7 +321,7 @@ export default function AgentTrainingHub({ agentName, agentStageName, stats, onL
             style={{ background: badgeCfg.bg, border: `1px solid ${badgeCfg.border}`, color: badgeCfg.color }}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 300, damping: 20 }}
+            transition={{ delay: 0.2, ...EASE.spring }}
           >
             ★ {badgeCfg.label}
           </motion.span>
@@ -363,7 +346,7 @@ export default function AgentTrainingHub({ agentName, agentStageName, stats, onL
             <motion.div className="h-full rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${pct}%` }}
-              transition={{ delay: 0.55, duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ delay: 0.55, duration: 1.4, ease: EASE.smooth }}
               style={{ background: 'linear-gradient(90deg, #818CF8, #60A5FA, #F472B6)' }} />
           </div>
 
