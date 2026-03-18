@@ -25,7 +25,12 @@
       "Bash(New-Item:*)",
       "Read(//c//**)",
       "Bash(mkdir -p \"/c/Temp\")",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(firebase projects:list:*)",
+      "Bash(where:*)",
+      "Bash(Get-Command:*)",
+      "Bash(echo:*)",
+      "Bash(firebase login:*)"
     ]
   }
 }

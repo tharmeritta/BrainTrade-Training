@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   experimental: {
     serverActions: {
-      allowedOrigins: ['localhost:3000'],
+      allowedOrigins: ['localhost:3000', 'braintrade-training-cb55d.web.app', 'braintrade-training-cb55d.firebaseapp.com'],
     },
   },
 };
