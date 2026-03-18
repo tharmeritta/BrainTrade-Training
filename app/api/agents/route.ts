@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { gcsGetAll } from '@/lib/gcs';
+import { fsGetAll as gcsGetAll } from '@/lib/firestore-db';
 import type { Agent } from '@/types';
 
 export async function GET() {

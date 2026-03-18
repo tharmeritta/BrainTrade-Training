@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerUser } from '@/lib/session';
-import { gcsGetAll, gcsAdd } from '@/lib/gcs';
+import { fsGetAll as gcsGetAll, fsAdd as gcsAdd } from '@/lib/firestore-db';
 import type { AgentEvaluation } from '@/types';
 
 export async function GET(req: Request) {

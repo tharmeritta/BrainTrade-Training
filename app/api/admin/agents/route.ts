@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminOrManager, requireAdminManagerOrTrainer } from '@/lib/session';
-import { gcsAdd } from '@/lib/gcs';
+import { fsAdd as gcsAdd } from '@/lib/firestore-db';
 import { getAllAgentStats } from '@/lib/agents';
 
 export async function GET() {

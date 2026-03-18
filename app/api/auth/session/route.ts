@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { makeSessionToken } from '@/lib/session';
-import { gcsGetAll } from '@/lib/gcs';
+import { fsGetAll as gcsGetAll } from '@/lib/firestore-db';
 import type { StaffAccount } from '@/types';
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME!;

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { gcsGet, gcsSet, gcsDelete } from '@/lib/gcs';
+import { fsGet as gcsGet, fsSet as gcsSet, fsDelete as gcsDelete } from '@/lib/firestore-db';
 import type { PitchMessage } from '@/types';
 
 interface ActiveEvalSession {

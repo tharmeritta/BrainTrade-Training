@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { gcsAdd } from '@/lib/gcs';
+import { fsAdd as gcsAdd } from '@/lib/firestore-db';
 
 export async function POST(req: NextRequest) {
   try {

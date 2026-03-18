@@ -21,6 +21,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AgentEntry from '@/components/features/AgentEntry';
 import AgentTrainingHub from '@/components/features/AgentTrainingHub';
 import type { AgentStats } from '@/types';
+import { saveProgress, getProgress } from '@/lib/localCache';
 
 const AGENT_ID_KEY         = 'brainstrade_agent_id';
 const AGENT_NAME_KEY       = 'brainstrade_agent_name';
@@ -46,13 +47,46 @@ export default function DashboardPage() {
     }
   }, []);
 
-  // Fetch agent progress whenever agentId changes
+  // Fetch agent progress whenever agentId changes.
+  // Falls back to localStorage cache if the server is unreachable.
   useEffect(() => {
     if (!agentId) return;
     fetch(`/api/agent/progress?agentId=${agentId}&agentName=${encodeURIComponent(agentName ?? '')}`)
       .then(r => r.json())
-      .then(d => setStats(d.stats ?? null))
-      .catch(() => setStats(null));
+      .then(d => {
+        const serverStats = d.stats ?? null;
+        setStats(serverStats);
+        // Mirror progress to localStorage so the browser has a copy
+        if (serverStats && agentId) {
+          saveProgress(agentId, {
+            agentId,
+            agentName: agentName ?? '',
+            pitchCompletedLevels: serverStats.pitch?.completedLevels ?? [],
+            evalCompletedLevels: serverStats.evalCompletedLevels ?? [],
+            evalSavedLevel: null,
+          });
+        }
+      })
+      .catch(() => {
+        // Server unreachable — load from localStorage backup
+        const cached = agentId ? getProgress(agentId) : null;
+        if (cached) {
+          setStats({
+            agent: { id: agentId, name: agentName ?? '', active: true, createdAt: new Date() },
+            quiz: {},
+            aiEval: null,
+            pitch: cached.pitchCompletedLevels.length > 0
+              ? { highestLevel: Math.max(...cached.pitchCompletedLevels), sessionCount: 0, completedLevels: cached.pitchCompletedLevels }
+              : null,
+            lastActive: cached.updatedAt ?? null,
+            evalCompletedLevels: cached.evalCompletedLevels,
+            overallScore: 0,
+            badge: 'needs-work',
+          } as AgentStats);
+        } else {
+          setStats(null);
+        }
+      });
   }, [agentId]);
 
   function handleAgentSelected(id: string, name: string, stageName: string) {

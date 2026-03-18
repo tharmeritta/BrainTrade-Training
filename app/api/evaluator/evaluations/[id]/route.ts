@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerUser } from '@/lib/session';
-import { gcsUpdate } from '@/lib/gcs';
+import { fsUpdate as gcsUpdate } from '@/lib/firestore-db';
 
 export async function PATCH(
   req: Request,

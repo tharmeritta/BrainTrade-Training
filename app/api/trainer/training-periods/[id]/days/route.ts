@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminManagerOrTrainer } from '@/lib/session';
-import { gcsGetAll, gcsAdd, gcsUpdate } from '@/lib/gcs';
+import { fsGetAll as gcsGetAll, fsAdd as gcsAdd, fsUpdate as gcsUpdate } from '@/lib/firestore-db';
 import type { TrainingDayRecord } from '@/types';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

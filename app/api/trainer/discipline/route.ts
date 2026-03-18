@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminManagerOrTrainer } from '@/lib/session';
-import { gcsAdd, gcsGetAll } from '@/lib/gcs';
+import { fsAdd as gcsAdd, fsGetAll as gcsGetAll } from '@/lib/firestore-db';
 import type { DisciplineRecord } from '@/types';
 
 export async function GET(req: NextRequest) {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin, requireAdminManagerOrTrainer } from '@/lib/session';
-import { gcsUpdate, gcsDelete } from '@/lib/gcs';
+import { fsUpdate as gcsUpdate, fsDelete as gcsDelete } from '@/lib/firestore-db';
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try { await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }

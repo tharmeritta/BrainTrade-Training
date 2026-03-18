@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAI } from '@/lib/openai';
-import { gcsAdd } from '@/lib/gcs';
+import { fsAdd as gcsAdd } from '@/lib/firestore-db';
 import type { PitchMessage } from '@/types';
 
 // Summarize and persist an abandoned pitch session.

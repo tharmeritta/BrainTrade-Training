@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/session';
-import { gcsUpdate, gcsDelete, gcsGetAll } from '@/lib/gcs';
+import { fsUpdate as gcsUpdate, fsDelete as gcsDelete, fsGetAll as gcsGetAll } from '@/lib/firestore-db';
 import type { StaffAccount } from '@/types';
 
 // PATCH /api/admin/staff/:id — update username / password / name / role / active

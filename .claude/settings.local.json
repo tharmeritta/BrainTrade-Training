@@ -30,7 +30,8 @@
       "Bash(where:*)",
       "Bash(Get-Command:*)",
       "Bash(echo:*)",
-      "Bash(firebase login:*)"
+      "Bash(firebase login:*)",
+      "Bash(grep:*)"
     ]
   }
 }

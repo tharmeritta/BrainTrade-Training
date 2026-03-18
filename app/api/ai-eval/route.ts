@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAI } from '@/lib/openai';
-import { gcsAdd } from '@/lib/gcs';
+import { fsAdd as gcsAdd } from '@/lib/firestore-db';
 import type { PitchMessage } from '@/types';
 
 const SYSTEM_PROMPT = `คุณคือ "ครูฝึกเทเลเซลล์มืออาชีพ" ที่มีประสบการณ์ฝึกพนักงานขายทางโทรศัพท์มากกว่า 15 ปี โดยเชี่ยวชาญพฤติกรรมลูกค้าคนไทย

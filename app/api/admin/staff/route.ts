@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/session';
-import { gcsGetAll, gcsAdd } from '@/lib/gcs';
+import { fsGetAll as gcsGetAll, fsAdd as gcsAdd } from '@/lib/firestore-db';
 import type { StaffAccount } from '@/types';
 
 // GET /api/admin/staff — list all managers + evaluators (passwords included for admin editing)

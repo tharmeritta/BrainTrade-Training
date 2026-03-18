@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdminOrManager } from '@/lib/session';
-import { gcsGetAll } from '@/lib/gcs';
+import { fsGetAll as gcsGetAll } from '@/lib/firestore-db';
 import type { AgentEvaluation } from '@/types';
 
 export async function GET() {
