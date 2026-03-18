@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminManagerOrTrainer } from '@/lib/session';
-import { fsGetAll as gcsGetAll, fsAdd as gcsAdd, fsUpdate as gcsUpdate } from '@/lib/firestore-db';
+import { fsGetAll, fsAdd, fsUpdate } from '@/lib/firestore-db';
 import type { TrainingDayRecord } from '@/types';
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try { await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   const { id } = await params;
-  const all = await gcsGetAll<TrainingDayRecord>('training_day_records');
+  const all = await fsGetAll<TrainingDayRecord>('training_day_records');
   const records = all.filter(r => r.trainingPeriodId === id);
   return NextResponse.json({ records });
 }
@@ -19,10 +19,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!agentId || !dayNumber) return NextResponse.json({ error: 'agentId and dayNumber required' }, { status: 400 });
 
   // Check if record already exists for this agent/day/period — update it
-  const all = await gcsGetAll<TrainingDayRecord>('training_day_records');
+  const all = await fsGetAll<TrainingDayRecord>('training_day_records');
   const existing = all.find(r => r.trainingPeriodId === trainingPeriodId && r.agentId === agentId && r.dayNumber === dayNumber);
   if (existing) {
-    await gcsUpdate('training_day_records', existing.id, {
+    await fsUpdate('training_day_records', existing.id, {
       date: date ?? existing.date,
       attendance: attendance ?? existing.attendance,
       topics: topics ?? existing.topics,
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     });
     return NextResponse.json({ ok: true, id: existing.id });
   }
-  const record = await gcsAdd('training_day_records', {
+  const record = await fsAdd('training_day_records', {
     trainingPeriodId,
     agentId,
     dayNumber,

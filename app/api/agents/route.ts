@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { fsGetAll as gcsGetAll } from '@/lib/firestore-db';
+import { fsGetAll } from '@/lib/firestore-db';
 import type { Agent } from '@/types';
 
 export async function GET() {
   try {
-    const agents = await gcsGetAll<Agent>('agents');
+    const agents = await fsGetAll<Agent>('agents');
     const active = agents
       .filter(a => a.active)
       .map(a => ({ id: a.id, name: a.name, stageName: a.stageName ?? '' }))

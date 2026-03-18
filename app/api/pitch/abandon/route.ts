@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAI } from '@/lib/openai';
-import { fsAdd as gcsAdd } from '@/lib/firestore-db';
+import { fsAdd } from '@/lib/firestore-db';
 import type { PitchMessage } from '@/types';
 
 // Summarize and persist an abandoned pitch session.
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (agentId) {
-      await gcsAdd('pitch_abandoned', {
+      await fsAdd('pitch_abandoned', {
         sessionId,
         agentId,
         agentName: agentName ?? '',

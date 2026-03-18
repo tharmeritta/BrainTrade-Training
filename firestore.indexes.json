@@ -4,7 +4,7 @@
       "collectionGroup": "quiz_results",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "agentId", "order": "ASCENDING" },
         { "fieldPath": "timestamp", "order": "DESCENDING" }
       ]
     },
@@ -12,7 +12,7 @@
       "collectionGroup": "pitch_sessions",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "agentId", "order": "ASCENDING" },
         { "fieldPath": "timestamp", "order": "DESCENDING" }
       ]
     },
@@ -20,8 +20,32 @@
       "collectionGroup": "ai_eval_logs",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "agentId", "order": "ASCENDING" },
         { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "training_day_records",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "trainingPeriodId", "order": "ASCENDING" },
+        { "fieldPath": "agentId", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "discipline_records",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "trainingPeriodId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "agent_evaluations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "agentId", "order": "ASCENDING" },
+        { "fieldPath": "evaluatedAt", "order": "DESCENDING" }
       ]
     }
   ],

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdminManagerOrTrainer } from '@/lib/session';
-import { fsGetAll as gcsGetAll } from '@/lib/firestore-db';
+import { fsGetAll } from '@/lib/firestore-db';
 import { getAllAgentStats, getModuleStats } from '@/lib/agents';
 import type { AdminOverviewData } from '@/types';
 
@@ -23,9 +23,9 @@ export async function GET() {
     const [allStats, moduleStats, quizDocs, evalDocs, pitchDocs] = await Promise.all([
       getAllAgentStats(),
       getModuleStats(),
-      gcsGetAll<{ agentId: string; passed: boolean; score: number; timestamp: string }>('quiz_results'),
-      gcsGetAll<{ agentId: string; score: number; timestamp: string }>('ai_eval_logs'),
-      gcsGetAll<{ agentId: string; timestamp: string }>('pitch_sessions'),
+      fsGetAll<{ agentId: string; passed: boolean; score: number; timestamp: string }>('quiz_results'),
+      fsGetAll<{ agentId: string; score: number; timestamp: string }>('ai_eval_logs'),
+      fsGetAll<{ agentId: string; timestamp: string }>('pitch_sessions'),
     ]);
 
     // Pass rate = agents who passed ALL 3 quiz modules (not individual attempt count)

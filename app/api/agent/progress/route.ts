@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fsGet as gcsGet, fsSet as gcsSet, fsDelete as gcsDelete } from '@/lib/firestore-db';
+import { fsGet, fsSet, fsDelete } from '@/lib/firestore-db';
 import { getAgentStats } from '@/lib/agents';
 
 export interface ProgressRecord {
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     const { agentId, agentName } = body;
     if (!agentId) return NextResponse.json({ error: 'agentId required' }, { status: 400 });
 
-    const existing = await gcsGet<ProgressRecord>('agent_progress', agentId) ?? defaults(agentId, agentName);
+    const existing = await fsGet<ProgressRecord>('agent_progress', agentId) ?? defaults(agentId, agentName);
 
     const merged: ProgressRecord = {
       agentId,
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       evalSavedLevel: 'evalSavedLevel' in body ? (body.evalSavedLevel ?? null) : existing.evalSavedLevel,
     };
 
-    const saved = await gcsSet('agent_progress', agentId, merged);
+    const saved = await fsSet('agent_progress', agentId, merged);
 
     // All 4 modules complete (Pitch L1-3 + AI Eval L1-4) — purge active chat history
     const pitchDone = merged.pitchCompletedLevels.length >= 3 &&
@@ -63,8 +63,8 @@ export async function POST(req: NextRequest) {
 
     if (pitchDone && evalDone) {
       await Promise.allSettled([
-        gcsDelete('pitch_active', agentId),
-        gcsDelete('aiev_active', agentId),
+        fsDelete('pitch_active', agentId),
+        fsDelete('aiev_active', agentId),
       ]);
     }
 

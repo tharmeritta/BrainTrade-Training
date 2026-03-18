@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerUser } from '@/lib/session';
-import { fsGetAll as gcsGetAll, fsAdd as gcsAdd } from '@/lib/firestore-db';
+import { fsGetAll, fsAdd } from '@/lib/firestore-db';
 import type { AgentEvaluation } from '@/types';
 
 export async function GET(req: Request) {
@@ -13,7 +13,7 @@ export async function GET(req: Request) {
   const agentId      = searchParams.get('agentId');
   const evaluatorId  = searchParams.get('evaluatorId');
 
-  const evals = await gcsGetAll<AgentEvaluation>('agent_evaluations');
+  const evals = await fsGetAll<AgentEvaluation>('agent_evaluations');
   let filtered = evals;
   if (agentId)     filtered = filtered.filter(e => e.agentId === agentId);
   if (evaluatorId) filtered = filtered.filter(e => e.evaluatorId === evaluatorId);
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const record = await gcsAdd<Omit<AgentEvaluation, 'id'>>('agent_evaluations', {
+  const record = await fsAdd<Omit<AgentEvaluation, 'id'>>('agent_evaluations', {
     ...body,
     evaluatedAt: new Date().toISOString(),
   });

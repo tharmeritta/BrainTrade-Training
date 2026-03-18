@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin, requireAdminManagerOrTrainer } from '@/lib/session';
-import { fsUpdate as gcsUpdate, fsDelete as gcsDelete } from '@/lib/firestore-db';
+import { fsUpdate, fsDelete } from '@/lib/firestore-db';
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try { await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
@@ -13,7 +13,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     update.name = body.name.trim();
   }
   if (typeof body.stageName === 'string') update.stageName = body.stageName.trim();
-  await gcsUpdate('agents', id, update);
+  await fsUpdate('agents', id, update);
   return NextResponse.json({ ok: true });
 }
 
@@ -21,6 +21,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   // Delete is admin-only — managers cannot delete agents
   try { await requireAdmin(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   const { id } = await params;
-  await gcsDelete('agents', id);
+  await fsDelete('agents', id);
   return NextResponse.json({ ok: true });
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fsAdd as gcsAdd } from '@/lib/firestore-db';
+import { fsAdd } from '@/lib/firestore-db';
 
 export async function POST(req: NextRequest) {
   try {
@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     const percentage = Math.round((score / totalQuestions) * 100);
 
     if (agentId && agentName) {
-      await gcsAdd('quiz_results', { agentId, agentName, moduleId, score, totalQuestions, passed, percentage });
+      await fsAdd('quiz_results', { agentId, agentName, moduleId, score, totalQuestions, passed, percentage });
     }
 
     return NextResponse.json({ passed, score, totalQuestions });

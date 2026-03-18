@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminManagerOrTrainer } from '@/lib/session';
-import { fsAdd as gcsAdd, fsGetAll as gcsGetAll } from '@/lib/firestore-db';
+import { fsAdd, fsGetAll } from '@/lib/firestore-db';
 import type { DisciplineRecord } from '@/types';
 
 export async function GET(req: NextRequest) {
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   const periodId = searchParams.get('periodId');
   const agentId = searchParams.get('agentId');
   try {
-    let records = await gcsGetAll<DisciplineRecord>('discipline_records');
+    let records = await fsGetAll<DisciplineRecord>('discipline_records');
     if (periodId) records = records.filter(r => r.trainingPeriodId === periodId);
     if (agentId) records = records.filter(r => r.agentId === agentId);
     return NextResponse.json({ records: records.sort((a, b) => b.date.localeCompare(a.date)) });
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { agentId, agentName, trainingPeriodId, date, type, description } = body;
   if (!agentId || !trainingPeriodId || !type) return NextResponse.json({ error: 'agentId, trainingPeriodId, and type required' }, { status: 400 });
-  const record = await gcsAdd('discipline_records', {
+  const record = await fsAdd('discipline_records', {
     agentId,
     agentName: agentName ?? '',
     trainingPeriodId,

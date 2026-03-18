@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAI } from '@/lib/openai';
-import { fsAdd as gcsAdd } from '@/lib/firestore-db';
+import { fsAdd } from '@/lib/firestore-db';
 import type { PitchMessage } from '@/types';
 
 const SYSTEM_PROMPT = `คุณคือ "ครูฝึกเทเลเซลล์มืออาชีพ" ที่มีประสบการณ์ฝึกพนักงานขายทางโทรศัพท์มากกว่า 15 ปี โดยเชี่ยวชาญพฤติกรรมลูกค้าคนไทย
@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (passed && agentId && agentName) {
-      await gcsAdd('ai_eval_logs', { agentId, agentName, level, passed: true });
+      await fsAdd('ai_eval_logs', { agentId, agentName, level, passed: true });
     }
 
     return NextResponse.json({ reply, passed });

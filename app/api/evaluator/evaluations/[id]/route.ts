@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerUser } from '@/lib/session';
-import { fsUpdate as gcsUpdate } from '@/lib/firestore-db';
+import { fsUpdate } from '@/lib/firestore-db';
 
 export async function PATCH(
   req: Request,
@@ -13,6 +13,6 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await req.json();
-  await gcsUpdate('agent_evaluations', id, { ...body, updatedAt: new Date().toISOString() });
+  await fsUpdate('agent_evaluations', id, { ...body, updatedAt: new Date().toISOString() });
   return NextResponse.json({ ok: true });
 }

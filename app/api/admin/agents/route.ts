@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminOrManager, requireAdminManagerOrTrainer } from '@/lib/session';
-import { fsAdd as gcsAdd } from '@/lib/firestore-db';
+import { fsAdd } from '@/lib/firestore-db';
 import { getAllAgentStats } from '@/lib/agents';
 
 export async function GET() {
@@ -18,6 +18,6 @@ export async function POST(req: NextRequest) {
   try { await requireAdminOrManager(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   const { name } = await req.json();
   if (!name?.trim()) return NextResponse.json({ error: 'Name required' }, { status: 400 });
-  const agent = await gcsAdd('agents', { name: name.trim(), active: true });
+  const agent = await fsAdd('agents', { name: name.trim(), active: true });
   return NextResponse.json(agent);
 }

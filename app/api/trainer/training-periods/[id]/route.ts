@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminManagerOrTrainer } from '@/lib/session';
-import { fsUpdate as gcsUpdate, fsDelete as gcsDelete } from '@/lib/firestore-db';
+import { fsUpdate, fsDelete } from '@/lib/firestore-db';
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try { await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
@@ -13,13 +13,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (body.agentIds) update.agentIds = body.agentIds;
   if (body.agentNames) update.agentNames = body.agentNames;
   if (typeof body.startDate === 'string') update.startDate = body.startDate;
-  await gcsUpdate('training_periods', id, update);
+  await fsUpdate('training_periods', id, update);
   return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try { await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   const { id } = await params;
-  await gcsDelete('training_periods', id);
+  await fsDelete('training_periods', id);
   return NextResponse.json({ ok: true });
 }

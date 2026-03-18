@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fsAdd as gcsAdd } from '@/lib/firestore-db';
+import { fsAdd } from '@/lib/firestore-db';
 
 export async function POST(req: NextRequest) {
   try {
     const { level, agentId, agentName } = await req.json();
 
     if (agentId && agentName) {
-      const record = await gcsAdd('pitch_sessions', { agentId, agentName, level });
+      const record = await fsAdd('pitch_sessions', { agentId, agentName, level });
       return NextResponse.json({ sessionId: record.id, level });
     }
 

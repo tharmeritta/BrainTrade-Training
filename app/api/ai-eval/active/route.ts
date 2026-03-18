@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fsGet as gcsGet, fsSet as gcsSet, fsDelete as gcsDelete } from '@/lib/firestore-db';
+import { fsGet, fsSet, fsDelete } from '@/lib/firestore-db';
 import type { PitchMessage } from '@/types';
 
 interface ActiveEvalSession {
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   const agentId = req.nextUrl.searchParams.get('agentId');
   if (!agentId) return NextResponse.json({ session: null });
   try {
-    const session = await gcsGet<ActiveEvalSession>('aiev_active', agentId);
+    const session = await fsGet<ActiveEvalSession>('aiev_active', agentId);
     return NextResponse.json({ session: session ?? null });
   } catch {
     return NextResponse.json({ session: null });
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     if (!agentId || !sessionId) {
       return NextResponse.json({ error: 'agentId and sessionId required' }, { status: 400 });
     }
-    await gcsSet<ActiveEvalSession>('aiev_active', agentId, {
+    await fsSet<ActiveEvalSession>('aiev_active', agentId, {
       agentId,
       sessionId,
       level,
@@ -48,7 +48,7 @@ export async function DELETE(req: NextRequest) {
   const agentId = req.nextUrl.searchParams.get('agentId');
   if (!agentId) return NextResponse.json({ error: 'agentId required' }, { status: 400 });
   try {
-    await gcsDelete('aiev_active', agentId);
+    await fsDelete('aiev_active', agentId);
   } catch {
     // File may not exist — ignore
   }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fsGet as gcsGet, fsSet as gcsSet, fsDelete as gcsDelete } from '@/lib/firestore-db';
+import { fsGet, fsSet, fsDelete } from '@/lib/firestore-db';
 import type { PitchMessage } from '@/types';
 
 interface ActivePitchSession {
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   const agentId = req.nextUrl.searchParams.get('agentId');
   if (!agentId) return NextResponse.json({ session: null });
   try {
-    const session = await gcsGet<ActivePitchSession>('pitch_active', agentId);
+    const session = await fsGet<ActivePitchSession>('pitch_active', agentId);
     return NextResponse.json({ session: session ?? null });
   } catch {
     return NextResponse.json({ session: null });
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     if (!agentId || !sessionId) {
       return NextResponse.json({ error: 'agentId and sessionId required' }, { status: 400 });
     }
-    await gcsSet<ActivePitchSession>('pitch_active', agentId, {
+    await fsSet<ActivePitchSession>('pitch_active', agentId, {
       agentId,
       sessionId,
       level,
@@ -48,7 +48,7 @@ export async function DELETE(req: NextRequest) {
   const agentId = req.nextUrl.searchParams.get('agentId');
   if (!agentId) return NextResponse.json({ error: 'agentId required' }, { status: 400 });
   try {
-    await gcsDelete('pitch_active', agentId);
+    await fsDelete('pitch_active', agentId);
   } catch {
     // File may not exist — ignore
   }

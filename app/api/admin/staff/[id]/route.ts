@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/session';
-import { fsUpdate as gcsUpdate, fsDelete as gcsDelete, fsGetAll as gcsGetAll } from '@/lib/firestore-db';
+import { fsUpdate, fsDelete, fsGetAll } from '@/lib/firestore-db';
 import type { StaffAccount } from '@/types';
 
 // PATCH /api/admin/staff/:id — update username / password / name / role / active
@@ -11,13 +11,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   // If username is being changed, check for duplicates
   if (body.username) {
-    const existing = await gcsGetAll<StaffAccount>('staff_accounts');
+    const existing = await fsGetAll<StaffAccount>('staff_accounts');
     if (existing.some(s => s.username === body.username && s.id !== id)) {
       return NextResponse.json({ error: 'Username already taken' }, { status: 409 });
     }
   }
 
-  await gcsUpdate('staff_accounts', id, body);
+  await fsUpdate('staff_accounts', id, body);
   return NextResponse.json({ ok: true });
 }
 
@@ -25,6 +25,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try { await requireAdmin(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   const { id } = await params;
-  await gcsDelete('staff_accounts', id);
+  await fsDelete('staff_accounts', id);
   return NextResponse.json({ ok: true });
 }
