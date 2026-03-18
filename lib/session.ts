@@ -11,10 +11,7 @@ export async function getServerUser(): Promise<{ uid: string; name: string; role
 
   const secret = process.env.SESSION_SECRET!;
 
-  // Legacy: bare secret = admin
-  if (token === secret) return { uid: 'admin', name: 'Admin', role: 'admin' };
-
-  // New format: secret|role|uid|encodedName
+  // Format: secret|role|uid|encodedName
   if (token.startsWith(secret + '|')) {
     const rest  = token.slice(secret.length + 1);
     const parts = rest.split('|');

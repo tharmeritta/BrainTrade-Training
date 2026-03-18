@@ -5,7 +5,7 @@ export interface StaffAccount {
   username: string;
   password: string;
   name: string;
-  role: 'manager' | 'evaluator' | 'trainer';
+  role: 'admin' | 'manager' | 'evaluator' | 'trainer';
   active: boolean;
   createdAt: string;
 }

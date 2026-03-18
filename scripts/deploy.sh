@@ -48,6 +48,8 @@ get_env() {
 create_secret_if_missing "firebase-project-id"    "$(get_env FIREBASE_PROJECT_ID)"
 create_secret_if_missing "firebase-client-email"  "$(get_env FIREBASE_CLIENT_EMAIL)"
 create_secret_if_missing "firebase-private-key"   "$(get_env FIREBASE_PRIVATE_KEY)"
+create_secret_if_missing "session-secret"         "$(get_env SESSION_SECRET)"
+create_secret_if_missing "bootstrap-secret"       "$(get_env BOOTSTRAP_SECRET)"
 create_secret_if_missing "openai-api-key"         "$(get_env OPENAI_API_KEY)"
 create_secret_if_missing "gemini-api-key"         "$(get_env GEMINI_API_KEY)"
 
@@ -75,10 +77,17 @@ NEXT_PUBLIC_FIREBASE_APP_ID=$(get_env NEXT_PUBLIC_FIREBASE_APP_ID)" \
 FIREBASE_PROJECT_ID=firebase-project-id:latest,\
 FIREBASE_CLIENT_EMAIL=firebase-client-email:latest,\
 FIREBASE_PRIVATE_KEY=firebase-private-key:latest,\
+SESSION_SECRET=session-secret:latest,\
+BOOTSTRAP_SECRET=bootstrap-secret:latest,\
 OPENAI_API_KEY=openai-api-key:latest,\
 GEMINI_API_KEY=gemini-api-key:latest"
 
-# ── 4. Print URL ──────────────────────────────────────────────────────────────
+# ── 4. Deploy Firebase Hosting ────────────────────────────────────────────────
+echo ""
+echo "🌐 Deploying Firebase Hosting..."
+firebase deploy --only hosting --project "$PROJECT_ID"
+
+# ── 5. Print URL ──────────────────────────────────────────────────────────────
 echo ""
 URL=$(gcloud run services describe "$SERVICE" \
   --platform managed \
@@ -87,7 +96,10 @@ URL=$(gcloud run services describe "$SERVICE" \
   --format "value(status.url)")
 
 echo "✅ Deployed successfully!"
-echo "🌐 URL: $URL"
+echo "🌐 Cloud Run: $URL"
+echo "🌐 Hosting:   https://braintrade-training-cb55d.web.app"
 echo ""
-echo "⚠️  Remember to add $URL to Firebase authorized domains:"
-echo "   Firebase Console → Authentication → Settings → Authorized domains"
+echo "Next: seed your admin account:"
+echo "  curl -X POST https://braintrade-training-cb55d.web.app/api/admin/seed \\"
+echo "    -H 'Content-Type: application/json' \\"
+echo "    -d '{\"bootstrapSecret\":\"'\"$(get_env BOOTSTRAP_SECRET)\"'\",\"username\":\"admin\",\"password\":\"yourpassword\",\"name\":\"Admin\"}'"

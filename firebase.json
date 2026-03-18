@@ -11,8 +11,8 @@
       {
         "source": "**",
         "run": {
-          "serviceId": "brainstrade-training",
-          "region": "asia-east1"
+          "serviceId": "brainstrade-app",
+          "region": "asia-southeast1"
         }
       }
     ]
