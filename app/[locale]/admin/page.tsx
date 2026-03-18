@@ -2,11 +2,12 @@ import { requireAdminManagerOrTrainer } from '@/lib/session';
 import { redirect } from 'next/navigation';
 import AdminDashboard from '@/components/features/AdminDashboard';
 
-export default async function AdminPage() {
+export default async function AdminPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
   try {
     const user = await requireAdminManagerOrTrainer();
     return <AdminDashboard role={user.role as 'admin' | 'manager' | 'trainer'} />;
   } catch {
-    redirect('/login');
+    redirect(`/${locale}/login`);
   }
 }
