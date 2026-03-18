@@ -32,7 +32,8 @@
       "Bash(echo:*)",
       "Bash(firebase login:*)",
       "Bash(grep:*)",
-      "WebFetch(domain:drive.google.com)"
+      "WebFetch(domain:drive.google.com)",
+      "Bash(mkdir scripts:*)"
     ]
   }
 }
