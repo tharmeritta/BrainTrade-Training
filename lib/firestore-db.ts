@@ -7,7 +7,6 @@
  */
 
 import { getAdminDb } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
 
 // ── Add (auto-id) ──────────────────────────────────────────────────────────
 
@@ -82,6 +81,3 @@ export async function fsSet<T extends object>(
   await db.collection(collection).doc(key).set(record);
   return record;
 }
-
-// ── Unused export to satisfy FieldValue import (tree-shaking guard) ────────
-export { FieldValue };
