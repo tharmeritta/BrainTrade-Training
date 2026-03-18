@@ -11,7 +11,7 @@
       {
         "source": "**",
         "run": {
-          "serviceId": "firebase-adminsdk-fbsvc@braintrade-training-cb55d.iam.gserviceaccount.com",
+          "serviceId": "braintrade-training",
           "region": "asia-southeast1"
         }
       }
