@@ -1,5 +1,5 @@
 import { fsGet as gcsGet, fsGetAll as gcsGetAll } from './firestore-db';
-import type { Agent, AgentStats, ModuleStat } from '@/types';
+import type { Agent, AgentStats, ModuleStat, AgentEvaluation } from '@/types';
 
 const MODULES = ['product', 'process', 'payment'] as const;
 
