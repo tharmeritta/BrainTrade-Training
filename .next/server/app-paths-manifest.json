@@ -1,4 +1,0 @@
-{
-  "/api/agents/route": "app/api/agents/route.js",
-  "/[locale]/dashboard/page": "app/[locale]/dashboard/page.js"
-}
