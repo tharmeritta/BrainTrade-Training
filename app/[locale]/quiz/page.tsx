@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Settings, CreditCard, ChevronRight, ClipboardList, Lock, GraduationCap, Briefcase, type LucideIcon } from 'lucide-react';
 import { MODULE_QUIZ_MAP, UI_STRINGS, type Language, type QuizDefinition } from '@/lib/quiz-data';
+import { getAgentSession } from '@/lib/agent-session';
 
 const SECTION_1 = [
   {
@@ -158,9 +159,9 @@ export default function QuizIndexPage() {
   const [passedModules, setPassedModules] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const agentId = localStorage.getItem('brainstrade_agent_id');
-    if (!agentId) return;
-    fetch(`/api/quiz/status?agentId=${encodeURIComponent(agentId)}`)
+    const session = getAgentSession();
+    if (!session) return;
+    fetch(`/api/quiz/status?agentId=${encodeURIComponent(session.id)}`)
       .then(r => r.json())
       .then(({ passed }: { passed: string[] }) => setPassedModules(new Set(passed)))
       .catch(() => {});

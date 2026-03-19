@@ -14,7 +14,7 @@ function DetailedQuizHistory({ stats }: { stats: AgentStats }) {
         <Target size={18} className="text-amber-500" />
         <h4 className="font-bold text-base">Quiz Attempt History</h4>
       </div>
-      {(['product', 'process', 'payment'] as const).map(topic => {
+      {(['foundation', 'product', 'process', 'payment'] as const).map(topic => {
         const q = stats.quiz[topic];
         const history = q?.history || [];
         return (

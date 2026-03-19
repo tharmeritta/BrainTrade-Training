@@ -22,10 +22,7 @@ import AgentEntry from '@/components/features/AgentEntry';
 import AgentTrainingHub from '@/components/features/AgentTrainingHub';
 import type { AgentStats } from '@/types';
 import { saveProgress, getProgress } from '@/lib/localCache';
-
-const AGENT_ID_KEY         = 'brainstrade_agent_id';
-const AGENT_NAME_KEY       = 'brainstrade_agent_name';
-const AGENT_STAGE_NAME_KEY = 'brainstrade_agent_stage_name';
+import { getAgentSession, clearAgentSession } from '@/lib/agent-session';
 
 export default function DashboardPage() {
   const [mounted, setMounted]         = useState(false);
@@ -34,16 +31,14 @@ export default function DashboardPage() {
   const [agentStageName, setAgentStageName] = useState<string>('');
   const [stats, setStats]             = useState<AgentStats | null>(null);
 
-  // Hydration guard — read localStorage only after mount
+  // Hydration guard — read session only after mount
   useEffect(() => {
     setMounted(true);
-    const id        = localStorage.getItem(AGENT_ID_KEY);
-    const name      = localStorage.getItem(AGENT_NAME_KEY);
-    const stageName = localStorage.getItem(AGENT_STAGE_NAME_KEY) ?? '';
-    if (id && name) {
-      setAgentId(id);
-      setAgentName(name);
-      setAgentStageName(stageName);
+    const session = getAgentSession();
+    if (session) {
+      setAgentId(session.id);
+      setAgentName(session.name);
+      setAgentStageName(session.stageName);
     }
   }, []);
 
@@ -94,14 +89,10 @@ export default function DashboardPage() {
     setAgentName(name);
     setAgentStageName(stageName);
   }
-
   function handleLogout() {
-    localStorage.removeItem(AGENT_ID_KEY);
-    localStorage.removeItem(AGENT_NAME_KEY);
-    localStorage.removeItem(AGENT_STAGE_NAME_KEY);
+    clearAgentSession();
     setAgentId(null);
     setAgentName(null);
-    setAgentStageName('');
     setStats(null);
   }
 

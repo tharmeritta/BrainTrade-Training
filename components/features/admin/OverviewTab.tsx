@@ -65,7 +65,7 @@ export default function OverviewTab() {
                 </span>
               </div>
               <div className="space-y-2.5 pl-5 border-l-2 border-blue-400/20">
-                {(['product', 'process', 'payment'] as const).map(topic => {
+                {(['foundation', 'product', 'process', 'payment'] as const).map(topic => {
                   const count = data.leaderboard.filter(a => !!a.quiz[topic]).length;
                   const pct   = data.totalAgents > 0 ? Math.round(count / data.totalAgents * 100) : 0;
                   return (
@@ -97,7 +97,7 @@ export default function OverviewTab() {
                 </span>
               </div>
               <div className="space-y-2.5 pl-5 border-l-2 border-amber-400/20">
-                {(['product', 'process', 'payment'] as const).map(topic => {
+                {(['foundation', 'product', 'process', 'payment'] as const).map(topic => {
                   const attempted = data.leaderboard.filter(a => !!a.quiz[topic]);
                   const passed    = attempted.filter(a => a.quiz[topic]?.passed).length;
                   const avgScore  = attempted.length > 0 ? Math.round(attempted.reduce((s, a) => s + (a.quiz[topic]?.bestScore ?? 0), 0) / attempted.length) : 0;
@@ -208,7 +208,7 @@ export default function OverviewTab() {
                   <BadgePill badge={agent.badge} />
                 </div>
                 <div className="flex gap-3 mt-1">
-                  {(['product','process','payment'] as const).map(m => (
+                  {(['foundation', 'product', 'process', 'payment'] as const).map(m => (
                     <span key={m} className={`text-xs ${scoreColor(agent.quiz[m]?.bestScore)}`}>
                       {MODULE_LABELS[m]} {agent.quiz[m]?.bestScore ? `${agent.quiz[m]!.bestScore}%` : '–'}
                     </span>

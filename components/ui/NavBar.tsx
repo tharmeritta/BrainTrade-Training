@@ -30,9 +30,9 @@ const NAV = [
     href: '/learn',
     icon: BookOpen,
     children: [
-      { label: 'Product Overview', labelTh: 'ภาพรวมผลิตภัณฑ์', href: '/learn/product' },
-      { label: 'Sales Techniques', labelTh: 'เทคนิคการขาย',    href: '/learn/sales'   },
-      { label: 'Market Knowledge', labelTh: 'ความรู้ตลาด',      href: '/learn/market'  },
+      { label: 'Product Knowledge', labelTh: 'ความรู้ผลิตภัณฑ์', href: '/learn/product' },
+      { label: 'KYC Process',       labelTh: 'ขั้นตอน KYC',      href: '/learn/kyc'     },
+      { label: 'Website Tutorial',  labelTh: 'วิธีใช้งานเว็บไซต์',   href: '/learn/website' },
     ],
   },
   {

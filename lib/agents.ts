@@ -1,7 +1,7 @@
 import { fsGet as gcsGet, fsGetAll as gcsGetAll } from './firestore-db';
 import type { Agent, AgentStats, ModuleStat, AgentEvaluation } from '@/types';
 
-const MODULES = ['product', 'process', 'payment'] as const;
+const MODULES = ['foundation', 'product', 'process', 'payment'] as const;
 
 // ── Score helpers ─────────────────────────────────────────────────────────
 
@@ -14,7 +14,7 @@ export function computeBadge(score: number): AgentStats['badge'] {
 
 export function computeOverallScore(stats: Omit<AgentStats, 'overallScore' | 'badge'> & { evalCompletedLevels?: number[] }): number {
   const quizScores    = MODULES.map(m => stats.quiz[m]?.bestScore ?? 0);
-  const avgQuiz       = quizScores.reduce((a, b) => a + b, 0) / 3;
+  const avgQuiz       = quizScores.reduce((a, b) => a + b, 0) / MODULES.length;
   const aiEval        = stats.aiEval?.avgScore ?? 0;
   // Pitch: use completed level count (out of 3) if available, else highest started level
   const pitchLevels   = (stats.pitch as (typeof stats.pitch & { completedLevels?: number[] }) | null)?.completedLevels;

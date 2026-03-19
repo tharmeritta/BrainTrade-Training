@@ -1,49 +1,667 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import type { PitchMessage } from '@/types';
+import React, { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   Send, User as UserIcon, Bot, ChevronLeft, Play, Sparkles,
   CheckCircle2, Trophy, ThumbsUp, TrendingUp, RotateCcw, Loader2,
-  ArrowRight, LayoutDashboard, Lock, History,
+  ArrowRight, LayoutDashboard, Lock, History, ChevronRight, type LucideIcon,
 } from 'lucide-react';
+
+import type { PitchMessage } from '@/types';
+import { getAgentSession } from '@/lib/agent-session';
+import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM, TRANSITION, EASE } from '@/lib/animations';
+
+// ─── Constants & Types ────────────────────────────────────────────────────────
 
 const SESSION_KEY = 'brainstrade_pitch_active';
 
-interface SavedSession {
-  agentId: string;
-  sessionId: string;
-  level: 1 | 2 | 3;
-  messages: PitchMessage[];
-  savedAt: number; // ms timestamp
-}
-
-const LEVEL_COLORS: Record<1 | 2 | 3, { accent: string; glow: string; bg: string; border: string; label: string }> = {
+const LEVEL_COLORS: Record<number, { accent: string; glow: string; bg: string; border: string; label: string }> = {
   1: { accent: '#22D3EE', glow: 'rgba(34,211,238,0.18)',  bg: 'rgba(34,211,238,0.08)',  border: 'rgba(34,211,238,0.3)',  label: 'Beginner'     },
   2: { accent: '#60A5FA', glow: 'rgba(96,165,250,0.18)',  bg: 'rgba(96,165,250,0.08)',  border: 'rgba(96,165,250,0.3)',  label: 'Standard'     },
   3: { accent: '#F472B6', glow: 'rgba(244,114,182,0.18)', bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.3)', label: 'Advanced'     },
 };
 
-const LEVEL_LABELS: Record<1 | 2 | 3, { th: string; desc: string }> = {
+const LEVEL_LABELS: Record<number, { th: string; desc: string }> = {
   1: { th: 'เริ่มต้น',  desc: 'ลูกค้าชาวเวียดนาม ปานกลาง' },
   2: { th: 'มาตรฐาน', desc: 'ลูกค้าหลากหลาย สถานการณ์ซับซ้อน' },
   3: { th: 'ท้าทาย',  desc: 'ลูกค้าจิตวิทยาขั้นสูง ยากที่สุด' },
 };
 
+type PitchLevel = 1 | 2 | 3;
+
+interface SavedSession {
+  agentId: string;
+  sessionId: string;
+  level: PitchLevel;
+  messages: PitchMessage[];
+  savedAt: number;
+}
+
 interface Evaluation {
   reason: string;
-  strengths: string[];
-  weaknesses: string[];
+  strengths?: string[];
+  weaknesses?: string[];
 }
+
+// ─── Interfaces ─────────────────────────────────────────────────────────────
+
+interface LevelCardProps {
+  l: PitchLevel;
+  index: number;
+  locked: boolean;
+  completed: boolean;
+  selected: boolean;
+  onSelect: (l: PitchLevel) => void;
+}
+
+interface EvaluationViewProps {
+  evaluation: Evaluation;
+  level: number;
+  messages: PitchMessage[];
+  onRetry: () => void;
+  onNext: () => void;
+  onDashboard: () => void;
+  chatAccent: string;
+  chatGlow: string;
+}
+
+interface SelectionScreenProps {
+  level: PitchLevel;
+  setLevel: (l: PitchLevel) => void;
+  agentName: string | null;
+  loading: boolean;
+  completedLevels: Set<number>;
+  pendingResume: SavedSession | null;
+  startError: string;
+  onStart: () => void;
+  onResume: (s: SavedSession) => void;
+  onClearSession: () => void;
+  isLocked: (l: number) => boolean;
+}
+
+interface ChatScreenProps {
+  level: PitchLevel;
+  messages: PitchMessage[];
+  input: string;
+  setInput: (v: string) => void;
+  loading: boolean;
+  closedSale: boolean;
+  evaluating: boolean;
+  evaluation: Evaluation | null;
+  chatError: string;
+  onSend: () => void;
+  onAbandon: () => void;
+  onRetry: () => void;
+  onNext: () => void;
+  onDashboard: () => void;
+  bottomRef: React.RefObject<HTMLDivElement>;
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+/**
+ * LevelCard: Individual level selection card
+ */
+const LevelCard = memo(({ 
+  l, index, locked, completed, selected, onSelect 
+}: LevelCardProps) => {
+  const cfg = LEVEL_COLORS[l];
+  
+  return (
+    <motion.button
+      onClick={() => !locked && onSelect(l)}
+      disabled={locked}
+      variants={STAGGER_ITEM}
+      custom={index}
+      className="relative text-left rounded-[24px] p-6 transition-all duration-300 overflow-hidden h-full flex flex-col border-2"
+      style={{
+        background: locked ? 'var(--hub-locked-bg)' : selected ? cfg.bg : 'var(--hub-card)',
+        borderColor: locked ? 'var(--hub-dim-border)' : selected ? cfg.accent : 'var(--hub-border)',
+        opacity: locked ? 0.5 : 1,
+        boxShadow: selected && !locked ? `0 12px 48px ${cfg.glow}` : 'none',
+        cursor: locked ? 'not-allowed' : 'pointer',
+      }}
+      whileHover={!locked ? { y: -6, boxShadow: `0 20px 60px ${cfg.glow}` } : {}}
+      whileTap={!locked ? { scale: 0.97 } : {}}
+    >
+      <div className="absolute top-4 right-4">
+        {locked ? (
+          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-black/5 dark:bg-white/5 border border-white/10 backdrop-blur-md">
+            <Lock size={18} className="text-muted-foreground/40" />
+          </div>
+        ) : completed ? (
+          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-emerald-500 shadow-lg shadow-emerald-500/30">
+            <CheckCircle2 size={16} className="text-white" />
+          </div>
+        ) : selected ? (
+          <div className="w-3 h-3 rounded-full animate-pulse shadow-[0_0_12px_rgba(34,211,238,0.8)]"
+            style={{ background: cfg.accent }} />
+        ) : null}
+      </div>
+
+      <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border shadow-inner"
+        style={{
+          background: locked ? 'var(--hub-locked-icon)' : `${cfg.accent}15`,
+          borderColor: locked ? 'var(--hub-dim-border)' : cfg.accent + '30',
+        }}>
+        <Sparkles size={24} style={{ color: locked ? 'var(--hub-dim)' : cfg.accent }} />
+      </div>
+
+      <div className="mb-1.5 flex items-baseline gap-2">
+        <span className="text-xl font-black tracking-tight text-[color:var(--hub-text)]" style={{ color: locked ? 'var(--hub-dim)' : undefined }}>
+          Level {l}
+        </span>
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60"
+          style={{ color: locked ? 'var(--hub-dim)' : cfg.accent }}>
+          {cfg.label}
+        </span>
+      </div>
+      <p className="text-sm font-black mb-1 text-[color:var(--hub-text)]" style={{ color: locked ? 'var(--hub-dim)' : undefined }}>
+        {LEVEL_LABELS[l].th}
+      </p>
+      <p className="text-[11px] font-medium leading-relaxed opacity-70 flex-1 text-[color:var(--hub-muted)]" style={{ color: locked ? 'var(--hub-dim)' : undefined }}>
+        {locked ? `ต้องการผ่าน Level ${l - 1} ก่อนเริ่มการฝึก` : LEVEL_LABELS[l].desc}
+      </p>
+
+      {selected && !locked && (
+        <motion.div
+          layoutId="level-selected-bar"
+          className="absolute bottom-0 left-0 right-0 h-1"
+          style={{ background: cfg.accent }}
+        />
+      )}
+    </motion.button>
+  );
+});
+
+LevelCard.displayName = 'LevelCard';
+
+/**
+ * MessageBubble: Sub-component for individual messages
+ */
+const MessageBubble = memo(({ m, chatAccent }: { m: PitchMessage; chatAccent: string }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 12, scale: 0.96 }}
+    animate={{ opacity: 1, y: 0, scale: 1 }}
+    className={`flex items-end gap-3 ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
+  >
+    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border mb-1 shadow-sm ${
+      m.role === 'user' 
+        ? 'bg-primary border-primary/20 text-white' 
+        : 'bg-card border-black/5 dark:border-white/10 text-muted-foreground'
+    }`}>
+      {m.role === 'user' ? <UserIcon size={18} /> : <Bot size={18} />}
+    </div>
+    <div className={`max-w-[80%] px-6 py-4 rounded-[24px] text-sm leading-relaxed shadow-sm font-medium border ${
+      m.role === 'user' 
+        ? 'rounded-br-none text-white border border-primary/10' 
+        : 'rounded-bl-none bg-card border border-black/5 dark:border-white/10 text-foreground'
+    }`}
+    style={m.role === 'user' ? { background: chatAccent } : {}}>
+      {m.content}
+    </div>
+  </motion.div>
+));
+
+MessageBubble.displayName = 'MessageBubble';
+
+/**
+ * EvaluationView: Detailed feedback after closing a sale
+ */
+const EvaluationView = memo(({ 
+  evaluation, level, messages, onRetry, onNext, onDashboard, chatAccent, chatGlow 
+}: EvaluationViewProps) => (
+  <motion.div
+    variants={FADE_IN}
+    initial="initial"
+    animate="animate"
+    className="space-y-5"
+  >
+    <div className="rounded-[28px] p-6 bg-[color:var(--hub-card)] border border-[color:var(--hub-border)] shadow-xl shadow-black/5">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800">
+          <Sparkles size={20} className="text-amber-600" />
+        </div>
+        <h3 className="font-black text-base text-[color:var(--hub-text)] uppercase tracking-tight">ทำไมลูกค้าถึงตัดสินใจซื้อ</h3>
+      </div>
+      <p className="text-sm leading-relaxed text-[color:var(--hub-muted)] font-medium italic">"{evaluation.reason}"</p>
+    </div>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <div className="rounded-[28px] p-6 bg-white dark:bg-white/5 border border-blue-200 dark:border-blue-800 shadow-lg shadow-blue-500/5">
+        <div className="flex items-center gap-3 mb-4 text-blue-600">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+            <ThumbsUp size={20} />
+          </div>
+          <h3 className="font-black text-base uppercase tracking-tight">จุดแข็งของคุณ</h3>
+        </div>
+        <ul className="space-y-3">
+          {(evaluation.strengths || []).map((s, i) => (
+            <li key={i} className="flex items-start gap-3 text-sm font-bold text-[color:var(--hub-text)]">
+              <span className="w-6 h-6 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-600 flex items-center justify-center shrink-0 text-[10px] font-black border border-blue-200/50">
+                {i + 1}
+              </span>
+              <span className="mt-0.5">{s}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="rounded-[28px] p-6 bg-white dark:bg-white/5 border border-amber-200 dark:border-amber-800 shadow-lg shadow-amber-500/5">
+        <div className="flex items-center gap-3 mb-4 text-amber-600">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+            <TrendingUp size={20} />
+          </div>
+          <h3 className="font-black text-base uppercase tracking-tight">สิ่งที่ควรพัฒนา</h3>
+        </div>
+        <ul className="space-y-3">
+          {(evaluation.weaknesses || []).map((w, i) => (
+            <li key={i} className="flex items-start gap-3 text-sm font-bold text-[color:var(--hub-text)]">
+              <span className="w-6 h-6 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 flex items-center justify-center shrink-0 text-[10px] font-black border border-amber-200/50">
+                {i + 1}
+              </span>
+              <span className="mt-0.5">{w}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <div className="flex flex-col sm:flex-row gap-4 pt-4">
+      <button
+        onClick={onRetry}
+        className="flex-1 flex items-center justify-center gap-2 py-5 rounded-[24px] font-black text-sm transition-all bg-secondary/50 hover:bg-secondary border border-black/5 text-muted-foreground hover:text-foreground active:scale-95 shadow-lg"
+      >
+        <RotateCcw size={18} />
+        ฝึกใหม่ที่ Level {level}
+      </button>
+
+      {level < 3 ? (
+        <button
+          onClick={onNext}
+          className="flex-1 flex items-center justify-center gap-2 py-5 rounded-[24px] font-black text-sm transition-all text-white active:scale-95 shadow-xl"
+          style={{
+            background: `linear-gradient(135deg, ${LEVEL_COLORS[level + 1].accent}, ${LEVEL_COLORS[level + 1].accent}BB)`,
+            boxShadow: `0 12px 32px ${LEVEL_COLORS[level + 1].glow}`,
+          }}
+        >
+          ไปต่อ Level {level + 1} — {LEVEL_LABELS[level + 1].th}
+          <ArrowRight size={20} />
+        </button>
+      ) : (
+        <button
+          onClick={onDashboard}
+          className="flex-1 flex items-center justify-center gap-2 py-5 rounded-[24px] font-black text-sm transition-all text-white bg-foreground hover:bg-primary shadow-xl active:scale-95"
+        >
+          <LayoutDashboard size={18} />
+          กลับสู่แดชบอร์ดหลัก
+        </button>
+      )}
+    </div>
+
+    <details className="rounded-2xl overflow-hidden mt-4 border-2 border-black/5 dark:border-white/5 transition-all">
+      <summary className="px-6 py-4 cursor-pointer text-xs font-black uppercase tracking-widest select-none text-muted-foreground hover:bg-secondary/30 flex items-center justify-between">
+        ดูบันทึกบทสนทนา ({messages.length} ข้อความ)
+        <ChevronRight size={14} className="opacity-40" />
+      </summary>
+      <div className="border-t max-h-80 overflow-y-auto px-6 py-6 space-y-4 bg-slate-50/50 dark:bg-black/20"
+        style={{ borderColor: 'var(--hub-border)' }}>
+        {messages.map((m, i) => (
+          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className="max-w-[85%] text-xs px-4 py-3 rounded-2xl font-medium leading-relaxed whitespace-pre-wrap shadow-sm border"
+              style={m.role === 'user'
+                ? { background: chatAccent, color: '#fff', borderColor: 'transparent' }
+                : { background: 'var(--hub-card)', borderColor: 'var(--hub-border)', color: 'var(--hub-text)' }
+              }>
+              {m.content}
+            </div>
+          </div>
+        ))}
+      </div>
+    </details>
+  </motion.div>
+));
+
+EvaluationView.displayName = 'EvaluationView';
+
+/**
+ * SelectionScreen: Wrapping the selection logic
+ */
+const SelectionScreen = memo(({
+  level, setLevel, agentName, loading, completedLevels,
+  pendingResume, startError, onStart, onResume, onClearSession, isLocked
+}: SelectionScreenProps) => {
+  const cfg = LEVEL_COLORS[level];
+
+  return (
+    <div className="min-h-[calc(100dvh-72px)] relative overflow-x-hidden bg-[color:var(--hub-bg)] selection:bg-primary/20">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <motion.div 
+          className="absolute w-[800px] h-[800px] -top-[300px] left-1/2 -translate-x-1/2 rounded-full opacity-60 blur-[120px]"
+          style={{ background: `radial-gradient(circle, ${cfg.glow} 0%, transparent 70%)` }}
+          animate={{ scale: [1, 1.1, 1], opacity: [0.4, 0.6, 0.4] }}
+          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <div className="absolute inset-0 opacity-[0.015]" style={{
+          backgroundImage: `linear-gradient(var(--hub-grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--hub-grid-color) 1px, transparent 1px)`,
+          backgroundSize: '48px 48px',
+        }} />
+      </div>
+
+      <div className="relative z-10 max-w-5xl mx-auto px-6 py-16">
+        <motion.div variants={FADE_IN} initial="initial" animate="animate" className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div>
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_10px_rgba(34,211,238,0.8)]" />
+              <span className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60">Training Mission 04</span>
+            </div>
+            <h1 className="text-5xl font-black tracking-tight text-[color:var(--hub-text)] mb-3 uppercase">Pitch Simulator</h1>
+            <p className="text-muted-foreground text-lg max-w-lg font-medium leading-relaxed opacity-80">
+              ทดสอบทักษะการนำเสนอและการปิดการขายกับลูกค้า AI ในสถานการณ์ที่สมจริงที่สุด
+            </p>
+          </div>
+          
+          {agentName && (
+            <div className="flex items-center gap-4 px-6 py-3 rounded-[24px] bg-white/50 dark:bg-white/5 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-xl shadow-black/5 self-start md:self-auto">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                <UserIcon size={18} />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Active Agent</p>
+                <p className="font-black text-base">{agentName}</p>
+              </div>
+            </div>
+          )}
+        </motion.div>
+
+        <AnimatePresence>
+          {pendingResume && (
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="mb-8 overflow-hidden rounded-[32px] bg-primary/5 border-2 border-primary/20 shadow-2xl shadow-primary/5 p-1"
+            >
+              <div className="flex flex-col sm:flex-row items-center gap-6 px-8 py-6">
+                <div className="w-16 h-16 rounded-[24px] bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20 shadow-inner">
+                  <History size={28} className="text-primary" />
+                </div>
+                <div className="flex-1 text-center sm:text-left">
+                  <p className="font-black text-xl text-foreground uppercase tracking-tight">เซสชันที่ค้างอยู่</p>
+                  <p className="text-sm font-bold text-muted-foreground mt-1 opacity-80">
+                    Level {pendingResume.level} ({LEVEL_LABELS[pendingResume.level].th}) {' · '} 
+                    {pendingResume.messages.length} ข้อความ {' · '}
+                    ล่าสุดเมื่อ {new Date(pendingResume.savedAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <button
+                    onClick={onClearSession}
+                    className="text-xs px-6 py-3 rounded-[18px] font-black uppercase tracking-widest transition-all text-muted-foreground hover:bg-rose-50 hover:text-rose-500 border border-black/5"
+                  >
+                    ทิ้ง
+                  </button>
+                  <motion.button
+                    onClick={() => onResume(pendingResume)}
+                    className="text-sm px-8 py-3.5 rounded-[18px] font-black text-white bg-primary shadow-xl shadow-primary/30 uppercase tracking-widest"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    กลับมาต่อ →
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <motion.div 
+          variants={STAGGER_CONTAINER}
+          initial="initial"
+          animate="animate"
+          className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16"
+        >
+          {([1, 2, 3] as const).map((l, i) => (
+            <LevelCard
+              key={l}
+              l={l}
+              index={i}
+              locked={isLocked(l)}
+              completed={completedLevels.has(l)}
+              selected={level === l}
+              onSelect={setLevel}
+            />
+          ))}
+        </motion.div>
+
+        <motion.div variants={FADE_IN} initial="initial" animate="animate" className="flex flex-col items-center gap-6">
+          <motion.button
+            onClick={onStart}
+            disabled={loading || isLocked(level)}
+            className="group relative flex items-center gap-4 px-16 py-6 rounded-[2.5rem] font-black text-xl text-white overflow-hidden disabled:opacity-50"
+            style={{
+              background: `linear-gradient(135deg, ${cfg.accent}, ${cfg.accent}BB)`,
+              boxShadow: `0 16px 40px ${cfg.glow}`,
+            }}
+            whileHover={{ scale: 1.05, y: -4, boxShadow: `0 24px 60px ${cfg.glow}` }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+            <div className="relative flex items-center gap-4">
+              {loading ? <Loader2 size={28} className="animate-spin" /> : <Play size={28} className="fill-current group-hover:scale-110 transition-transform" />}
+              <span className="uppercase tracking-[0.1em]">{loading ? 'Connecting AI...' : `เริ่มภารกิจ Level ${level}`}</span>
+            </div>
+          </motion.button>
+          
+          {startError && (
+            <p className="text-sm font-black text-rose-500 animate-pulse bg-rose-50 px-4 py-2 rounded-xl border border-rose-100 uppercase tracking-widest">{startError}</p>
+          )}
+          
+          {!loading && (
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 animate-bounce">
+              Click to initiate simulated call
+            </p>
+          )}
+        </motion.div>
+      </div>
+    </div>
+  );
+});
+
+SelectionScreen.displayName = 'SelectionScreen';
+
+/**
+ * ChatScreen: Wrapping the chat simulation logic
+ */
+const ChatScreen = memo(({
+  level, messages, input, setInput, loading, closedSale, evaluating, evaluation, chatError,
+  onSend, onAbandon, onRetry, onNext, onDashboard, bottomRef
+}: ChatScreenProps) => {
+  const cfg = LEVEL_COLORS[level];
+  const chatAccent = cfg.accent;
+  const chatGlow   = cfg.glow;
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      onSend();
+    }
+  }, [onSend]);
+
+  return (
+    <div className="min-h-[calc(100dvh-72px)] relative bg-[color:var(--hub-bg)] selection:bg-primary/20">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute w-[700px] h-[700px] -top-20 -right-20 rounded-full opacity-40 blur-[100px]"
+          style={{ background: `radial-gradient(circle, ${chatGlow} 0%, transparent 70%)` }} />
+      </div>
+
+      <div className="relative z-10 max-w-5xl mx-auto px-4 py-8 h-[calc(100dvh-100px)] flex flex-col">
+        <motion.div
+          variants={FADE_IN}
+          initial="initial"
+          animate="animate"
+          className="flex-1 bg-[color:var(--hub-card)] rounded-[3rem] border border-[color:var(--hub-border)] shadow-2xl flex flex-col overflow-hidden"
+          style={{
+            borderColor: closedSale ? `${chatAccent}50` : undefined,
+            boxShadow: closedSale ? `0 24px 80px ${chatGlow}` : undefined,
+          }}
+        >
+          {/* Header */}
+          <div className="px-8 py-6 border-b border-[color:var(--hub-border)] bg-secondary/20 backdrop-blur-md flex items-center justify-between shrink-0 shadow-sm">
+            <div className="flex items-center gap-5">
+              <div className="w-14 h-14 rounded-[20px] flex items-center justify-center font-black text-2xl shadow-inner transition-all duration-500"
+                style={{
+                  background: closedSale ? `${chatAccent}25` : `${chatAccent}15`,
+                  border: `2px solid ${chatAccent}40`,
+                  color: chatAccent,
+                }}>
+                {closedSale ? <Trophy size={28} /> : level}
+              </div>
+              <div>
+                <h3 className="font-black text-xl text-[color:var(--hub-text)] tracking-tight uppercase">
+                  {LEVEL_LABELS[level].th}
+                </h3>
+                <div className="flex items-center gap-2.5 mt-1">
+                  <div className={`w-2.5 h-2.5 rounded-full ${closedSale ? '' : 'animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]'}`}
+                    style={{ background: chatAccent }} />
+                  <span className="text-[10px] font-black uppercase tracking-[0.25em]" style={{ color: chatAccent }}>
+                    {closedSale ? 'Sales Mission Accomplished' : 'Incoming Encrypted Signal'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={onAbandon}
+              className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest px-6 py-3 rounded-2xl transition-all border border-[color:var(--hub-border)] text-muted-foreground hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 shadow-sm"
+            >
+              <ChevronLeft size={16} />
+              {closedSale ? 'Back to Selection' : 'Terminate Call'}
+            </button>
+          </div>
+
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto px-8 py-10 space-y-8 bg-slate-50/20 dark:bg-black/10 custom-scrollbar">
+            <AnimatePresence initial={false}>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-start gap-4 mb-6">
+                <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0 shadow-sm">
+                  <Sparkles size={20} className="text-primary" />
+                </div>
+                <div className="max-w-[85%] bg-primary/5 border border-primary/10 rounded-[24px] rounded-tl-none px-6 py-5 text-sm font-bold shadow-inner">
+                  <p className="text-primary text-base mb-1 uppercase tracking-tight">Mission Briefing — Level {level}</p>
+                  <p className="text-muted-foreground font-medium opacity-80 leading-relaxed italic">
+                    "ลูกค้ากำลังรอสายอยู่... กรุณาแนะนำตัวอย่างเป็นมืออาชีพและนำเสนอ SmartBrain AI อย่างมั่นใจ"
+                  </p>
+                </div>
+              </motion.div>
+
+              {messages.map((m, i) => (
+                <MessageBubble key={i} m={m} chatAccent={chatAccent} />
+              ))}
+
+              {closedSale && (
+                <motion.div initial={{ opacity: 0, scale: 0.95, y: 24 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="py-10 flex flex-col gap-8">
+                  <div className="flex items-center gap-6 px-10 py-8 rounded-[32px] bg-gradient-to-br from-primary/10 to-transparent border border-primary/30 shadow-2xl shadow-primary/10 self-center relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
+                    <div className="w-16 h-16 rounded-[24px] bg-primary shadow-xl shadow-primary/30 flex items-center justify-center shrink-0 border-2 border-white/20">
+                      <Trophy size={36} className="text-white drop-shadow-md" />
+                    </div>
+                    <div className="relative z-10">
+                      <h4 className="text-2xl font-black text-foreground uppercase tracking-tight leading-none mb-1.5">ปิดการขายสำเร็จ!</h4>
+                      <p className="text-sm font-bold text-muted-foreground opacity-80 italic">"ลูกค้าตกลงซื้อและชำระเงินเรียบร้อยแล้ว"</p>
+                    </div>
+                  </div>
+
+                  {evaluating && (
+                    <div className="flex flex-col items-center justify-center gap-4 py-10">
+                      <Loader2 size={32} className="animate-spin text-primary" />
+                      <span className="font-black text-xs uppercase tracking-[0.3em] text-muted-foreground animate-pulse">Analyzing Performance Data...</span>
+                    </div>
+                  )}
+
+                  {evaluation && (
+                    <EvaluationView
+                      evaluation={evaluation}
+                      level={level}
+                      messages={messages}
+                      onRetry={onRetry}
+                      onNext={onNext}
+                      onDashboard={onDashboard}
+                      chatAccent={chatAccent}
+                      chatGlow={chatGlow}
+                    />
+                  )}
+                </motion.div>
+              )}
+
+              {loading && !closedSale && (
+                <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="flex items-end gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-card border border-black/5 flex items-center justify-center text-muted-foreground shadow-sm">
+                    <Bot size={20} />
+                  </div>
+                  <div className="px-6 py-4 rounded-[24px] rounded-bl-none bg-white dark:bg-white/5 border border-black/5 shadow-md flex gap-2 items-center">
+                    {[0, 0.15, 0.3].map((delay, i) => (
+                      <motion.div key={i}
+                        className="w-2 h-2 rounded-full bg-primary/40"
+                        animate={{ y: [0, -6, 0], scale: [1, 1.2, 1], backgroundColor: ['rgba(34,211,238,0.4)', 'rgba(34,211,238,0.8)', 'rgba(34,211,238,0.4)'] }}
+                        transition={{ duration: 0.8, repeat: Infinity, delay }}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <div ref={bottomRef} className="h-8" />
+          </div>
+
+          {/* Input Area */}
+          {!closedSale && (
+            <div className="px-8 py-8 bg-secondary/20 border-t border-[color:var(--hub-border)] shrink-0 shadow-[0_-12px_48px_rgba(0,0,0,0.02)]">
+              {chatError && (
+                <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center font-black text-rose-500 uppercase tracking-widest mb-4">
+                  {chatError}
+                </motion.p>
+              )}
+              <div className="flex items-center gap-4 bg-[color:var(--hub-card)] border-2 border-transparent focus-within:border-primary/30 rounded-[28px] p-2.5 shadow-xl transition-all duration-300 group">
+                <input
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="พิมพ์ข้อความทักทายหรือตอบโต้ลูกค้า..."
+                  className="flex-1 bg-transparent border-none focus:outline-none focus:ring-0 px-5 py-3 text-sm font-bold placeholder:text-muted-foreground/40"
+                />
+                <motion.button
+                  onClick={onSend}
+                  disabled={loading || !input.trim()}
+                  className="w-12 h-12 rounded-[20px] flex items-center justify-center text-white disabled:opacity-30 shadow-xl shadow-primary/20 group-focus-within:scale-105 active:scale-95 transition-all duration-300"
+                  style={{ background: chatAccent }}
+                >
+                  <Send size={22} className="drop-shadow-sm" />
+                </motion.button>
+              </div>
+              <p className="text-[9px] text-center mt-4 font-black text-muted-foreground/40 uppercase tracking-[0.4em]">
+                Neural Pitch Engine v4.2 · System Active
+              </p>
+            </div>
+          )}
+        </motion.div>
+      </div>
+    </div>
+  );
+});
+
+ChatScreen.displayName = 'ChatScreen';
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function PitchSimulator() {
   const router   = useRouter();
   const pathname = usePathname();
   const locale   = pathname.split('/')[1] ?? 'th';
 
-  const [level,      setLevel]      = useState<1 | 2 | 3>(1);
+  const [level,      setLevel]      = useState<PitchLevel>(1);
   const [sessionId,  setSessionId]  = useState<string | null>(null);
   const [messages,   setMessages]   = useState<PitchMessage[]>([]);
   const [input,      setInput]      = useState('');
@@ -57,12 +675,17 @@ export default function PitchSimulator() {
   const [startError,    setStartError]    = useState('');
   const [chatError,     setChatError]     = useState('');
   const [pendingResume, setPendingResume] = useState<SavedSession | null>(null);
+  
   const bottomRef    = useRef<HTMLDivElement>(null);
   const evalAbortRef = useRef(false);
+  const loadingRef   = useRef(false);
 
   useEffect(() => {
-    const id   = localStorage.getItem('brainstrade_agent_id');
-    const name = localStorage.getItem('brainstrade_agent_name');
+    const session = getAgentSession();
+    if (!session) return;
+
+    const id   = session.id;
+    const name = session.name;
     setAgentId(id);
     setAgentName(name);
 
@@ -70,7 +693,18 @@ export default function PitchSimulator() {
     const localSet: Set<number> = local ? new Set(JSON.parse(local)) : new Set();
     if (localSet.size > 0) setCompletedLevels(localSet);
 
-    // Check for an unfinished session — localStorage first (instant), server fallback (cross-device)
+    if (id) {
+      fetch(`/api/agent/progress?agentId=${id}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (!data?.stats?.pitch?.completedLevels) return;
+          const merged = new Set([...localSet, ...data.stats.pitch.completedLevels]);
+          setCompletedLevels(merged);
+          localStorage.setItem('brainstrade_completed_levels', JSON.stringify([...merged]));
+        })
+        .catch(() => {});
+    }
+
     let hasLocalSession = false;
     try {
       const raw = localStorage.getItem(SESSION_KEY);
@@ -88,59 +722,58 @@ export default function PitchSimulator() {
       localStorage.removeItem(SESSION_KEY);
     }
 
-    if (id) {
-      fetch(`/api/agent/progress?agentId=${id}`)
+    if (id && !hasLocalSession) {
+      fetch(`/api/pitch/active?agentId=${id}`)
         .then(r => r.ok ? r.json() : null)
         .then(data => {
-          if (!data) return;
-          const merged = new Set([...localSet, ...(data.pitchCompletedLevels ?? [])]);
-          setCompletedLevels(merged);
-          localStorage.setItem('brainstrade_completed_levels', JSON.stringify([...merged]));
+          const s = data?.session;
+          if (s && s.messages?.length > 0) {
+            const age = Date.now() - (s.savedAt ?? 0);
+            if (age < 24 * 60 * 60 * 1000) {
+              const saved: SavedSession = { 
+                agentId: id, 
+                sessionId: s.sessionId, 
+                level: s.level as PitchLevel, 
+                messages: s.messages, 
+                savedAt: s.savedAt ?? Date.now() 
+              };
+              setPendingResume(saved);
+              localStorage.setItem(SESSION_KEY, JSON.stringify(saved));
+            }
+          }
         })
         .catch(() => {});
-
-      // Server fallback — only needed if localStorage had nothing
-      if (!hasLocalSession) {
-        fetch(`/api/pitch/active?agentId=${id}`)
-          .then(r => r.ok ? r.json() : null)
-          .then(data => {
-            const s = data?.session;
-            if (s && s.messages?.length > 0) {
-              const age = Date.now() - (s.savedAt ?? 0);
-              if (age < 24 * 60 * 60 * 1000) {
-                const saved: SavedSession = { agentId: id, sessionId: s.sessionId, level: s.level, messages: s.messages, savedAt: s.savedAt ?? Date.now() };
-                setPendingResume(saved);
-                // Repopulate localStorage from server
-                localStorage.setItem(SESSION_KEY, JSON.stringify(saved));
-              }
-            }
-          })
-          .catch(() => {});
-      }
     }
   }, []);
 
-  function saveSession(sid: string, lvl: 1 | 2 | 3, msgs: PitchMessage[], id: string | null) {
-    if (!id) return;
-    const saved: SavedSession = { agentId: id, sessionId: sid, level: lvl, messages: msgs, savedAt: Date.now() };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(saved));
-    // Mirror to server (fire-and-forget) so resume works across devices / cleared localStorage
-    fetch('/api/pitch/active', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ agentId: id, sessionId: sid, level: lvl, messages: msgs }),
-    }).catch(() => {});
-  }
+  useEffect(() => {
+    if (sessionId) {
+      setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  }, [messages, loading, evaluating, evaluation, sessionId]);
 
-  function clearSession(id?: string | null) {
+  const clearSession = useCallback((id?: string | null) => {
     localStorage.removeItem(SESSION_KEY);
     const aid = id ?? agentId;
     if (aid) {
       fetch(`/api/pitch/active?agentId=${aid}`, { method: 'DELETE' }).catch(() => {});
     }
-  }
+  }, [agentId]);
 
-  function resumeSession(saved: SavedSession) {
+  const saveSession = useCallback((sid: string, lvl: PitchLevel, msgs: PitchMessage[], id: string | null) => {
+    if (!id) return;
+    const saved: SavedSession = { agentId: id, sessionId: sid, level: lvl, messages: msgs, savedAt: Date.now() };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(saved));
+    fetch('/api/pitch/active', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agentId: id, sessionId: sid, level: lvl, messages: msgs }),
+    }).catch(() => {});
+  }, []);
+
+  const resumeSession = useCallback((saved: SavedSession) => {
     setLevel(saved.level);
     setSessionId(saved.sessionId);
     setMessages(saved.messages);
@@ -148,9 +781,11 @@ export default function PitchSimulator() {
     setEvaluation(null);
     setChatError('');
     setPendingResume(null);
-  }
+    setEvaluating(false);
+    evalAbortRef.current = false;
+  }, []);
 
-  function syncToServer(completedSet: Set<number>, id: string | null, name: string | null) {
+  const syncProgress = useCallback((completedSet: Set<number>, id: string | null, name: string | null) => {
     if (!id) return;
     fetch('/api/agent/progress', {
       method: 'POST',
@@ -161,48 +796,45 @@ export default function PitchSimulator() {
         pitchCompletedLevels: [...completedSet],
       }),
     }).catch(() => {});
-  }
+  }, []);
 
-  function markLevelCompleted(l: number) {
+  const markLevelCompleted = useCallback((l: number) => {
     setCompletedLevels(prev => {
+      if (prev.has(l)) return prev;
       const next = new Set(prev);
       next.add(l);
-      localStorage.setItem('brainstrade_completed_levels', JSON.stringify([...next]));
-      syncToServer(next, agentId, agentName);
+      
+      // Side effects in next tick to keep updater pure
+      setTimeout(() => {
+        localStorage.setItem('brainstrade_completed_levels', JSON.stringify([...next]));
+        syncProgress(next, agentId, agentName);
+      }, 0);
+      
       return next;
     });
-  }
+  }, [agentId, agentName, syncProgress]);
 
-  function isLocked(l: number) {
-    if (l === 1) return false;
-    return !completedLevels.has(l - 1);
-  }
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading, evaluating, evaluation]);
-
-  function abandonSession() {
+  const abandonSession = useCallback(() => {
+    evalAbortRef.current = true;
     if (sessionId && messages.length > 0 && !closedSale) {
-      // Fire-and-forget: compact + save the abandoned session without blocking the UI
       fetch('/api/pitch/abandon', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, level, messages, agentId, agentName }),
       }).catch(() => {});
     }
-    // Do NOT clear localStorage or server session — agent can resume later.
-    // The resume banner will re-appear on next visit.
-    evalAbortRef.current = true;
     setSessionId(null);
     setMessages([]);
     setClosedSale(false);
     setEvaluation(null);
     setChatError('');
-  }
+    setEvaluating(false);
+  }, [sessionId, messages, closedSale, level, agentId, agentName]);
 
-  async function startSession() {
+  const startSession = useCallback(async () => {
+    if (loadingRef.current) return;
     setLoading(true);
+    loadingRef.current = true;
     setStartError('');
     evalAbortRef.current = false;
     try {
@@ -222,11 +854,14 @@ export default function PitchSimulator() {
       setStartError('ไม่สามารถเริ่มเซสชันได้ กรุณาลองใหม่อีกครั้ง');
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
-  }
+  }, [level, agentId, agentName]);
 
-  async function sendMessage() {
-    if (!input.trim() || !sessionId || loading || closedSale) return;
+  const sendMessage = useCallback(async () => {
+    if (!input.trim() || !sessionId || loadingRef.current || closedSale) return;
+    
+    loadingRef.current = true;
     const userMsg: PitchMessage = { role: 'user', content: input, timestamp: new Date() };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
@@ -247,11 +882,12 @@ export default function PitchSimulator() {
       setMessages(finalMessages);
 
       if (data.closedSale) {
-        // Sale closed — no need to keep the session saved for resume
         clearSession();
         setClosedSale(true);
         setLoading(false);
+        loadingRef.current = false;
         markLevelCompleted(level);
+        
         setTimeout(async () => {
           if (evalAbortRef.current) return;
           setEvaluating(true);
@@ -263,636 +899,79 @@ export default function PitchSimulator() {
             });
             const evalData = await evalRes.json();
             if (!evalAbortRef.current) setEvaluation(evalData);
+          } catch (e) {
+            console.error("Evaluation failed", e);
           } finally {
             if (!evalAbortRef.current) setEvaluating(false);
           }
         }, 800);
         return;
       }
-      // Persist the updated conversation so the agent can resume if they leave
       if (sessionId) saveSession(sessionId, level, finalMessages, agentId);
     } catch {
       setChatError('เกิดข้อผิดพลาดในการส่งข้อความ กรุณาลองใหม่');
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
-  }
+  }, [input, sessionId, closedSale, messages, level, agentId, clearSession, markLevelCompleted, saveSession]);
 
-  const lvlCfg = LEVEL_COLORS[level];
+  const isLocked = useCallback((l: number) => {
+    if (l === 1) return false;
+    return !completedLevels.has(l - 1);
+  }, [completedLevels]);
 
-  /* ── Level selector screen ── */
-  if (!sessionId) {
-    return (
-      <div
-        className="min-h-screen relative"
-        style={{
-          background: 'var(--hub-bg)',
-          fontFamily: "'DM Sans', system-ui, sans-serif",
-        }}
-      >
-        {/* Background */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div style={{
-            position: 'absolute', width: 700, height: 700, top: -200, left: '50%', transform: 'translateX(-50%)',
-            background: `radial-gradient(circle, ${lvlCfg.glow} 0%, transparent 60%)`,
-            borderRadius: '50%',
-            transition: 'background 0.5s',
-          }} />
-          <div style={{
-            position: 'absolute', inset: 0, opacity: 0.012,
-            backgroundImage: `linear-gradient(var(--hub-grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--hub-grid-color) 1px, transparent 1px)`,
-            backgroundSize: '56px 56px',
-          }} />
-        </div>
+  const handleNextLevel = useCallback(() => {
+    evalAbortRef.current = true;
+    setLevel((level + 1) as PitchLevel);
+    setSessionId(null);
+    setMessages([]);
+    setClosedSale(false);
+    setEvaluation(null);
+    setChatError('');
+  }, [level]);
 
-        <div className="relative z-10 max-w-3xl mx-auto px-4 py-10">
-          {/* Page header */}
-          <motion.div
-            className="mb-10"
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] mb-1" style={{ color: 'var(--hub-muted)' }}>
-                  Training Mission 04
-                </p>
-                <h1 className="text-3xl font-black tracking-tight mb-1" style={{ color: 'var(--hub-text)' }}>
-                  Pitch Simulator
-                </h1>
-                <p className="text-sm" style={{ color: 'var(--hub-muted)' }}>
-                  ทดสอบทักษะการนำเสนอของคุณกับ AI ลูกค้าจริง
-                </p>
-              </div>
-              {agentName && (
-                <div className="shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs"
-                  style={{ background: 'var(--hub-card)', border: '1px solid var(--hub-border)', color: 'var(--hub-muted)' }}>
-                  <UserIcon size={12} />
-                  <span className="font-bold" style={{ color: 'var(--hub-text)' }}>{agentName}</span>
-                </div>
-              )}
-            </div>
-          </motion.div>
-
-          {/* Resume banner */}
-          <AnimatePresence>
-            {pendingResume && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-                className="mb-6 flex items-center gap-4 px-5 py-4 rounded-2xl"
-                style={{
-                  background: 'rgba(96,165,250,0.08)',
-                  border: '1px solid rgba(96,165,250,0.3)',
-                }}
-              >
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.25)' }}>
-                  <History size={16} style={{ color: '#60A5FA' }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold" style={{ color: 'var(--hub-text)' }}>
-                    มีเซสชันที่ค้างอยู่
-                  </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--hub-muted)' }}>
-                    Level {pendingResume.level} — {pendingResume.messages.length} ข้อความ
-                    {' · '}บันทึกเมื่อ {new Date(pendingResume.savedAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => { clearSession(); setPendingResume(null); }}
-                    className="text-xs px-3 py-2 rounded-xl font-semibold transition-colors"
-                    style={{ color: 'var(--hub-muted)', border: '1px solid var(--hub-border)' }}
-                  >
-                    ทิ้ง
-                  </button>
-                  <motion.button
-                    onClick={() => resumeSession(pendingResume)}
-                    className="text-xs px-4 py-2 rounded-xl font-bold text-white transition-all"
-                    style={{ background: '#60A5FA', boxShadow: '0 4px 14px rgba(96,165,250,0.35)' }}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                  >
-                    กลับมาต่อ →
-                  </motion.button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Level cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            {([1, 2, 3] as const).map((l, i) => {
-              const locked    = isLocked(l);
-              const completed = completedLevels.has(l);
-              const selected  = level === l;
-              const cfg       = LEVEL_COLORS[l];
-
-              return (
-                <motion.button
-                  key={l}
-                  onClick={() => !locked && setLevel(l)}
-                  disabled={locked}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + i * 0.08, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative text-left rounded-2xl p-5 transition-all duration-200 overflow-hidden"
-                  style={{
-                    background: locked ? 'var(--hub-locked-bg)' : selected ? cfg.bg : 'var(--hub-card)',
-                    border: `1px solid ${locked ? 'var(--hub-dim-border)' : selected ? cfg.border : 'var(--hub-border)'}`,
-                    opacity: locked ? 0.5 : 1,
-                    boxShadow: selected && !locked ? `0 8px 32px ${cfg.glow}` : 'none',
-                    cursor: locked ? 'not-allowed' : 'pointer',
-                  }}
-                  whileHover={!locked ? { y: -3, boxShadow: `0 12px 40px ${cfg.glow}` } : {}}
-                  whileTap={!locked ? { scale: 0.98 } : {}}
-                >
-                  {/* Status badge */}
-                  <div className="absolute top-3 right-3">
-                    {locked ? (
-                      <span className="w-9 h-9 rounded-full flex items-center justify-center"
-                        style={{ background: 'var(--hub-locked-icon)' }}>
-                        <Lock size={18} style={{ color: 'var(--hub-dim)' }} />
-                      </span>
-                    ) : completed ? (
-                      <span className="w-6 h-6 rounded-full flex items-center justify-center"
-                        style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}>
-                        <CheckCircle2 size={13} style={{ color: cfg.accent }} />
-                      </span>
-                    ) : selected ? (
-                      <span className="w-2 h-2 rounded-full animate-pulse"
-                        style={{ background: cfg.accent }} />
-                    ) : null}
-                  </div>
-
-                  {/* Icon */}
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-                    style={{
-                      background: locked ? 'var(--hub-locked-icon)' : `${cfg.accent}18`,
-                      border: `1px solid ${locked ? 'var(--hub-dim-border)' : cfg.accent + '35'}`,
-                    }}>
-                    <Sparkles size={18} style={{ color: locked ? 'var(--hub-dim)' : cfg.accent }} />
-                  </div>
-
-                  {/* Text */}
-                  <div className="mb-1 flex items-baseline gap-2">
-                    <span className="text-base font-black" style={{ color: locked ? 'var(--hub-dim)' : 'var(--hub-text)' }}>
-                      Level {l}
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider"
-                      style={{ color: locked ? 'var(--hub-dim)' : cfg.accent }}>
-                      {cfg.label}
-                    </span>
-                  </div>
-                  <p className="text-[11px] font-semibold" style={{ color: locked ? 'var(--hub-dim)' : 'var(--hub-muted)' }}>
-                    {LEVEL_LABELS[l].th}
-                  </p>
-                  <p className="text-[10px] mt-1" style={{ color: locked ? 'var(--hub-dim)' : 'var(--hub-muted)' }}>
-                    {locked ? `ต้องผ่าน Level ${l - 1} ก่อน` : LEVEL_LABELS[l].desc}
-                  </p>
-
-                  {/* Selected indicator bar */}
-                  {selected && !locked && (
-                    <motion.div
-                      layoutId="level-selected-bar"
-                      className="absolute bottom-0 left-0 right-0 h-0.5"
-                      style={{ background: cfg.accent }}
-                    />
-                  )}
-                </motion.button>
-              );
-            })}
-          </div>
-
-          {/* Start button */}
-          <motion.div
-            className="flex flex-col items-center gap-3"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <motion.button
-              onClick={startSession}
-              disabled={loading || isLocked(level)}
-              className="flex items-center gap-3 px-10 py-4 rounded-2xl font-black text-base disabled:opacity-50 transition-all"
-              style={{
-                background: `linear-gradient(135deg, ${lvlCfg.accent}, ${lvlCfg.accent}BB)`,
-                color: '#fff',
-                boxShadow: `0 8px 28px ${lvlCfg.glow}`,
-              }}
-              whileHover={{ scale: 1.03, boxShadow: `0 12px 40px ${lvlCfg.glow}` }}
-              whileTap={{ scale: 0.97 }}
-            >
-              {loading ? <Loader2 size={20} className="animate-spin" /> : <Play size={20} className="fill-current" />}
-              {loading ? 'กำลังเริ่ม...' : `เริ่ม Level ${level}`}
-            </motion.button>
-            {startError && (
-              <p className="text-sm" style={{ color: '#F87171' }}>{startError}</p>
-            )}
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
-  /* ── Chat screen ── */
-  const chatAccent = LEVEL_COLORS[level].accent;
-  const chatGlow   = LEVEL_COLORS[level].glow;
+  // ─── Render Logic ───────────────────────────────────────────────────────────
 
   return (
-    <div
-      className="min-h-screen relative"
-      style={{
-        background: 'var(--hub-bg)',
-        fontFamily: "'DM Sans', system-ui, sans-serif",
-      }}
-    >
-      {/* Subtle background */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div style={{
-          position: 'absolute', width: 500, height: 500, top: -100, right: -100,
-          background: `radial-gradient(circle, ${chatGlow} 0%, transparent 70%)`,
-          borderRadius: '50%',
-        }} />
-      </div>
-
-      <div className="relative z-10 max-w-3xl mx-auto px-4 py-6">
-        {/* Chat card */}
-        <motion.div
-          className="rounded-3xl overflow-hidden flex flex-col"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          style={{
-            background: 'var(--hub-card)',
-            border: `1px solid ${closedSale ? chatAccent + '40' : 'var(--hub-border)'}`,
-            boxShadow: closedSale ? `0 8px 40px ${chatGlow}` : '0 4px 24px rgba(0,0,0,0.08)',
-            height: closedSale ? 'auto' : 'min(700px, calc(100vh - 140px))',
-            maxHeight: closedSale ? 'none' : 'min(700px, calc(100vh - 140px))',
-          }}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 shrink-0"
-            style={{
-              borderBottom: `1px solid var(--hub-border)`,
-              background: 'var(--hub-panel)',
-            }}>
-            <div className="flex items-center gap-3">
-              {/* Level badge */}
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0"
-                style={{
-                  background: closedSale ? `${chatAccent}15` : `${chatAccent}12`,
-                  border: `1px solid ${chatAccent}35`,
-                  color: chatAccent,
-                }}>
-                {closedSale ? <Trophy size={18} /> : `L${level}`}
-              </div>
-              <div>
-                <span className="font-bold text-sm" style={{ color: 'var(--hub-text)' }}>
-                  Pitch Session — {LEVEL_LABELS[level].th}
-                </span>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full"
-                    style={{
-                      background: closedSale ? chatAccent : chatAccent,
-                      animation: closedSale ? 'none' : 'pulse 1.5s infinite',
-                    }} />
-                  <span className="text-[10px] font-bold uppercase tracking-widest"
-                    style={{ color: chatAccent }}>
-                    {closedSale ? 'Sale Closed ✓' : 'Live Simulation'}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={abandonSession}
-              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl transition-all"
-              style={{
-                color: 'var(--hub-muted)',
-                border: '1px solid var(--hub-border)',
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#F87171'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(248,113,113,0.4)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--hub-muted)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--hub-border)'; }}
-            >
-              <ChevronLeft size={14} />
-              {closedSale ? 'กลับ' : 'จบการจำลอง'}
-            </button>
-          </div>
-
-          {/* Messages */}
-          <div
-            className={`overflow-y-auto p-6 space-y-5 ${closedSale ? '' : 'flex-1'}`}
-            style={{ background: 'var(--hub-bg)' }}
-          >
-            <AnimatePresence initial={false}>
-
-              {/* System ready message */}
-              <motion.div key="ready" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: `${chatAccent}15`, border: `1px solid ${chatAccent}35` }}>
-                  <CheckCircle2 size={15} style={{ color: chatAccent }} />
-                </div>
-                <div className="max-w-[85%] rounded-2xl rounded-tl-none px-4 py-3 text-xs leading-relaxed"
-                  style={{
-                    background: `${chatAccent}08`,
-                    border: `1px solid ${chatAccent}25`,
-                    color: chatAccent,
-                  }}>
-                  <p className="font-bold mb-0.5">ระบบพร้อมสำหรับการจำลองการขาย Level {level} แล้ว</p>
-                  <p style={{ opacity: 0.75 }}>กรุณาเริ่มทักทายลูกค้าได้เลย — AI จะตอบสนองในฐานะลูกค้าจริง</p>
-                </div>
-              </motion.div>
-
-              {/* Conversation messages */}
-              {messages.map((m, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 10, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  className={`flex items-end gap-3 ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
-                >
-                  {/* Avatar */}
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mb-0.5"
-                    style={m.role === 'user'
-                      ? { background: chatAccent, color: '#fff' }
-                      : { background: 'var(--hub-card)', border: '1px solid var(--hub-border)', color: 'var(--hub-muted)' }
-                    }>
-                    {m.role === 'user' ? <UserIcon size={15} /> : <Bot size={15} />}
-                  </div>
-                  {/* Bubble */}
-                  <div className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
-                    m.role === 'user' ? 'rounded-br-sm' : 'rounded-bl-sm'
-                  }`}
-                    style={m.role === 'user'
-                      ? { background: chatAccent, color: '#fff' }
-                      : { background: 'var(--hub-card)', border: '1px solid var(--hub-border)', color: 'var(--hub-text)' }
-                    }>
-                    {m.content}
-                  </div>
-                </motion.div>
-              ))}
-
-              {/* Sale closed banner */}
-              {closedSale && (
-                <motion.div
-                  key="sale-closed"
-                  initial={{ opacity: 0, scale: 0.88, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{ type: 'spring', stiffness: 220, damping: 16 }}
-                  className="flex justify-center py-4"
-                >
-                  <div className="flex items-center gap-4 px-8 py-4 rounded-2xl"
-                    style={{
-                      background: `linear-gradient(135deg, ${chatAccent}22, ${chatAccent}0A)`,
-                      border: `1px solid ${chatAccent}50`,
-                      boxShadow: `0 8px 32px ${chatGlow}`,
-                    }}>
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-                      style={{ background: `${chatAccent}20`, border: `1px solid ${chatAccent}40` }}>
-                      <Trophy size={20} style={{ color: chatAccent }} />
-                    </div>
-                    <div>
-                      <p className="font-black text-base" style={{ color: 'var(--hub-text)' }}>ปิดการขายสำเร็จ!</p>
-                      <p className="text-xs" style={{ color: 'var(--hub-muted)' }}>ลูกค้ายืนยันการซื้อและชำระเงินแล้ว</p>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Evaluating indicator */}
-              {evaluating && (
-                <motion.div
-                  key="evaluating"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex items-center justify-center gap-2 py-4"
-                  style={{ color: 'var(--hub-muted)' }}
-                >
-                  <Loader2 size={16} className="animate-spin" style={{ color: chatAccent }} />
-                  <span className="text-sm">กำลังวิเคราะห์การสนทนา...</span>
-                </motion.div>
-              )}
-
-              {/* Evaluation result */}
-              {evaluation && (
-                <motion.div
-                  key="evaluation"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                  className="space-y-3"
-                >
-                  {/* Why customer purchased */}
-                  <div className="rounded-2xl p-5"
-                    style={{ background: 'var(--hub-card)', border: '1px solid var(--hub-border)' }}>
-                    <div className="flex items-center gap-2.5 mb-3">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                        style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)' }}>
-                        <Sparkles size={15} style={{ color: '#FBBF24' }} />
-                      </div>
-                      <h3 className="font-bold text-sm" style={{ color: 'var(--hub-text)' }}>ทำไมลูกค้าถึงตัดสินใจซื้อ</h3>
-                    </div>
-                    <p className="text-sm leading-relaxed" style={{ color: 'var(--hub-muted)' }}>{evaluation.reason}</p>
-                  </div>
-
-                  {/* Strengths */}
-                  <div className="rounded-2xl p-5"
-                    style={{ background: 'var(--hub-card)', border: '1px solid rgba(96,165,250,0.25)' }}>
-                    <div className="flex items-center gap-2.5 mb-3">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                        style={{ background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.25)' }}>
-                        <ThumbsUp size={15} style={{ color: '#60A5FA' }} />
-                      </div>
-                      <h3 className="font-bold text-sm" style={{ color: '#60A5FA' }}>จุดแข็ง</h3>
-                    </div>
-                    <ul className="space-y-2">
-                      {evaluation.strengths.map((s, i) => (
-                        <li key={i} className="flex items-start gap-2.5 text-sm" style={{ color: 'var(--hub-text)' }}>
-                          <span className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-black"
-                            style={{ background: 'rgba(96,165,250,0.12)', color: '#60A5FA' }}>
-                            {i + 1}
-                          </span>
-                          {s}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Weaknesses */}
-                  <div className="rounded-2xl p-5"
-                    style={{ background: 'var(--hub-card)', border: '1px solid rgba(251,191,36,0.25)' }}>
-                    <div className="flex items-center gap-2.5 mb-3">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                        style={{ background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.25)' }}>
-                        <TrendingUp size={15} style={{ color: '#FBBF24' }} />
-                      </div>
-                      <h3 className="font-bold text-sm" style={{ color: '#FBBF24' }}>สิ่งที่ควรพัฒนา</h3>
-                    </div>
-                    <ul className="space-y-2">
-                      {evaluation.weaknesses.map((w, i) => (
-                        <li key={i} className="flex items-start gap-2.5 text-sm" style={{ color: 'var(--hub-text)' }}>
-                          <span className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-black"
-                            style={{ background: 'rgba(251,191,36,0.10)', color: '#FBBF24' }}>
-                            {i + 1}
-                          </span>
-                          {w}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Action buttons */}
-                  <div className="flex flex-col sm:flex-row gap-3 pt-1">
-                    <button
-                      onClick={abandonSession}
-                      className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold text-sm transition-all"
-                      style={{
-                        background: 'var(--hub-progress-bg)',
-                        border: '1px solid var(--hub-border)',
-                        color: 'var(--hub-muted)',
-                      }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--hub-text)'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--hub-muted)'; }}
-                    >
-                      <RotateCcw size={15} />
-                      ลองอีกครั้ง Level {level}
-                    </button>
-
-                    {level < 3 ? (
-                      <button
-                        onClick={() => {
-                          evalAbortRef.current = true;
-                          const next = (level + 1) as 2 | 3;
-                          setLevel(next);
-                          setSessionId(null);
-                          setMessages([]);
-                          setClosedSale(false);
-                          setEvaluation(null);
-                          setChatError('');
-                        }}
-                        className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all"
-                        style={{
-                          background: `linear-gradient(135deg, ${LEVEL_COLORS[(level + 1) as 2 | 3].accent}, ${LEVEL_COLORS[(level + 1) as 2 | 3].accent}BB)`,
-                          color: '#fff',
-                          boxShadow: `0 6px 20px ${LEVEL_COLORS[(level + 1) as 2 | 3].glow}`,
-                        }}
-                      >
-                        Level {level + 1} — {LEVEL_LABELS[(level + 1) as 2 | 3].th}
-                        <ArrowRight size={16} />
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => router.push(`/${locale}/dashboard`)}
-                        className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all"
-                        style={{
-                          background: 'linear-gradient(135deg, #00B4D8, #0055F0)',
-                          color: '#fff',
-                          boxShadow: '0 6px 20px rgba(0,180,216,0.22)',
-                        }}
-                      >
-                        <LayoutDashboard size={16} />
-                        กลับไปหน้า Dashboard
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Transcript */}
-                  <details className="rounded-2xl overflow-hidden"
-                    style={{ border: '1px solid var(--hub-border)' }}>
-                    <summary className="px-5 py-3 cursor-pointer text-xs font-semibold transition-colors select-none"
-                      style={{ color: 'var(--hub-muted)' }}>
-                      บทสนทนาทั้งหมด ({messages.length} ข้อความ)
-                    </summary>
-                    <div className="border-t max-h-64 overflow-y-auto px-5 py-4 space-y-3"
-                      style={{ borderColor: 'var(--hub-border)', background: 'var(--hub-bg)' }}>
-                      {messages.map((m, i) => (
-                        <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className="max-w-[80%] text-xs px-3 py-2 rounded-xl leading-relaxed whitespace-pre-wrap"
-                            style={m.role === 'user'
-                              ? { background: chatAccent, color: '#fff' }
-                              : { background: 'var(--hub-card)', border: '1px solid var(--hub-border)', color: 'var(--hub-text)' }
-                            }>
-                            {m.content}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* AI typing indicator */}
-            {loading && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-end gap-3">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: 'var(--hub-card)', border: '1px solid var(--hub-border)', color: 'var(--hub-muted)' }}>
-                  <Bot size={15} />
-                </div>
-                <div className="px-4 py-3 rounded-2xl rounded-bl-sm flex gap-1.5 items-center"
-                  style={{ background: 'var(--hub-card)', border: '1px solid var(--hub-border)' }}>
-                  {[0, 0.18, 0.36].map((delay, i) => (
-                    <motion.div key={i}
-                      className="w-1.5 h-1.5 rounded-full"
-                      style={{ background: 'var(--hub-muted)' }}
-                      animate={{ y: [0, -5, 0] }}
-                      transition={{ duration: 0.8, repeat: Infinity, delay }}
-                    />
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            <div ref={bottomRef} />
-          </div>
-
-          {/* Input */}
-          {!closedSale && (
-            <div className="p-4 shrink-0"
-              style={{ borderTop: '1px solid var(--hub-border)', background: 'var(--hub-panel)' }}>
-              {chatError && (
-                <p className="text-xs text-center mb-2" style={{ color: '#F87171' }}>{chatError}</p>
-              )}
-              <div className="flex items-center gap-2 px-3 py-2 rounded-2xl"
-                style={{
-                  background: 'var(--hub-progress-bg)',
-                  border: '1px solid var(--hub-border)',
-                }}>
-                <input
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-                  placeholder="พิมพ์ข้อความทักทายลูกค้าของคุณ..."
-                  className="flex-1 bg-transparent border-none focus:outline-none focus:ring-0 px-2 py-2 text-sm"
-                  style={{ color: 'var(--hub-text)' }}
-                />
-                <motion.button
-                  onClick={sendMessage}
-                  disabled={loading || !input.trim()}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center transition-all disabled:opacity-40"
-                  style={{
-                    background: chatAccent,
-                    color: '#fff',
-                    boxShadow: `0 4px 12px ${chatGlow}`,
-                  }}
-                  whileHover={{ scale: 1.08 }}
-                  whileTap={{ scale: 0.93 }}
-                >
-                  <Send size={16} />
-                </motion.button>
-              </div>
-              <p className="text-[10px] text-center mt-2" style={{ color: 'var(--hub-dim)' }}>
-                AI สวมบทบาทเป็นลูกค้าจริง — ฝึกทักษะการพิชชิ่งของคุณได้เลย
-              </p>
-            </div>
-          )}
+    <AnimatePresence mode="wait">
+      {!sessionId ? (
+        <motion.div key="selection" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={TRANSITION.base}>
+          <SelectionScreen
+            level={level}
+            setLevel={setLevel}
+            agentName={agentName}
+            loading={loading}
+            completedLevels={completedLevels}
+            pendingResume={pendingResume}
+            startError={startError}
+            onStart={startSession}
+            onResume={resumeSession}
+            onClearSession={() => { clearSession(); setPendingResume(null); }}
+            isLocked={isLocked}
+          />
         </motion.div>
-      </div>
-    </div>
+      ) : (
+        <motion.div key="chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={TRANSITION.base}>
+          <ChatScreen
+            level={level}
+            messages={messages}
+            input={input}
+            setInput={setInput}
+            loading={loading}
+            closedSale={closedSale}
+            evaluating={evaluating}
+            evaluation={evaluation}
+            chatError={chatError}
+            onSend={sendMessage}
+            onAbandon={abandonSession}
+            onRetry={abandonSession}
+            onNext={handleNextLevel}
+            onDashboard={() => router.push(`/${locale}/dashboard`)}
+            bottomRef={bottomRef}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

@@ -1,24 +1,34 @@
 'use client';
 
+import React, { useMemo, memo, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   CheckCircle2, XCircle, Lock, GraduationCap, ClipboardList, Mic, PlayCircle,
-  Trophy, RotateCcw, ArrowRight, LogOut, Zap,
+  Trophy, RotateCcw, ArrowRight, LogOut, Zap, type LucideIcon,
 } from 'lucide-react';
+
 import type { AgentStats } from '@/types';
 import { ScoreRing } from '@/components/ui/ScoreRing';
-import { EASE, TRANSITION } from '@/lib/animations';
+import { EASE, TRANSITION, FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
+
+// ─── Constants & Types ────────────────────────────────────────────────────────
 
 const STEPS = [
   { id: 'learn'   as const, step: 1, label: 'เรียนรู้',  sublabel: 'Study',   desc: 'ผลิตภัณฑ์ · กระบวนการขาย', Icon: GraduationCap, color: '#818CF8', glow: 'rgba(129,140,248,0.18)' },
-  { id: 'quiz'    as const, step: 2, label: 'Quiz',      sublabel: 'Test',    desc: 'ทดสอบความเข้าใจ 3 หัวข้อ',  Icon: ClipboardList, color: '#60A5FA', glow: 'rgba(96,165,250,0.15)'  },
+  { id: 'quiz'    as const, step: 2, label: 'Quiz',      sublabel: 'Test',    desc: 'ทดสอบความเข้าใจ 4 หัวข้อ',  Icon: ClipboardList, color: '#60A5FA', glow: 'rgba(96,165,250,0.15)'  },
   { id: 'ai-eval' as const, step: 3, label: 'AI Eval',   sublabel: 'Analyse', desc: 'วิเคราะห์สคริปต์ด้วย AI',   Icon: Mic,           color: '#F472B6', glow: 'rgba(244,114,182,0.15)' },
   { id: 'pitch'   as const, step: 4, label: 'Pitch',     sublabel: 'Sell',    desc: 'จำลองการขายกับ AI จริง',    Icon: PlayCircle,    color: '#FB923C', glow: 'rgba(251,146,60,0.15)'  },
 ] as const;
 
 type StepId = typeof STEPS[number]['id'];
+
+interface StepState { 
+  locked: boolean; 
+  passed: boolean; 
+  score?: number; 
+}
 
 const BADGE = {
   elite:        { color: '#FBBF24', bg: 'rgba(251,191,36,0.12)',  border: 'rgba(251,191,36,0.3)',  label: 'Elite'      },
@@ -27,17 +37,60 @@ const BADGE = {
   'needs-work': { color: '#F87171', bg: 'rgba(248,113,113,0.08)', border: 'rgba(248,113,113,0.25)',label: 'Needs Work' },
 } as const;
 
-function scoreColor(n: number) { return n >= 70 ? '#60A5FA' : n >= 50 ? '#FBBF24' : '#F87171'; }
+type BadgeType = keyof typeof BADGE;
 
-interface StepState { locked: boolean; passed: boolean; score?: number; }
+// ─── Interfaces ─────────────────────────────────────────────────────────────
+
+interface Props {
+  agentName: string;
+  agentId: string;
+  agentStageName?: string;
+  stats: AgentStats | null;
+  onLogout: () => void;
+}
+
+interface ModuleCardProps {
+  step: typeof STEPS[number];
+  state: StepState;
+  index: number;
+  href: string;
+}
+
+interface ProfileSidebarProps {
+  agentName: string;
+  agentStageName?: string;
+  score: number;
+  ringColor: string;
+  initials: string;
+  allDone: boolean;
+  currentStep?: typeof STEPS[number];
+  badgeCfg: typeof BADGE[BadgeType];
+  pct: number;
+  derived: Record<StepId, StepState>;
+  onLogout: () => void;
+}
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+
+function scoreColor(n: number) { 
+  return n >= 70 ? '#60A5FA' : n >= 50 ? '#FBBF24' : '#F87171'; 
+}
 
 function deriveSteps(stats: AgentStats | null): Record<StepId, StepState> {
-  const anyQ = !!(stats?.quiz?.product?.passed || stats?.quiz?.process?.passed || stats?.quiz?.payment?.passed);
-  const allQ = !!(stats?.quiz?.product?.passed && stats?.quiz?.process?.passed && stats?.quiz?.payment?.passed);
+  const anyQ = !!(stats?.quiz?.foundation?.passed || stats?.quiz?.product?.passed || stats?.quiz?.process?.passed || stats?.quiz?.payment?.passed);
+  const allQ = !!(stats?.quiz?.foundation?.passed && stats?.quiz?.product?.passed && stats?.quiz?.process?.passed && stats?.quiz?.payment?.passed);
   const aiOk = (stats?.aiEval?.count ?? 0) > 0;
   const piOk = (stats?.pitch?.sessionCount ?? 0) > 0;
-  const qs   = [stats?.quiz?.product?.bestScore, stats?.quiz?.process?.bestScore, stats?.quiz?.payment?.bestScore].filter((s): s is number => s !== undefined);
+  
+  const qs = [
+    stats?.quiz?.foundation?.bestScore,
+    stats?.quiz?.product?.bestScore, 
+    stats?.quiz?.process?.bestScore, 
+    stats?.quiz?.payment?.bestScore
+  ].filter((s): s is number => s !== undefined);
+  
   const avgQ = qs.length ? Math.round(qs.reduce((a, b) => a + b, 0) / qs.length) : undefined;
+
   return {
     learn:     { locked: false,  passed: anyQ, score: stats?.quiz?.product?.bestScore },
     quiz:      { locked: false,  passed: allQ, score: avgQ },
@@ -46,11 +99,60 @@ function deriveSteps(stats: AgentStats | null): Record<StepId, StepState> {
   };
 }
 
+// ─── Sub-components ─────────────────────────────────────────────────────────────
 
-// ── Mission Card ───────────────────────────────────────────────────────────────
-function MissionCard({ step, state, index, href }: {
-  step: typeof STEPS[number]; state: StepState; index: number; href: string;
-}) {
+/**
+ * BackgroundEffects: Renders animated orbs and the grid background.
+ */
+const BackgroundEffects = memo(({ badgeColor }: { badgeColor: string }) => (
+  <div className="fixed inset-0 pointer-events-none z-0">
+    <motion.div 
+      className="absolute w-[600px] h-[600px] -top-[150px] -left-[150px] rounded-full"
+      style={{
+        background: `radial-gradient(circle, ${badgeColor}08 0%, transparent 65%)`,
+      }}
+      animate={{ x: [0, 30, 0], y: [0, 40, 0] }}
+      transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut', repeatType: 'mirror' }}
+    />
+    <motion.div 
+      className="absolute w-[400px] h-[400px] bottom-0 right-0 rounded-full"
+      style={{
+        background: `radial-gradient(circle, rgba(96,165,250,0.06) 0%, transparent 70%)`,
+      }}
+      animate={{ x: [0, -20, 0], y: [0, -30, 0] }}
+      transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', repeatType: 'mirror' }}
+    />
+    <div 
+      className="absolute inset-0 opacity-[0.012]"
+      style={{
+        backgroundImage: `linear-gradient(var(--hub-grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--hub-grid-color) 1px, transparent 1px)`,
+        backgroundSize: '56px 56px',
+      }} 
+    />
+  </div>
+));
+
+BackgroundEffects.displayName = 'BackgroundEffects';
+
+/**
+ * SectionDivider: A simple labeled divider.
+ */
+const SectionDivider = memo(({ label }: { label: string }) => (
+  <div className="flex items-center gap-2 w-full max-w-[260px] my-4">
+    <div className="flex-1 h-px bg-[color:var(--hub-border)]" />
+    <span className="text-[9px] font-black uppercase tracking-[0.22em] shrink-0 text-[color:var(--hub-dim)]">
+      {label}
+    </span>
+    <div className="flex-1 h-px bg-[color:var(--hub-border)]" />
+  </div>
+));
+
+SectionDivider.displayName = 'SectionDivider';
+
+/**
+ * ModuleCard: Displays an individual training module with its status and progress.
+ */
+const ModuleCard = memo(({ step, state, index, href }: ModuleCardProps) => {
   const { Icon, color, glow, label, sublabel, desc, step: stepNum } = step;
   const { locked, passed, score } = state;
   const isNext    = !locked && !passed && score === undefined;
@@ -58,20 +160,16 @@ function MissionCard({ step, state, index, href }: {
 
   return (
     <motion.div
-      className="group relative flex items-stretch rounded-2xl overflow-hidden"
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.18 + index * 0.09, ...TRANSITION.base }}
+      variants={STAGGER_ITEM}
+      className="group relative flex items-stretch rounded-2xl overflow-hidden transition-all duration-300"
       style={{
         background: locked ? 'var(--hub-locked-bg)' : 'var(--hub-card)',
         border: `1px solid ${locked ? 'var(--hub-dim-border)' : passed ? color + '38' : hasFailed ? 'rgba(248,113,113,0.35)' : isNext ? color + '28' : 'var(--hub-border)'}`,
         opacity: locked ? 0.52 : 1,
         boxShadow: passed ? `0 4px 28px ${color}12` : hasFailed ? '0 4px 20px rgba(248,113,113,0.12)' : isNext ? `0 4px 20px ${glow}` : 'none',
-        transition: 'box-shadow 0.2s, border-color 0.2s',
       }}
     >
-      {/* Icon panel */}
-      <div className="relative flex flex-col items-center justify-center w-[72px] shrink-0 gap-1.5 py-5"
+      <div className="relative flex flex-col items-center justify-center w-[72px] shrink-0 gap-1.5 py-5 border-r"
         style={{
           background: locked
             ? 'var(--hub-locked-icon)'
@@ -79,18 +177,17 @@ function MissionCard({ step, state, index, href }: {
             : hasFailed ? 'linear-gradient(160deg, rgba(248,113,113,0.20) 0%, rgba(248,113,113,0.07) 100%)'
             : isNext ? `linear-gradient(160deg, ${color}20 0%, ${color}08 100%)`
             : `linear-gradient(160deg, ${color}12 0%, ${color}04 100%)`,
-          borderRight: `1px solid ${locked ? 'var(--hub-dim-border)' : hasFailed ? 'rgba(248,113,113,0.22)' : color + '18'}`,
+          borderColor: locked ? 'var(--hub-dim-border)' : hasFailed ? 'rgba(248,113,113,0.22)' : color + '18',
         }}
       >
         <span className="text-[9px] font-black leading-none tracking-wider"
           style={{ color: locked ? 'var(--hub-dim)' : color + 'BB' }}>
           {stepNum < 10 ? `0${stepNum}` : stepNum}
         </span>
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center border shadow-sm"
           style={{
             background: locked ? 'rgba(0,0,0,0.06)' : `${color}1A`,
-            border: `1px solid ${locked ? 'var(--hub-dim-border)' : color + '35'}`,
-            boxShadow: !locked ? `0 4px 12px ${color}18` : 'none',
+            borderColor: locked ? 'var(--hub-dim-border)' : color + '35',
           }}>
           {passed
             ? <CheckCircle2 size={20} style={{ color }} />
@@ -105,22 +202,21 @@ function MissionCard({ step, state, index, href }: {
         </span>
       </div>
 
-      {/* Content */}
       <div className="flex-1 min-w-0 px-4 py-4 flex flex-col justify-center">
         <div className="flex items-center gap-2 mb-0.5">
-          <span className="font-bold text-sm leading-tight"
-            style={{ color: locked ? 'var(--hub-dim)' : 'var(--hub-text)' }}>
+          <span className="font-bold text-sm leading-tight text-[color:var(--hub-text)]"
+            style={{ color: locked ? 'var(--hub-dim)' : undefined }}>
             {label}
           </span>
           {passed && (
-            <span className="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wide"
-              style={{ background: `${color}18`, color, border: `1px solid ${color}35` }}>
+            <span className="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wide border"
+              style={{ background: `${color}18`, color, borderColor: color + '35' }}>
               ✓ ผ่าน
             </span>
           )}
           {hasFailed && (
-            <span className="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wide flex items-center gap-1"
-              style={{ background: 'rgba(248,113,113,0.12)', color: '#F87171', border: '1px solid rgba(248,113,113,0.3)' }}>
+            <span className="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wide flex items-center gap-1 border border-red-400/30"
+              style={{ background: 'rgba(248,113,113,0.12)', color: '#F87171' }}>
               ✕ ล้มเหลว
             </span>
           )}
@@ -131,12 +227,12 @@ function MissionCard({ step, state, index, href }: {
             </span>
           )}
         </div>
-        <p className="text-xs mb-2" style={{ color: locked ? 'var(--hub-dim)' : 'var(--hub-muted)' }}>
+        <p className="text-xs mb-2 text-[color:var(--hub-muted)]" style={{ color: locked ? 'var(--hub-dim)' : undefined }}>
           {desc}
         </p>
         {score !== undefined && !locked && (
           <div className="flex items-center gap-2 mt-1">
-            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--hub-progress-bg)' }}>
+            <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-[color:var(--hub-progress-bg)]">
               <motion.div className="h-full rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${score}%` }}
@@ -153,17 +249,15 @@ function MissionCard({ step, state, index, href }: {
         )}
       </div>
 
-      {/* CTA */}
       <div className="shrink-0 flex items-center pr-4 pl-2">
         {locked ? (
-          <div className="flex items-center gap-1.5 text-[10px] px-3 py-2 rounded-xl"
-            style={{ color: 'var(--hub-dim)', background: 'var(--hub-locked-bg)', border: '1px solid var(--hub-dim-border)' }}>
+          <div className="flex items-center gap-1.5 text-[10px] px-3 py-2 rounded-xl bg-[color:var(--hub-locked-bg)] border border-[color:var(--hub-dim-border)] text-[color:var(--hub-dim)]">
             <Lock size={10} /> ล็อค
           </div>
         ) : (
           <Link href={href}
-            className="flex items-center gap-1.5 text-xs font-bold px-4 py-2.5 rounded-xl transition-all duration-150 whitespace-nowrap"
-            style={{ background: `${color}18`, border: `1px solid ${color}45`, color }}
+            className="flex items-center gap-1.5 text-xs font-bold px-4 py-2.5 rounded-xl transition-all duration-150 whitespace-nowrap border"
+            style={{ background: `${color}18`, borderColor: color + '45', color }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${color}30`; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = `${color}18`; }}
           >
@@ -176,266 +270,252 @@ function MissionCard({ step, state, index, href }: {
       </div>
     </motion.div>
   );
-}
+});
 
-// ── Section Divider ─────────────────────────────────────────────────────────────
-function SectionDivider({ label }: { label: string }) {
+ModuleCard.displayName = 'ModuleCard';
+
+/**
+ * ProfileSidebar: The left panel displaying agent info, badge, and overall progress.
+ */
+const ProfileSidebar = memo(({
+  agentName,
+  agentStageName,
+  score,
+  ringColor,
+  initials,
+  allDone,
+  currentStep,
+  badgeCfg,
+  pct,
+  derived,
+  onLogout
+}: ProfileSidebarProps) => {
   return (
-    <div className="flex items-center gap-2 w-full max-w-[260px] my-4">
-      <div className="flex-1 h-px" style={{ background: 'var(--hub-border)' }} />
-      <span className="text-[9px] font-black uppercase tracking-[0.22em] shrink-0"
-        style={{ color: 'var(--hub-dim)' }}>
-        {label}
-      </span>
-      <div className="flex-1 h-px" style={{ background: 'var(--hub-border)' }} />
-    </div>
-  );
-}
+    <motion.div
+      variants={FADE_IN}
+      initial="initial"
+      animate="animate"
+      className="relative z-10 flex flex-col items-center shrink-0
+        w-full px-7 py-8
+        border-b border-[color:var(--hub-border)]
+        lg:w-[300px] lg:px-8 lg:py-10 lg:h-full lg:overflow-y-auto
+        lg:border-b-0 lg:border-r bg-[color:var(--hub-panel)]"
+    >
+      <div className="flex flex-col items-center w-full">
+        <div className="relative mb-4">
+          <div className="absolute inset-0 rounded-full scale-[1.5] blur-[12px]"
+            style={{
+              background: `radial-gradient(circle, ${ringColor}20 30%, transparent 70%)`,
+            }} />
+          <ScoreRing score={score} color={ringColor} size={116} />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+            <span className="text-2xl font-black leading-none text-[color:var(--hub-text)]">{initials}</span>
+            <span className="text-sm font-black" style={{ color: ringColor }}>{score}%</span>
+          </div>
+        </div>
 
-// ── Main ───────────────────────────────────────────────────────────────────────
-interface Props { agentName: string; agentId: string; agentStageName?: string; stats: AgentStats | null; onLogout: () => void; }
+        <h2 className="text-lg font-black text-center leading-snug mb-0.5 text-[color:var(--hub-text)]">
+          {agentName}
+        </h2>
+        {agentStageName && (
+          <p className="text-xs font-semibold text-center mb-1 opacity-85" style={{ color: ringColor }}>
+            "{agentStageName}"
+          </p>
+        )}
+
+        <div className="mb-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full border"
+          style={{
+            background: allDone ? 'rgba(251,191,36,0.08)' : currentStep ? `${currentStep.color}10` : 'var(--hub-locked-bg)',
+            borderColor: allDone ? 'rgba(251,191,36,0.25)' : currentStep ? currentStep.color + '30' : 'var(--hub-dim-border)',
+          }}>
+          {allDone ? (
+            <><CheckCircle2 size={10} style={{ color: '#FBBF24' }} />
+              <span className="text-[10px] font-black" style={{ color: '#FBBF24' }}>ผ่านครบทุกโมดูลแล้ว</span></>
+          ) : currentStep ? (
+            <><currentStep.Icon size={10} style={{ color: currentStep.color }} />
+              <span className="text-[10px] font-medium text-[color:var(--hub-dim)]">กำลัง</span>
+              <span className="text-[10px] font-black" style={{ color: currentStep.color }}>{currentStep.label}</span>
+              <span className="text-[9px] font-medium text-[color:var(--hub-dim)]">· ขั้นที่ {currentStep.step}</span></>
+          ) : (
+            <span className="text-[10px] font-medium text-[color:var(--hub-dim)]">เริ่มต้นการฝึก</span>
+          )}
+        </div>
+
+        <span
+          className="text-[11px] px-3.5 py-1.5 rounded-full font-black tracking-wide border"
+          style={{ background: badgeCfg.bg, borderColor: badgeCfg.border, color: badgeCfg.color }}
+        >
+          ★ {badgeCfg.label}
+        </span>
+      </div>
+
+      <SectionDivider label="ความคืบหน้า" />
+
+      <div className="w-full max-w-[260px]">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[color:var(--hub-muted)]">
+            โมดูลที่ผ่าน
+          </span>
+          <span className="text-[11px] font-black text-[color:var(--hub-text)]">{pct}%</span>
+        </div>
+        <div className="h-2 rounded-full overflow-hidden mb-4 bg-[color:var(--hub-progress-bg)]">
+          <motion.div className="h-full rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${pct}%` }}
+            transition={{ delay: 0.5, duration: 1.2, ease: EASE.smooth }}
+            style={{ background: 'linear-gradient(90deg, #818CF8, #60A5FA, #F472B6)' }} />
+        </div>
+
+        <div className="flex gap-2.5">
+          {STEPS.map(s => {
+            const st = derived[s.id];
+            return (
+              <div key={s.id} className="flex-1 flex flex-col items-center gap-1.5">
+                <div className="w-7 h-7 rounded-xl flex items-center justify-center border transition-all duration-300"
+                  style={{
+                    background: st.passed ? `${s.color}20` : st.locked ? 'var(--hub-locked-bg)' : `${s.color}10`,
+                    borderColor: st.passed ? s.color + '55' : st.locked ? 'var(--hub-dim-border)' : s.color + '25',
+                    boxShadow: st.passed ? `0 2px 8px ${s.color}22` : 'none',
+                  }}>
+                  {st.passed
+                    ? <CheckCircle2 size={13} style={{ color: s.color }} />
+                    : st.locked ? <Lock size={10} style={{ color: 'var(--hub-dim)' }} />
+                    : <s.Icon size={12} style={{ color: s.color }} />
+                  }
+                </div>
+                <span className="text-[8px] font-semibold text-center leading-tight"
+                  style={{ color: st.locked ? 'var(--hub-dim)' : st.passed ? s.color + 'CC' : 'var(--hub-muted)' }}>
+                  {s.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {allDone && (
+          <motion.div className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-2xl w-full justify-center border"
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+            transition={TRANSITION.spring}
+            style={{ background: 'rgba(251,191,36,0.08)', borderColor: 'rgba(251,191,36,0.22)' }}>
+            <Trophy size={14} style={{ color: '#FBBF24' }} />
+            <span className="text-[11px] font-black" style={{ color: '#FBBF24' }}>ผ่านหมดแล้ว! 🎉</span>
+          </motion.div>
+        )}
+      </div>
+
+      <div className="mt-auto w-full pt-6 flex justify-center">
+        <button
+          onClick={onLogout}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-medium transition-all
+            text-[color:var(--hub-muted)] border border-[color:var(--hub-border)]
+            hover:text-red-500 hover:border-red-300 hover:bg-red-50
+            dark:hover:border-red-500/30 dark:hover:bg-red-500/10"
+        >
+          <LogOut size={12} />
+          <span>ออกจากระบบ</span>
+        </button>
+      </div>
+    </motion.div>
+  );
+});
+
+ProfileSidebar.displayName = 'ProfileSidebar';
+
+/**
+ * ModuleHeader: The header section for the training modules list.
+ */
+const ModuleHeader = memo(({ doneCount }: { doneCount: number }) => (
+  <motion.div
+    variants={FADE_IN}
+    initial="initial"
+    animate="animate"
+    className="shrink-0 px-5 py-4 lg:px-6 border-b bg-[color:var(--hub-panel)]"
+    style={{ borderColor: 'var(--hub-border)' }}
+  >
+    <div className="flex items-center gap-3">
+      <div>
+        <p className="text-[9px] font-black uppercase tracking-[0.28em] mb-0.5 text-[color:var(--hub-dim)]">
+          Training Modules
+        </p>
+        <h2 className="text-base font-black leading-none text-[color:var(--hub-text)]">
+          โมดูลการฝึกอบรม
+        </h2>
+      </div>
+      <div className="flex-1 h-px ml-1 bg-[color:var(--hub-border)]" />
+      <span className="text-xs font-bold px-2.5 py-1 rounded-full shrink-0 border bg-[color:var(--hub-card)] text-[color:var(--hub-muted)]"
+        style={{ borderColor: 'var(--hub-border)' }}>
+        {doneCount} / {STEPS.length} ผ่านแล้ว
+      </span>
+    </div>
+  </motion.div>
+));
+
+ModuleHeader.displayName = 'ModuleHeader';
+
+// ─── Main Component ─────────────────────────────────────────────────────────────
 
 export default function AgentTrainingHub({ agentName, agentStageName, stats, onLogout }: Props) {
   const pathname  = usePathname();
   const locale    = pathname.split('/')[1] ?? 'th';
-  const derived   = deriveSteps(stats);
+  
+  const derived = useMemo(() => deriveSteps(stats), [stats]);
 
-  const hrefs: Record<StepId, string> = {
-    learn:     `/${locale}/learn/product`,
+  const hrefs: Record<StepId, string> = useMemo(() => ({
+    learn:     `/${locale}/learn`,
     quiz:      `/${locale}/quiz`,
     'ai-eval': `/${locale}/ai-eval`,
     pitch:     `/${locale}/pitch`,
-  };
+  }), [locale]);
 
-  const done        = STEPS.filter(s => derived[s.id].passed).length;
-  const pct         = Math.round((done / STEPS.length) * 100);
-  const badge       = stats?.badge ?? 'developing';
+  const doneCount   = useMemo(() => STEPS.filter(s => derived[s.id].passed).length, [derived]);
+  const pct         = Math.round((doneCount / STEPS.length) * 100);
+  const badge       = (stats?.badge ?? 'developing') as BadgeType;
   const badgeCfg    = BADGE[badge];
   const score       = stats?.overallScore ?? 0;
-  const ringColor   = scoreColor(score);
-  const initials    = agentName.slice(0, 2).toUpperCase();
-  const allDone     = done === STEPS.length;
-  const currentStep = STEPS.find(s => !derived[s.id].passed && !derived[s.id].locked);
+  const ringColor   = useMemo(() => scoreColor(score), [score]);
+  const initials    = useMemo(() => {
+    const parts = agentName.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }, [agentName]);
+  const allDone     = doneCount === STEPS.length;
+  const currentStep = useMemo(() => STEPS.find(s => !derived[s.id].passed && !derived[s.id].locked), [derived]);
 
   return (
     <div
-      className="w-full h-full flex flex-col lg:flex-row"
-      style={{ background: 'var(--hub-bg)', fontFamily: "'DM Sans', system-ui, sans-serif" }}
+      className="w-full h-full flex flex-col lg:flex-row bg-[color:var(--hub-bg)]"
+      style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
     >
-      {/* Fixed background orbs */}
-      <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
-        <motion.div style={{
-          position: 'absolute', width: 600, height: 600, top: -150, left: -150,
-          background: `radial-gradient(circle, ${badgeCfg.color}08 0%, transparent 65%)`,
-          borderRadius: '50%',
-        }}
-          animate={{ x: [0, 30, 0], y: [0, 40, 0] }}
-          transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut', repeatType: 'mirror' }}
-        />
-        <motion.div style={{
-          position: 'absolute', width: 400, height: 400, bottom: 0, right: 0,
-          background: `radial-gradient(circle, rgba(96,165,250,0.06) 0%, transparent 70%)`,
-          borderRadius: '50%',
-        }}
-          animate={{ x: [0, -20, 0], y: [0, -30, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', repeatType: 'mirror' }}
-        />
-        <div style={{
-          position: 'absolute', inset: 0, opacity: 0.012,
-          backgroundImage: `linear-gradient(var(--hub-grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--hub-grid-color) 1px, transparent 1px)`,
-          backgroundSize: '56px 56px',
-        }} />
-      </div>
+      <BackgroundEffects badgeColor={badgeCfg.color} />
 
       {/* ══ LEFT — Agent Profile ══ */}
-      <motion.div
-        className="relative z-10 flex flex-col items-center shrink-0
-          w-full px-7 py-8
-          border-b border-[color:var(--hub-border)]
-          lg:w-[300px] lg:px-8 lg:py-10 lg:h-full lg:overflow-y-auto
-          lg:border-b-0 lg:border-r"
-        style={{ background: 'var(--hub-panel)' }}
-        initial={{ opacity: 0, x: -16 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ ...TRANSITION.base }}
-      >
-        {/* ── Avatar + ring ── */}
-        <div className="flex flex-col items-center w-full">
-          <div className="relative mb-4">
-            <div className="absolute inset-0 rounded-full"
-              style={{
-                background: `radial-gradient(circle, ${ringColor}20 30%, transparent 70%)`,
-                transform: 'scale(1.5)', filter: 'blur(12px)',
-              }} />
-            <ScoreRing score={score} color={ringColor} size={116} />
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
-              <span className="text-2xl font-black leading-none" style={{ color: 'var(--hub-text)' }}>{initials}</span>
-              <span className="text-sm font-black" style={{ color: ringColor }}>{score}%</span>
-            </div>
-          </div>
-
-          {/* Name */}
-          <motion.h2
-            className="text-lg font-black text-center leading-snug mb-0.5"
-            style={{ color: 'var(--hub-text)' }}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-          >
-            {agentName}
-          </motion.h2>
-          {agentStageName && (
-            <motion.p
-              className="text-xs font-semibold text-center mb-1"
-              style={{ color: ringColor, opacity: 0.85 }}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 0.85, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              "{agentStageName}"
-            </motion.p>
-          )}
-
-          {/* Status pill */}
-          <div className="mb-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full"
-            style={{
-              background: allDone ? 'rgba(251,191,36,0.08)' : currentStep ? `${currentStep.color}10` : 'var(--hub-locked-bg)',
-              border: `1px solid ${allDone ? 'rgba(251,191,36,0.25)' : currentStep ? currentStep.color + '30' : 'var(--hub-dim-border)'}`,
-            }}>
-            {allDone ? (
-              <><CheckCircle2 size={10} style={{ color: '#FBBF24' }} />
-                <span className="text-[10px] font-black" style={{ color: '#FBBF24' }}>ผ่านครบทุกโมดูลแล้ว</span></>
-            ) : currentStep ? (
-              <><currentStep.Icon size={10} style={{ color: currentStep.color }} />
-                <span className="text-[10px] font-medium" style={{ color: 'var(--hub-dim)' }}>กำลัง</span>
-                <span className="text-[10px] font-black" style={{ color: currentStep.color }}>{currentStep.label}</span>
-                <span className="text-[9px] font-medium" style={{ color: 'var(--hub-dim)' }}>· ขั้นที่ {currentStep.step}</span></>
-            ) : (
-              <span className="text-[10px] font-medium" style={{ color: 'var(--hub-dim)' }}>เริ่มต้นการฝึก</span>
-            )}
-          </div>
-
-          {/* Badge */}
-          <motion.span
-            className="text-[11px] px-3.5 py-1.5 rounded-full font-black tracking-wide"
-            style={{ background: badgeCfg.bg, border: `1px solid ${badgeCfg.border}`, color: badgeCfg.color }}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, ...EASE.spring }}
-          >
-            ★ {badgeCfg.label}
-          </motion.span>
-        </div>
-
-        {/* ── Progress ── */}
-        <SectionDivider label="ความคืบหน้า" />
-
-        <motion.div
-          className="w-full max-w-[260px]"
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.28 }}
-        >
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-[10px] font-black uppercase tracking-[0.18em]" style={{ color: 'var(--hub-muted)' }}>
-              โมดูลที่ผ่าน
-            </span>
-            <span className="text-[11px] font-black" style={{ color: 'var(--hub-text)' }}>{pct}%</span>
-          </div>
-          <div className="h-2 rounded-full overflow-hidden mb-4" style={{ background: 'var(--hub-progress-bg)' }}>
-            <motion.div className="h-full rounded-full"
-              initial={{ width: 0 }}
-              animate={{ width: `${pct}%` }}
-              transition={{ delay: 0.55, duration: 1.4, ease: EASE.smooth }}
-              style={{ background: 'linear-gradient(90deg, #818CF8, #60A5FA, #F472B6)' }} />
-          </div>
-
-          {/* Step dots */}
-          <div className="flex gap-2.5">
-            {STEPS.map(s => {
-              const st = derived[s.id];
-              return (
-                <div key={s.id} className="flex-1 flex flex-col items-center gap-1.5">
-                  <div className="w-7 h-7 rounded-xl flex items-center justify-center"
-                    style={{
-                      background: st.passed ? `${s.color}20` : st.locked ? 'var(--hub-locked-bg)' : `${s.color}10`,
-                      border: `1px solid ${st.passed ? s.color + '55' : st.locked ? 'var(--hub-dim-border)' : s.color + '25'}`,
-                      boxShadow: st.passed ? `0 2px 8px ${s.color}22` : 'none',
-                    }}>
-                    {st.passed
-                      ? <CheckCircle2 size={13} style={{ color: s.color }} />
-                      : st.locked ? <Lock size={10} style={{ color: 'var(--hub-dim)' }} />
-                      : <s.Icon size={12} style={{ color: s.color }} />
-                    }
-                  </div>
-                  <span className="text-[8px] font-semibold text-center leading-tight"
-                    style={{ color: st.locked ? 'var(--hub-dim)' : st.passed ? s.color + 'CC' : 'var(--hub-muted)' }}>
-                    {s.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          {allDone && (
-            <motion.div className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-2xl w-full justify-center"
-              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: 'spring', stiffness: 280, damping: 22, delay: 0.7 }}
-              style={{ background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.22)' }}>
-              <Trophy size={14} style={{ color: '#FBBF24' }} />
-              <span className="text-[11px] font-black" style={{ color: '#FBBF24' }}>ผ่านหมดแล้ว! 🎉</span>
-            </motion.div>
-          )}
-        </motion.div>
-
-        {/* ── Logout — pinned to bottom on desktop via mt-auto ── */}
-        <div className="mt-auto w-full pt-6 flex justify-center">
-          <button
-            onClick={onLogout}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-medium transition-all
-              text-[color:var(--hub-muted)] border border-[color:var(--hub-border)]
-              hover:text-red-500 hover:border-red-300 hover:bg-red-50
-              dark:hover:border-red-500/30 dark:hover:bg-red-500/10"
-          >
-            <LogOut size={12} />
-            <span>ออกจากระบบ</span>
-          </button>
-        </div>
-      </motion.div>
+      <ProfileSidebar
+        agentName={agentName}
+        agentStageName={agentStageName}
+        score={score}
+        ringColor={ringColor}
+        initials={initials}
+        allDone={allDone}
+        currentStep={currentStep}
+        badgeCfg={badgeCfg}
+        pct={pct}
+        derived={derived}
+        onLogout={onLogout}
+      />
 
       {/* ══ RIGHT — Training Modules ══ */}
       <div className="relative z-10 flex-1 flex flex-col lg:overflow-y-auto">
+        <ModuleHeader doneCount={doneCount} />
 
-        {/* Header */}
-        <motion.div
-          className="shrink-0 px-5 py-4 lg:px-6"
-          style={{ borderBottom: '1px solid var(--hub-border)', background: 'var(--hub-panel)' }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
-        >
-          <div className="flex items-center gap-3">
-            <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.28em] mb-0.5" style={{ color: 'var(--hub-dim)' }}>
-                Training Modules
-              </p>
-              <h2 className="text-base font-black leading-none" style={{ color: 'var(--hub-text)' }}>
-                โมดูลการฝึกอบรม
-              </h2>
-            </div>
-            <div className="flex-1 h-px ml-1" style={{ background: 'var(--hub-border)' }} />
-            <span className="text-xs font-bold px-2.5 py-1 rounded-full shrink-0"
-              style={{ background: 'var(--hub-card)', border: '1px solid var(--hub-border)', color: 'var(--hub-muted)' }}>
-              {done} / {STEPS.length} ผ่านแล้ว
-            </span>
-          </div>
-        </motion.div>
-
-        {/* Mission cards */}
         <div className="px-4 py-5 lg:px-6">
-          <div className="flex flex-col gap-3 pb-6">
+          <motion.div 
+            variants={STAGGER_CONTAINER}
+            initial="initial"
+            animate="animate"
+            className="flex flex-col gap-3 pb-6"
+          >
             {STEPS.map((step, i) => (
-              <MissionCard
+              <ModuleCard
                 key={step.id}
                 step={step}
                 state={derived[step.id]}
@@ -443,7 +523,7 @@ export default function AgentTrainingHub({ agentName, agentStageName, stats, onL
                 href={hrefs[step.id]}
               />
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>

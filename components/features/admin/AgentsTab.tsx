@@ -225,6 +225,7 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
             <thead>
               <tr className="text-muted-foreground">
                 <th className="text-left px-5 py-3 font-bold uppercase tracking-wider text-[10px]">Agent</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Foundation</th>
                 <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Product</th>
                 <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Process</th>
                 <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Payment</th>
@@ -237,9 +238,9 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={9} className="text-center py-16"><div className="flex flex-col items-center gap-3"><div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /><span className="text-sm text-muted-foreground animate-pulse">Loading agents...</span></div></td></tr>
+                <tr><td colSpan={10} className="text-center py-16"><div className="flex flex-col items-center gap-3"><div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /><span className="text-sm text-muted-foreground animate-pulse">Loading agents...</span></div></td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={9} className="text-center py-12 text-muted-foreground bg-card/40 backdrop-blur-sm rounded-2xl">No agents found.</td></tr>
+                <tr><td colSpan={10} className="text-center py-12 text-muted-foreground bg-card/40 backdrop-blur-sm rounded-2xl">No agents found.</td></tr>
               ) : filtered.map(a => (
                 <tr key={a.agent.id} className="bg-card/60 backdrop-blur-md hover:bg-card hover:shadow-md transition-all group">
                   <td className="px-5 py-4 rounded-l-2xl border-y border-l border-border/50 group-hover:border-primary/20">
@@ -249,6 +250,7 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
                     )}
                     <div className="text-[10px] text-muted-foreground mt-1">{timeAgo(a.lastActive)}</div>
                   </td>
+                  <td className="px-4 py-4 border-y border-border/50 group-hover:border-y-primary/20"><ModuleCell stat={a.quiz.foundation} /></td>
                   <td className="px-4 py-4 border-y border-border/50 group-hover:border-y-primary/20"><ModuleCell stat={a.quiz.product} /></td>
                   <td className="px-4 py-4 border-y border-border/50 group-hover:border-y-primary/20"><ModuleCell stat={a.quiz.process} /></td>
                   <td className="px-4 py-4 border-y border-border/50 group-hover:border-y-primary/20"><ModuleCell stat={a.quiz.payment} /></td>

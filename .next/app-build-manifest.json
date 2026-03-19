@@ -16,36 +16,6 @@
       "static/chunks/main-app.js",
       "static/chunks/app/[locale]/loading.js"
     ],
-    "/[locale]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/[locale]/page.js"
-    ],
-    "/[locale]/dashboard/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/[locale]/dashboard/layout.js"
-    ],
-    "/[locale]/dashboard/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/[locale]/dashboard/page.js"
-    ],
-    "/api/agents/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/agents/route.js"
-    ],
-    "/[locale]/login/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/[locale]/login/page.js"
-    ],
-    "/api/auth/session/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/auth/session/route.js"
-    ],
     "/[locale]/admin/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -55,26 +25,6 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/admin/overview/route.js"
-    ],
-    "/api/admin/change-password/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/admin/change-password/route.js"
-    ],
-    "/api/admin/agents/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/admin/agents/route.js"
-    ],
-    "/api/trainer/training-periods/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/trainer/training-periods/route.js"
-    ],
-    "/api/admin/evaluations/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/admin/evaluations/route.js"
     ]
   }
 }

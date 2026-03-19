@@ -8,6 +8,7 @@ export const BADGE_CONFIG = {
 };
 
 export const MODULE_LABELS: Record<string, string> = { 
+  foundation: 'Foundation',
   product: 'Product', 
   process: 'Process', 
   payment: 'Payment' 

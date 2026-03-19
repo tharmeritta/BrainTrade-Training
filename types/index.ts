@@ -37,6 +37,7 @@ export interface ModuleQuizStat {
 export interface AgentStats {
   agent: Agent;
   quiz: {
+    foundation?: ModuleQuizStat;
     product?: ModuleQuizStat;
     process?: ModuleQuizStat;
     payment?: ModuleQuizStat;
