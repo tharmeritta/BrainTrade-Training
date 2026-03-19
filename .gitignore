@@ -1,3 +1,34 @@
-node_modules
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Environment
+.env
 .env.local
 .env*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+temp_build_log*.txt
+dev_output.log
+dev_error_trace.log
+
+# Testing
+coverage/
+
+# Misc
+.DS_Store
+*.pem
+tsconfig.tsbuildinfo
+
+# AI & Gemini CLI generated files
+.gemini/
+antigravity/
+.context/
+.gemini-session/

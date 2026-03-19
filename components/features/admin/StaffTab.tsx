@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { ShieldCheck, Plus, Check, X, Eye, EyeOff, Pencil, Trash2 } from 'lucide-react';
 import type { StaffAccount } from '@/types';
 
@@ -14,6 +15,7 @@ interface EditState {
 }
 
 export default function StaffTab() {
+  const t = useTranslations('admin');
   const [staff,    setStaff]    = useState<StaffAccount[]>([]);
   const [loading,  setLoading]  = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -90,7 +92,7 @@ export default function StaffTab() {
   }
 
   async function deleteStaff(id: string, name: string) {
-    if (!confirm(`Delete account "${name}"? This cannot be undone.`)) return;
+    if (!confirm(t('staff.deleteConfirm', { name }))) return;
     await fetch(`/api/admin/staff/${id}`, { method: 'DELETE' });
     await load();
   }
@@ -107,15 +109,15 @@ export default function StaffTab() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-            <ShieldCheck size={20} className="text-blue-600" /> Staff Accounts
+            <ShieldCheck size={20} className="text-blue-600" /> {t('staff.title')}
           </h2>
-          <p className="text-sm text-muted-foreground mt-0.5">Manage Manager, Trainer, and Evaluator credentials</p>
+          <p className="text-sm text-muted-foreground mt-0.5">{t('staff.desc')}</p>
         </div>
         <button
           onClick={() => setShowForm(f => !f)}
           className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
         >
-          <Plus size={16} /> Add Account
+          <Plus size={16} /> {t('staff.addAccount')}
         </button>
       </div>
 
@@ -129,31 +131,31 @@ export default function StaffTab() {
             exit={{ opacity: 0, height: 0 }}
             className="bg-primary/5 border border-primary/20 rounded-2xl p-5 space-y-4"
           >
-            <p className="font-semibold text-sm text-foreground">New Staff Account</p>
+            <p className="font-semibold text-sm text-foreground">{t('staff.newAccount')}</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-muted-foreground font-medium block mb-1">Display Name</label>
+                <label className="text-xs text-muted-foreground font-medium block mb-1">{t('staff.displayName')}</label>
                 <input value={newUser.name} onChange={e => setNewUser(v => ({ ...v, name: e.target.value }))}
                   placeholder="e.g. Sarah Manager" required
                   className="w-full bg-secondary/40 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground font-medium block mb-1">Role</label>
+                <label className="text-xs text-muted-foreground font-medium block mb-1">{t('staff.role')}</label>
                 <select value={newUser.role} onChange={e => setNewUser(v => ({ ...v, role: e.target.value as 'manager' | 'evaluator' | 'trainer' }))}
                   className="w-full bg-secondary/40 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20">
-                  <option value="manager">Manager</option>
-                  <option value="evaluator">Evaluator</option>
-                  <option value="trainer">Trainer</option>
+                  <option value="manager">{t('staff.roles.manager')}</option>
+                  <option value="evaluator">{t('staff.roles.evaluator')}</option>
+                  <option value="trainer">{t('staff.roles.trainer')}</option>
                 </select>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground font-medium block mb-1">Username</label>
+                <label className="text-xs text-muted-foreground font-medium block mb-1">{t('staff.username')}</label>
                 <input value={newUser.username} onChange={e => setNewUser(v => ({ ...v, username: e.target.value }))}
                   placeholder="login username" required
                   className="w-full bg-secondary/40 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground font-medium block mb-1">Password</label>
+                <label className="text-xs text-muted-foreground font-medium block mb-1">{t('staff.password')}</label>
                 <input value={newUser.password} onChange={e => setNewUser(v => ({ ...v, password: e.target.value }))}
                   placeholder="password" required type="text"
                   className="w-full bg-secondary/40 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20" />
@@ -162,10 +164,10 @@ export default function StaffTab() {
             <div className="flex gap-2">
               <button type="submit" disabled={saving}
                 className="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50">
-                {saving ? 'Creating...' : 'Create Account'}
+                {saving ? t('staff.creating') : t('staff.createAccount')}
               </button>
               <button type="button" onClick={() => setShowForm(false)}
-                className="text-muted-foreground hover:text-foreground px-4 py-2.5 text-sm">Cancel</button>
+                className="text-muted-foreground hover:text-foreground px-4 py-2.5 text-sm">{t('staff.cancel')}</button>
             </div>
           </motion.form>
         )}
@@ -180,21 +182,21 @@ export default function StaffTab() {
         {loading ? (
           <div className="text-center py-16 flex flex-col items-center gap-3">
             <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-            <span className="text-sm text-muted-foreground animate-pulse">Loading staff...</span>
+            <span className="text-sm text-muted-foreground animate-pulse">{t('staff.loading')}</span>
           </div>
         ) : staff.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground text-sm">
-            No staff accounts yet. Click &quot;Add Account&quot; to create one.
+            {t('staff.noStaff')}
           </div>
         ) : (
           <table className="w-full text-sm border-separate border-spacing-y-2 px-2">
             <thead>
               <tr className="text-muted-foreground">
-                <th className="text-left px-5 py-3 font-bold uppercase tracking-wider text-[10px]">Name</th>
-                <th className="text-left px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Username</th>
-                <th className="text-left px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Password</th>
-                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Role</th>
-                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Status</th>
+                <th className="text-left px-5 py-3 font-bold uppercase tracking-wider text-[10px]">{t('staff.table.name')}</th>
+                <th className="text-left px-4 py-3 font-bold uppercase tracking-wider text-[10px]">{t('staff.table.username')}</th>
+                <th className="text-left px-4 py-3 font-bold uppercase tracking-wider text-[10px]">{t('staff.table.password')}</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">{t('staff.table.role')}</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">{t('staff.table.status')}</th>
                 <th className="px-4 py-3 text-right" />
               </tr>
             </thead>
@@ -219,14 +221,14 @@ export default function StaffTab() {
                       <td className="px-4 py-3 text-center border-y border-border/50 group-hover:border-y-primary/20">
                         <select value={editing.role} onChange={e => setEditing(v => v && ({ ...v, role: e.target.value as 'manager' | 'evaluator' | 'trainer' }))}
                           className="bg-secondary/40 border border-border rounded-lg px-2 py-1.5 text-xs focus:outline-none">
-                          <option value="manager">Manager</option>
-                          <option value="evaluator">Evaluator</option>
-                          <option value="trainer">Trainer</option>
+                          <option value="manager">{t('staff.roles.manager')}</option>
+                          <option value="evaluator">{t('staff.roles.evaluator')}</option>
+                          <option value="trainer">{t('staff.roles.trainer')}</option>
                         </select>
                       </td>
                       <td className="px-4 py-3 text-center border-y border-border/50 group-hover:border-y-primary/20">
                         <span className={`px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold ${s.active ? 'bg-blue-500/15 text-blue-400' : 'bg-red-500/15 text-red-400'}`}>
-                          {s.active ? 'Active' : 'Inactive'}
+                          {s.active ? t('staff.active') : t('staff.inactive')}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right rounded-r-2xl border-y border-r border-border/50 group-hover:border-primary/20">
@@ -260,7 +262,7 @@ export default function StaffTab() {
                       </td>
                       <td className="px-4 py-4 text-center border-y border-border/50 group-hover:border-y-primary/20">
                         <span className={`px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold capitalize ${ROLE_COLORS[s.role]}`}>
-                          {s.role}
+                          {t(`staff.roles.${s.role}`)}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-center border-y border-border/50 group-hover:border-y-primary/20">
@@ -272,7 +274,7 @@ export default function StaffTab() {
                               : 'bg-red-500/15 text-red-400 hover:bg-blue-500/15 hover:text-blue-400'
                           }`}
                         >
-                          {s.active ? 'Active' : 'Inactive'}
+                          {s.active ? t('staff.active') : t('staff.inactive')}
                         </button>
                       </td>
                       <td className="px-4 py-4 text-right rounded-r-2xl border-y border-r border-border/50 group-hover:border-primary/20">
@@ -299,12 +301,12 @@ export default function StaffTab() {
       </div>
 
       <div className="bg-blue-500/10 border border-blue-500/25 rounded-2xl p-5 text-sm text-blue-400">
-        <p className="font-semibold mb-1 flex items-center gap-2"><ShieldCheck size={16} /> About Staff Accounts</p>
+        <p className="font-semibold mb-1 flex items-center gap-2"><ShieldCheck size={16} /> {t('staff.aboutTitle')}</p>
         <ul className="space-y-1 text-blue-400/80 list-disc list-inside">
-          <li>Manager — full admin visibility, cannot delete records</li>
-          <li>Trainer — manages training periods, daily records, and discipline</li>
-          <li>Evaluator — accesses the Evaluator panel to score agents</li>
-          <li>Admin credentials are managed via environment variables</li>
+          <li>{t('staff.aboutManager')}</li>
+          <li>{t('staff.aboutTrainer')}</li>
+          <li>{t('staff.aboutEvaluator')}</li>
+          <li>{t('staff.aboutAdmin')}</li>
         </ul>
       </div>
     </div>

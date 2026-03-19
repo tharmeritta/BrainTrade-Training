@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import {
   LayoutDashboard, Users, FileSpreadsheet, LogOut,
-  ShieldCheck, ClipboardCheck, GraduationCap, Zap
+  ShieldCheck, ClipboardCheck, GraduationCap, Zap, Edit3
 } from 'lucide-react';
 
 import TrainerPanel from '@/components/features/TrainerPanel';
@@ -16,9 +17,10 @@ import AgentsTab from './admin/AgentsTab';
 import ReportsTab from './admin/ReportsTab';
 import StaffTab from './admin/StaffTab';
 import EvaluationsTab from './admin/EvaluationsTab';
+import AdjustmentsTab from './admin/AdjustmentsTab';
 import ChangePasswordModal from './admin/ChangePasswordModal';
 
-type Tab = 'overview' | 'agents' | 'reports' | 'staff' | 'evaluations' | 'training';
+type Tab = 'overview' | 'agents' | 'reports' | 'staff' | 'evaluations' | 'training' | 'adjustments';
 
 function logout() {
   fetch('/api/auth/session', { method: 'DELETE' });
@@ -26,6 +28,7 @@ function logout() {
 }
 
 export default function AdminDashboard({ role, uid, name, passwordChanged }: { role: 'admin' | 'manager' | 'trainer'; uid: string; name: string; passwordChanged: boolean }) {
+  const t = useTranslations('admin');
   const [tab, setTab] = useState<Tab>(role === 'trainer' ? 'training' : 'overview');
   const [isPwModalOpen, setIsPwModalOpen] = useState(!passwordChanged);
 
@@ -33,13 +36,14 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
     if (!passwordChanged) setIsPwModalOpen(true);
   }, [passwordChanged]);
 
-  const TABS: { id: Tab; label: string; icon: React.ElementType; adminOnly?: boolean; hideForTrainer?: boolean }[] = [
-    { id: 'overview',    label: 'Overview',       icon: LayoutDashboard,  hideForTrainer: false },
-    { id: 'agents',      label: 'Agents',         icon: Users },
-    { id: 'training',    label: 'Training',       icon: GraduationCap },
-    { id: 'evaluations', label: 'Evaluations',    icon: ClipboardCheck,   hideForTrainer: true },
-    { id: 'reports',     label: 'Reports',        icon: FileSpreadsheet,  hideForTrainer: true },
-    { id: 'staff',       label: 'Staff Accounts', icon: ShieldCheck,      adminOnly: true },
+  const TABS: { id: Tab; labelKey: string; icon: React.ElementType; adminOnly?: boolean; hideForTrainer?: boolean }[] = [
+    { id: 'overview',    labelKey: 'overview',       icon: LayoutDashboard,  hideForTrainer: false },
+    { id: 'agents',      labelKey: 'agents',         icon: Users },
+    { id: 'training',    labelKey: 'training',       icon: GraduationCap },
+    { id: 'evaluations', labelKey: 'evaluations',    icon: ClipboardCheck,   hideForTrainer: true },
+    { id: 'reports',     labelKey: 'reports',        icon: FileSpreadsheet,  hideForTrainer: true },
+    { id: 'staff',       labelKey: 'staff',          icon: ShieldCheck,      adminOnly: true },
+    { id: 'adjustments', labelKey: 'adjustments',    icon: Edit3,            adminOnly: true },
   ];
 
   const visibleTabs = TABS.filter(t => {
@@ -64,9 +68,9 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
         {/* Top header */}
         <div className="bg-background/60 backdrop-blur-2xl border-b border-white/5 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
           <div>
-            <h1 className="text-xl font-black text-foreground tracking-tight">BrainTrade Training Platform</h1>
+            <h1 className="text-xl font-black text-foreground tracking-tight">{t('title')}</h1>
             <p className="text-xs text-muted-foreground">
-              {role === 'admin' ? 'Admin' : role === 'trainer' ? 'Trainer' : 'Manager'} Control Panel · {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              {t('controlPanel', { role: t(`roles.${role}`) })} · {new Date().toLocaleDateString(t('tabs.overview') === 'ภาพรวม' ? 'th-TH' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -79,13 +83,13 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
                 role === 'trainer' ? 'bg-amber-500/15 text-amber-400' :
                 'bg-blue-500/15 text-blue-400'
               }`}>
-                {role}
+                {t(`roles.${role}`)}
               </span>
               <span className="text-xs font-bold text-foreground pr-1">{name}</span>
               <button 
                 onClick={() => setIsPwModalOpen(true)}
                 className="p-1.5 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
-                title="Change Password"
+                title={t('changePw')}
               >
                 <Zap size={14} />
               </button>
@@ -94,7 +98,7 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
             <button onClick={logout}
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-destructive transition-colors border border-border px-3 py-2 rounded-xl hover:border-destructive/30"
             >
-              <LogOut size={16} /> Sign out
+              <LogOut size={16} /> {t('signOut')}
             </button>
           </div>
         </div>
@@ -102,20 +106,20 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
         {/* Tab bar */}
         <div className="px-6 mt-6 w-full max-w-7xl mx-auto">
           <div className="inline-flex max-w-full overflow-x-auto gap-1 p-1.5 bg-secondary/50 backdrop-blur-md rounded-2xl border border-border/50 shadow-sm scrollbar-hide">
-            {visibleTabs.map(t => {
-              const Icon = t.icon;
-              const active = tab === t.id;
+            {visibleTabs.map(t_item => {
+              const Icon = t_item.icon;
+              const active = tab === t_item.id;
               return (
                 <button
-                  key={t.id}
-                  onClick={() => setTab(t.id)}
+                  key={t_item.id}
+                  onClick={() => setTab(t_item.id)}
                   className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all whitespace-nowrap ${
                     active
                       ? 'bg-background shadow-sm text-foreground'
                       : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
                   }`}
                 >
-                  <Icon size={16} className={active ? "text-primary" : ""} /> {t.label}
+                  <Icon size={16} className={active ? "text-primary" : ""} /> {t(`tabs.${t_item.labelKey}`)}
                 </button>
               );
             })}
@@ -138,6 +142,7 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
               {tab === 'evaluations' && <EvaluationsTab />}
               {tab === 'reports'     && <ReportsTab />}
               {tab === 'staff'       && role === 'admin' && <StaffTab />}
+              {tab === 'adjustments' && role === 'admin' && <AdjustmentsTab />}
             </motion.div>
           </AnimatePresence>
         </div>

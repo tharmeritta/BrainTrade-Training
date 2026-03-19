@@ -28,15 +28,15 @@ export function scoreBg(score: number | undefined) {
   return 'bg-red-400';
 }
 
-export function timeAgo(iso: string | null) {
-  if (!iso) return 'Never';
+export function timeAgo(iso: string | null, t?: (key: string, params?: any) => string) {
+  if (!iso) return t ? t('time.never') : 'Never';
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60000);
-  if (m < 1) return 'Just now';
-  if (m < 60) return `${m}m ago`;
+  if (m < 1) return t ? t('time.justNow') : 'Just now';
+  if (m < 60) return t ? t('time.m', { m }) : `${m}m ago`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
+  if (h < 24) return t ? t('time.h', { h }) : `${h}h ago`;
   const d = Math.floor(h / 24);
-  if (d === 1) return 'Yesterday';
-  return `${d}d ago`;
+  if (d === 1) return t ? t('time.yesterday') : 'Yesterday';
+  return t ? t('time.d', { d }) : `${d}d ago`;
 }

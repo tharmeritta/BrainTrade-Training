@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { ClipboardCheck, Users, Star, ShieldCheck, X } from 'lucide-react';
 import { KpiCard } from './AdminComponents';
 import { scoreColor, timeAgo } from './AdminHelpers';
@@ -18,6 +19,7 @@ interface AdminEval {
 }
 
 export default function EvaluationsTab() {
+  const t = useTranslations('admin');
   const [evals,   setEvals]   = useState<AdminEval[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterEv, setFilterEv] = useState('');
@@ -36,7 +38,7 @@ export default function EvaluationsTab() {
         <div className="w-10 h-10 border-4 border-primary/20 rounded-full" />
         <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin absolute inset-0" />
       </div>
-      <p className="text-sm font-medium text-muted-foreground animate-pulse">Loading evaluations...</p>
+      <p className="text-sm font-medium text-muted-foreground animate-pulse">{t('evaluations.loading')}</p>
     </div>
   );
 
@@ -68,16 +70,16 @@ export default function EvaluationsTab() {
     <div className="space-y-6">
       {/* KPIs */}
       <div className="grid grid-cols-3 gap-4">
-        <KpiCard label="Total Evaluations" value={totalEvals}   sub="by all evaluators"       icon={ClipboardCheck} themeColor="blue" />
-        <KpiCard label="Active Evaluators" value={evMap.size}   sub="have submitted scores"   icon={Users}          themeColor="blue" />
-        <KpiCard label="Avg Score Given"   value={globalAvg ? `${globalAvg}/100` : '—'} sub="across all evaluations" icon={Star} themeColor="amber" />
+        <KpiCard label={t('evaluations.totalEvals')} value={totalEvals}   sub={t('evaluations.byAll')}       icon={ClipboardCheck} themeColor="blue" />
+        <KpiCard label={t('evaluations.activeEvaluators')} value={evMap.size}   sub={t('evaluations.submittedScores')}   icon={Users}          themeColor="blue" />
+        <KpiCard label={t('evaluations.avgScoreGiven')}   value={globalAvg ? `${globalAvg}/100` : '—'} sub={t('evaluations.acrossAll')} icon={Star} themeColor="amber" />
       </div>
 
       {/* Evaluator performance cards */}
       {evaluatorSummaries.length > 0 && (
         <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
           <h3 className="font-bold text-base mb-4 flex items-center gap-2 text-foreground">
-            <ShieldCheck size={17} className="text-primary" /> Evaluator Performance
+            <ShieldCheck size={17} className="text-primary" /> {t('evaluations.evaluatorPerf')}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {evaluatorSummaries.map(ev => (
@@ -103,7 +105,7 @@ export default function EvaluationsTab() {
                 </div>
                 <div className="text-sm font-semibold text-foreground truncate">{ev.name}</div>
                 <div className="text-xs text-muted-foreground mt-0.5">
-                  {ev.count} evaluation{ev.count !== 1 ? 's' : ''} · {timeAgo(ev.lastActive)}
+                  {t('evaluations.evalCount', { count: ev.count })} · {timeAgo(ev.lastActive, t)}
                 </div>
               </button>
             ))}
@@ -113,7 +115,7 @@ export default function EvaluationsTab() {
               onClick={() => setFilterEv('')}
               className="mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
             >
-              <X size={11} /> Clear filter
+              <X size={11} /> {t('evaluations.clearFilter')}
             </button>
           )}
         </div>
@@ -124,7 +126,7 @@ export default function EvaluationsTab() {
         <div className="px-6 py-4 border-b border-border flex items-center justify-between">
           <h3 className="font-bold text-base text-foreground flex items-center gap-2">
             <ClipboardCheck size={17} className="text-primary" />
-            {filterEv ? `Evaluations by ${evMap.get(filterEv)?.name ?? ''}` : 'All Evaluations'}
+            {filterEv ? t('evaluations.byEvaluator', { name: evMap.get(filterEv)?.name ?? '' }) : t('evaluations.allEvals')}
             <span className="text-xs font-normal text-muted-foreground ml-1">({filtered.length})</span>
           </h3>
         </div>
@@ -132,8 +134,8 @@ export default function EvaluationsTab() {
         {filtered.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             <ClipboardCheck size={32} className="mx-auto opacity-20 mb-3" />
-            <p className="text-sm">No evaluations yet</p>
-            <p className="text-xs mt-1">Evaluators can submit scores from the Evaluator Panel</p>
+            <p className="text-sm">{t('evaluations.noEvals')}</p>
+            <p className="text-xs mt-1">{t('evaluations.noEvalsDesc')}</p>
           </div>
         ) : (
           <div className="p-4 space-y-2">
@@ -150,17 +152,17 @@ export default function EvaluationsTab() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-semibold text-foreground">{ev.agentName}</span>
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mx-1">evaluated by</span>
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mx-1">{t('evaluations.evaluatedBy')}</span>
                       <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-secondary text-foreground">{ev.evaluatorName}</span>
                       {redFlagCount > 0 && (
                         <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-red-500/10 text-red-500 border border-red-500/20 uppercase tracking-wider">
-                          {redFlagCount} 🚩 red flag{redFlagCount > 1 ? 's' : ''}
+                          {t('evaluations.redFlags', { count: redFlagCount })}
                         </span>
                       )}
                     </div>
                     {ev.comments && <p className="text-xs text-muted-foreground truncate mt-1.5">{ev.comments}</p>}
                   </div>
-                  <div className="text-[10px] font-medium text-muted-foreground shrink-0 px-3 py-1.5 bg-secondary/30 rounded-lg">{timeAgo(ev.evaluatedAt)}</div>
+                  <div className="text-[10px] font-medium text-muted-foreground shrink-0 px-3 py-1.5 bg-secondary/30 rounded-lg">{timeAgo(ev.evaluatedAt, t)}</div>
                 </div>
               );
             })}

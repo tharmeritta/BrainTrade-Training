@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAI } from '@/lib/openai';
 import { fsAdd } from '@/lib/firestore-db';
+import { getAdminDb } from '@/lib/firebase-admin';
 import type { PitchMessage } from '@/types';
 
-const SYSTEM_PROMPT = `คุณคือ "ครูฝึกเทเลเซลล์มืออาชีพ" ที่มีประสบการณ์ฝึกพนักงานขายทางโทรศัพท์มากกว่า 15 ปี โดยเชี่ยวชาญพฤติกรรมลูกค้าคนไทย
+const FALLBACK_SYSTEM_PROMPT = `คุณคือ "ครูฝึกเทเลเซลล์มืออาชีพ" ที่มีประสบการณ์ฝึกพนักงานขายทางโทรศัพท์มากกว่า 15 ปี โดยเชี่ยวชาญพฤติกรรมลูกค้าคนไทย
 
 หน้าที่ของคุณคือจำลองสถานการณ์ฝึกอบรม (Roleplay Simulation) เพื่อทดสอบและพัฒนาทักษะการรับมือข้อโต้แย้งของลูกค้าไทยสำหรับพนักงานเทเลเซลล์
 
@@ -86,6 +87,19 @@ Level 4 – ทดสอบภาวะกดดัน
 จากนั้นจึงแจ้งว่า
 ผ่าน / ไม่ผ่าน`;
 
+async function loadSystemPrompt(): Promise<string> {
+  try {
+    const db = getAdminDb();
+    const doc = await db.collection('module_config').doc('ai_eval').get();
+    if (doc.exists && doc.data()?.systemPrompt) {
+      return doc.data()?.systemPrompt;
+    }
+  } catch (err) {
+    console.error('Firestore AI eval prompt load error:', err);
+  }
+  return FALLBACK_SYSTEM_PROMPT;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { level, messages, agentId, agentName } = await req.json();
@@ -95,6 +109,7 @@ export async function POST(req: NextRequest) {
     }
 
     const openai = getOpenAI();
+    const systemPrompt = await loadSystemPrompt();
 
     const levelContext = `\n\nในการฝึกครั้งนี้ให้เริ่มต้นที่ Level ${level} ทันที`;
 
@@ -104,7 +119,7 @@ export async function POST(req: NextRequest) {
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT + levelContext },
+        { role: 'system', content: systemPrompt + levelContext },
         ...windowedMessages.map((m: PitchMessage) => ({
           role: m.role as 'user' | 'assistant',
           content: m.content,

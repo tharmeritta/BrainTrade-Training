@@ -4,6 +4,7 @@ import React, { useMemo, memo, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import {
   CheckCircle2, XCircle, Lock, GraduationCap, ClipboardList, Mic, PlayCircle,
   Trophy, RotateCcw, ArrowRight, LogOut, Zap, type LucideIcon,
@@ -16,10 +17,10 @@ import { EASE, TRANSITION, FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/li
 // ─── Constants & Types ────────────────────────────────────────────────────────
 
 const STEPS = [
-  { id: 'learn'   as const, step: 1, label: 'เรียนรู้',  sublabel: 'Study',   desc: 'ผลิตภัณฑ์ · กระบวนการขาย', Icon: GraduationCap, color: '#818CF8', glow: 'rgba(129,140,248,0.18)' },
-  { id: 'quiz'    as const, step: 2, label: 'Quiz',      sublabel: 'Test',    desc: 'ทดสอบความเข้าใจ 4 หัวข้อ',  Icon: ClipboardList, color: '#60A5FA', glow: 'rgba(96,165,250,0.15)'  },
-  { id: 'ai-eval' as const, step: 3, label: 'AI Eval',   sublabel: 'Analyse', desc: 'วิเคราะห์สคริปต์ด้วย AI',   Icon: Mic,           color: '#F472B6', glow: 'rgba(244,114,182,0.15)' },
-  { id: 'pitch'   as const, step: 4, label: 'Pitch',     sublabel: 'Sell',    desc: 'จำลองการขายกับ AI จริง',    Icon: PlayCircle,    color: '#FB923C', glow: 'rgba(251,146,60,0.15)'  },
+  { id: 'learn'   as const, step: 1, labelKey: 'learn',  sublabelKey: 'study',   descKey: 'productProcess', Icon: GraduationCap, color: '#818CF8', glow: 'rgba(129,140,248,0.18)' },
+  { id: 'quiz'    as const, step: 2, labelKey: 'quiz',   sublabelKey: 'test',    descKey: 'quizDesc',  Icon: ClipboardList, color: '#60A5FA', glow: 'rgba(96,165,250,0.15)'  },
+  { id: 'ai-eval' as const, step: 3, labelKey: 'aiEval', sublabelKey: 'analyse', descKey: 'aiEvalDesc',   Icon: Mic,           color: '#F472B6', glow: 'rgba(244,114,182,0.15)' },
+  { id: 'pitch'   as const, step: 4, labelKey: 'pitch',  sublabelKey: 'sell',    descKey: 'pitchDesc',    Icon: PlayCircle,    color: '#FB923C', glow: 'rgba(251,146,60,0.15)'  },
 ] as const;
 
 type StepId = typeof STEPS[number]['id'];
@@ -77,16 +78,15 @@ function scoreColor(n: number) {
 }
 
 function deriveSteps(stats: AgentStats | null): Record<StepId, StepState> {
-  const anyQ = !!(stats?.quiz?.foundation?.passed || stats?.quiz?.product?.passed || stats?.quiz?.process?.passed || stats?.quiz?.payment?.passed);
-  const allQ = !!(stats?.quiz?.foundation?.passed && stats?.quiz?.product?.passed && stats?.quiz?.process?.passed && stats?.quiz?.payment?.passed);
+  const anyQ = !!(stats?.quiz?.foundation?.passed || stats?.quiz?.product?.passed || stats?.quiz?.process?.passed);
+  const allQ = !!(stats?.quiz?.foundation?.passed && stats?.quiz?.product?.passed && stats?.quiz?.process?.passed);
   const aiOk = (stats?.aiEval?.count ?? 0) > 0;
   const piOk = (stats?.pitch?.sessionCount ?? 0) > 0;
   
   const qs = [
     stats?.quiz?.foundation?.bestScore,
     stats?.quiz?.product?.bestScore, 
-    stats?.quiz?.process?.bestScore, 
-    stats?.quiz?.payment?.bestScore
+    stats?.quiz?.process?.bestScore
   ].filter((s): s is number => s !== undefined);
   
   const avgQ = qs.length ? Math.round(qs.reduce((a, b) => a + b, 0) / qs.length) : undefined;
@@ -153,7 +153,9 @@ SectionDivider.displayName = 'SectionDivider';
  * ModuleCard: Displays an individual training module with its status and progress.
  */
 const ModuleCard = memo(({ step, state, index, href }: ModuleCardProps) => {
-  const { Icon, color, glow, label, sublabel, desc, step: stepNum } = step;
+  const t = useTranslations('trainingHub');
+  const navT = useTranslations('nav');
+  const { Icon, color, glow, labelKey, sublabelKey, descKey, step: stepNum } = step;
   const { locked, passed, score } = state;
   const isNext    = !locked && !passed && score === undefined;
   const hasFailed = !locked && !passed && score !== undefined && score < 70;
@@ -198,7 +200,7 @@ const ModuleCard = memo(({ step, state, index, href }: ModuleCardProps) => {
         </div>
         <span className="text-[8px] font-semibold uppercase tracking-widest"
           style={{ color: locked ? 'var(--hub-dim)' : color + '88' }}>
-          {sublabel}
+          {t(sublabelKey)}
         </span>
       </div>
 
@@ -206,29 +208,29 @@ const ModuleCard = memo(({ step, state, index, href }: ModuleCardProps) => {
         <div className="flex items-center gap-2 mb-0.5">
           <span className="font-bold text-sm leading-tight text-[color:var(--hub-text)]"
             style={{ color: locked ? 'var(--hub-dim)' : undefined }}>
-            {label}
+            {navT(labelKey)}
           </span>
           {passed && (
             <span className="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wide border"
               style={{ background: `${color}18`, color, borderColor: color + '35' }}>
-              ✓ ผ่าน
+              ✓ {t('passed')}
             </span>
           )}
           {hasFailed && (
             <span className="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wide flex items-center gap-1 border border-red-400/30"
               style={{ background: 'rgba(248,113,113,0.12)', color: '#F87171' }}>
-              ✕ ล้มเหลว
+              ✕ {t('failed')}
             </span>
           )}
           {isNext && (
             <span className="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wide flex items-center gap-1"
               style={{ background: `${color}12`, color: color + 'BB' }}>
-              <Zap size={8} /> ถัดไป
+              <Zap size={8} /> {t('next')}
             </span>
           )}
         </div>
         <p className="text-xs mb-2 text-[color:var(--hub-muted)]" style={{ color: locked ? 'var(--hub-dim)' : undefined }}>
-          {desc}
+          {t(descKey)}
         </p>
         {score !== undefined && !locked && (
           <div className="flex items-center gap-2 mt-1">
@@ -252,7 +254,7 @@ const ModuleCard = memo(({ step, state, index, href }: ModuleCardProps) => {
       <div className="shrink-0 flex items-center pr-4 pl-2">
         {locked ? (
           <div className="flex items-center gap-1.5 text-[10px] px-3 py-2 rounded-xl bg-[color:var(--hub-locked-bg)] border border-[color:var(--hub-dim-border)] text-[color:var(--hub-dim)]">
-            <Lock size={10} /> ล็อค
+            <Lock size={10} /> {t('locked')}
           </div>
         ) : (
           <Link href={href}
@@ -262,8 +264,8 @@ const ModuleCard = memo(({ step, state, index, href }: ModuleCardProps) => {
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = `${color}18`; }}
           >
             {passed
-              ? <><RotateCcw size={12} className="group-hover:rotate-180 transition-transform duration-500" />ทำซ้ำ</>
-              : <>เริ่มเลย<ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" /></>
+              ? <><RotateCcw size={12} className="group-hover:rotate-180 transition-transform duration-500" />{t('retake')}</>
+              : <>{t('startNow')}<ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" /></>
             }
           </Link>
         )}
@@ -290,6 +292,9 @@ const ProfileSidebar = memo(({
   derived,
   onLogout
 }: ProfileSidebarProps) => {
+  const t = useTranslations('trainingHub');
+  const navT = useTranslations('nav');
+
   return (
     <motion.div
       variants={FADE_IN}
@@ -330,14 +335,14 @@ const ProfileSidebar = memo(({
           }}>
           {allDone ? (
             <><CheckCircle2 size={10} style={{ color: '#FBBF24' }} />
-              <span className="text-[10px] font-black" style={{ color: '#FBBF24' }}>ผ่านครบทุกโมดูลแล้ว</span></>
+              <span className="text-[10px] font-black" style={{ color: '#FBBF24' }}>{t('allPassed')}</span></>
           ) : currentStep ? (
             <><currentStep.Icon size={10} style={{ color: currentStep.color }} />
-              <span className="text-[10px] font-medium text-[color:var(--hub-dim)]">กำลัง</span>
-              <span className="text-[10px] font-black" style={{ color: currentStep.color }}>{currentStep.label}</span>
-              <span className="text-[9px] font-medium text-[color:var(--hub-dim)]">· ขั้นที่ {currentStep.step}</span></>
+              <span className="text-[10px] font-medium text-[color:var(--hub-dim)]">{t('training')}</span>
+              <span className="text-[10px] font-black" style={{ color: currentStep.color }}>{navT(currentStep.labelKey)}</span>
+              <span className="text-[9px] font-medium text-[color:var(--hub-dim)]">· {t('step', { step: currentStep.step })}</span></>
           ) : (
-            <span className="text-[10px] font-medium text-[color:var(--hub-dim)]">เริ่มต้นการฝึก</span>
+            <span className="text-[10px] font-medium text-[color:var(--hub-dim)]">{t('startTraining')}</span>
           )}
         </div>
 
@@ -349,12 +354,12 @@ const ProfileSidebar = memo(({
         </span>
       </div>
 
-      <SectionDivider label="ความคืบหน้า" />
+      <SectionDivider label={t('progress')} />
 
       <div className="w-full max-w-[260px]">
         <div className="flex justify-between items-center mb-2">
           <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[color:var(--hub-muted)]">
-            โมดูลที่ผ่าน
+            {t('passedModules')}
           </span>
           <span className="text-[11px] font-black text-[color:var(--hub-text)]">{pct}%</span>
         </div>
@@ -385,7 +390,7 @@ const ProfileSidebar = memo(({
                 </div>
                 <span className="text-[8px] font-semibold text-center leading-tight"
                   style={{ color: st.locked ? 'var(--hub-dim)' : st.passed ? s.color + 'CC' : 'var(--hub-muted)' }}>
-                  {s.label}
+                  {navT(s.labelKey)}
                 </span>
               </div>
             );
@@ -398,7 +403,7 @@ const ProfileSidebar = memo(({
             transition={TRANSITION.spring}
             style={{ background: 'rgba(251,191,36,0.08)', borderColor: 'rgba(251,191,36,0.22)' }}>
             <Trophy size={14} style={{ color: '#FBBF24' }} />
-            <span className="text-[11px] font-black" style={{ color: '#FBBF24' }}>ผ่านหมดแล้ว! 🎉</span>
+            <span className="text-[11px] font-black" style={{ color: '#FBBF24' }}>{t('allFinished')}</span>
           </motion.div>
         )}
       </div>
@@ -412,7 +417,7 @@ const ProfileSidebar = memo(({
             dark:hover:border-red-500/30 dark:hover:bg-red-500/10"
         >
           <LogOut size={12} />
-          <span>ออกจากระบบ</span>
+          <span>{navT('logout')}</span>
         </button>
       </div>
     </motion.div>
@@ -424,31 +429,34 @@ ProfileSidebar.displayName = 'ProfileSidebar';
 /**
  * ModuleHeader: The header section for the training modules list.
  */
-const ModuleHeader = memo(({ doneCount }: { doneCount: number }) => (
-  <motion.div
-    variants={FADE_IN}
-    initial="initial"
-    animate="animate"
-    className="shrink-0 px-5 py-4 lg:px-6 border-b bg-[color:var(--hub-panel)]"
-    style={{ borderColor: 'var(--hub-border)' }}
-  >
-    <div className="flex items-center gap-3">
-      <div>
-        <p className="text-[9px] font-black uppercase tracking-[0.28em] mb-0.5 text-[color:var(--hub-dim)]">
-          Training Modules
-        </p>
-        <h2 className="text-base font-black leading-none text-[color:var(--hub-text)]">
-          โมดูลการฝึกอบรม
-        </h2>
+const ModuleHeader = memo(({ doneCount }: { doneCount: number }) => {
+  const t = useTranslations('trainingHub');
+  return (
+    <motion.div
+      variants={FADE_IN}
+      initial="initial"
+      animate="animate"
+      className="shrink-0 px-5 py-4 lg:px-6 border-b bg-[color:var(--hub-panel)]"
+      style={{ borderColor: 'var(--hub-border)' }}
+    >
+      <div className="flex items-center gap-3">
+        <div>
+          <p className="text-[9px] font-black uppercase tracking-[0.28em] mb-0.5 text-[color:var(--hub-dim)]">
+            Training Modules
+          </p>
+          <h2 className="text-base font-black leading-none text-[color:var(--hub-text)]">
+            {t('trainingModules')}
+          </h2>
+        </div>
+        <div className="flex-1 h-px ml-1 bg-[color:var(--hub-border)]" />
+        <span className="text-xs font-bold px-2.5 py-1 rounded-full shrink-0 border bg-[color:var(--hub-card)] text-[color:var(--hub-muted)]"
+          style={{ borderColor: 'var(--hub-border)' }}>
+          {t('modulesPassed', { done: doneCount, total: STEPS.length })}
+        </span>
       </div>
-      <div className="flex-1 h-px ml-1 bg-[color:var(--hub-border)]" />
-      <span className="text-xs font-bold px-2.5 py-1 rounded-full shrink-0 border bg-[color:var(--hub-card)] text-[color:var(--hub-muted)]"
-        style={{ borderColor: 'var(--hub-border)' }}>
-        {doneCount} / {STEPS.length} ผ่านแล้ว
-      </span>
-    </div>
-  </motion.div>
-));
+    </motion.div>
+  );
+});
 
 ModuleHeader.displayName = 'ModuleHeader';
 

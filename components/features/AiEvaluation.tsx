@@ -12,39 +12,18 @@ import type { PitchMessage } from '@/types';
 import { getAgentSession } from '@/lib/agent-session';
 import { FADE_IN, TRANSITION, EASE } from '@/lib/animations';
 
+import { useTranslations } from 'next-intl';
+
 /* ─── Constants & Types ────────────────────────────────────────────────────── */
 
 const AIEV_SESSION_KEY = 'brainstrade_aiev_active';
 
-const LEVEL_LABELS: Record<number, { th: string; desc: string; examples: string[] }> = {
-  1: {
-    th: 'ปฏิเสธทั่วไป',
-    desc: 'ลูกค้าปฏิเสธแบบพื้นฐาน',
-    examples: ['ไม่สนใจ', 'ยังไม่ว่าง', 'ขอคิดดูก่อน', 'มีใช้อยู่แล้ว'],
-  },
-  2: {
-    th: 'สงสัยสินค้า',
-    desc: 'ลูกค้าตั้งคำถามและไม่แน่ใจ',
-    examples: ['มันดีจริงไหม', 'มีหลักฐานอะไร', 'กลัวไม่คุ้ม', 'กลัวโดนหลอก'],
-  },
-  3: {
-    th: 'ต่อรอง/เปรียบเทียบ',
-    desc: 'ลูกค้าต่อรองราคาและเปรียบเทียบ',
-    examples: ['แพงไป', 'ที่อื่นถูกกว่า', 'ขอส่วนลดได้ไหม', 'ถ้าไม่ลดก็ไม่เอา'],
-  },
-  4: {
-    th: 'ทดสอบภาวะกดดัน',
-    desc: 'ลูกค้าไม่ไว้ใจ ทดสอบและกดดัน',
-    examples: ['ไม่ไว้ใจเทเลเซลล์', 'โดนหลอกมาก่อน', 'ถามรายละเอียดลึก', 'พยายามกดดันเซลล์'],
-  },
-};
-
-const CRITERIA = [
-  'การสร้างความสัมพันธ์',
-  'การรับมือข้อโต้แย้ง',
-  'ความน่าเชื่อถือ',
-  'การปิดการขาย',
-  'ความเป็นธรรมชาติแบบคนไทย',
+const CRITERIA_KEYS = [
+  'rapport',
+  'objectionHandling',
+  'credibility',
+  'closing',
+  'naturalness',
 ];
 
 type EvalLevel = 1 | 2 | 3 | 4;
@@ -87,141 +66,145 @@ interface ChatViewProps {
 /**
  * IntroView: Step 1 - Instructions and overview
  */
-const IntroView = memo(({ onContinue, inProgressLevel }: IntroViewProps) => (
-  <div className="max-w-4xl mx-auto py-8">
-    <motion.div variants={FADE_IN} initial="initial" animate="animate" className="flex items-center gap-3 mb-8">
-      <div className="p-2.5 bg-primary/10 text-primary rounded-2xl shadow-sm">
-        <BookOpen size={24} />
-      </div>
-      <div>
-        <h1 className="text-3xl font-black tracking-tight text-foreground">AI Evaluation</h1>
-        <p className="text-muted-foreground text-sm font-medium mt-0.5 opacity-80">ฝึกทักษะเทเลเซลล์กับ AI ลูกค้าจำลอง</p>
-      </div>
-    </motion.div>
-
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={TRANSITION.base}
-      className="bg-card rounded-[2.5rem] shadow-2xl border border-black/5 dark:border-white/5 overflow-hidden"
-    >
-      <div className="bg-gradient-to-br from-primary to-primary/80 px-10 py-10 text-primary-foreground relative overflow-hidden">
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 blur-3xl rounded-full" />
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-white/20 backdrop-blur-md rounded-xl">
-              <Sparkles size={24} className="text-white" />
-            </div>
-            <h2 className="text-2xl font-black tracking-tight">คำแนะนำก่อนเริ่มการฝึก</h2>
-          </div>
-          <p className="opacity-90 text-base leading-relaxed max-w-2xl font-medium">
-            AI จะสวมบทบาทเป็น <span className="font-black text-white underline underline-offset-4 decoration-white/30">ลูกค้าคนไทย</span> และทดสอบทักษะการขายของคุณผ่านบทสนทนาเสมือนจริง 
-            คุณต้องรับมือกับข้อโต้แย้งอย่างมืออาชีพ
-          </p>
+const IntroView = memo(({ onContinue, inProgressLevel }: IntroViewProps) => {
+  const t = useTranslations('aiEval');
+  
+  return (
+    <div className="max-w-4xl mx-auto py-8">
+      <motion.div variants={FADE_IN} initial="initial" animate="animate" className="flex items-center gap-3 mb-8">
+        <div className="p-2.5 bg-primary/10 text-primary rounded-2xl shadow-sm">
+          <BookOpen size={24} />
         </div>
-      </div>
-
-      <div className="p-10 space-y-10">
         <div>
-          <div className="flex items-center gap-3 mb-6">
-            <span className="w-8 h-8 bg-primary/10 text-primary rounded-xl flex items-center justify-center text-sm font-black shadow-sm">1</span>
-            <h3 className="font-black text-foreground text-xl tracking-tight">รูปแบบการฝึกแบ่งตามระดับ</h3>
+          <h1 className="text-3xl font-black tracking-tight text-foreground">{t('title')}</h1>
+          <p className="text-muted-foreground text-sm font-medium mt-0.5 opacity-80">{t('subtitle')}</p>
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={TRANSITION.base}
+        className="bg-card rounded-[2.5rem] shadow-2xl border border-black/5 dark:border-white/5 overflow-hidden"
+      >
+        <div className="bg-gradient-to-br from-primary to-primary/80 px-10 py-10 text-primary-foreground relative overflow-hidden">
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 blur-3xl rounded-full" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-white/20 backdrop-blur-md rounded-xl">
+                <Sparkles size={24} className="text-white" />
+              </div>
+              <h2 className="text-2xl font-black tracking-tight">{t('introTitle')}</h2>
+            </div>
+            <p 
+              className="opacity-90 text-base leading-relaxed max-w-2xl font-medium"
+              dangerouslySetInnerHTML={{ __html: t.raw('introDesc') }}
+            />
           </div>
+        </div>
+
+        <div className="p-10 space-y-10">
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <span className="w-8 h-8 bg-primary/10 text-primary rounded-xl flex items-center justify-center text-sm font-black shadow-sm">1</span>
+              <h3 className="font-black text-foreground text-xl tracking-tight">{t('levelsTitle')}</h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {([1, 2, 3, 4] as const).map(l => (
+                <div key={l} className="bg-secondary/20 rounded-[24px] p-5 border border-black/5 dark:border-white/5 hover:bg-secondary/30 transition-colors">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[10px] font-black bg-primary text-white px-2.5 py-1 rounded-lg uppercase tracking-wider">Level {l}</span>
+                    <span className="font-extrabold text-base text-foreground">{t(`levels.${l}.th`)}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4 font-medium leading-relaxed">{t(`levels.${l}.desc`)}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[0, 1].map((i) => (
+                      <span key={i} className="text-[11px] bg-white dark:bg-black/20 border border-black/5 dark:border-white/10 text-muted-foreground px-3 py-1 rounded-lg font-bold italic">
+                        &quot;{t(`levels.${l}.examples.${i}`)}&quot;
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <span className="w-8 h-8 bg-primary/10 text-primary rounded-xl flex items-center justify-center text-sm font-black shadow-sm">2</span>
+              <h3 className="font-black text-foreground text-xl tracking-tight">{t('criteriaTitle')}</h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {CRITERIA_KEYS.map((key) => (
+                <span key={key} className="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 text-foreground text-xs font-black px-4 py-2.5 rounded-xl shadow-sm uppercase tracking-wide">
+                  {t(`criteria.${key}`)}
+                </span>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {([1, 2, 3, 4] as const).map(l => (
-              <div key={l} className="bg-secondary/20 rounded-[24px] p-5 border border-black/5 dark:border-white/5 hover:bg-secondary/30 transition-colors">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-[10px] font-black bg-primary text-white px-2.5 py-1 rounded-lg uppercase tracking-wider">Level {l}</span>
-                  <span className="font-extrabold text-base text-foreground">{LEVEL_LABELS[l].th}</span>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4 font-medium leading-relaxed">{LEVEL_LABELS[l].desc}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {LEVEL_LABELS[l].examples.slice(0, 2).map((ex, i) => (
-                    <span key={i} className="text-[11px] bg-white dark:bg-black/20 border border-black/5 dark:border-white/10 text-muted-foreground px-3 py-1 rounded-lg font-bold italic">
-                      &quot;{ex}&quot;
-                    </span>
-                  ))}
-                </div>
+            <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-3xl p-6 shadow-sm">
+              <div className="flex items-center gap-2.5 mb-2.5 text-emerald-700 dark:text-emerald-400">
+                <CheckCircle2 size={20} />
+                <span className="font-black text-base uppercase tracking-tight">{t('passCriteria')}</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <div className="flex items-center gap-3 mb-6">
-            <span className="w-8 h-8 bg-primary/10 text-primary rounded-xl flex items-center justify-center text-sm font-black shadow-sm">2</span>
-            <h3 className="font-black text-foreground text-xl tracking-tight">เกณฑ์การประเมิน</h3>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {CRITERIA.map((c, i) => (
-              <span key={i} className="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 text-foreground text-xs font-black px-4 py-2.5 rounded-xl shadow-sm uppercase tracking-wide">
-                {c}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-3xl p-6 shadow-sm">
-            <div className="flex items-center gap-2.5 mb-2.5 text-emerald-700 dark:text-emerald-400">
-              <CheckCircle2 size={20} />
-              <span className="font-black text-base uppercase tracking-tight">ผ่าน (คะแนน ≥ 7)</span>
+              <p className="text-sm text-emerald-800/70 dark:text-emerald-300/70 leading-relaxed font-medium">
+                {t('passDesc')}
+              </p>
             </div>
-            <p className="text-sm text-emerald-800/70 dark:text-emerald-300/70 leading-relaxed font-medium">
-              คุณทำได้ดีเยี่ยม! ระบบจะปลดล็อก Level ถัดไปให้ทันที
-            </p>
-          </div>
-          <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-3xl p-6 shadow-sm">
-            <div className="flex items-center gap-2.5 mb-2.5 text-rose-700 dark:text-rose-400">
-              <AlertTriangle size={20} />
-              <span className="font-black text-base uppercase tracking-tight">ไม่ผ่าน (คะแนน &lt; 7)</span>
-            </div>
-            <p className="text-sm text-rose-800/70 dark:text-rose-300/70 leading-relaxed font-medium">
-              ไม่ต้องกังวล AI จะช่วยแนะนำจุดที่ควรปรับปรุงเพื่อให้คุณลองใหม่อีกครั้ง
-            </p>
-          </div>
-        </div>
-
-        {inProgressLevel && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-amber-50 dark:bg-amber-950/20 border border-amber-300/50 dark:border-amber-700/50 rounded-[28px] p-6 flex items-center justify-between gap-6 shadow-lg shadow-amber-500/5"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/40 text-amber-600 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
-                <History size={28} />
+            <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-3xl p-6 shadow-sm">
+              <div className="flex items-center gap-2.5 mb-2.5 text-rose-700 dark:text-rose-400">
+                <AlertTriangle size={20} />
+                <span className="font-black text-base uppercase tracking-tight">{t('failCriteria')}</span>
               </div>
-              <div>
-                <p className="font-black text-amber-800 dark:text-amber-300 text-lg leading-tight">
-                  ดำเนินการต่อที่ Level {inProgressLevel}
-                </p>
-                <p className="text-sm text-amber-700/70 dark:text-amber-400/70 mt-1 font-bold">
-                  {LEVEL_LABELS[inProgressLevel].th} — ระบบบันทึกความคืบหน้าไว้แล้ว
-                </p>
-              </div>
+              <p className="text-sm text-rose-800/70 dark:text-rose-300/70 leading-relaxed font-medium">
+                {t('failDesc')}
+              </p>
             </div>
-            <button
-              onClick={() => onContinue(inProgressLevel)}
-              className="shrink-0 flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-6 py-3.5 rounded-2xl font-black text-sm transition-all shadow-md active:scale-95 hover:shadow-lg hover:shadow-amber-500/20"
+          </div>
+
+          {inProgressLevel && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-amber-50 dark:bg-amber-950/20 border border-amber-300/50 dark:border-amber-700/50 rounded-[28px] p-6 flex items-center justify-between gap-6 shadow-lg shadow-amber-500/5"
             >
-              เล่นต่อ
-              <ArrowRight size={18} />
-            </button>
-          </motion.div>
-        )}
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900/40 text-amber-600 rounded-2xl flex items-center justify-center shrink-0 shadow-inner">
+                  <History size={28} />
+                </div>
+                <div>
+                  <p className="font-black text-amber-800 dark:text-amber-300 text-lg leading-tight">
+                    {t('continueAt', { level: inProgressLevel })}
+                  </p>
+                  <p className="text-sm text-amber-700/70 dark:text-amber-400/70 mt-1 font-bold">
+                    {t(`levels.${inProgressLevel}.th`)} — {t('continueSaved')}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => onContinue(inProgressLevel)}
+                className="shrink-0 flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-6 py-3.5 rounded-2xl font-black text-sm transition-all shadow-md active:scale-95 hover:shadow-lg hover:shadow-amber-500/20"
+              >
+                {t('continueBtn')}
+                <ArrowRight size={18} />
+              </button>
+            </motion.div>
+          )}
 
-        <button
-          onClick={() => onContinue()}
-          className="w-full flex items-center justify-center gap-3 bg-foreground text-background hover:bg-primary hover:text-white transition-all duration-500 py-6 rounded-[24px] font-black text-xl shadow-xl active:scale-[0.99] group"
-        >
-          {inProgressLevel ? 'ดูภาพรวม Level ทั้งหมด' : 'เข้าใจแล้ว — เริ่มการฝึก'}
-          <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform" />
-        </button>
-      </div>
-    </motion.div>
-  </div>
-));
+          <button
+            onClick={() => onContinue()}
+            className="w-full flex items-center justify-center gap-3 bg-foreground text-background hover:bg-primary hover:text-white transition-all duration-500 py-6 rounded-[24px] font-black text-xl shadow-xl active:scale-[0.99] group"
+          >
+            {inProgressLevel ? t('overviewBtn') : t('startBtn')}
+            <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+});
 
 IntroView.displayName = 'IntroView';
 
@@ -231,132 +214,134 @@ IntroView.displayName = 'IntroView';
 const SelectionView = memo(({ 
   level, setLevel, onStart, onShowIntro, isLocked, 
   completedLevels, inProgressLevel, agentName, loading 
-}: SelectionViewProps) => (
-  <div className="max-w-4xl mx-auto py-8">
-    <div className="flex items-center justify-between mb-10 flex-wrap gap-4">
-      <div>
-        <h1 className="text-3xl font-black tracking-tight text-foreground uppercase">AI Evaluation</h1>
-        <p className="text-muted-foreground text-sm font-bold mt-1 opacity-70">เลือกระดับเพื่อเริ่มการจำลองสถานการณ์</p>
+}: SelectionViewProps) => {
+  const t = useTranslations('aiEval');
+  
+  return (
+    <div className="max-w-4xl mx-auto py-8">
+      <div className="flex items-center justify-between mb-10 flex-wrap gap-4">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-foreground uppercase">{t('title')}</h1>
+          <p className="text-muted-foreground text-sm font-bold mt-1 opacity-70">{t('selectDesc')}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {agentName && (
+            <div className="text-[10px] font-black text-muted-foreground bg-secondary/50 px-4 py-2 rounded-xl border border-black/5 uppercase tracking-widest shadow-sm">
+              {t('activeAgent')}: <span className="text-primary">{agentName}</span>
+            </div>
+          )}
+          <button
+            onClick={onShowIntro}
+            className="text-xs font-bold text-muted-foreground hover:text-foreground flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-secondary/50 transition-all"
+          >
+            <BookOpen size={16} />
+            {t('instructionsBtn')}
+          </button>
+        </div>
       </div>
-      <div className="flex items-center gap-3">
-        {agentName && (
-          <div className="text-[10px] font-black text-muted-foreground bg-secondary/50 px-4 py-2 rounded-xl border border-black/5 uppercase tracking-widest shadow-sm">
-            Agent: <span className="text-primary">{agentName}</span>
-          </div>
-        )}
-        <button
-          onClick={onShowIntro}
-          className="text-xs font-bold text-muted-foreground hover:text-foreground flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-secondary/50 transition-all"
-        >
-          <BookOpen size={16} />
-          คำแนะนำ
-        </button>
-      </div>
-    </div>
 
-    {inProgressLevel && (
+      {inProgressLevel && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 bg-amber-50 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-700/50 rounded-3xl px-8 py-5 flex items-center justify-between gap-6 shadow-lg shadow-amber-500/5"
+        >
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-amber-100 dark:bg-amber-900/40 rounded-2xl">
+              <History size={24} className="text-amber-600" />
+            </div>
+            <p className="text-sm font-black text-amber-800 dark:text-amber-300">
+              {t('resumeDesc', { level: inProgressLevel, label: t(`levels.${inProgressLevel}.th`) })}
+            </p>
+          </div>
+          <button
+            onClick={() => onStart(inProgressLevel)}
+            disabled={loading}
+            className="shrink-0 flex items-center gap-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white px-6 py-3 rounded-2xl font-black text-sm transition-all shadow-md active:scale-95"
+          >
+            <Play size={16} className="fill-current" />
+            {t('continueBtn')}
+          </button>
+        </motion.div>
+      )}
+
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-6 bg-amber-50 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-700/50 rounded-3xl px-8 py-5 flex items-center justify-between gap-6 shadow-lg shadow-amber-500/5"
+        transition={TRANSITION.base}
+        className="bg-card rounded-[3rem] shadow-2xl border border-black/5 dark:border-white/5 p-12 text-center relative overflow-hidden"
       >
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-amber-100 dark:bg-amber-900/40 rounded-2xl">
-            <History size={24} className="text-amber-600" />
+        <div className="relative z-10">
+          <div className="w-24 h-24 bg-primary/10 text-primary rounded-[32px] flex items-center justify-center mx-auto mb-8 shadow-inner">
+            <Sparkles size={48} />
           </div>
-          <p className="text-sm font-black text-amber-800 dark:text-amber-300">
-            ระบบจำความคืบหน้าได้ — ค้างอยู่ที่{' '}
-            <span className="text-primary-foreground bg-amber-600 px-2 py-0.5 rounded-lg mx-1">Level {inProgressLevel}</span> 
-            <span className="opacity-70 font-bold ml-1">({LEVEL_LABELS[inProgressLevel].th})</span>
+          <h2 className="text-3xl font-black mb-3 tracking-tight">{t('selectTitle')}</h2>
+          <p className="mb-12 text-muted-foreground max-w-sm mx-auto font-medium opacity-80">
+            {t('selectDesc')}
           </p>
+
+          <div className="flex flex-wrap justify-center gap-5 mb-12">
+            {([1, 2, 3, 4] as const).map(l => {
+              const locked    = isLocked(l);
+              const completed = completedLevels.has(l);
+              const selected  = level === l;
+              return (
+                <button
+                  key={l}
+                  onClick={() => !locked && setLevel(l)}
+                  disabled={locked}
+                  className={`group relative px-8 py-5 rounded-[24px] font-black transition-all duration-500 border-2 ${
+                    locked
+                      ? 'bg-secondary/20 text-muted-foreground/30 border-transparent cursor-not-allowed opacity-60'
+                      : selected
+                      ? 'bg-primary text-primary-foreground border-primary shadow-2xl shadow-primary/30 scale-110'
+                      : 'bg-white dark:bg-white/5 text-muted-foreground border-black/5 dark:border-white/10 hover:border-primary/40 hover:bg-white hover:shadow-xl'
+                  }`}
+                >
+                  {locked ? (
+                    <div className="absolute -top-3 -right-3 w-8 h-8 bg-muted-foreground/20 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center shadow-lg">
+                      <Lock size={14} className="text-muted-foreground/60" />
+                    </div>
+                  ) : completed ? (
+                    <div className="absolute -top-3 -right-3 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                      <CheckCircle2 size={16} className="text-white" />
+                    </div>
+                  ) : null}
+
+                  <span className="relative z-10 text-lg block uppercase tracking-wide">Level {l}</span>
+                  <span className="block text-[11px] opacity-70 font-extrabold mt-0.5">{t(`levels.${l}.th`)}</span>
+
+                  {selected && !locked && (
+                    <p className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-black text-primary uppercase tracking-widest whitespace-nowrap bg-primary/10 px-3 py-1 rounded-full">
+                      {t(`levels.${l}.desc`)}
+                    </p>
+                  )}
+                  {locked && (
+                    <p className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold text-muted-foreground/50 whitespace-nowrap italic">
+                      {t('lockedDesc', { level: l - 1 })}
+                    </p>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={() => onStart()}
+            disabled={loading || isLocked(level)}
+            className="group mt-6 flex items-center justify-center gap-3 bg-foreground text-background px-12 py-5 rounded-[24px] font-black text-xl hover:bg-primary hover:text-white transition-all duration-500 shadow-2xl disabled:opacity-50 mx-auto active:scale-95"
+          >
+            <Play size={24} className="fill-current group-hover:scale-110 transition-transform" />
+            {loading ? t('connecting') : t('startSimBtn')}
+          </button>
         </div>
-        <button
-          onClick={() => onStart(inProgressLevel)}
-          disabled={loading}
-          className="shrink-0 flex items-center gap-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white px-6 py-3 rounded-2xl font-black text-sm transition-all shadow-md active:scale-95"
-        >
-          <Play size={16} className="fill-current" />
-          เล่นต่อเลย
-        </button>
+
+        <div className="absolute top-0 left-0 w-80 h-84 bg-primary/5 blur-3xl rounded-full -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 w-80 h-84 bg-primary/5 blur-3xl rounded-full translate-x-1/2 translate-y-1/2" />
       </motion.div>
-    )}
-
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={TRANSITION.base}
-      className="bg-card rounded-[3rem] shadow-2xl border border-black/5 dark:border-white/5 p-12 text-center relative overflow-hidden"
-    >
-      <div className="relative z-10">
-        <div className="w-24 h-24 bg-primary/10 text-primary rounded-[32px] flex items-center justify-center mx-auto mb-8 shadow-inner">
-          <Sparkles size={48} />
-        </div>
-        <h2 className="text-3xl font-black mb-3 tracking-tight">เลือกระดับความยาก</h2>
-        <p className="mb-12 text-muted-foreground max-w-sm mx-auto font-medium opacity-80">
-          AI จะจำลองพฤติกรรมลูกค้าที่แตกต่างกันไปในแต่ละระดับ
-        </p>
-
-        <div className="flex flex-wrap justify-center gap-5 mb-12">
-          {([1, 2, 3, 4] as const).map(l => {
-            const locked    = isLocked(l);
-            const completed = completedLevels.has(l);
-            const selected  = level === l;
-            return (
-              <button
-                key={l}
-                onClick={() => !locked && setLevel(l)}
-                disabled={locked}
-                className={`group relative px-8 py-5 rounded-[24px] font-black transition-all duration-500 border-2 ${
-                  locked
-                    ? 'bg-secondary/20 text-muted-foreground/30 border-transparent cursor-not-allowed opacity-60'
-                    : selected
-                    ? 'bg-primary text-primary-foreground border-primary shadow-2xl shadow-primary/30 scale-110'
-                    : 'bg-white dark:bg-white/5 text-muted-foreground border-black/5 dark:border-white/10 hover:border-primary/40 hover:bg-white hover:shadow-xl'
-                }`}
-              >
-                {locked ? (
-                  <div className="absolute -top-3 -right-3 w-8 h-8 bg-muted-foreground/20 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center shadow-lg">
-                    <Lock size={14} className="text-muted-foreground/60" />
-                  </div>
-                ) : completed ? (
-                  <div className="absolute -top-3 -right-3 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
-                    <CheckCircle2 size={16} className="text-white" />
-                  </div>
-                ) : null}
-
-                <span className="relative z-10 text-lg block uppercase tracking-wide">Level {l}</span>
-                <span className="block text-[11px] opacity-70 font-extrabold mt-0.5">{LEVEL_LABELS[l].th}</span>
-
-                {selected && !locked && (
-                  <p className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-black text-primary uppercase tracking-widest whitespace-nowrap bg-primary/10 px-3 py-1 rounded-full">
-                    {LEVEL_LABELS[l].desc}
-                  </p>
-                )}
-                {locked && (
-                  <p className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold text-muted-foreground/50 whitespace-nowrap italic">
-                    ต้องการ Level {l - 1}
-                  </p>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        <button
-          onClick={() => onStart()}
-          disabled={loading || isLocked(level)}
-          className="group mt-6 flex items-center justify-center gap-3 bg-foreground text-background px-12 py-5 rounded-[24px] font-black text-xl hover:bg-primary hover:text-white transition-all duration-500 shadow-2xl disabled:opacity-50 mx-auto active:scale-95"
-        >
-          <Play size={24} className="fill-current group-hover:scale-110 transition-transform" />
-          {loading ? 'กำลังเชื่อมต่อ AI...' : 'เริ่มการจำลอง'}
-        </button>
-      </div>
-
-      <div className="absolute top-0 left-0 w-80 h-84 bg-primary/5 blur-3xl rounded-full -translate-x-1/2 -translate-y-1/2" />
-      <div className="absolute bottom-0 right-0 w-80 h-84 bg-primary/5 blur-3xl rounded-full translate-x-1/2 translate-y-1/2" />
-    </motion.div>
-  </div>
-));
+    </div>
+  );
+});
 
 SelectionView.displayName = 'SelectionView';
 
@@ -396,6 +381,8 @@ const ChatView = memo(({
   level, messages, input, setInput, loading, passed, 
   onSend, onReset, onNextLevel, bottomRef 
 }: ChatViewProps) => {
+  const t = useTranslations('aiEval');
+  
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -417,12 +404,12 @@ const ChatView = memo(({
               {passed ? <Trophy size={24} /> : `L${level}`}
             </div>
             <div>
-              <span className="font-black text-foreground text-lg tracking-tight">AI Evaluation <span className="text-muted-foreground font-medium opacity-40 mx-1">/</span> {LEVEL_LABELS[level].th}</span>
+              <span className="font-black text-foreground text-lg tracking-tight">AI Evaluation <span className="text-muted-foreground font-medium opacity-40 mx-1">/</span> {t(`levels.${level}.th`)}</span>
               <p className={`text-[10px] font-black flex items-center gap-1.5 uppercase tracking-[0.2em] mt-0.5 ${
                 passed ? 'text-emerald-500' : 'text-primary'
               }`}>
                 <span className={`w-2 h-2 rounded-full ${passed ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-primary animate-pulse'}`} />
-                {passed ? 'ประเมินผ่านแล้ว' : 'กำลังจำลองสถานการณ์สด'}
+                {passed ? t('congrats', { level: '' }) : t('liveSim')}
               </p>
             </div>
           </div>
@@ -431,7 +418,7 @@ const ChatView = memo(({
             className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground hover:text-rose-500 transition-all py-2.5 px-5 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10 border border-transparent hover:border-rose-200/50"
           >
             <ChevronLeft size={16} />
-            {passed ? 'กลับ' : 'จบการฝึก'}
+            {passed ? t('backToSelection') : t('endTraining')}
           </button>
         </div>
 
@@ -444,8 +431,8 @@ const ChatView = memo(({
                 <CheckCircle2 size={22} />
               </div>
               <div className="max-w-[85%] rounded-[24px] rounded-tl-none px-6 py-5 text-sm leading-relaxed shadow-sm bg-primary/5 border border-primary/20 text-primary font-bold">
-                <p className="mb-1 text-base">ระบบพร้อมแล้ว — Level {level} ({LEVEL_LABELS[level].th})</p>
-                <p className="text-xs opacity-70 font-medium">รอรับบทพูดจากลูกค้า AI และทำการเสนอขายหรือตอบโต้ข้อโต้แย้งตามจริง</p>
+                <p className="mb-1 text-base">{t('readyMsg', { level: level, label: t(`levels.${level}.th`) })}</p>
+                <p className="text-xs opacity-70 font-medium">{t('readySub')}</p>
               </div>
             </motion.div>
 
@@ -467,8 +454,8 @@ const ChatView = memo(({
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-2xl rounded-full translate-x-1/2 -translate-y-1/2" />
                   <Trophy size={48} className="drop-shadow-lg" />
                   <div className="relative z-10">
-                    <p className="font-black text-2xl tracking-tight leading-none mb-1">ยินดีด้วย! คุณผ่าน Level {level}</p>
-                    <p className="text-sm font-bold opacity-90">ทักษะการรับมือของคุณผ่านเกณฑ์ — พร้อมสำหรับความท้าทายต่อไป</p>
+                    <p className="font-black text-2xl tracking-tight leading-none mb-1">{t('congrats', { level: level })}</p>
+                    <p className="text-sm font-bold opacity-90">{t('congratsSub')}</p>
                   </div>
                 </div>
               </motion.div>
@@ -487,7 +474,7 @@ const ChatView = memo(({
                   className="flex-1 flex items-center justify-center gap-3 bg-white dark:bg-white/5 text-foreground hover:bg-secondary transition-all duration-300 px-8 py-5 rounded-[24px] font-black border border-black/5 shadow-lg active:scale-95"
                 >
                   <RotateCcw size={20} />
-                  ลองใหม่ Level {level}
+                  {t('retryBtn', { level: level })}
                 </button>
 
                 {level < 4 ? (
@@ -495,13 +482,13 @@ const ChatView = memo(({
                     onClick={() => onNextLevel((level + 1) as EvalLevel)}
                     className="flex-1 flex items-center justify-center gap-3 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 px-8 py-5 rounded-[24px] font-black shadow-xl shadow-primary/30 active:scale-95"
                   >
-                    ไปต่อ Level {level + 1}
+                    {t('nextLevelBtn', { level: level + 1 })}
                     <ArrowRight size={22} />
                   </button>
                 ) : (
                   <div className="flex-1 flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-8 py-5 rounded-[24px] font-black shadow-xl shadow-emerald-500/20">
                     <Trophy size={22} />
-                    คุณสำเร็จการฝึกทุกระดับแล้ว!
+                    {t('allCompleted')}
                   </div>
                 )}
               </motion.div>
@@ -532,7 +519,7 @@ const ChatView = memo(({
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="พิมพ์ข้อความเพื่อตอบโต้ลูกค้า..."
+                placeholder={t('placeholder')}
                 className="flex-1 bg-transparent border-none focus:ring-0 px-5 py-4 text-sm font-bold placeholder:text-muted-foreground/40 placeholder:italic"
               />
               <button

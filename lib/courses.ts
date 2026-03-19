@@ -53,5 +53,26 @@ export const COURSE_MODULES: Record<string, CourseModule> = {
       en: { presentationId: '1FW-wC8qqlvHyTo8mhliCqoOC0kL7mYXK', totalSlides: 16 },
     },
   },
-  // Add future modules here — they will appear automatically as cards on the hub
 };
+
+// --- Server-side fetchers ---
+import { getAdminDb } from './firebase-admin';
+
+export async function getCourseModules(): Promise<Record<string, CourseModule>> {
+  try {
+    const db = getAdminDb();
+    const doc = await db.collection('module_config').doc('learn').get();
+    if (doc.exists) {
+      const data = doc.data();
+      if (data?.modules) return data.modules as Record<string, CourseModule>;
+    }
+  } catch (err) {
+    console.error('Failed to get course modules from DB:', err);
+  }
+  return COURSE_MODULES; // fallback to hardcoded
+}
+
+export async function getCourseModule(id: string): Promise<CourseModule | undefined> {
+  const modules = await getCourseModules();
+  return modules[id];
+}

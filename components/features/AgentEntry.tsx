@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import {
   ArrowRight, Loader2, AlertCircle, Users, Award, Layers, User,
   BookOpen, Settings, CreditCard, Bot, Target, Zap, CheckCircle2,
@@ -27,23 +28,16 @@ interface AgentEntryProps {
 }
 
 const STATS_CONFIG = [
-  { Icon: Users,  target: 100, suffix: '+', label: 'เอเจนต์' },
-  { Icon: Award,  target: 89,  suffix: '%', label: 'ผ่านการทดสอบ' },
-  { Icon: Layers, target: 5,   suffix: '',  label: 'โมดูล' },
+  { Icon: Users,  target: 100, suffix: '+', labelKey: 'agents' },
+  { Icon: Award,  target: 89,  suffix: '%', labelKey: 'passed' },
+  { Icon: Layers, target: 4,   suffix: '',  labelKey: 'modules' },
 ];
 
 const MODULES = [
-  { Icon: BookOpen,   label: 'ผลิตภัณฑ์', color: '#818CF8', bg: 'rgba(129,140,248,0.12)' },
-  { Icon: Settings,   label: 'กระบวนการ', color: '#22D3EE', bg: 'rgba(34,211,238,0.12)'  },
-  { Icon: CreditCard, label: 'ชำระเงิน',  color: '#60A5FA', bg: 'rgba(96,165,250,0.12)'  },
-  { Icon: Bot,        label: 'AI Eval',   color: '#A78BFA', bg: 'rgba(167,139,250,0.12)' },
-  { Icon: Target,     label: 'Pitch',     color: '#F472B6', bg: 'rgba(244,114,182,0.12)' },
-];
-
-const TRUST_POINTS = [
-  'หลักสูตรออกแบบโดยผู้เชี่ยวชาญด้านการขาย',
-  'AI ประเมินผลแบบเรียลไทม์',
-  'ติดตามความก้าวหน้าได้ทันที',
+  { Icon: BookOpen,   labelKey: 'product', color: '#818CF8', bg: 'rgba(129,140,248,0.12)' },
+  { Icon: Settings,   labelKey: 'process', color: '#22D3EE', bg: 'rgba(34,211,238,0.12)'  },
+  { Icon: Bot,        labelKey: 'aiEval',   color: '#A78BFA', bg: 'rgba(167,139,250,0.12)' },
+  { Icon: Target,     labelKey: 'pitch',     color: '#F472B6', bg: 'rgba(244,114,182,0.12)' },
 ];
 
 /**
@@ -107,150 +101,159 @@ const BackgroundEffects = () => (
 /**
  * BrandingPanel: The left-side promotional panel for desktop.
  */
-const BrandingPanel = () => (
-  <div className="relative hidden lg:flex flex-col justify-between flex-1 overflow-hidden px-12 py-10">
-    <motion.div 
-      variants={FADE_IN}
-      initial="initial"
-      animate="animate"
-      className="relative z-10"
-    >
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-cyan/10 border border-brand-cyan/20">
-        <div className="w-1.5 h-1.5 rounded-full animate-pulse bg-brand-cyan" />
-        <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-brand-cyan">Sales Excellence Academy</span>
+const BrandingPanel = () => {
+  const t = useTranslations('agentEntry');
+  const trustPoints = t.raw('trustPoints') as string[];
+
+  return (
+    <div className="relative hidden lg:flex flex-col justify-between flex-1 overflow-hidden px-12 py-10">
+      <motion.div 
+        variants={FADE_IN}
+        initial="initial"
+        animate="animate"
+        className="relative z-10"
+      >
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-cyan/10 border border-brand-cyan/20">
+          <div className="w-1.5 h-1.5 rounded-full animate-pulse bg-brand-cyan" />
+          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-brand-cyan">Sales Excellence Academy</span>
+        </div>
+      </motion.div>
+
+      <div className="relative z-10 flex flex-col gap-8">
+        <motion.div 
+          variants={FADE_IN}
+          initial="initial"
+          animate="animate"
+        >
+          <h1 className="text-4xl md:text-5xl lg:text-5xl font-black leading-tight tracking-tight text-[color:var(--hub-text)] mb-3"
+            dangerouslySetInnerHTML={{ __html: t('title') }}
+          />
+          <p className="text-sm leading-relaxed max-w-[340px]" style={{ color: 'var(--hub-muted)' }}>
+            {t('subtitle')}
+          </p>
+        </motion.div>
+
+        <motion.div 
+          variants={STAGGER_CONTAINER}
+          initial="initial"
+          animate="animate"
+          className="flex gap-3"
+        >
+          {STATS_CONFIG.map((s, i) => (
+            <motion.div key={i} variants={STAGGER_ITEM} className="flex flex-col py-4 px-5 rounded-2xl" style={{ background: 'var(--hub-card)', border: '1px solid var(--hub-border)', minWidth: 88 }}>
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center mb-2 bg-brand-cyan/10">
+                <s.Icon size={12} className="text-brand-cyan" />
+              </div>
+              <div className="text-2xl font-black leading-none mb-0.5 text-[color:var(--hub-text)]">
+                <StatCounter target={s.target} suffix={s.suffix} delay={400 + i * 120} />
+              </div>
+              <div className="text-[10px] font-medium text-[color:var(--hub-muted)]">{t(s.labelKey)}</div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        <motion.div 
+          variants={FADE_IN}
+          initial="initial"
+          animate="animate"
+          className="flex flex-col gap-2.5"
+        >
+          {trustPoints.map((pt, i) => (
+            <div key={i} className="flex items-center gap-2.5">
+              <CheckCircle2 size={13} className="text-brand-cyan shrink-0" />
+              <span className="text-xs text-[color:var(--hub-muted)]">{pt}</span>
+            </div>
+          ))}
+        </motion.div>
       </div>
-    </motion.div>
-
-    <div className="relative z-10 flex flex-col gap-8">
-      <motion.div 
-        variants={FADE_IN}
-        initial="initial"
-        animate="animate"
-      >
-        <h1 className="text-4xl md:text-5xl lg:text-5xl font-black leading-tight tracking-tight text-[color:var(--hub-text)] mb-3">
-          เสริมทักษะ <span style={{ background: `linear-gradient(100deg, ${CYAN} 0%, ${PURPLE} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'inline-block' }}>การขาย</span><br />ของคุณ
-        </h1>
-        <p className="text-sm leading-relaxed max-w-[340px]" style={{ color: 'var(--hub-muted)' }}>
-          โปรแกรมฝึกอบรมพัฒนาทักษะการขาย ผ่านการเรียนรู้แบบโต้ตอบและ AI ที่ชาญฉลาด
-        </p>
-      </motion.div>
-
-      <motion.div 
-        variants={STAGGER_CONTAINER}
-        initial="initial"
-        animate="animate"
-        className="flex gap-3"
-      >
-        {STATS_CONFIG.map((s, i) => (
-          <motion.div key={i} variants={STAGGER_ITEM} className="flex flex-col py-4 px-5 rounded-2xl" style={{ background: 'var(--hub-card)', border: '1px solid var(--hub-border)', minWidth: 88 }}>
-            <div className="w-6 h-6 rounded-lg flex items-center justify-center mb-2 bg-brand-cyan/10">
-              <s.Icon size={12} className="text-brand-cyan" />
-            </div>
-            <div className="text-2xl font-black leading-none mb-0.5 text-[color:var(--hub-text)]">
-              <StatCounter target={s.target} suffix={s.suffix} delay={400 + i * 120} />
-            </div>
-            <div className="text-[10px] font-medium text-[color:var(--hub-muted)]">{s.label}</div>
-          </motion.div>
-        ))}
-      </motion.div>
 
       <motion.div 
         variants={FADE_IN}
         initial="initial"
         animate="animate"
-        className="flex flex-col gap-2.5"
+        className="relative z-10"
       >
-        {TRUST_POINTS.map((pt, i) => (
-          <div key={i} className="flex items-center gap-2.5">
-            <CheckCircle2 size={13} className="text-brand-cyan shrink-0" />
-            <span className="text-xs text-[color:var(--hub-muted)]">{pt}</span>
-          </div>
-        ))}
+        <p className="text-[9px] font-semibold uppercase tracking-[0.18em] mb-2.5" style={{ color: 'var(--hub-dim)' }}>{t('allCourses')}</p>
+        <motion.div 
+          variants={STAGGER_CONTAINER}
+          className="flex flex-wrap gap-2"
+        >
+          {MODULES.map((m, i) => (
+            <motion.span 
+              key={i} 
+              variants={STAGGER_ITEM}
+              whileHover={{ scale: 1.04 }}
+              className="flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-full font-medium" 
+              style={{ background: m.bg, border: `1px solid ${m.color}22`, color: m.color }}
+            >
+              <m.Icon size={10} />
+              {t(m.labelKey)}
+            </motion.span>
+          ))}
+        </motion.div>
       </motion.div>
     </div>
-
-    <motion.div 
-      variants={FADE_IN}
-      initial="initial"
-      animate="animate"
-      className="relative z-10"
-    >
-      <p className="text-[9px] font-semibold uppercase tracking-[0.18em] mb-2.5" style={{ color: 'var(--hub-dim)' }}>หลักสูตรทั้งหมด</p>
-      <motion.div 
-        variants={STAGGER_CONTAINER}
-        className="flex flex-wrap gap-2"
-      >
-        {MODULES.map((m, i) => (
-          <motion.span 
-            key={i} 
-            variants={STAGGER_ITEM}
-            whileHover={{ scale: 1.04 }}
-            className="flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-full font-medium" 
-            style={{ background: m.bg, border: `1px solid ${m.color}22`, color: m.color }}
-          >
-            <m.Icon size={10} />
-            {m.label}
-          </motion.span>
-        ))}
-      </motion.div>
-    </motion.div>
-  </div>
-);
+  );
+};
 
 /**
  * ReturningUserBanner: Shortcut for agents who have already logged in.
  */
-const ReturningUserBanner = ({ user, onContinue, onClear }: { user: { id: string, name: string, stageName: string }, onContinue: () => void, onClear: () => void }) => (
-  <motion.div
-    initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-    animate={{ opacity: 1, height: 'auto', marginBottom: 20 }}
-    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-    transition={{ duration: 0.3 }}
-    style={{ overflow: 'hidden' }}
-  >
-    <div className="rounded-2xl p-3.5" style={{ background: 'rgba(0,180,216,0.06)', border: '1px solid rgba(0,180,216,0.18)' }}>
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-xs font-black" style={{ background: `linear-gradient(135deg, ${CYAN}, ${PURPLE})`, color: '#fff' }}>
-          {getInitials(user.name)}
+const ReturningUserBanner = ({ user, onContinue, onClear }: { user: { id: string, name: string, stageName: string }, onContinue: () => void, onClear: () => void }) => {
+  const t = useTranslations('agentEntry');
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+      animate={{ opacity: 1, height: 'auto', marginBottom: 20 }}
+      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+      transition={{ duration: 0.3 }}
+      style={{ overflow: 'hidden' }}
+    >
+      <div className="rounded-2xl p-3.5" style={{ background: 'rgba(0,180,216,0.06)', border: '1px solid rgba(0,180,216,0.18)' }}>
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-xs font-black" style={{ background: `linear-gradient(135deg, ${CYAN}, ${PURPLE})`, color: '#fff' }}>
+            {getInitials(user.name)}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] font-semibold uppercase tracking-wider mb-0.5 text-brand-cyan">{t('welcomeBack')}</div>
+            <div className="text-sm font-bold truncate" style={{ color: 'var(--hub-text)' }}>{user.name}</div>
+            {user.stageName && (
+              <div className="text-[10px] font-medium truncate text-brand-cyan/80">&quot;{user.stageName}&quot;</div>
+            )}
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-[10px] font-semibold uppercase tracking-wider mb-0.5 text-brand-cyan">ยินดีต้อนรับกลับมา</div>
-          <div className="text-sm font-bold truncate" style={{ color: 'var(--hub-text)' }}>{user.name}</div>
-          {user.stageName && (
-            <div className="text-[10px] font-medium truncate text-brand-cyan/80">&quot;{user.stageName}&quot;</div>
-          )}
+        <div className="flex gap-2">
+          <motion.button
+            onClick={onContinue}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold"
+            style={{ background: `linear-gradient(135deg, ${CYAN}, #0055F0)`, color: '#fff', boxShadow: `0 4px 12px rgba(0,180,216,0.25)` }}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <Zap size={11} />{t('continueBtn')}
+          </motion.button>
+          <button
+            onClick={onClear}
+            className="px-3 py-2 rounded-xl text-xs font-medium transition-opacity hover:opacity-70"
+            style={{ background: 'var(--entry-input-bg)', color: 'var(--hub-muted)', border: '1px solid var(--hub-border)' }}
+          >
+            {t('changeBtn')}
+          </button>
         </div>
       </div>
-      <div className="flex gap-2">
-        <motion.button
-          onClick={onContinue}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold"
-          style={{ background: `linear-gradient(135deg, ${CYAN}, #0055F0)`, color: '#fff', boxShadow: `0 4px 12px rgba(0,180,216,0.25)` }}
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.97 }}
-        >
-          <Zap size={11} />ดำเนินการต่อ
-        </motion.button>
-        <button
-          onClick={onClear}
-          className="px-3 py-2 rounded-xl text-xs font-medium transition-opacity hover:opacity-70"
-          style={{ background: 'var(--entry-input-bg)', color: 'var(--hub-muted)', border: '1px solid var(--hub-border)' }}
-        >
-          เปลี่ยน
-        </button>
+      <div className="flex items-center gap-2 mt-4">
+        <div className="flex-1 h-px" style={{ background: 'var(--hub-border)' }} />
+        <span className="text-[9px] font-medium uppercase tracking-widest" style={{ color: 'var(--hub-dim)' }}>{t('orLoginNew')}</span>
+        <div className="flex-1 h-px" style={{ background: 'var(--hub-border)' }} />
       </div>
-    </div>
-    <div className="flex items-center gap-2 mt-4">
-      <div className="flex-1 h-px" style={{ background: 'var(--hub-border)' }} />
-      <span className="text-[9px] font-medium uppercase tracking-widest" style={{ color: 'var(--hub-dim)' }}>หรือเข้าสู่ระบบใหม่</span>
-      <div className="flex-1 h-px" style={{ background: 'var(--hub-border)' }} />
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
 // --- Main Component ---
 
 export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
+  const t = useTranslations('agentEntry');
   const [agents, setAgents]             = useState<AgentOption[]>([]);
   const [name, setName]                 = useState('');
   const [loading, setLoading]           = useState(true);
@@ -290,7 +293,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
     await new Promise(r => setTimeout(r, 450));
     
     if (agents.length === 0 && !loading) {
-      setError('ไม่สามารถเชื่อมต่อข้อมูลระบบได้ กรุณารีเฟรชหน้าจอ');
+      setError(t('fetchError'));
       setSubmitting(false);
       return;
     }
@@ -300,7 +303,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
     );
 
     if (!match) {
-      setError('ไม่พบชื่อนี้ในระบบ กรุณาตรวจสอบและลองใหม่อีกครั้ง');
+      setError(t('matchError'));
       setSubmitting(false);
       return;
     }
@@ -338,9 +341,9 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
           {/* Mobile-only header */}
           <div className="lg:hidden mb-6 text-center">
             <p className="text-[10px] font-semibold tracking-[0.2em] uppercase mb-1 text-brand-cyan">Sales Excellence Academy</p>
-            <h1 className="text-xl font-black" style={{ color: 'var(--hub-text)' }}>
-              เสริมทักษะ <span style={{ background: `linear-gradient(90deg, ${CYAN} 0%, ${PURPLE} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>การขาย</span> ของคุณ
-            </h1>
+            <h1 className="text-xl font-black" style={{ color: 'var(--hub-text)' }}
+              dangerouslySetInnerHTML={{ __html: t('title') }}
+            />
           </div>
 
           <div style={{ background: `linear-gradient(135deg, rgba(0,180,216,0.35), rgba(124,58,237,0.28), rgba(0,180,216,0.18))`, borderRadius: 25, padding: 1, boxShadow: '0 24px 64px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.03)' }}>
@@ -382,8 +385,8 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                     </AnimatePresence>
                   </motion.div>
                   <div>
-                    <h2 className="text-base font-black leading-tight" style={{ color: 'var(--hub-text)' }}>ยินดีต้อนรับ</h2>
-                    <p className="text-xs" style={{ color: 'var(--hub-muted)' }}>กรอกชื่อเพื่อเข้าสู่ระบบฝึกอบรม</p>
+                    <h2 className="text-base font-black leading-tight" style={{ color: 'var(--hub-text)' }}>{t('welcome')}</h2>
+                    <p className="text-xs" style={{ color: 'var(--hub-muted)' }}>{t('loginDesc')}</p>
                   </div>
                 </div>
 
@@ -415,7 +418,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                       className="absolute left-4 font-medium pointer-events-none"
                       style={{ color: floatLabel ? CYAN : 'var(--hub-muted)', lineHeight: 1 }}
                     >
-                      ชื่อ-นามสกุล (ภาษาอังกฤษ)
+                      {t('nameLabel')}
                     </motion.label>
                   </div>
 
@@ -446,9 +449,9 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                     whileHover={canSubmit ? { scale: 1.01 } : {}}
                     whileTap={canSubmit ? { scale: 0.98 } : {}}
                   >
-                    {submitting ? <Loader2 size={15} className="animate-spin" /> : loading ? <><Loader2 size={13} className="animate-spin" /><span>กำลังโหลด...</span></> : (
+                    {submitting ? <Loader2 size={15} className="animate-spin" /> : loading ? <><Loader2 size={13} className="animate-spin" /><span>{t('loading')}</span></> : (
                       <>
-                        <span>เข้าสู่ระบบ</span>
+                        <span>{t('loginBtn')}</span>
                         <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
                       </>
                     )}
@@ -456,8 +459,8 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                 </form>
 
                 <div className="mt-5 pt-4 flex items-center justify-between" style={{ borderTop: '1px solid var(--hub-border)' }}>
-                  <span className="text-[10px]" style={{ color: 'var(--hub-dim)' }}>ไม่พบชื่อ? ติดต่อผู้จัดการ</span>
-                  <Link href={`/${locale}/login`} className="text-[10px] transition-opacity hover:opacity-80" style={{ color: 'var(--hub-muted)' }}>Staff Login →</Link>
+                  <span className="text-[10px]" style={{ color: 'var(--hub-dim)' }}>{t('nameNotFound')}</span>
+                  <Link href={`/${locale}/login`} className="text-[10px] transition-opacity hover:opacity-80" style={{ color: 'var(--hub-muted)' }}>{t('staffLogin')}</Link>
                 </div>
               </div>
             </div>
@@ -475,7 +478,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                 className="flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-full" 
                 style={{ background: m.bg, border: `1px solid ${m.color}22`, color: m.color }}
               >
-                <m.Icon size={10} />{m.label}
+                <m.Icon size={10} />{t(m.labelKey)}
               </motion.span>
             ))}
           </motion.div>

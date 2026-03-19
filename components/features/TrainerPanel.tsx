@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import {
   GraduationCap, Plus, ChevronDown, ChevronRight, X, Check,
   Calendar, Users, Clock, AlertTriangle, BookOpen, Pencil,
@@ -22,31 +23,11 @@ const T = {
   amberBorder: 'rgba(245,158,11,0.20)',
 };
 
-const DISCIPLINE_LABELS: Record<DisciplineType, string> = {
-  late:              'มาสาย (Late)',
-  sick_leave:        'ลาป่วย (Sick Leave)',
-  personal_leave:    'ลากิจ (Personal Leave)',
-  absent_no_reason:  'ขาดงาน (Absent)',
-  other:             'อื่นๆ (Other)',
-};
-
-const ATTENDANCE_LABELS: Record<string, string> = {
-  present: 'มาเรียน',
-  late:    'มาสาย',
-  absent:  'ขาด',
-};
-
-const ATTENDANCE_COLORS: Record<string, string> = {
-  present: 'bg-emerald-500/15 text-emerald-400',
-  late:    'bg-amber-500/15 text-amber-400',
-  absent:  'bg-red-500/15 text-red-400',
-};
-
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function fmtDate(iso: string) {
+function fmtDate(iso: string, locale: string = 'en-GB') {
   try {
-    return new Date(iso).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+    return new Date(iso).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
   } catch { return iso; }
 }
 
@@ -63,6 +44,7 @@ interface NewPeriodModalProps {
 }
 
 function NewPeriodModal({ agents, onClose, onCreated }: NewPeriodModalProps) {
+  const t = useTranslations('trainer');
   const [name,        setName]        = useState('');
   const [startDate,   setStartDate]   = useState(new Date().toISOString().slice(0, 10));
   const [totalDays,   setTotalDays]   = useState(5);
@@ -80,7 +62,7 @@ function NewPeriodModal({ agents, onClose, onCreated }: NewPeriodModalProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) { setErr('กรุณากรอกชื่อ Batch'); return; }
+    if (!name.trim()) { setErr(t('batchName')); return; }
     setSaving(true);
     setErr('');
     try {
@@ -127,7 +109,7 @@ function NewPeriodModal({ agents, onClose, onCreated }: NewPeriodModalProps) {
         <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: `1px solid ${T.border}` }}>
           <div className="flex items-center gap-2">
             <GraduationCap size={18} style={{ color: T.amber }} />
-            <span className="font-bold text-base" style={{ color: T.text }}>สร้าง Training Period ใหม่</span>
+            <span className="font-bold text-base" style={{ color: T.text }}>{t('createPeriodTitle')}</span>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg transition-colors hover:bg-white/5" style={{ color: T.sub }}>
             <X size={16} />
@@ -137,10 +119,10 @@ function NewPeriodModal({ agents, onClose, onCreated }: NewPeriodModalProps) {
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {/* Name */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: T.sub }}>ชื่อ Batch *</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: T.sub }}>{t('batchName')}</label>
             <input
               value={name} onChange={e => setName(e.target.value)}
-              placeholder="เช่น March 2026 Batch"
+              placeholder={t('batchNamePlaceholder')}
               required
               className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-colors"
               style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}`, color: T.text }}
@@ -152,7 +134,7 @@ function NewPeriodModal({ agents, onClose, onCreated }: NewPeriodModalProps) {
           {/* Date + Days row */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: T.sub }}>วันเริ่ม</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: T.sub }}>{t('startDate')}</label>
               <input
                 type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-colors"
@@ -162,7 +144,7 @@ function NewPeriodModal({ agents, onClose, onCreated }: NewPeriodModalProps) {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: T.sub }}>จำนวนวัน</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: T.sub }}>{t('totalDays')}</label>
               <input
                 type="number" min={1} max={60} value={totalDays}
                 onChange={e => setTotalDays(Math.max(1, parseInt(e.target.value) || 5))}
@@ -177,11 +159,11 @@ function NewPeriodModal({ agents, onClose, onCreated }: NewPeriodModalProps) {
           {/* Agent selection */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: T.sub }}>
-              เลือก Agent ({selectedIds.size} คน)
+              {t('selectAgents', { count: selectedIds.size })}
             </label>
             <div className="rounded-xl overflow-hidden max-h-48 overflow-y-auto" style={{ border: `1px solid ${T.border}` }}>
               {agents.length === 0 ? (
-                <div className="px-4 py-3 text-sm" style={{ color: T.sub }}>ไม่มี agent ในระบบ</div>
+                <div className="px-4 py-3 text-sm" style={{ color: T.sub }}>{t('noAgents')}</div>
               ) : agents.map(a => (
                 <button
                   key={a.id} type="button"
@@ -213,12 +195,12 @@ function NewPeriodModal({ agents, onClose, onCreated }: NewPeriodModalProps) {
               style={{ background: T.amber, color: '#fff', opacity: saving ? 0.7 : 1 }}
             >
               {saving ? <Spinner /> : <Plus size={15} />}
-              {saving ? 'กำลังสร้าง...' : 'สร้าง Period'}
+              {saving ? t('creating') : t('createBtn')}
             </button>
             <button type="button" onClick={onClose}
               className="px-5 py-2.5 rounded-xl text-sm transition-colors hover:bg-white/5"
               style={{ color: T.sub }}>
-              ยกเลิก
+              {t('cancel')}
             </button>
           </div>
         </form>
@@ -240,12 +222,19 @@ interface DayRecordFormProps {
 }
 
 function DayRecordForm({ periodId, agentId, agentName, dayNumber, existing, onSaved, readOnly }: DayRecordFormProps) {
+  const t = useTranslations('trainer');
   const [attendance, setAttendance] = useState<'present' | 'late' | 'absent'>(existing?.attendance ?? 'present');
   const [topics,     setTopics]     = useState(existing?.topics ?? '');
   const [notes,      setNotes]      = useState(existing?.notes ?? '');
   const [date,       setDate]       = useState(existing?.date ?? new Date().toISOString().slice(0, 10));
   const [saving,     setSaving]     = useState(false);
   const [saved,      setSaved]      = useState(false);
+
+  const ATTENDANCE_COLORS: Record<string, string> = {
+    present: 'bg-emerald-500/15 text-emerald-400',
+    late:    'bg-amber-500/15 text-amber-400',
+    absent:  'bg-red-500/15 text-red-400',
+  };
 
   async function handleSave() {
     setSaving(true);
@@ -281,7 +270,7 @@ function DayRecordForm({ periodId, agentId, agentName, dayNumber, existing, onSa
               }`}
               style={{ border: `1px solid ${attendance === a ? 'currentColor' : T.border}`, opacity: readOnly ? 0.7 : 1 }}
             >
-              {ATTENDANCE_LABELS[a]}
+              {t(`attendanceLabels.${a}`)}
             </button>
           ))}
         </div>
@@ -289,7 +278,7 @@ function DayRecordForm({ periodId, agentId, agentName, dayNumber, existing, onSa
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-[10px] font-medium uppercase tracking-wider mb-1" style={{ color: T.sub }}>วันที่</label>
+          <label className="block text-[10px] font-medium uppercase tracking-wider mb-1" style={{ color: T.sub }}>{t('startDate')}</label>
           <input
             type="date" value={date} onChange={e => setDate(e.target.value)}
             disabled={readOnly}
@@ -298,10 +287,10 @@ function DayRecordForm({ periodId, agentId, agentName, dayNumber, existing, onSa
           />
         </div>
         <div>
-          <label className="block text-[10px] font-medium uppercase tracking-wider mb-1" style={{ color: T.sub }}>หัวข้อวันนี้</label>
+          <label className="block text-[10px] font-medium uppercase tracking-wider mb-1" style={{ color: T.sub }}>{t('topics')}</label>
           <input
             value={topics} onChange={e => setTopics(e.target.value)}
-            placeholder="หัวข้อที่สอน..."
+            placeholder={t('topicsPlaceholder')}
             disabled={readOnly}
             className="w-full px-3 py-2 rounded-lg text-xs outline-none"
             style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}`, color: T.text, opacity: readOnly ? 0.7 : 1 }}
@@ -310,10 +299,10 @@ function DayRecordForm({ periodId, agentId, agentName, dayNumber, existing, onSa
       </div>
 
       <div>
-        <label className="block text-[10px] font-medium uppercase tracking-wider mb-1" style={{ color: T.sub }}>บันทึกเพิ่มเติม</label>
+        <label className="block text-[10px] font-medium uppercase tracking-wider mb-1" style={{ color: T.sub }}>{t('notes')}</label>
         <textarea
           value={notes} onChange={e => setNotes(e.target.value)}
-          placeholder="สังเกต ข้อดี ข้อควรปรับปรุง..."
+          placeholder={t('notesPlaceholder')}
           rows={2}
           disabled={readOnly}
           className="w-full px-3 py-2 rounded-lg text-xs outline-none resize-none"
@@ -333,7 +322,7 @@ function DayRecordForm({ periodId, agentId, agentName, dayNumber, existing, onSa
             }}
           >
             {saving ? <Spinner /> : saved ? <Check size={12} /> : <Save size={12} />}
-            {saving ? 'บันทึก...' : saved ? 'บันทึกแล้ว!' : 'บันทึก'}
+            {saving ? t('saving') : saved ? t('saved') : t('save')}
           </button>
         </div>
       )}
@@ -351,6 +340,7 @@ interface DaysTabProps {
 }
 
 function DaysSubTab({ period, records, onRecordSaved, readOnly }: DaysTabProps) {
+  const t = useTranslations('trainer');
   const [expandedDay, setExpandedDay] = useState<number | null>(1);
 
   function getRecord(agentId: string, dayNumber: number): TrainingDayRecord | undefined {
@@ -366,7 +356,7 @@ function DaysSubTab({ period, records, onRecordSaved, readOnly }: DaysTabProps) 
       {period.agentIds.length === 0 && (
         <div className="text-center py-12" style={{ color: T.sub }}>
           <Users size={32} className="mx-auto opacity-30 mb-3" />
-          <p className="text-sm">ยังไม่มี agent ในรอบนี้</p>
+          <p className="text-sm">{t('noAgentsInPeriod')}</p>
         </div>
       )}
       {Array.from({ length: period.totalDays }, (_, i) => i + 1).map(day => {
@@ -385,9 +375,9 @@ function DaysSubTab({ period, records, onRecordSaved, readOnly }: DaysTabProps) 
                 {day}
               </div>
               <div className="flex-1">
-                <div className="font-semibold text-sm" style={{ color: T.text }}>Day {day}</div>
+                <div className="font-semibold text-sm" style={{ color: T.text }}>{t('day', { day })}</div>
                 <div className="text-xs mt-0.5" style={{ color: T.sub }}>
-                  {done}/{total} agents บันทึกแล้ว
+                  {t('recordsDone', { done, total })}
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -444,6 +434,7 @@ interface DisciplineSubTabProps {
 }
 
 function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: DisciplineSubTabProps) {
+  const t = useTranslations('trainer');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     agentId: period.agentIds[0] ?? '',
@@ -456,7 +447,7 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.agentId) { setErr('กรุณาเลือก agent'); return; }
+    if (!form.agentId) { setErr(t('agent')); return; }
     setSaving(true);
     setErr('');
     try {
@@ -482,7 +473,7 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('ลบบันทึกวินัยนี้?')) return;
+    if (!confirm(t('deleteConfirm'))) return;
     const res = await fetch(`/api/trainer/discipline/${id}`, { method: 'DELETE' });
     if (res.ok) onDeleted(id);
   }
@@ -502,7 +493,7 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
             style={{ background: T.amberBg, color: T.amber, border: `1px solid ${T.amberBorder}` }}
           >
-            <Plus size={15} /> บันทึกวินัย
+            <Plus size={15} /> {t('disciplineNew')}
           </button>
         </div>
       )}
@@ -517,10 +508,10 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
             className="overflow-hidden rounded-2xl p-5 space-y-4"
             style={{ background: 'rgba(245,158,11,0.04)', border: `1px solid ${T.amberBorder}` }}
           >
-            <p className="text-sm font-bold" style={{ color: T.amber }}>บันทึกวินัยใหม่</p>
+            <p className="text-sm font-bold" style={{ color: T.amber }}>{t('disciplineTitle')}</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: T.sub }}>Agent</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: T.sub }}>{t('agent')}</label>
                 <select
                   value={form.agentId} onChange={e => setForm(v => ({ ...v, agentId: e.target.value }))}
                   className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
@@ -532,19 +523,19 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: T.sub }}>ประเภท</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: T.sub }}>{t('type')}</label>
                 <select
                   value={form.type} onChange={e => setForm(v => ({ ...v, type: e.target.value as DisciplineType }))}
                   className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
                   style={inputStyle}
                 >
-                  {(Object.keys(DISCIPLINE_LABELS) as DisciplineType[]).map(k => (
-                    <option key={k} value={k}>{DISCIPLINE_LABELS[k]}</option>
+                  {(['late', 'sick_leave', 'personal_leave', 'absent_no_reason', 'other'] as const).map(k => (
+                    <option key={k} value={k}>{t(`disciplineLabels.${k}`)}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: T.sub }}>วันที่</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: T.sub }}>{t('startDate')}</label>
                 <input
                   type="date" value={form.date} onChange={e => setForm(v => ({ ...v, date: e.target.value }))}
                   className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
@@ -552,10 +543,10 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: T.sub }}>รายละเอียด</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: T.sub }}>{t('description')}</label>
                 <input
                   value={form.description} onChange={e => setForm(v => ({ ...v, description: e.target.value }))}
-                  placeholder="รายละเอียดเพิ่มเติม..."
+                  placeholder={t('descriptionPlaceholder')}
                   className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
                   style={inputStyle}
                 />
@@ -567,11 +558,11 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
                 className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold"
                 style={{ background: T.amber, color: '#fff', opacity: saving ? 0.7 : 1 }}>
                 {saving ? <Spinner /> : <Save size={13} />}
-                {saving ? 'บันทึก...' : 'บันทึก'}
+                {saving ? t('saving') : t('save')}
               </button>
               <button type="button" onClick={() => setShowForm(false)}
                 className="px-4 py-2.5 rounded-xl text-sm hover:bg-white/5 transition-colors"
-                style={{ color: T.sub }}>ยกเลิก</button>
+                style={{ color: T.sub }}>{t('cancel')}</button>
             </div>
           </motion.form>
         )}
@@ -582,16 +573,16 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
         {records.length === 0 ? (
           <div className="text-center py-12" style={{ color: T.sub }}>
             <AlertTriangle size={28} className="mx-auto opacity-30 mb-3" />
-            <p className="text-sm">ยังไม่มีบันทึกวินัยในรอบนี้</p>
+            <p className="text-sm">{t('noDiscipline')}</p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
               <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: `1px solid ${T.border}` }}>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: T.sub }}>Agent</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: T.sub }}>ประเภท</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: T.sub }}>วันที่</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: T.sub }}>รายละเอียด</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: T.sub }}>{t('agent')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: T.sub }}>{t('type')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: T.sub }}>{t('startDate')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: T.sub }}>{t('description')}</th>
                 {!readOnly && <th className="px-4 py-3" />}
               </tr>
             </thead>
@@ -603,7 +594,7 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
                   <td className="px-4 py-3.5">
                     <span className="px-2.5 py-1 rounded-full text-xs font-semibold"
                       style={{ background: 'rgba(245,158,11,0.12)', color: T.amber, border: `1px solid ${T.amberBorder}` }}>
-                      {DISCIPLINE_LABELS[r.type] ?? r.type}
+                      {t(`disciplineLabels.${r.type}`)}
                     </span>
                   </td>
                   <td className="px-4 py-3.5 text-xs" style={{ color: T.sub }}>{fmtDate(r.date)}</td>
@@ -636,6 +627,8 @@ interface PeriodDetailProps {
 }
 
 function PeriodDetail({ period, role, onPeriodUpdated }: PeriodDetailProps) {
+  const t = useTranslations('trainer');
+  const locale = t('management') === 'จัดการการฝึกอบรม' ? 'th-TH' : 'en-GB';
   const [subTab,    setSubTab]    = useState<'days' | 'discipline'>('days');
   const [dayRecs,   setDayRecs]   = useState<TrainingDayRecord[]>([]);
   const [discRecs,  setDiscRecs]  = useState<DisciplineRecord[]>([]);
@@ -699,13 +692,13 @@ function PeriodDetail({ period, role, onPeriodUpdated }: PeriodDetailProps) {
                   color: period.active ? '#34D399' : '#6B7280',
                   border: `1px solid ${period.active ? 'rgba(52,211,153,0.2)' : 'rgba(107,114,128,0.2)'}`,
                 }}>
-                {period.active ? 'Active' : 'Inactive'}
+                {period.active ? t('active') : t('inactive')}
               </span>
             </div>
             <div className="flex items-center gap-4 text-xs" style={{ color: T.sub }}>
-              <span className="flex items-center gap-1.5"><Calendar size={11} /> เริ่ม {fmtDate(period.startDate)}</span>
-              <span className="flex items-center gap-1.5"><Users size={11} /> {period.agentIds.length} agents</span>
-              <span className="flex items-center gap-1.5"><BookOpen size={11} /> {period.totalDays} วัน</span>
+              <span className="flex items-center gap-1.5"><Calendar size={11} /> {t('startDate')} {fmtDate(period.startDate, locale)}</span>
+              <span className="flex items-center gap-1.5"><Users size={11} /> {period.agentIds.length} {t('noAgents').includes('ไม่มี') ? 'เอเจนต์' : 'agents'}</span>
+              <span className="flex items-center gap-1.5"><BookOpen size={11} /> {period.totalDays} {t('totalDays')}</span>
               <span className="flex items-center gap-1.5"><Clock size={11} /> {period.trainerName}</span>
             </div>
           </div>
@@ -714,7 +707,7 @@ function PeriodDetail({ period, role, onPeriodUpdated }: PeriodDetailProps) {
             <div className="flex items-center gap-3 flex-shrink-0">
               {/* Days adjuster */}
               <div className="flex items-center gap-2">
-                <span className="text-xs" style={{ color: T.sub }}>วัน:</span>
+                <span className="text-xs" style={{ color: T.sub }}>{t('daysAdjust')}</span>
                 <div className="flex items-center gap-1 rounded-xl overflow-hidden" style={{ border: `1px solid ${T.border}` }}>
                   <button onClick={() => adjustDays(-1)}
                     className="px-3 py-1.5 text-sm font-bold transition-colors hover:bg-white/8"
@@ -730,7 +723,7 @@ function PeriodDetail({ period, role, onPeriodUpdated }: PeriodDetailProps) {
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors hover:bg-white/5"
                 style={{ color: period.active ? '#34D399' : T.sub, border: `1px solid ${T.border}` }}>
                 {period.active ? <ToggleRight size={15} /> : <ToggleLeft size={15} />}
-                {period.active ? 'Active' : 'Inactive'}
+                {period.active ? t('active') : t('inactive')}
               </button>
             </div>
           )}
@@ -746,7 +739,7 @@ function PeriodDetail({ period, role, onPeriodUpdated }: PeriodDetailProps) {
                 color: subTab === st ? T.amber : T.sub,
                 border: `1px solid ${subTab === st ? T.amberBorder : 'transparent'}`,
               }}>
-              {st === 'days' ? <><BookOpen size={14} /> Training Days</> : <><AlertTriangle size={14} /> วินัย</>}
+              {st === 'days' ? <><BookOpen size={14} /> {t('trainingDays')}</> : <><AlertTriangle size={14} /> {t('discipline')}</>}
             </button>
           ))}
         </div>
@@ -756,7 +749,7 @@ function PeriodDetail({ period, role, onPeriodUpdated }: PeriodDetailProps) {
       <div className="flex-1 overflow-y-auto px-6 py-5">
         {loading ? (
           <div className="flex items-center justify-center h-40 gap-3" style={{ color: T.sub }}>
-            <Spinner /> <span className="text-sm">กำลังโหลด...</span>
+            <Spinner /> <span className="text-sm">{t('loading')}</span>
           </div>
         ) : subTab === 'days' ? (
           <DaysSubTab
@@ -786,6 +779,8 @@ interface TrainerPanelProps {
 }
 
 export default function TrainerPanel({ role }: TrainerPanelProps) {
+  const t = useTranslations('trainer');
+  const locale = t('management') === 'จัดการการฝึกอบรม' ? 'th-TH' : 'en-GB';
   const [periods,          setPeriods]          = useState<TrainingPeriod[]>([]);
   const [agents,           setAgents]           = useState<{ id: string; name: string }[]>([]);
   const [selectedPeriodId, setSelectedPeriodId] = useState<string | null>(null);
@@ -837,11 +832,11 @@ export default function TrainerPanel({ role }: TrainerPanelProps) {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center"
             style={{ background: T.amberBg, border: `1px solid ${T.amberBorder}` }}>
-            <GraduationCap size={20} style={{ color: T.amber }} />
+            < GraduationCap size={20} style={{ color: T.amber }} />
           </div>
           <div>
-            <h2 className="text-lg font-black" style={{ color: T.text }}>Training Management</h2>
-            <p className="text-xs" style={{ color: T.sub }}>จัดการรอบการฝึก บันทึกรายวัน และวินัย</p>
+            <h2 className="text-lg font-black" style={{ color: T.text }}>{t('management')}</h2>
+            <p className="text-xs" style={{ color: T.sub }}>{t('managementDesc')}</p>
           </div>
         </div>
         {isTrainer && (
@@ -850,32 +845,32 @@ export default function TrainerPanel({ role }: TrainerPanelProps) {
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
             style={{ background: T.amber, color: '#fff', boxShadow: `0 4px 16px rgba(245,158,11,0.25)` }}
           >
-            <Plus size={16} /> New Period
+            <Plus size={16} /> {t('newPeriod')}
           </button>
         )}
       </div>
 
-      <div className="flex gap-5 flex-1 min-h-0">
+      <div className="gap-5 flex flex-1 min-h-0">
         {/* Left sidebar — period list */}
         <div className="w-64 flex-shrink-0 flex flex-col gap-2">
           <p className="text-[10px] font-bold uppercase tracking-widest px-1 mb-1" style={{ color: T.sub }}>
-            Training Periods ({periods.length})
+            {t('trainingPeriods', { count: periods.length })}
           </p>
           {loadingPeriods ? (
             <div className="flex items-center justify-center py-8 gap-2" style={{ color: T.sub }}>
-              <Spinner /> <span className="text-xs">Loading...</span>
+              <Spinner /> <span className="text-xs">{t('loading')}</span>
             </div>
           ) : periods.length === 0 ? (
             <div className="text-center py-8 px-4" style={{ color: T.sub }}>
               <GraduationCap size={28} className="mx-auto opacity-30 mb-2" />
-              <p className="text-xs">ยังไม่มีรอบการฝึก</p>
-              {isTrainer && <p className="text-xs mt-1 opacity-70">กด &quot;New Period&quot; เพื่อสร้างรอบแรก</p>}
+              <p className="text-xs">{t('noPeriods')}</p>
+              {isTrainer && <p className="text-xs mt-1 opacity-70">{t('newPeriodHint')}</p>}
             </div>
           ) : periods.map(p => (
             <motion.button
               key={p.id}
               onClick={() => setSelectedPeriodId(p.id)}
-              whileHover={{ x: 2 }}
+              whileHover={ { x: 2 } }
               className="w-full text-left px-4 py-3.5 rounded-xl transition-all"
               style={{
                 background: selectedPeriodId === p.id ? T.amberBg : 'rgba(255,255,255,0.02)',
@@ -892,9 +887,9 @@ export default function TrainerPanel({ role }: TrainerPanelProps) {
                 )}
               </div>
               <div className="text-xs" style={{ color: T.sub }}>
-                {p.agentIds.length} agents · {p.totalDays} วัน
+                {p.agentIds.length} {t('noAgents').includes('ไม่มี') ? 'เอเจนต์' : 'agents'} · {p.totalDays} {t('totalDays')}
               </div>
-              <div className="text-xs mt-0.5" style={{ color: T.sub }}>{fmtDate(p.startDate)}</div>
+              <div className="text-xs mt-0.5" style={{ color: T.sub }}>{fmtDate(p.startDate, locale)}</div>
             </motion.button>
           ))}
         </div>
@@ -912,14 +907,14 @@ export default function TrainerPanel({ role }: TrainerPanelProps) {
           ) : (
             <div className="flex flex-col items-center justify-center flex-1 py-20" style={{ color: T.sub }}>
               <GraduationCap size={40} className="opacity-20 mb-4" style={{ color: T.amber }} />
-              <p className="text-base font-semibold mb-1" style={{ color: T.text }}>เลือก Training Period</p>
-              <p className="text-sm">คลิกที่รอบการฝึกด้านซ้ายเพื่อดูรายละเอียด</p>
+              <p className="text-base font-semibold mb-1" style={{ color: T.text }}>{t('selectPeriod')}</p>
+              <p className="text-sm">{t('selectPeriodHint')}</p>
               {isTrainer && periods.length === 0 && (
                 <button
                   onClick={() => setShowNewPeriod(true)}
                   className="mt-5 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
                   style={{ background: T.amber, color: '#fff' }}>
-                  <Plus size={15} /> สร้างรอบแรก
+                  <Plus size={15} /> {t('createFirst')}
                 </button>
               )}
             </div>

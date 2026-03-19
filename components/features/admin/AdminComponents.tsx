@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import type { AgentStats } from '@/types';
 import { BADGE_CONFIG, scoreColor, scoreBg } from './AdminHelpers';
 
@@ -35,6 +36,7 @@ export function KpiCard({ label, value, sub, icon: Icon, themeColor }: {
 }
 
 export function DonutChart({ passed, failed }: { passed: number; failed: number }) {
+  const t = useTranslations('admin');
   const total = passed + failed;
   const pct = total > 0 ? Math.round((passed / total) * 100) : 0;
   const r = 40; const c = 2 * Math.PI * r;
@@ -49,8 +51,8 @@ export function DonutChart({ passed, failed }: { passed: number; failed: number 
         <text x={55} y={59} textAnchor="middle" fontSize={18} fontWeight={800} fill="hsl(var(--foreground))">{pct}%</text>
       </svg>
       <div className="flex gap-4 mt-2 text-xs font-medium">
-        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />Passed ({passed})</span>
-        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-muted-foreground/40 inline-block" />Failed ({failed})</span>
+        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />{t('agents.table.pass')} ({passed})</span>
+        <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-muted-foreground/40 inline-block" />{t('agents.table.fail')} ({failed})</span>
       </div>
     </div>
   );
@@ -59,6 +61,7 @@ export function DonutChart({ passed, failed }: { passed: number; failed: number 
 export function ModuleBar({ label, avgScore, passCount, totalAttempts }: {
   label: string; avgScore: number; passCount: number; totalAttempts: number;
 }) {
+  const t = useTranslations('admin');
   return (
     <div className="space-y-1.5">
       <div className="flex justify-between text-sm">
@@ -73,17 +76,18 @@ export function ModuleBar({ label, avgScore, passCount, totalAttempts }: {
           className={`h-full rounded-full ${scoreBg(avgScore)}`}
         />
       </div>
-      <p className="text-xs text-muted-foreground">{passCount} of {totalAttempts} agents completed</p>
+      <p className="text-xs text-muted-foreground">{t('overview.agentsCount', { done: passCount, total: totalAttempts })}</p>
     </div>
   );
 }
 
 export function BadgePill({ badge }: { badge: AgentStats['badge'] }) {
+  const t = useTranslations('admin');
   const c = BADGE_CONFIG[badge];
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${c.bg} ${c.text}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
-      {c.label}
+      {t(`badges.${badge}`)}
     </span>
   );
 }

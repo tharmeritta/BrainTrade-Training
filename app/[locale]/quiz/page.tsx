@@ -3,8 +3,9 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { BookOpen, Settings, CreditCard, ChevronRight, ClipboardList, Lock, GraduationCap, Briefcase, type LucideIcon } from 'lucide-react';
-import { MODULE_QUIZ_MAP, UI_STRINGS, type Language, type QuizDefinition } from '@/lib/quiz-data';
+import { MODULE_QUIZ_MAP, type Language, type QuizDefinition } from '@/lib/quiz-data';
 import { getAgentSession } from '@/lib/agent-session';
 
 const SECTION_1 = [
@@ -71,6 +72,7 @@ function ModuleCard({
   index: number;
   prevTitle?: string;
 }) {
+  const t = useTranslations('quizSelection');
   const router = useRouter();
   const Icon = m.icon;
   const total = quiz.questions.length;
@@ -113,7 +115,7 @@ function ModuleCard({
           {quiz.title[lang]}
           {locked && prevTitle && (
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-              {lang === 'th' ? `ต้องผ่าน ${prevTitle} ก่อน` : `Pass "${prevTitle}" first`}
+              {t('passFirst', { title: prevTitle })}
             </span>
           )}
         </div>
@@ -126,12 +128,12 @@ function ModuleCard({
               className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
               style={{ background: m.glow, color: m.color }}
             >
-              {total} {lang === 'th' ? 'ข้อ' : 'questions'}
+              {t('questions', { count: total })}
             </span>
             <span
               className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground"
             >
-              {lang === 'th' ? `เกณฑ์ผ่าน ${thresholdPct}%` : `Pass: ${thresholdPct}%`}
+              {t('passScore', { threshold: thresholdPct })}
             </span>
           </div>
         )}
@@ -151,10 +153,10 @@ function ModuleCard({
 }
 
 export default function QuizIndexPage() {
+  const t = useTranslations('quizSelection');
   const pathname = usePathname();
   const locale   = pathname.split('/')[1] ?? 'th';
   const lang     = (locale === 'en' ? 'en' : 'th') as Language;
-  const ui       = UI_STRINGS[lang];
 
   const [passedModules, setPassedModules] = useState<Set<string>>(new Set());
 
@@ -182,16 +184,14 @@ export default function QuizIndexPage() {
         <div className="flex items-center gap-2 mb-2">
           <ClipboardList size={18} className="text-primary" />
           <span className="text-xs font-bold uppercase tracking-widest text-primary">
-            {lang === 'th' ? 'แบบทดสอบ' : 'Assessments'}
+            {t('title')}
           </span>
         </div>
         <h1 className="text-2xl font-black text-foreground">
-          {ui.selectQuiz}
+          {t('title')}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          {lang === 'th'
-            ? 'เลือกหัวข้อที่ต้องการทำแบบทดสอบ'
-            : 'Choose an assessment module to begin'}
+          {t('subtitle')}
         </p>
       </motion.div>
 
@@ -203,8 +203,8 @@ export default function QuizIndexPage() {
       >
         <SectionHeader
           icon={GraduationCap}
-          label={lang === 'th' ? 'ส่วนที่ 1 — ความรู้พื้นฐาน' : 'Section 1 — Foundation Knowledge'}
-          description={lang === 'th' ? 'ทดสอบความเข้าใจพื้นฐานหุ้น การเทรด และ Forex' : 'Test your understanding of stocks, trading, and Forex basics'}
+          label={t('sections.foundation.label')}
+          description={t('sections.foundation.desc')}
         />
         <div className="space-y-3 mb-8">
           {SECTION_1.map((m, i) => {
@@ -235,8 +235,8 @@ export default function QuizIndexPage() {
       >
         <SectionHeader
           icon={Briefcase}
-          label={lang === 'th' ? 'ส่วนที่ 2 — ทักษะการขาย' : 'Section 2 — Sales Training'}
-          description={lang === 'th' ? 'แพ็คเกจ การลงทะเบียน และขั้นตอนการชำระเงิน' : 'Packages, registration flow, and payment process'}
+          label={t('sections.sales.label')}
+          description={t('sections.sales.desc')}
         />
         <div className="space-y-3">
           {SECTION_2.map((m, i) => {

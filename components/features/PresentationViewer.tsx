@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import {
   ChevronLeft,
   ChevronRight,
@@ -41,6 +42,7 @@ interface SlideControlsProps {
  * SlideHeader: Title, breadcrumbs and language switcher
  */
 function SlideHeader({ title, lang, onLangChange, onBack }: SlideHeaderProps) {
+  const t = useTranslations('presentation');
   return (
     <motion.div
       initial={{ y: -20, opacity: 0 }}
@@ -52,7 +54,7 @@ function SlideHeader({ title, lang, onLangChange, onBack }: SlideHeaderProps) {
           <button
             onClick={onBack}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors hover:bg-black/5 dark:hover:bg-white/5"
-            aria-label="Go back"
+            aria-label={t('back')}
           >
             <ArrowLeft size={20} />
           </button>
@@ -61,7 +63,7 @@ function SlideHeader({ title, lang, onLangChange, onBack }: SlideHeaderProps) {
             <div className="mb-0.5 flex items-center gap-2 opacity-60">
               <BookOpen size={12} />
               <span className="truncate text-[10px] font-bold uppercase tracking-widest">
-                Product Knowledge
+                {t('productKnowledge')}
               </span>
             </div>
             <h1 className="truncate text-sm font-bold leading-tight sm:text-base">{title}</h1>
@@ -101,6 +103,7 @@ function SlideControls({
   isFullscreen,
   progress,
 }: SlideControlsProps) {
+  const t = useTranslations('presentation');
   return (
     <motion.div
       initial={{ y: 20, opacity: 0 }}
@@ -132,7 +135,7 @@ function SlideControls({
           <div className="flex min-w-[60px] flex-col items-center sm:min-w-[80px]">
             <span className="font-black tabular-nums text-sm">{slide} / {total}</span>
             <span className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Slide
+              {t('slide')}
             </span>
           </div>
 
@@ -150,7 +153,7 @@ function SlideControls({
         <div className="flex items-center gap-2">
           <div className="hidden items-center gap-1.5 rounded-lg bg-black/5 px-3 py-1.5 text-[10px] font-bold text-muted-foreground opacity-60 sm:flex dark:bg-white/5">
             <Keyboard size={12} />
-            <span>ARROWS TO NAVIGATE</span>
+            <span>{t('arrowsNavigate')}</span>
           </div>
           <button
             onClick={onFullscreen}
@@ -174,6 +177,7 @@ interface PresentationViewerProps {
 }
 
 export default function PresentationViewer({ module, locale, initialLang }: PresentationViewerProps) {
+  const t = useTranslations('presentation');
   const [lang, setLang] = useState<CourseLang>(initialLang);
   const [slide, setSlide] = useState(1);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -272,7 +276,7 @@ export default function PresentationViewer({ module, locale, initialLang }: Pres
                 <div className="absolute inset-0 animate-pulse rounded-full border-4 border-primary/20" />
               </div>
               <p className="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-primary/80">
-                Syncing Slide {slide}
+                {t('syncingSlide', { slide })}
               </p>
             </motion.div>
           )}

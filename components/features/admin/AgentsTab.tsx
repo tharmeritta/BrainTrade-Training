@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { Search, Plus, X, Pencil, Trash2 } from 'lucide-react';
 import type { AgentStats } from '@/types';
 import { BadgePill } from './AdminComponents';
@@ -9,6 +10,7 @@ import { scoreColor, timeAgo, BADGE_CONFIG } from './AdminHelpers';
 import AgentDetailModal from './AgentDetailModal';
 
 export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'trainer' }) {
+  const t = useTranslations('admin');
   const [agents,       setAgents]       = useState<AgentStats[]>([]);
   const [loading,      setLoading]      = useState(true);
   const [search,       setSearch]       = useState('');
@@ -85,7 +87,7 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
   }
 
   async function deleteAgent(id: string, name: string) {
-    if (!confirm(`Permanently delete "${name}"? This cannot be undone.`)) return;
+    if (!confirm(t('agents.deleteConfirm', { name }))) return;
     setAgentErr('');
     const res = await fetch(`/api/admin/agents/${id}`, { method: 'DELETE' });
     if (!res.ok) setAgentErr('Failed to delete agent.');
@@ -97,7 +99,7 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
     return (
       <div className="text-center">
         <span className={`font-bold text-sm ${scoreColor(stat.bestScore)}`}>{stat.bestScore}%</span>
-        <span className="block text-[10px] text-muted-foreground">{stat.passed ? '✓ Pass' : '✗ Fail'} · {stat.attempts}x</span>
+        <span className="block text-[10px] text-muted-foreground">{stat.passed ? `✓ ${t('agents.table.pass')}` : `✗ ${t('agents.table.fail')}`} · {stat.attempts}x</span>
       </div>
     );
   };
@@ -116,7 +118,7 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search agents..."
+            placeholder={t('agents.searchPlaceholder')}
             className="pl-9 pr-4 py-2.5 bg-secondary/40 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 w-64"
           />
         </div>
@@ -125,7 +127,7 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
             onClick={() => setShowForm(f => !f)}
             className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors shadow-md shadow-primary/20"
           >
-            <Plus size={18} /> Add Agent
+            <Plus size={18} /> {t('agents.addAgent')}
           </button>
         )}
       </div>
@@ -142,16 +144,16 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
             <input
               value={newName}
               onChange={e => setNewName(e.target.value)}
-              placeholder="Agent full name..."
+              placeholder={t('agents.addPlaceholder')}
               className="flex-1 bg-secondary/40 border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground placeholder:text-muted-foreground"
               required autoFocus
             />
             <button type="submit" disabled={adding}
               className="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50"
             >
-              {adding ? 'Adding...' : 'Create'}
+              {adding ? t('agents.adding') : t('agents.create')}
             </button>
-            <button type="button" onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground px-3 py-2.5 text-sm">Cancel</button>
+            <button type="button" onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground px-3 py-2.5 text-sm">{t('agents.cancel')}</button>
           </motion.form>
         )}
       </AnimatePresence>
@@ -177,28 +179,28 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
               className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl"
             >
               <div className="flex items-center justify-between mb-5">
-                <h3 className="font-bold text-lg text-foreground">Edit Agent Info</h3>
+                <h3 className="font-bold text-lg text-foreground">{t('agents.editTitle')}</h3>
                 <button onClick={() => setEditingAgent(null)} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
                   <X size={18} />
                 </button>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1.5">Full Name</label>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1.5">{t('agents.fullName')}</label>
                   <input
                     value={editingAgent.name}
                     onChange={e => setEditingAgent(prev => prev ? { ...prev, name: e.target.value } : null)}
                     className="w-full bg-secondary/40 border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
-                    placeholder="Agent full name"
+                    placeholder={t('agents.fullName')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1.5">Stage Name <span className="text-muted-foreground/60 font-normal">(optional)</span></label>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1.5">{t('agents.stageName')} <span className="text-muted-foreground/60 font-normal">{t('agents.optional')}</span></label>
                   <input
                     value={editingAgent.stageName}
                     onChange={e => setEditingAgent(prev => prev ? { ...prev, stageName: e.target.value } : null)}
                     className="w-full bg-secondary/40 border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
-                    placeholder="e.g. Sales King, The Closer..."
+                    placeholder={t('agents.stagePlaceholder')}
                   />
                 </div>
               </div>
@@ -208,10 +210,10 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
                   disabled={savingAgent || !editingAgent.name.trim()}
                   className="flex-1 bg-primary text-primary-foreground py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50 hover:bg-primary/90 transition-colors"
                 >
-                  {savingAgent ? 'Saving...' : 'Save Changes'}
+                  {savingAgent ? t('agents.saving') : t('agents.saveChanges')}
                 </button>
                 <button onClick={() => setEditingAgent(null)} className="px-5 py-2.5 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
-                  Cancel
+                  {t('agents.cancel')}
                 </button>
               </div>
             </motion.div>
@@ -224,23 +226,23 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
           <table className="w-full text-sm border-separate border-spacing-y-2 px-2">
             <thead>
               <tr className="text-muted-foreground">
-                <th className="text-left px-5 py-3 font-bold uppercase tracking-wider text-[10px]">Agent</th>
-                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Foundation</th>
-                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Product</th>
-                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Process</th>
-                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Payment</th>
-                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">AI Eval</th>
-                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Pitch</th>
-                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Overall</th>
-                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">Status</th>
+                <th className="text-left px-5 py-3 font-bold uppercase tracking-wider text-[10px]">{t('agents.table.agent')}</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">{t('agents.table.foundation')}</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">{t('agents.table.product')}</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">{t('agents.table.process')}</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">{t('agents.table.payment')}</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">{t('agents.table.aiEval')}</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">{t('agents.table.pitch')}</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">{t('agents.table.overall')}</th>
+                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px]">{t('agents.table.status')}</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={10} className="text-center py-16"><div className="flex flex-col items-center gap-3"><div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /><span className="text-sm text-muted-foreground animate-pulse">Loading agents...</span></div></td></tr>
+                <tr><td colSpan={10} className="text-center py-16"><div className="flex flex-col items-center gap-3"><div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /><span className="text-sm text-muted-foreground animate-pulse">{t('agents.loading')}</span></div></td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={10} className="text-center py-12 text-muted-foreground bg-card/40 backdrop-blur-sm rounded-2xl">No agents found.</td></tr>
+                <tr><td colSpan={10} className="text-center py-12 text-muted-foreground bg-card/40 backdrop-blur-sm rounded-2xl">{t('agents.noAgents')}</td></tr>
               ) : filtered.map(a => (
                 <tr key={a.agent.id} className="bg-card/60 backdrop-blur-md hover:bg-card hover:shadow-md transition-all group">
                   <td className="px-5 py-4 rounded-l-2xl border-y border-l border-border/50 group-hover:border-primary/20">
@@ -248,7 +250,7 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
                     {a.agent.stageName && (
                       <div className="text-xs text-primary/70 font-medium mt-0.5">&quot;{a.agent.stageName}&quot;</div>
                     )}
-                    <div className="text-[10px] text-muted-foreground mt-1">{timeAgo(a.lastActive)}</div>
+                    <div className="text-[10px] text-muted-foreground mt-1">{timeAgo(a.lastActive, t)}</div>
                   </td>
                   <td className="px-4 py-4 border-y border-border/50 group-hover:border-y-primary/20"><ModuleCell stat={a.quiz.foundation} /></td>
                   <td className="px-4 py-4 border-y border-border/50 group-hover:border-y-primary/20"><ModuleCell stat={a.quiz.product} /></td>
@@ -272,18 +274,18 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
                   </td>
                   <td className="px-4 py-4 text-center border-y border-border/50 group-hover:border-y-primary/20">
                     <span className={`px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold ${a.agent.active ? 'bg-blue-500/15 text-blue-400' : 'bg-red-500/15 text-red-400'}`}>
-                      {a.agent.active ? 'Active' : 'Inactive'}
+                      {a.agent.active ? t('agents.active') : t('agents.inactive')}
                     </span>
                   </td>
                   <td className="px-4 py-4 rounded-r-2xl border-y border-r border-border/50 group-hover:border-primary/20">
                     <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={() => setSelectedForDetail(a)}
                         className="text-[11px] font-bold text-primary hover:text-primary/80 transition-colors whitespace-nowrap px-3 py-1.5 bg-primary/10 rounded-lg">
-                        View Details
+                        {t('agents.viewDetails')}
                       </button>
                       <button onClick={() => toggleActive(a.agent.id, a.agent.active)}
                         className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap px-2 py-1.5 bg-secondary/50 rounded-lg">
-                        {a.agent.active ? 'Deactivate' : 'Reactivate'}
+                        {a.agent.active ? t('agents.deactivate') : t('agents.reactivate')}
                       </button>
                       <button
                         onClick={() => setEditingAgent({ id: a.agent.id, name: a.agent.name, stageName: a.agent.stageName ?? '' })}
@@ -315,8 +317,8 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
             return (
               <div key={b} className={`rounded-2xl p-5 ${c.bg} border border-transparent`}>
                 <p className={`text-2xl font-black ${c.text}`}>{count}</p>
-                <p className={`text-sm font-semibold ${c.text}`}>{c.label}</p>
-                <p className="text-xs text-muted-foreground mt-1">{Math.round((count / agents.length) * 100)}% of agents</p>
+                <p className={`text-sm font-semibold ${c.text}`}>{t(`badges.${b}`)}</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('agents.badgeShare', { pct: Math.round((count / agents.length) * 100) })}</p>
               </div>
             );
           })}

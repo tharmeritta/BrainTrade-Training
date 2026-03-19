@@ -4,9 +4,26 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { PitchMessage } from '@/types';
 
-function loadPrompt(level: 1 | 2 | 3): string {
-  const filePath = join(process.cwd(), 'prompts', `pitch-l${level}.txt`);
-  return readFileSync(filePath, 'utf-8');
+import { getAdminDb } from '@/lib/firebase-admin';
+
+async function loadPrompt(level: 1 | 2 | 3): Promise<string> {
+  try {
+    const db = getAdminDb();
+    const doc = await db.collection('module_config').doc(`pitch_l${level}`).get();
+    if (doc.exists && doc.data()?.prompt) {
+      return doc.data()?.prompt;
+    }
+  } catch (err) {
+    console.error('Firestore prompt load error:', err);
+  }
+
+  // Fallback to local file if Firestore fails or doc not found
+  try {
+    const filePath = join(process.cwd(), 'prompts', `pitch-l${level}.txt`);
+    return readFileSync(filePath, 'utf-8');
+  } catch {
+    return 'You are a professional tele-sales trainer. Simulate a sales conversation.';
+  }
 }
 
 // Keep only the most recent messages to cap token usage as conversations grow.
@@ -20,7 +37,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid level' }, { status: 400 });
     }
 
-    const systemPrompt = loadPrompt(level as 1 | 2 | 3);
+    const systemPrompt = await loadPrompt(level as 1 | 2 | 3);
 
     // Sliding window: only send the last HISTORY_WINDOW messages to the AI.
     // The system prompt provides enough context for the AI to remain coherent.

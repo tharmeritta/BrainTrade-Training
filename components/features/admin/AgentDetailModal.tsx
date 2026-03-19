@@ -2,17 +2,19 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { Target, Zap, TrendingUp, ClipboardCheck, X, Clock, GraduationCap } from 'lucide-react';
 import type { AgentStats } from '@/types';
 import { BadgePill } from './AdminComponents';
 import { scoreColor, timeAgo } from './AdminHelpers';
 
 function DetailedQuizHistory({ stats }: { stats: AgentStats }) {
+  const t = useTranslations('admin');
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
         <Target size={18} className="text-amber-500" />
-        <h4 className="font-bold text-base">Quiz Attempt History</h4>
+        <h4 className="font-bold text-base">{t('agentDetail.quizHistory')}</h4>
       </div>
       {(['foundation', 'product', 'process', 'payment'] as const).map(topic => {
         const q = stats.quiz[topic];
@@ -20,15 +22,15 @@ function DetailedQuizHistory({ stats }: { stats: AgentStats }) {
         return (
           <div key={topic} className="bg-secondary/20 rounded-2xl p-4 border border-border/50">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-bold capitalize text-foreground">{topic}</span>
+              <span className="text-sm font-bold capitalize text-foreground">{t(`modules.${topic}`)}</span>
               <div className="flex items-center gap-2">
-                <span className={`text-xs font-black ${scoreColor(q?.bestScore)}`}>Best: {q?.bestScore ?? 0}%</span>
-                <span className="text-[10px] text-muted-foreground uppercase">{q?.attempts ?? 0} attempts</span>
+                <span className={`text-xs font-black ${scoreColor(q?.bestScore)}`}>{t('agentDetail.best')}: {q?.bestScore ?? 0}%</span>
+                <span className="text-[10px] text-muted-foreground uppercase">{t('agentDetail.attempts', { count: q?.attempts ?? 0 })}</span>
               </div>
             </div>
             <div className="space-y-2">
               {history.length === 0 ? (
-                <p className="text-[10px] text-muted-foreground italic">No attempts yet</p>
+                <p className="text-[10px] text-muted-foreground italic">{t('agentDetail.noAttempts')}</p>
               ) : history.map((h, i) => (
                 <div key={i} className="flex items-center justify-between bg-card/40 px-3 py-2 rounded-xl text-[11px] border border-border/30">
                   <div className="flex items-center gap-2">
@@ -38,9 +40,9 @@ function DetailedQuizHistory({ stats }: { stats: AgentStats }) {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={`font-bold uppercase text-[9px] ${h.passed ? 'text-blue-500' : 'text-red-500'}`}>
-                      {h.passed ? 'PASS' : 'FAIL'}
+                      {h.passed ? t('agentDetail.pass') : t('agentDetail.fail')}
                     </span>
-                    <span className="text-muted-foreground/60">{new Date(h.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                    <span className="text-muted-foreground/60">{new Date(h.timestamp).toLocaleDateString(t('tabs.overview') === 'ภาพรวม' ? 'th-TH' : 'en-GB', { day: 'numeric', month: 'short' })}</span>
                   </div>
                 </div>
               ))}
@@ -53,30 +55,31 @@ function DetailedQuizHistory({ stats }: { stats: AgentStats }) {
 }
 
 function DetailedAiEvalHistory({ stats }: { stats: AgentStats }) {
+  const t = useTranslations('admin');
   const history = stats.aiEval?.history || [];
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
         <Zap size={18} className="text-purple-500" />
-        <h4 className="font-bold text-base">AI Evaluation Logs</h4>
+        <h4 className="font-bold text-base">{t('agentDetail.aiEvalLogs')}</h4>
       </div>
       <div className="grid grid-cols-1 gap-3">
         {history.length === 0 ? (
-          <div className="text-center py-8 bg-secondary/20 rounded-2xl border border-dashed border-border text-muted-foreground text-xs">No roleplay sessions found</div>
+          <div className="text-center py-8 bg-secondary/20 rounded-2xl border border-dashed border-border text-muted-foreground text-xs">{t('agentDetail.noAiSessions')}</div>
         ) : history.map((h, i) => (
           <div key={i} className="flex items-center gap-4 bg-secondary/20 p-4 rounded-2xl border border-border/50">
             <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex flex-col items-center justify-center border border-purple-500/20">
-              <span className="text-[10px] font-bold text-purple-400 uppercase leading-none mb-0.5">Lvl</span>
+              <span className="text-[10px] font-bold text-purple-400 uppercase leading-none mb-0.5">{t('agentDetail.lvl')}</span>
               <span className="text-lg font-black text-purple-400 leading-none">{h.level}</span>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
                 <span className={`text-sm font-black ${scoreColor(h.score)}`}>{h.score}/100</span>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${h.passed ? 'bg-blue-500/10 text-blue-400' : 'bg-red-500/10 text-red-400'}`}>
-                  {h.passed ? 'PASSED' : 'NOT PASSED'}
+                  {h.passed ? t('agentDetail.passed') : t('agentDetail.notPassed')}
                 </span>
               </div>
-              <div className="text-[10px] text-muted-foreground">{new Date(h.timestamp).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+              <div className="text-[10px] text-muted-foreground">{new Date(h.timestamp).toLocaleString(t('tabs.overview') === 'ภาพรวม' ? 'th-TH' : 'en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
             </div>
           </div>
         ))}
@@ -86,28 +89,29 @@ function DetailedAiEvalHistory({ stats }: { stats: AgentStats }) {
 }
 
 function DetailedPitchHistory({ stats }: { stats: AgentStats }) {
+  const t = useTranslations('admin');
   const history = stats.pitch?.history || [];
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
         <TrendingUp size={18} className="text-orange-500" />
-        <h4 className="font-bold text-base">Pitch Simulator History</h4>
+        <h4 className="font-bold text-base">{t('agentDetail.pitchHistory')}</h4>
       </div>
       <div className="grid grid-cols-1 gap-3">
         {history.length === 0 ? (
-          <div className="text-center py-8 bg-secondary/20 rounded-2xl border border-dashed border-border text-muted-foreground text-xs">No pitch sessions found</div>
+          <div className="text-center py-8 bg-secondary/20 rounded-2xl border border-dashed border-border text-muted-foreground text-xs">{t('agentDetail.noPitchSessions')}</div>
         ) : history.map((h, i) => (
           <div key={i} className="flex items-center gap-4 bg-secondary/20 p-4 rounded-2xl border border-border/50">
             <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex flex-col items-center justify-center border border-orange-500/20">
-              <span className="text-[10px] font-bold text-orange-400 uppercase leading-none mb-0.5">Lvl</span>
+              <span className="text-[10px] font-bold text-orange-400 uppercase leading-none mb-0.5">{t('agentDetail.lvl')}</span>
               <span className="text-lg font-black text-orange-400 leading-none">{h.level}</span>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
                 <span className={`text-xs font-bold uppercase tracking-wider ${h.closedSale ? 'text-emerald-400' : 'text-muted-foreground'}`}>
-                  {h.closedSale ? '🏆 Sale Closed' : 'No Sale'}
+                  {h.closedSale ? `🏆 ${t('agentDetail.saleClosed')}` : t('agentDetail.noSale')}
                 </span>
-                <span className="text-[10px] text-muted-foreground/60">{new Date(h.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                <span className="text-[10px] text-muted-foreground/60">{new Date(h.timestamp).toLocaleDateString(t('tabs.overview') === 'ภาพรวม' ? 'th-TH' : 'en-GB', { day: 'numeric', month: 'short' })}</span>
               </div>
               <div className="h-1.5 w-full bg-card rounded-full overflow-hidden">
                 <div className={`h-full transition-all duration-500 ${h.closedSale ? 'bg-emerald-500' : 'bg-muted-foreground/20'}`} style={{ width: h.closedSale ? '100%' : '20%' }} />
@@ -121,16 +125,17 @@ function DetailedPitchHistory({ stats }: { stats: AgentStats }) {
 }
 
 function DetailedHumanEvaluations({ stats }: { stats: AgentStats }) {
+  const t = useTranslations('admin');
   const evals = stats.humanEvaluations || [];
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
         <ClipboardCheck size={18} className="text-blue-500" />
-        <h4 className="font-bold text-base">Human QA Evaluations</h4>
+        <h4 className="font-bold text-base">{t('agentDetail.humanQa')}</h4>
       </div>
       <div className="space-y-3">
         {evals.length === 0 ? (
-          <div className="text-center py-8 bg-secondary/20 rounded-2xl border border-dashed border-border text-muted-foreground text-xs">No human evaluations yet</div>
+          <div className="text-center py-8 bg-secondary/20 rounded-2xl border border-dashed border-border text-muted-foreground text-xs">{t('agentDetail.noHumanEvals')}</div>
         ) : evals.map((ev, i) => (
           <div key={i} className="bg-secondary/20 p-4 rounded-2xl border border-border/50 space-y-3">
             <div className="flex items-center justify-between">
@@ -139,13 +144,13 @@ function DetailedHumanEvaluations({ stats }: { stats: AgentStats }) {
                   {ev.totalScore}
                 </div>
                 <div>
-                  <div className="text-[10px] text-muted-foreground uppercase font-bold">Evaluated by</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-bold">{t('agentDetail.evaluatedBy')}</div>
                   <div className="text-xs font-bold text-foreground">{ev.evaluatorName}</div>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-[10px] text-muted-foreground uppercase font-bold">{new Date(ev.evaluatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</div>
-                <div className="text-[9px] text-muted-foreground/60">{timeAgo(ev.evaluatedAt)}</div>
+                <div className="text-[10px] text-muted-foreground uppercase font-bold">{new Date(ev.evaluatedAt).toLocaleDateString(t('tabs.overview') === 'ภาพรวม' ? 'th-TH' : 'en-GB', { day: 'numeric', month: 'short' })}</div>
+                <div className="text-[9px] text-muted-foreground/60">{timeAgo(ev.evaluatedAt, t)}</div>
               </div>
             </div>
             {ev.comments && (
@@ -161,6 +166,7 @@ function DetailedHumanEvaluations({ stats }: { stats: AgentStats }) {
 }
 
 export default function AgentDetailModal({ stats, onClose }: { stats: AgentStats; onClose: () => void }) {
+  const t = useTranslations('admin');
   const [activeTab, setActiveTab] = useState<'quiz' | 'ai' | 'pitch' | 'qa'>('quiz');
 
   return (
@@ -190,12 +196,12 @@ export default function AgentDetailModal({ stats, onClose }: { stats: AgentStats
                 <h3 className="text-2xl font-black text-foreground tracking-tight">{stats.agent.name}</h3>
                 <BadgePill badge={stats.badge} />
                 <span className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold ${stats.agent.active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                  {stats.agent.active ? 'Active' : 'Inactive'}
+                  {stats.agent.active ? t('agentDetail.active') : t('agentDetail.inactive')}
                 </span>
               </div>
               <div className="flex items-center gap-4 text-xs text-muted-foreground font-medium">
-                <div className="flex items-center gap-1.5"><Clock size={14} /> Last Active: {timeAgo(stats.lastActive)}</div>
-                <div className="flex items-center gap-1.5"><GraduationCap size={14} /> Overall Score: <span className={`font-bold ${scoreColor(stats.overallScore)}`}>{stats.overallScore}%</span></div>
+                <div className="flex items-center gap-1.5"><Clock size={14} /> {t('agentDetail.lastActive')}: {timeAgo(stats.lastActive, t)}</div>
+                <div className="flex items-center gap-1.5"><GraduationCap size={14} /> {t('agentDetail.overallScore')}: <span className={`font-bold ${scoreColor(stats.overallScore)}`}>{stats.overallScore}%</span></div>
               </div>
             </div>
           </div>
@@ -205,10 +211,10 @@ export default function AgentDetailModal({ stats, onClose }: { stats: AgentStats
         <div className="px-8 border-b border-border bg-card shrink-0">
           <div className="flex gap-8 overflow-x-auto scrollbar-hide">
             {[
-              { id: 'quiz',  label: 'Quiz History', icon: Target },
-              { id: 'ai',    label: 'AI Roleplay',  icon: Zap },
-              { id: 'pitch', label: 'Pitch Skills', icon: TrendingUp },
-              { id: 'qa',    label: 'QA Feedback',  icon: ClipboardCheck },
+              { id: 'quiz',  label: t('agentDetail.tabs.quiz'), icon: Target },
+              { id: 'ai',    label: t('agentDetail.tabs.ai'),   icon: Zap },
+              { id: 'pitch', label: t('agentDetail.tabs.pitch'), icon: TrendingUp },
+              { id: 'qa',    label: t('agentDetail.tabs.qa'), icon: ClipboardCheck },
             ].map(t => (
               <button
                 key={t.id}

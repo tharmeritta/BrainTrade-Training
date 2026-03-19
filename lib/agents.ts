@@ -1,7 +1,7 @@
 import { fsGet as gcsGet, fsGetAll as gcsGetAll } from './firestore-db';
 import type { Agent, AgentStats, ModuleStat, AgentEvaluation } from '@/types';
 
-const MODULES = ['foundation', 'product', 'process', 'payment'] as const;
+const MODULES = ['foundation', 'product', 'process'] as const;
 
 // ── Score helpers ─────────────────────────────────────────────────────────
 

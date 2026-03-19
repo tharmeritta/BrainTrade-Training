@@ -6,42 +6,39 @@ import { motion } from 'framer-motion';
 import { BookOpen, ClipboardList, PlayCircle, BarChart3, LucideIcon } from 'lucide-react';
 import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
 
+import { useTranslations } from 'next-intl';
+
 // --- Types & Constants ---
 
 interface ModuleItem {
-  label: string;
+  key: string;
   href: string;
-  sub: string;
   icon: LucideIcon;
   color: string;
 }
 
 const MODULES: ModuleItem[] = [
   { 
-    label: 'เรียนรู้', 
+    key: 'learn', 
     href: '/learn/product', 
-    sub: 'ศึกษาข้อมูลผลิตภัณฑ์', 
     icon: BookOpen, 
     color: 'bg-blue-500' 
   },
   { 
-    label: 'แบบทดสอบ', 
+    key: 'quiz', 
     href: '/quiz', 
-    sub: 'วัดความรู้ของคุณ', 
     icon: ClipboardList, 
     color: 'bg-indigo-500' 
   },
   { 
-    label: 'AI ประเมินผล', 
+    key: 'aiEval', 
     href: '/ai-eval', 
-    sub: 'วิเคราะห์การนำเสนอ', 
     icon: BarChart3, 
     color: 'bg-violet-500'
   },
   { 
-    label: 'ฝึกพิช', 
+    key: 'pitch', 
     href: '/pitch', 
-    sub: 'จำลองการขายเสมือนจริง', 
     icon: PlayCircle, 
     color: 'bg-orange-500' 
   },
@@ -52,23 +49,28 @@ const MODULES: ModuleItem[] = [
 /**
  * Dashboard page header
  */
-const DashboardHeader = () => (
-  <motion.header 
-    variants={FADE_IN}
-    initial="initial"
-    animate="animate"
-  >
-    <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
-      แดชบอร์ด <span className="text-primary">การพัฒนา</span>
-    </h1>
-    <p className="text-muted-foreground mt-2 text-lg">เลือกหัวข้อที่ต้องการฝึกฝนได้เลย</p>
-  </motion.header>
-);
+const DashboardHeader = () => {
+  const t = useTranslations('dashboard');
+  return (
+    <motion.header 
+      variants={FADE_IN}
+      initial="initial"
+      animate="animate"
+    >
+      <h1 
+        className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl"
+        dangerouslySetInnerHTML={{ __html: t.raw('headerTitle') }}
+      />
+      <p className="text-muted-foreground mt-2 text-lg">{t('headerSub')}</p>
+    </motion.header>
+  );
+};
 
 /**
  * Individual module card
  */
 const ModuleCard = ({ item, locale }: { item: ModuleItem; locale: string }) => {
+  const t = useTranslations('dashboard');
   const Icon = item.icon;
   
   return (
@@ -81,8 +83,8 @@ const ModuleCard = ({ item, locale }: { item: ModuleItem; locale: string }) => {
           <Icon size={28} />
         </div>
         <div>
-          <h3 className="font-bold text-lg">{item.label}</h3>
-          <p className="text-xs text-muted-foreground mt-1">{item.sub}</p>
+          <h3 className="font-bold text-lg">{t(item.key)}</h3>
+          <p className="text-xs text-muted-foreground mt-1">{t(`${item.key}Sub`)}</p>
         </div>
         
         {/* Glow effect */}
@@ -95,6 +97,7 @@ const ModuleCard = ({ item, locale }: { item: ModuleItem; locale: string }) => {
 // --- Main Component ---
 
 export default function Dashboard() {
+  const t = useTranslations('dashboard');
   const pathname = usePathname();
   const locale = pathname.split('/')[1] ?? 'th';
 
@@ -110,7 +113,7 @@ export default function Dashboard() {
           className="text-xl font-bold mb-6 flex items-center gap-2"
         >
           <div className="w-1.5 h-6 bg-primary rounded-full" />
-          เมนูทางลัด
+          {t('shortcuts')}
         </motion.h2>
 
         <motion.div 
@@ -121,7 +124,7 @@ export default function Dashboard() {
         >
           {MODULES.map((item) => (
             <ModuleCard 
-              key={item.label} 
+              key={item.key} 
               item={item} 
               locale={locale} 
             />

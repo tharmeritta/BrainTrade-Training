@@ -13,6 +13,8 @@ import type { PitchMessage } from '@/types';
 import { getAgentSession } from '@/lib/agent-session';
 import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM, TRANSITION, EASE } from '@/lib/animations';
 
+import { useTranslations } from 'next-intl';
+
 // ─── Constants & Types ────────────────────────────────────────────────────────
 
 const SESSION_KEY = 'brainstrade_pitch_active';
@@ -21,12 +23,6 @@ const LEVEL_COLORS: Record<number, { accent: string; glow: string; bg: string; b
   1: { accent: '#22D3EE', glow: 'rgba(34,211,238,0.18)',  bg: 'rgba(34,211,238,0.08)',  border: 'rgba(34,211,238,0.3)',  label: 'Beginner'     },
   2: { accent: '#60A5FA', glow: 'rgba(96,165,250,0.18)',  bg: 'rgba(96,165,250,0.08)',  border: 'rgba(96,165,250,0.3)',  label: 'Standard'     },
   3: { accent: '#F472B6', glow: 'rgba(244,114,182,0.18)', bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.3)', label: 'Advanced'     },
-};
-
-const LEVEL_LABELS: Record<number, { th: string; desc: string }> = {
-  1: { th: 'เริ่มต้น',  desc: 'ลูกค้าชาวเวียดนาม ปานกลาง' },
-  2: { th: 'มาตรฐาน', desc: 'ลูกค้าหลากหลาย สถานการณ์ซับซ้อน' },
-  3: { th: 'ท้าทาย',  desc: 'ลูกค้าจิตวิทยาขั้นสูง ยากที่สุด' },
 };
 
 type PitchLevel = 1 | 2 | 3;
@@ -107,6 +103,7 @@ interface ChatScreenProps {
 const LevelCard = memo(({ 
   l, index, locked, completed, selected, onSelect 
 }: LevelCardProps) => {
+  const t = useTranslations('pitch');
   const cfg = LEVEL_COLORS[l];
   
   return (
@@ -151,7 +148,7 @@ const LevelCard = memo(({
 
       <div className="mb-1.5 flex items-baseline gap-2">
         <span className="text-xl font-black tracking-tight text-[color:var(--hub-text)]" style={{ color: locked ? 'var(--hub-dim)' : undefined }}>
-          Level {l}
+          {t('level')} {l}
         </span>
         <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60"
           style={{ color: locked ? 'var(--hub-dim)' : cfg.accent }}>
@@ -159,10 +156,10 @@ const LevelCard = memo(({
         </span>
       </div>
       <p className="text-sm font-black mb-1 text-[color:var(--hub-text)]" style={{ color: locked ? 'var(--hub-dim)' : undefined }}>
-        {LEVEL_LABELS[l].th}
+        {t(`levels.${l}.th`)}
       </p>
       <p className="text-[11px] font-medium leading-relaxed opacity-70 flex-1 text-[color:var(--hub-muted)]" style={{ color: locked ? 'var(--hub-dim)' : undefined }}>
-        {locked ? `ต้องการผ่าน Level ${l - 1} ก่อนเริ่มการฝึก` : LEVEL_LABELS[l].desc}
+        {locked ? t('lockedDesc', { level: l - 1 }) : t(`levels.${l}.desc`)}
       </p>
 
       {selected && !locked && (
@@ -212,117 +209,121 @@ MessageBubble.displayName = 'MessageBubble';
  */
 const EvaluationView = memo(({ 
   evaluation, level, messages, onRetry, onNext, onDashboard, chatAccent, chatGlow 
-}: EvaluationViewProps) => (
-  <motion.div
-    variants={FADE_IN}
-    initial="initial"
-    animate="animate"
-    className="space-y-5"
-  >
-    <div className="rounded-[28px] p-6 bg-[color:var(--hub-card)] border border-[color:var(--hub-border)] shadow-xl shadow-black/5">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800">
-          <Sparkles size={20} className="text-amber-600" />
-        </div>
-        <h3 className="font-black text-base text-[color:var(--hub-text)] uppercase tracking-tight">ทำไมลูกค้าถึงตัดสินใจซื้อ</h3>
-      </div>
-      <p className="text-sm leading-relaxed text-[color:var(--hub-muted)] font-medium italic">&quot;{evaluation.reason}&quot;</p>
-    </div>
-
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-      <div className="rounded-[28px] p-6 bg-white dark:bg-white/5 border border-blue-200 dark:border-blue-800 shadow-lg shadow-blue-500/5">
-        <div className="flex items-center gap-3 mb-4 text-blue-600">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
-            <ThumbsUp size={20} />
+}: EvaluationViewProps) => {
+  const t = useTranslations('pitch');
+  
+  return (
+    <motion.div
+      variants={FADE_IN}
+      initial="initial"
+      animate="animate"
+      className="space-y-5"
+    >
+      <div className="rounded-[28px] p-6 bg-[color:var(--hub-card)] border border-[color:var(--hub-border)] shadow-xl shadow-black/5">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800">
+            <Sparkles size={20} className="text-amber-600" />
           </div>
-          <h3 className="font-black text-base uppercase tracking-tight">จุดแข็งของคุณ</h3>
+          <h3 className="font-black text-base text-[color:var(--hub-text)] uppercase tracking-tight">{t('whyBuy')}</h3>
         </div>
-        <ul className="space-y-3">
-          {(evaluation.strengths || []).map((s, i) => (
-            <li key={i} className="flex items-start gap-3 text-sm font-bold text-[color:var(--hub-text)]">
-              <span className="w-6 h-6 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-600 flex items-center justify-center shrink-0 text-[10px] font-black border border-blue-200/50">
-                {i + 1}
-              </span>
-              <span className="mt-0.5">{s}</span>
-            </li>
-          ))}
-        </ul>
+        <p className="text-sm leading-relaxed text-[color:var(--hub-muted)] font-medium italic">&quot;{evaluation.reason}&quot;</p>
       </div>
 
-      <div className="rounded-[28px] p-6 bg-white dark:bg-white/5 border border-amber-200 dark:border-amber-800 shadow-lg shadow-amber-500/5">
-        <div className="flex items-center gap-3 mb-4 text-amber-600">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
-            <TrendingUp size={20} />
-          </div>
-          <h3 className="font-black text-base uppercase tracking-tight">สิ่งที่ควรพัฒนา</h3>
-        </div>
-        <ul className="space-y-3">
-          {(evaluation.weaknesses || []).map((w, i) => (
-            <li key={i} className="flex items-start gap-3 text-sm font-bold text-[color:var(--hub-text)]">
-              <span className="w-6 h-6 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 flex items-center justify-center shrink-0 text-[10px] font-black border border-amber-200/50">
-                {i + 1}
-              </span>
-              <span className="mt-0.5">{w}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-
-    <div className="flex flex-col sm:flex-row gap-4 pt-4">
-      <button
-        onClick={onRetry}
-        className="flex-1 flex items-center justify-center gap-2 py-5 rounded-[24px] font-black text-sm transition-all bg-secondary/50 hover:bg-secondary border border-black/5 text-muted-foreground hover:text-foreground active:scale-95 shadow-lg"
-      >
-        <RotateCcw size={18} />
-        ฝึกใหม่ที่ Level {level}
-      </button>
-
-      {level < 3 ? (
-        <button
-          onClick={onNext}
-          className="flex-1 flex items-center justify-center gap-2 py-5 rounded-[24px] font-black text-sm transition-all text-white active:scale-95 shadow-xl"
-          style={{
-            background: `linear-gradient(135deg, ${LEVEL_COLORS[level + 1].accent}, ${LEVEL_COLORS[level + 1].accent}BB)`,
-            boxShadow: `0 12px 32px ${LEVEL_COLORS[level + 1].glow}`,
-          }}
-        >
-          ไปต่อ Level {level + 1} — {LEVEL_LABELS[level + 1].th}
-          <ArrowRight size={20} />
-        </button>
-      ) : (
-        <button
-          onClick={onDashboard}
-          className="flex-1 flex items-center justify-center gap-2 py-5 rounded-[24px] font-black text-sm transition-all text-white bg-foreground hover:bg-primary shadow-xl active:scale-95"
-        >
-          <LayoutDashboard size={18} />
-          กลับสู่แดชบอร์ดหลัก
-        </button>
-      )}
-    </div>
-
-    <details className="rounded-2xl overflow-hidden mt-4 border-2 border-black/5 dark:border-white/5 transition-all">
-      <summary className="px-6 py-4 cursor-pointer text-xs font-black uppercase tracking-widest select-none text-muted-foreground hover:bg-secondary/30 flex items-center justify-between">
-        ดูบันทึกบทสนทนา ({messages.length} ข้อความ)
-        <ChevronRight size={14} className="opacity-40" />
-      </summary>
-      <div className="border-t max-h-80 overflow-y-auto px-6 py-6 space-y-4 bg-slate-50/50 dark:bg-black/20"
-        style={{ borderColor: 'var(--hub-border)' }}>
-        {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className="max-w-[85%] text-xs px-4 py-3 rounded-2xl font-medium leading-relaxed whitespace-pre-wrap shadow-sm border"
-              style={m.role === 'user'
-                ? { background: chatAccent, color: '#fff', borderColor: 'transparent' }
-                : { background: 'var(--hub-card)', borderColor: 'var(--hub-border)', color: 'var(--hub-text)' }
-              }>
-              {m.content}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className="rounded-[28px] p-6 bg-white dark:bg-white/5 border border-blue-200 dark:border-blue-800 shadow-lg shadow-blue-500/5">
+          <div className="flex items-center gap-3 mb-4 text-blue-600">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+              <ThumbsUp size={20} />
             </div>
+            <h3 className="font-black text-base uppercase tracking-tight">{t('strengths')}</h3>
           </div>
-        ))}
+          <ul className="space-y-3">
+            {(evaluation.strengths || []).map((s, i) => (
+              <li key={i} className="flex items-start gap-3 text-sm font-bold text-[color:var(--hub-text)]">
+                <span className="w-6 h-6 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-600 flex items-center justify-center shrink-0 text-[10px] font-black border border-blue-200/50">
+                  {i + 1}
+                </span>
+                <span className="mt-0.5">{s}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="rounded-[28px] p-6 bg-white dark:bg-white/5 border border-amber-200 dark:border-amber-800 shadow-lg shadow-amber-500/5">
+          <div className="flex items-center gap-3 mb-4 text-amber-600">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+              <TrendingUp size={20} />
+            </div>
+            <h3 className="font-black text-base uppercase tracking-tight">{t('weaknesses')}</h3>
+          </div>
+          <ul className="space-y-3">
+            {(evaluation.weaknesses || []).map((w, i) => (
+              <li key={i} className="flex items-start gap-3 text-sm font-bold text-[color:var(--hub-text)]">
+                <span className="w-6 h-6 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 flex items-center justify-center shrink-0 text-[10px] font-black border border-blue-200/50">
+                  {i + 1}
+                </span>
+                <span className="mt-0.5">{w}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
-    </details>
-  </motion.div>
-));
+
+      <div className="flex flex-col sm:flex-row gap-4 pt-4">
+        <button
+          onClick={onRetry}
+          className="flex-1 flex items-center justify-center gap-2 py-5 rounded-[24px] font-black text-sm transition-all bg-secondary/50 hover:bg-secondary border border-black/5 text-muted-foreground hover:text-foreground active:scale-95 shadow-lg"
+        >
+          <RotateCcw size={18} />
+          {t('retryBtn', { level: level })}
+        </button>
+
+        {level < 3 ? (
+          <button
+            onClick={onNext}
+            className="flex-1 flex items-center justify-center gap-2 py-5 rounded-[24px] font-black text-sm transition-all text-white active:scale-95 shadow-xl"
+            style={{
+              background: `linear-gradient(135deg, ${LEVEL_COLORS[level + 1].accent}, ${LEVEL_COLORS[level + 1].accent}BB)`,
+              boxShadow: `0 12px 32px ${LEVEL_COLORS[level + 1].glow}`,
+            }}
+          >
+            {t('nextLevelBtn', { level: level + 1 })}
+            <ArrowRight size={20} />
+          </button>
+        ) : (
+          <button
+            onClick={onDashboard}
+            className="flex-1 flex items-center justify-center gap-2 py-5 rounded-[24px] font-black text-sm transition-all text-white bg-foreground hover:bg-primary shadow-xl active:scale-95"
+          >
+            <LayoutDashboard size={18} />
+            {t('backToDashboard')}
+          </button>
+        )}
+      </div>
+
+      <details className="rounded-2xl overflow-hidden mt-4 border-2 border-black/5 dark:border-white/5 transition-all">
+        <summary className="px-6 py-4 cursor-pointer text-xs font-black uppercase tracking-widest select-none text-muted-foreground hover:bg-secondary/30 flex items-center justify-between">
+          {t('viewTranscript')} ({messages.length})
+          <ChevronRight size={14} className="opacity-40" />
+        </summary>
+        <div className="border-t max-h-80 overflow-y-auto px-6 py-6 space-y-4 bg-slate-50/50 dark:bg-black/20"
+          style={{ borderColor: 'var(--hub-border)' }}>
+          {messages.map((m, i) => (
+            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className="max-w-[85%] text-xs px-4 py-3 rounded-2xl font-medium leading-relaxed whitespace-pre-wrap shadow-sm border"
+                style={m.role === 'user'
+                  ? { background: chatAccent, color: '#fff', borderColor: 'transparent' }
+                  : { background: 'var(--hub-card)', borderColor: 'var(--hub-border)', color: 'var(--hub-text)' }
+                }>
+                {m.content}
+              </div>
+            </div>
+          ))}
+        </div>
+      </details>
+    </motion.div>
+  );
+});
 
 EvaluationView.displayName = 'EvaluationView';
 
@@ -333,6 +334,7 @@ const SelectionScreen = memo(({
   level, setLevel, agentName, loading, completedLevels,
   pendingResume, startError, onStart, onResume, onClearSession, isLocked
 }: SelectionScreenProps) => {
+  const t = useTranslations('pitch');
   const cfg = LEVEL_COLORS[level];
 
   return (
@@ -355,11 +357,11 @@ const SelectionScreen = memo(({
           <div>
             <div className="flex items-center gap-2.5 mb-3">
               <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_10px_rgba(34,211,238,0.8)]" />
-              <span className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60">Training Mission 04</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-60">{t('mission')} 04</span>
             </div>
-            <h1 className="text-5xl font-black tracking-tight text-[color:var(--hub-text)] mb-3 uppercase">Pitch Simulator</h1>
+            <h1 className="text-5xl font-black tracking-tight text-[color:var(--hub-text)] mb-3 uppercase">{t('title')}</h1>
             <p className="text-muted-foreground text-lg max-w-lg font-medium leading-relaxed opacity-80">
-              ทดสอบทักษะการนำเสนอและการปิดการขายกับลูกค้า AI ในสถานการณ์ที่สมจริงที่สุด
+              {t('description')}
             </p>
           </div>
           
@@ -389,11 +391,13 @@ const SelectionScreen = memo(({
                   <History size={28} className="text-primary" />
                 </div>
                 <div className="flex-1 text-center sm:text-left">
-                  <p className="font-black text-xl text-foreground uppercase tracking-tight">เซสชันที่ค้างอยู่</p>
+                  <p className="font-black text-xl text-foreground uppercase tracking-tight">{t('resumeTitle')}</p>
                   <p className="text-sm font-bold text-muted-foreground mt-1 opacity-80">
-                    Level {pendingResume.level} ({LEVEL_LABELS[pendingResume.level].th}) {' · '} 
-                    {pendingResume.messages.length} ข้อความ {' · '}
-                    ล่าสุดเมื่อ {new Date(pendingResume.savedAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.
+                    {t('resumeDesc', {
+                      level: pendingResume.level,
+                      count: pendingResume.messages.length,
+                      time: new Date(pendingResume.savedAt).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+                    })}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
@@ -401,7 +405,7 @@ const SelectionScreen = memo(({
                     onClick={onClearSession}
                     className="text-xs px-6 py-3 rounded-[18px] font-black uppercase tracking-widest transition-all text-muted-foreground hover:bg-rose-50 hover:text-rose-500 border border-black/5"
                   >
-                    ทิ้ง
+                    {t('discardBtn')}
                   </button>
                   <motion.button
                     onClick={() => onResume(pendingResume)}
@@ -409,7 +413,7 @@ const SelectionScreen = memo(({
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    กลับมาต่อ →
+                    {t('resumeBtn')}
                   </motion.button>
                 </div>
               </div>
@@ -451,7 +455,7 @@ const SelectionScreen = memo(({
             <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
             <div className="relative flex items-center gap-4">
               {loading ? <Loader2 size={28} className="animate-spin" /> : <Play size={28} className="fill-current group-hover:scale-110 transition-transform" />}
-              <span className="uppercase tracking-[0.1em]">{loading ? 'Connecting AI...' : `เริ่มภารกิจ Level ${level}`}</span>
+              <span className="uppercase tracking-[0.1em]">{loading ? t('connecting') : t('start', { level: level })}</span>
             </div>
           </motion.button>
           
@@ -461,7 +465,7 @@ const SelectionScreen = memo(({
           
           {!loading && (
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 animate-bounce">
-              Click to initiate simulated call
+              {t('initiateCall')}
             </p>
           )}
         </motion.div>
@@ -479,6 +483,7 @@ const ChatScreen = memo(({
   level, messages, input, setInput, loading, closedSale, evaluating, evaluation, chatError,
   onSend, onAbandon, onRetry, onNext, onDashboard, bottomRef
 }: ChatScreenProps) => {
+  const t = useTranslations('pitch');
   const cfg = LEVEL_COLORS[level];
   const chatAccent = cfg.accent;
   const chatGlow   = cfg.glow;
@@ -521,13 +526,13 @@ const ChatScreen = memo(({
               </div>
               <div>
                 <h3 className="font-black text-xl text-[color:var(--hub-text)] tracking-tight uppercase">
-                  {LEVEL_LABELS[level].th}
+                  {t(`levels.${level}.th`)}
                 </h3>
                 <div className="flex items-center gap-2.5 mt-1">
                   <div className={`w-2.5 h-2.5 rounded-full ${closedSale ? '' : 'animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]'}`}
                     style={{ background: chatAccent }} />
                   <span className="text-[10px] font-black uppercase tracking-[0.25em]" style={{ color: chatAccent }}>
-                    {closedSale ? 'Sales Mission Accomplished' : 'Incoming Encrypted Signal'}
+                    {closedSale ? t('salesAccomplished') : t('incomingSignal')}
                   </span>
                 </div>
               </div>
@@ -538,7 +543,7 @@ const ChatScreen = memo(({
               className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest px-6 py-3 rounded-2xl transition-all border border-[color:var(--hub-border)] text-muted-foreground hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 shadow-sm"
             >
               <ChevronLeft size={16} />
-              {closedSale ? 'Back to Selection' : 'Terminate Call'}
+              {closedSale ? t('backToSelection') : t('terminateCall')}
             </button>
           </div>
 
@@ -550,9 +555,9 @@ const ChatScreen = memo(({
                   <Sparkles size={20} className="text-primary" />
                 </div>
                 <div className="max-w-[85%] bg-primary/5 border border-primary/10 rounded-[24px] rounded-tl-none px-6 py-5 text-sm font-bold shadow-inner">
-                  <p className="text-primary text-base mb-1 uppercase tracking-tight">Mission Briefing — Level {level}</p>
+                  <p className="text-primary text-base mb-1 uppercase tracking-tight">{t('missionBrief')} — Level {level}</p>
                   <p className="text-muted-foreground font-medium opacity-80 leading-relaxed italic">
-                    &quot;ลูกค้ากำลังรอสายอยู่... กรุณาแนะนำตัวอย่างเป็นมืออาชีพและนำเสนอ SmartBrain AI อย่างมั่นใจ&quot;
+                    &quot;{t('missionBriefSub')}&quot;
                   </p>
                 </div>
               </motion.div>
@@ -569,15 +574,15 @@ const ChatScreen = memo(({
                       <Trophy size={36} className="text-white drop-shadow-md" />
                     </div>
                     <div className="relative z-10">
-                      <h4 className="text-2xl font-black text-foreground uppercase tracking-tight leading-none mb-1.5">ปิดการขายสำเร็จ!</h4>
-                      <p className="text-sm font-bold text-muted-foreground opacity-80 italic">&quot;ลูกค้าตกลงซื้อและชำระเงินเรียบร้อยแล้ว&quot;</p>
+                      <h4 className="text-2xl font-black text-foreground uppercase tracking-tight leading-none mb-1.5">{t('closedSale')}</h4>
+                      <p className="text-sm font-bold text-muted-foreground opacity-80 italic">&quot;{t('closedSaleSub')}&quot;</p>
                     </div>
                   </div>
 
                   {evaluating && (
                     <div className="flex flex-col items-center justify-center gap-4 py-10">
                       <Loader2 size={32} className="animate-spin text-primary" />
-                      <span className="font-black text-xs uppercase tracking-[0.3em] text-muted-foreground animate-pulse">Analyzing Performance Data...</span>
+                      <span className="font-black text-xs uppercase tracking-[0.3em] text-muted-foreground animate-pulse">{t('analyzing')}</span>
                     </div>
                   )}
 
@@ -629,7 +634,7 @@ const ChatScreen = memo(({
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="พิมพ์ข้อความทักทายหรือตอบโต้ลูกค้า..."
+                  placeholder={t('placeholder')}
                   className="flex-1 bg-transparent border-none focus:outline-none focus:ring-0 px-5 py-3 text-sm font-bold placeholder:text-muted-foreground/40"
                 />
                 <motion.button
@@ -657,6 +662,7 @@ ChatScreen.displayName = 'ChatScreen';
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function PitchSimulator() {
+  const t = useTranslations('pitch');
   const router   = useRouter();
   const pathname = usePathname();
   const locale   = pathname.split('/')[1] ?? 'th';
@@ -851,7 +857,7 @@ export default function PitchSimulator() {
       setEvaluation(null);
       setEvaluating(false);
     } catch {
-      setStartError('ไม่สามารถเริ่มเซสชันได้ กรุณาลองใหม่อีกครั้ง');
+      setStartError(t('startError'));
     } finally {
       setLoading(false);
       loadingRef.current = false;
@@ -909,7 +915,7 @@ export default function PitchSimulator() {
       }
       if (sessionId) saveSession(sessionId, level, finalMessages, agentId);
     } catch {
-      setChatError('เกิดข้อผิดพลาดในการส่งข้อความ กรุณาลองใหม่');
+      setChatError(t('chatError'));
     } finally {
       setLoading(false);
       loadingRef.current = false;

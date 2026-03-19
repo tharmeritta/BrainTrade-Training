@@ -13,6 +13,8 @@ import {
 import { getAgentSession, type AgentSession } from '@/lib/agent-session';
 import { FADE_IN, TRANSITION, EASE } from '@/lib/animations';
 
+import { useTranslations } from 'next-intl';
+
 // ─── Theme Configuration ─────────────────────────────────────────────────────
 const C = {
   bg:            '#F5F4F0',
@@ -78,7 +80,7 @@ interface ResultViewProps {
 const QuizHeader = memo(({
   quiz, lang, progressPct, phases, activePhase, onPhaseFilter, onBack, finished
 }: QuizHeaderProps) => {
-  const ui = UI_STRINGS[lang];
+  const t = useTranslations('quiz');
   
   return (
     <div className="mb-6">
@@ -88,7 +90,7 @@ const QuizHeader = memo(({
         style={{ color: C.muted }}
       >
         <ChevronLeft size={16} />
-        {lang === 'th' ? 'เลือกแบบทดสอบ' : 'All Assessments'}
+        {t('chooseAssessment')}
       </button>
 
       <div className="mb-6">
@@ -96,10 +98,10 @@ const QuizHeader = memo(({
           BrainTrade · Internal Training
         </p>
         <h1 style={{ fontSize: 26, fontWeight: 700, color: C.text, marginBottom: 4, letterSpacing: '-0.01em' }}>
-          {quiz.title[lang]}
+          {quiz?.title?.[lang] || 'Untitled Quiz'}
         </h1>
         <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.5 }}>
-          {quiz.description[lang]}
+          {quiz?.description?.[lang] || ''}
         </p>
       </div>
 
@@ -127,7 +129,7 @@ const QuizHeader = memo(({
               boxShadow: activePhase === null ? '0 4px 12px rgba(0,0,0,0.1)' : 'none'
             }}
           >
-            {ui.allPhases}
+            {t('allPhases')}
           </button>
           {phases.map((ph, idx) => (
             <button
@@ -159,6 +161,7 @@ const QuestionCard = memo(({
   question, index, total, lang, phaseColor, phaseLight, phaseName,
   answeredIdx, onAnswer,
 }: QuestionCardProps) => {
+  const t = useTranslations('quiz');
   const opts    = useMemo(() => question.options?.[lang] ?? [], [question.options, lang]);
   const correct = question.correctIdx ?? 0;
   const locked  = answeredIdx !== undefined;
@@ -261,7 +264,7 @@ const QuestionCard = memo(({
                 lineHeight: 1.6,
               }}
             >
-              <p className="text-[10px] font-black uppercase tracking-[0.15em] mb-1.5 opacity-60">Explanation</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.15em] mb-1.5 opacity-60">{t('explanation')}</p>
               {question.explain[lang]}
             </div>
           </motion.div>
@@ -279,7 +282,7 @@ QuestionCard.displayName = 'QuestionCard';
 const ResultView = memo(({
   questions, answered, lang, quiz, onRestart, onDashboard, isPractice,
 }: ResultViewProps) => {
-  const ui    = UI_STRINGS[lang];
+  const t       = useTranslations('quiz');
   const total = questions.length;
   const score = useMemo(() => questions.filter((q, i) => answered[i] === q.correctIdx).length, [questions, answered]);
   const pct   = Math.round((score / total) * 100);
@@ -287,10 +290,10 @@ const ResultView = memo(({
   const passed = score / total >= threshold;
 
   const message = useMemo(() => {
-    if (pct >= 90) return quiz.uiOverrides?.feedbackHigh?.[lang] ?? ui.msgHigh;
-    if (pct >= 70) return quiz.uiOverrides?.feedbackMid?.[lang]  ?? ui.msgMed;
-    return quiz.uiOverrides?.feedbackLow?.[lang] ?? ui.msgLow;
-  }, [pct, quiz.uiOverrides, lang, ui]);
+    if (pct >= 90) return quiz.uiOverrides?.feedbackHigh?.[lang] ?? t('msgHigh');
+    if (pct >= 70) return quiz.uiOverrides?.feedbackMid?.[lang]  ?? t('msgMed');
+    return quiz.uiOverrides?.feedbackLow?.[lang] ?? t('msgLow');
+  }, [pct, quiz.uiOverrides, lang, t]);
 
   const feedbackColor = pct >= 90 ? C.successText : pct >= 70 ? '#185FA5' : C.dangerText;
 
@@ -315,7 +318,7 @@ const ResultView = memo(({
           </p>
 
           <p style={{ fontSize: 13, color: C.hint, fontWeight: 700, fontFamily: "'DM Mono', monospace", letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 8 }}>
-            {ui.yourScore}
+            {t('yourScore')}
           </p>
           
           <motion.div
@@ -348,7 +351,7 @@ const ResultView = memo(({
               <span
                 className="px-4 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200"
               >
-                {lang === 'th' ? 'โหมดฝึกซ้อม — ไม่บันทึกผล' : 'Practice mode — progress not saved'}
+                {t('practiceMode')}
               </span>
             )}
           </div>
@@ -366,7 +369,7 @@ const ResultView = memo(({
               style={{ background: C.text, color: '#fff' }}
             >
               <LayoutDashboard size={16} />
-              {ui.backToHome}
+              {t('backToHome')}
             </motion.button>
             <motion.button
               onClick={onRestart}
@@ -376,7 +379,7 @@ const ResultView = memo(({
               style={{ background: C.surface, color: C.muted, borderColor: C.border }}
             >
               <RotateCcw size={15} />
-              {ui.tryAgain}
+              {t('tryAgain')}
             </motion.button>
           </div>
         </div>
@@ -391,7 +394,7 @@ const ResultView = memo(({
           style={{ borderColor: C.border }}
         >
           <span style={{ fontSize: 12, fontWeight: 800, fontFamily: "'DM Mono', monospace", color: C.hint, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-            {ui.answerKey}
+            {t('answerKey')}
           </span>
         </div>
         <div className="divide-y" style={{ borderColor: C.border }}>
@@ -424,9 +427,7 @@ const ResultView = memo(({
         </div>
         <div className="px-6 py-4 bg-secondary/5 text-center">
           <p style={{ fontSize: 11, color: C.hint, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            {lang === 'th'
-              ? `เกณฑ์การประเมิน: ${Math.round(threshold * 100)}%`
-              : `Passing requirement: ${Math.round(threshold * 100)}%`}
+            {t('passingReq')}: {Math.round(threshold * 100)}%
           </p>
         </div>
       </div>
@@ -443,10 +444,11 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
   const router   = useRouter();
   const locale   = pathname.split('/')[1] ?? 'th';
   const lang     = (locale === 'en' ? 'en' : 'th') as Language;
+  const t        = useTranslations('quiz');
   const ui       = UI_STRINGS[lang];
 
-  const quiz = MODULE_QUIZ_MAP[moduleId];
-
+  const [quiz, setQuiz] = useState<QuizDefinition | null>(null);
+  const [loadingConfig, setLoadingConfig] = useState(true);
   const [agent, setAgent] = useState<AgentSession | null>(null);
   const [activePhase, setActivePhase] = useState<number | null>(null);
   const [current,   setCurrent]   = useState(0);
@@ -456,7 +458,18 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
 
   useEffect(() => {
     setAgent(getAgentSession());
-  }, []);
+    
+    // Fetch latest quiz definition
+    setLoadingConfig(true);
+    fetch(`/api/quiz/config?moduleId=${moduleId}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.config) setQuiz(d.config);
+        else setQuiz(MODULE_QUIZ_MAP[moduleId] || null); // Fallback to hardcoded if not in DB
+      })
+      .catch(() => setQuiz(MODULE_QUIZ_MAP[moduleId] || null))
+      .finally(() => setLoadingConfig(false));
+  }, [moduleId]);
 
   const filteredQuestions = useMemo(() => {
     if (!quiz) return [];
@@ -527,7 +540,7 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
         <motion.div variants={FADE_IN} initial="initial" animate="animate" className="text-center">
           <AlertCircle className="mx-auto mb-4 text-muted-foreground opacity-20" size={48} />
           <p style={{ color: C.muted, fontWeight: 600 }}>
-            {lang === 'th' ? 'ไม่พบข้อมูลแบบทดสอบ' : 'Quiz data not found'}
+            {t('notFound')}
           </p>
         </motion.div>
       </div>
@@ -640,7 +653,7 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
                 >
                   <Loader2 size={12} className="animate-spin text-muted-foreground" />
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                    {lang === 'th' ? 'กำลังบันทึกข้อมูล...' : 'Synchronizing progress...'}
+                    {t('syncing')}
                   </p>
                 </motion.div>
               )}

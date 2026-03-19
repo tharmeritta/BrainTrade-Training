@@ -1,39 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useMemo } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { Lock, ClipboardCheck, GraduationCap, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 
 type Tab = 'admin' | 'trainer' | 'evaluator';
-
-const TABS = {
-  admin: {
-    Icon: Lock,
-    labelTh: 'ผู้จัดการ',
-    accent: '#00B4D8',
-    glow: 'rgba(0,180,216,0.12)',
-    redirect: '/th/admin',
-    desc: 'Admin / Manager · จัดการเอเจนต์ ดูสถิติ ส่งออกรายงาน',
-  },
-  trainer: {
-    Icon: GraduationCap,
-    labelTh: 'ผู้ฝึกสอน',
-    accent: '#F59E0B',
-    glow: 'rgba(245,158,11,0.12)',
-    redirect: '/th/admin',
-    desc: 'Trainer · บันทึกการฝึก ติดตามวินัย รายงานผลประจำวัน',
-  },
-  evaluator: {
-    Icon: ClipboardCheck,
-    labelTh: 'ผู้ประเมิน',
-    accent: '#34D399',
-    glow: 'rgba(52,211,153,0.12)',
-    redirect: '/th/evaluator',
-    desc: 'ประเมินผลเอเจนต์ตามเกณฑ์ที่กำหนด',
-  },
-} as const;
 
 const T = {
   bg:     '#070D1A',
@@ -45,6 +19,10 @@ const T = {
 };
 
 export default function LoginPage() {
+  const t = useTranslations('auth');
+  const pathname = usePathname();
+  const locale = pathname.split('/')[1] ?? 'th';
+  
   const [role, setRole]         = useState<Tab>('admin');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -52,6 +30,34 @@ export default function LoginPage() {
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
   const router = useRouter();
+
+  const TABS = useMemo(() => ({
+    admin: {
+      Icon: Lock,
+      label: t('roles.manager.label'),
+      accent: '#00B4D8',
+      glow: 'rgba(0,180,216,0.12)',
+      redirect: `/${locale}/admin`,
+      desc: t('roles.manager.desc'),
+    },
+    trainer: {
+      Icon: GraduationCap,
+      label: t('roles.trainer.label'),
+      accent: '#F59E0B',
+      glow: 'rgba(245,158,11,0.12)',
+      redirect: `/${locale}/admin`,
+      desc: t('roles.trainer.desc'),
+    },
+    evaluator: {
+      Icon: ClipboardCheck,
+      label: t('roles.evaluator.label'),
+      accent: '#34D399',
+      glow: 'rgba(52,211,153,0.12)',
+      redirect: `/${locale}/evaluator`,
+      desc: t('roles.evaluator.desc'),
+    },
+  }), [t, locale]);
+
   const cfg = TABS[role];
 
   function switchRole(r: Tab) {
@@ -74,10 +80,10 @@ export default function LoginPage() {
       if (!res.ok) throw new Error();
       const data = await res.json();
       // manager, admin, and trainer all use the admin panel
-      const redirect = (['manager', 'admin', 'trainer'].includes(data.role)) ? '/th/admin' : cfg.redirect;
+      const redirect = (['manager', 'admin', 'trainer'].includes(data.role)) ? `/${locale}/admin` : cfg.redirect;
       router.push(redirect);
     } catch {
-      setError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+      setError(t('invalid'));
     } finally {
       setLoading(false);
     }
@@ -106,12 +112,12 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-sm px-4">
         {/* Back link */}
-        <Link href="/th/dashboard"
+        <Link href={`/${locale}/dashboard`}
           className="flex items-center gap-1.5 text-xs mb-6 transition-colors"
           style={{ color: T.sub }}
           onMouseEnter={e => { e.currentTarget.style.color = T.text; }}
           onMouseLeave={e => { e.currentTarget.style.color = T.sub; }}>
-          <ArrowLeft size={12} /> กลับหน้าหลัก
+          <ArrowLeft size={12} /> {t('backToMain')}
         </Link>
 
         {/* Logo */}
@@ -146,7 +152,7 @@ export default function LoginPage() {
                     border: `1px solid ${active ? c.accent + '28' : 'transparent'}`,
                   }}>
                   <Icon size={13} />
-                  {c.labelTh}
+                  {c.label}
                 </button>
               );
             })}
@@ -159,7 +165,7 @@ export default function LoginPage() {
               exit={{ opacity: 0, y: -5 }} transition={{ duration: 0.18 }}
               className="mb-5">
               <h2 className="text-lg font-black mb-1" style={{ color: T.text }}>
-                เข้าสู่ระบบ {cfg.labelTh}
+                {t('loginAs', { role: cfg.label })}
               </h2>
               <p className="text-xs" style={{ color: T.sub }}>{cfg.desc}</p>
             </motion.div>
@@ -169,10 +175,10 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-3">
             <div>
               <label className="block text-[10px] font-medium uppercase tracking-wider mb-1.5"
-                style={{ color: T.sub }}>ชื่อผู้ใช้</label>
+                style={{ color: T.sub }}>{t('username')}</label>
               <input
                 type="text" value={username} onChange={e => setUsername(e.target.value)}
-                placeholder="กรอกชื่อผู้ใช้" required
+                placeholder={t('usernamePlaceholder')} required
                 className="w-full px-3.5 py-2.5 rounded-xl text-sm text-white outline-none transition-colors"
                 style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
                 onFocus={e => { e.currentTarget.style.borderColor = cfg.accent + '40'; }}
@@ -182,12 +188,12 @@ export default function LoginPage() {
 
             <div>
               <label className="block text-[10px] font-medium uppercase tracking-wider mb-1.5"
-                style={{ color: T.sub }}>รหัสผ่าน</label>
+                style={{ color: T.sub }}>{t('password')}</label>
               <div className="relative">
                 <input
                   type={showPass ? 'text' : 'password'} value={password}
                   onChange={e => setPassword(e.target.value)}
-                  placeholder="กรอกรหัสผ่าน" required
+                  placeholder={t('passwordPlaceholder')} required
                   className="w-full px-3.5 py-2.5 pr-10 rounded-xl text-sm text-white outline-none transition-colors"
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
                   onFocus={e => { e.currentTarget.style.borderColor = cfg.accent + '40'; }}
@@ -224,7 +230,7 @@ export default function LoginPage() {
               whileTap={!loading ? { scale: 0.98 } : {}}
             >
               {loading ? <Loader2 size={15} className="animate-spin" />
-                : `เข้าสู่ระบบ ${cfg.labelTh}`}
+                : t('signIn')}
             </motion.button>
           </form>
         </div>

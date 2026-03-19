@@ -2,14 +2,13 @@
 
 /**
  * EvaluatorDashboard — Sales Simulation evaluation interface.
- * Fully theme-aware (light/dark) and bilingual (TH/EN).
- * 
- * Refactored for modularity, consistent animations, and responsive design.
+ * Fully theme-aware (light/dark) and bilingual (TH/EN) using next-intl.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import {
   Search, Users, ClipboardCheck, ChevronRight, Save, Check,
   Clock, Edit3, X, ChevronDown, Loader2, Star, BarChart3,
@@ -28,191 +27,26 @@ import type {
 
 // --- Types & Config ---
 
-type Lang = 'th' | 'en';
-
-const PERFORMANCE_ITEMS: {
-  key: keyof SalesCallCriteria['performance'];
-  labelEn: string;
-  labelTh: string;
-}[] = [
-  { key: 'agentStruggle',         labelEn: "Agent's Struggle",        labelTh: 'การดิ้นรน / ความลำบาก' },
-  { key: 'unhandledQuestions',    labelEn: 'Unhandled Questions',     labelTh: 'คำถามที่ตอบไม่ได้' },
-  { key: 'toneOfVoice',           labelEn: 'Tone of Voice',           labelTh: 'น้ำเสียง' },
-  { key: 'chemistryFriendliness', labelEn: 'Chemistry / Friendliness',labelTh: 'เคมี / ความเป็นมิตร' },
+const PERFORMANCE_KEYS: (keyof SalesCallCriteria['performance'])[] = [
+  'agentStruggle',
+  'unhandledQuestions',
+  'toneOfVoice',
+  'chemistryFriendliness',
 ];
 
-const RED_FLAG_ITEMS: {
-  key: keyof SalesCallCriteria['redFlags'];
-  labelEn: string;
-  labelTh: string;
-  guidelineEn: string;
-  guidelineTh: string;
-}[] = [
-  {
-    key: 'officeLocation',
-    labelEn: 'Office Location',
-    labelTh: 'ตำแหน่งที่ตั้งสำนักงาน',
-    guidelineEn: 'Can tell office is in Bangkok. Cannot specify further.',
-    guidelineTh: 'สามารถบอกได้ว่า HC มาจากบัลแกเรียหรือยุโรป / ออฟฟิศอยู่กทม',
-  },
-  {
-    key: 'withdrawalAfterDeposit',
-    labelEn: 'Withdrawal after Deposit',
-    labelTh: 'การถอนเงินหลังจากการฝาก',
-    guidelineEn: 'Client has full authority to control their own account.',
-    guidelineTh: 'ลูกค้ามีอำนาจเต็มในการควบคุมบัญชีของตัวเองและสามารถทำอะไรกับบัญชีตามที่ต้องการ',
-  },
-  {
-    key: 'exaggeratingProfit',
-    labelEn: 'Exaggerating Profit',
-    labelTh: 'การพูดเกินจริงเกี่ยวกับกำไร',
-    guidelineEn: 'Give approximate numbers / historical data / probability only.',
-    guidelineTh: 'ให้ตัวเลขประมาณการ / ให้ข้อมูลทางประวัติศาสตร์ / ให้ความน่าจะเป็น',
-  },
-  {
-    key: 'actualCommission',
-    labelEn: 'Actual Commission Amount',
-    labelTh: 'การให้จำนวนค่านายหน้าแท้จริง',
-    guidelineEn: 'Give approximate number / historical data / probability. Can tell depending on Mentor.',
-    guidelineTh: 'ให้ตัวเลขประมาณการ / ให้ข้อมูลทางประวัติศาสตร์ / ให้ความน่าจะเป็น',
-  },
+const RED_FLAG_KEYS: (keyof SalesCallCriteria['redFlags'])[] = [
+  'officeLocation',
+  'withdrawalAfterDeposit',
+  'exaggeratingProfit',
+  'actualCommission',
 ];
 
 const MODULE_ORDER = [
-  { key: 'learn',   labelEn: 'Learn',   labelTh: 'เรียนรู้',     icon: BookOpen,   color: '#60A5FA' },
-  { key: 'quiz',    labelEn: 'Quiz',    labelTh: 'แบบทดสอบ',    icon: Target,     color: '#FBBF24' },
-  { key: 'ai-eval', labelEn: 'AI Eval', labelTh: 'AI ประเมิน', icon: Zap,        color: '#A78BFA' },
-  { key: 'pitch',   labelEn: 'Pitch',   labelTh: 'พิช',          icon: TrendingUp, color: '#FB923C' },
+  { key: 'learn',   labelKey: 'learn',   icon: BookOpen,   color: '#60A5FA' },
+  { key: 'quiz',    labelKey: 'quiz',    icon: Target,     color: '#FBBF24' },
+  { key: 'ai-eval', labelKey: 'aiEval',  icon: Zap,        color: '#A78BFA' },
+  { key: 'pitch',   labelKey: 'pitch',   icon: TrendingUp, color: '#FB923C' },
 ] as const;
-
-// --- Translations ---
-
-const T = {
-  th: {
-    panelTitle: 'แผงผู้ประเมิน',
-    roleLabel: '🎭 ผู้ประเมินการจำลองการขาย',
-    searchPlaceholder: 'ค้นหาเอเจนต์...',
-    noAgents: 'ไม่พบเอเจนต์',
-    agentCount: (n: number) => `${n} เอเจนต์`,
-    totalEvals: 'ประเมินทั้งหมด',
-    todayEvals: 'วันนี้',
-    avgScore: 'คะแนนเฉลี่ย',
-    agentCoverage: 'เอเจนต์ที่ครอบคลุม',
-    recentEvals: 'ประเมินล่าสุด',
-    selectAgentHint: 'เลือกเอเจนต์จากรายการด้านซ้ายเพื่อเริ่มประเมิน',
-    salesEvalSubtitle: 'การประเมินการจำลองการขาย',
-    tabNew: '+ ประเมินใหม่',
-    tabHistory: (n: number) => n > 0 ? `📋 ประวัติ (${n})` : '📋 ประวัติ',
-    trainingPerf: 'ผลการฝึกอบรม',
-    trainingScore: 'คะแนนฝึกอบรม',
-    trainingProgress: 'ความคืบหน้า',
-    quizDetail: 'รายละเอียด Quiz',
-    noTrainingData: 'ยังไม่มีข้อมูลการฝึก',
-    salesSimBadge: 'Sales Simulation — การจำลองแบบ Roleplay จริง',
-    editBanner: 'กำลังแก้ไขการประเมินที่ผ่านมา',
-    agentPerfHeader: 'ผลการแสดงของเอเจนต์',
-    columnCategory: 'หมวดหมู่',
-    columnInvolve: 'มีส่วนร่วม',
-    columnComment: 'ความคิดเห็น',
-    yLabel: 'ใช่',
-    nLabel: 'ไม่',
-    commentPlaceholder: 'ความคิดเห็น...',
-    qaHeader: 'ความคิดเห็น QA',
-    qaLabel: 'สาเหตุหลักที่เอเจนต์ลำบากหรือไม่บรรลุ EPA คืออะไร?',
-    qaPlaceholder: 'อธิบายสาเหตุที่เอเจนต์ลำบากหรือไม่บรรลุ EPA...',
-    redFlagHeader: 'Red Flags',
-    redFlagNote: 'หากมีการกล่าวถึงเกณฑ์ใดก็ตาม จะนับเป็น Red Flag',
-    redFlagNoteEn: 'Any of the following criteria mentioned counts as a Red Flag',
-    scoreImpact: (n: number) => `ผลกระทบต่อคะแนน: 100 − (${n} × 25)`,
-    generalRemarkLabel: 'บันทึกทั่วไป',
-    generalRemarkPlaceholder: 'หมายเหตุการประเมินโดยรวม...',
-    saveBtnNew: (score: number) => `บันทึกการประเมิน (${score}/100)`,
-    saveBtnEdit: 'อัปเดตการประเมิน',
-    saveBtnSuccess: 'บันทึกแล้ว',
-    noHistory: 'ยังไม่มีการประเมินสำหรับเอเจนต์นี้',
-    startFirst: 'เริ่มการประเมินแรก',
-    editLabel: 'แก้ไข',
-    salesSimLabel: 'Sales Simulation',
-    agentPerfSection: 'ผลการแสดงของเอเจนต์',
-    qaSection: 'ความคิดเห็น QA',
-    redFlagsSection: 'Red Flags',
-    passedLabel: 'ผ่าน',
-    failedLabel: 'ไม่ผ่าน',
-    aiEvalAvg: 'AI Eval เฉลี่ย',
-    sessions: (n: number) => `${n} เซสชัน`,
-    allAgentsOverview: 'ภาพรวมทีมทั้งหมด',
-    moduleCompletion: 'อัตราผ่านโมดูล',
-    agentsCompleted: (n: number, total: number) => `${n}/${total} เอเจนต์`,
-    evaluate: 'เริ่มประเมิน',
-    viewDetails: 'รายละเอียด',
-    overallPerf: 'ผลงานโดยรวม',
-    trainingTeamAvg: 'คะแนนเฉลี่ยทีม',
-    agentsGrid: 'เอเจนต์ทั้งหมด',
-    noStatsYet: 'ยังไม่มีข้อมูลการฝึก',
-  },
-  en: {
-    panelTitle: 'Evaluator Panel',
-    roleLabel: '🎭 Sales Simulation Evaluator',
-    searchPlaceholder: 'Search agents...',
-    noAgents: 'No agents found',
-    agentCount: (n: number) => `${n} agent${n !== 1 ? 's' : ''}`,
-    totalEvals: 'Total Evaluations',
-    todayEvals: 'Today',
-    avgScore: 'Avg Score',
-    agentCoverage: 'Agent Coverage',
-    recentEvals: 'Recent Evaluations',
-    selectAgentHint: 'Select an agent from the list to start evaluating',
-    salesEvalSubtitle: 'Sales Simulation Evaluation',
-    tabNew: '+ New Evaluation',
-    tabHistory: (n: number) => n > 0 ? `📋 History (${n})` : '📋 History',
-    trainingPerf: 'Training Performance',
-    trainingScore: 'Training Score',
-    trainingProgress: 'Training Progress',
-    quizDetail: 'Quiz Detail',
-    noTrainingData: 'No training data yet',
-    salesSimBadge: 'Sales Simulation — Real-world Roleplay',
-    editBanner: 'Editing a past evaluation',
-    agentPerfHeader: 'Agent Performance',
-    columnCategory: 'Category',
-    columnInvolve: 'Involve',
-    columnComment: 'Comment',
-    yLabel: 'Y',
-    nLabel: 'N',
-    commentPlaceholder: 'Comment...',
-    qaHeader: 'QA Thoughts',
-    qaLabel: 'What might be the main reasons that the agent struggled or did not achieve EPA?',
-    qaPlaceholder: 'Describe why the agent struggled or did not achieve EPA...',
-    redFlagHeader: 'Red Flags',
-    redFlagNote: 'หากมีการกล่าวถึงเกณฑ์ใดก็ตาม จะนับเป็น Red Flag',
-    redFlagNoteEn: 'Any of the following criteria mentioned counts as a Red Flag',
-    scoreImpact: (n: number) => `Score impact: 100 − (${n} × 25)`,
-    generalRemarkLabel: 'General Remark',
-    generalRemarkPlaceholder: 'Overall evaluation notes...',
-    saveBtnNew: (score: number) => `Save Evaluation (${score}/100)`,
-    saveBtnEdit: 'Update Evaluation',
-    saveBtnSuccess: 'Saved',
-    noHistory: 'No evaluations yet for this agent',
-    startFirst: 'Start the first evaluation',
-    editLabel: 'Edit',
-    salesSimLabel: 'Sales Simulation',
-    agentPerfSection: 'Agent Performance',
-    qaSection: 'QA Thoughts',
-    redFlagsSection: 'Red Flags',
-    passedLabel: 'Passed',
-    failedLabel: 'Failed',
-    aiEvalAvg: 'AI Eval avg',
-    sessions: (n: number) => `${n} session${n !== 1 ? 's' : ''}`,
-    allAgentsOverview: 'All Agents Overview',
-    moduleCompletion: 'Module Completion Rate',
-    agentsCompleted: (n: number, total: number) => `${n}/${total} agents`,
-    evaluate: 'Evaluate',
-    viewDetails: 'Details',
-    overallPerf: 'Overall Performance',
-    trainingTeamAvg: 'Team Avg Score',
-    agentsGrid: 'All Agents',
-    noStatsYet: 'No training data yet',
-  },
-} as const;
 
 // --- Helpers ---
 
@@ -248,22 +82,14 @@ function scoreHex(n: number) {
   return n >= 70 ? '#60A5FA' : n >= 50 ? '#FBBF24' : '#F87171';
 }
 
-function timeAgo(iso: string, lang: Lang): string {
+function timeAgo(iso: string, t: any): string {
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60000);
-  if (lang === 'th') {
-    if (m < 2)  return 'เมื่อกี้';
-    if (m < 60) return `${m} นาทีที่แล้ว`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `${h} ชั่วโมงที่แล้ว`;
-    return `${Math.floor(h / 24)} วันที่แล้ว`;
-  } else {
-    if (m < 2)  return 'just now';
-    if (m < 60) return `${m}m ago`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `${h}h ago`;
-    return `${Math.floor(h / 24)}d ago`;
-  }
+  if (m < 2)  return t('justNow');
+  if (m < 60) return t('minAgo', { m });
+  const h = Math.floor(m / 60);
+  if (h < 24) return t('hourAgo', { h });
+  return t('dayAgo', { d: Math.floor(h / 24) });
 }
 
 // --- Sub-components ---
@@ -340,9 +166,10 @@ const ModuleSection = ({
  * AgentPerformancePanel: Side panel showing selected agent's training stats
  */
 const AgentPerformancePanel = ({
-  stats, loading, lang,
-}: { stats: AgentStats | null; loading: boolean; lang: Lang }) => {
-  const t = T[lang];
+  stats, loading,
+}: { stats: AgentStats | null; loading: boolean; }) => {
+  const t = useTranslations('evaluator');
+  const navT = useTranslations('nav');
 
   if (loading) return (
     <div className="flex items-center justify-center h-48">
@@ -352,7 +179,7 @@ const AgentPerformancePanel = ({
   if (!stats) return (
     <div className="flex flex-col items-center justify-center h-48 gap-2 text-muted-foreground/40">
       <BarChart3 size={24} />
-      <p className="text-xs">{t.noTrainingData}</p>
+      <p className="text-xs">{t('noTrainingData')}</p>
     </div>
   );
 
@@ -376,21 +203,21 @@ const AgentPerformancePanel = ({
       <div className="bg-card border border-border rounded-xl p-3.5 flex items-center gap-3">
         <ScoreRing score={stats.overallScore} />
         <div className="flex-1 min-w-0">
-          <div className="text-[10px] text-muted-foreground mb-1">{t.trainingScore}</div>
+          <div className="text-[10px] text-muted-foreground mb-1">{t('trainingScore')}</div>
           <div className="text-xs font-bold px-2 py-0.5 rounded-full inline-block" style={{ background: badge.bg, color: badge.color }}>
             {badge.label}
           </div>
           {stats.lastActive && (
             <div className="flex items-center gap-1 mt-1.5">
               <Clock size={9} className="text-muted-foreground/50" />
-              <span className="text-[10px] text-muted-foreground/50">{timeAgo(stats.lastActive, lang)}</span>
+              <span className="text-[10px] text-muted-foreground/50">{timeAgo(stats.lastActive, t)}</span>
             </div>
           )}
         </div>
       </div>
 
       {/* Module 1: Learn */}
-      <ModuleSection icon={BookOpen} color="#60A5FA" title={lang === 'th' ? 'เรียนรู้ — คอร์ส' : 'Learn — Courses'} completedCount={learnAccessed} totalCount={4}>
+      <ModuleSection icon={BookOpen} color="#60A5FA" title={`${navT('learn')} — ${t('courses')}`} completedCount={learnAccessed} totalCount={4}>
         {quizTopics.map(m => {
           const accessed = !!stats.quiz[m];
           const passed   = stats.quiz[m]?.passed;
@@ -404,7 +231,7 @@ const AgentPerformancePanel = ({
                 <span className="text-[11px] capitalize text-foreground">{m}</span>
               </div>
               <span className="text-[10px] font-medium" style={{ color: accessed ? (passed ? '#60A5FA' : '#FBBF24') : 'hsl(var(--muted-foreground) / 0.3)' }}>
-                {accessed ? (lang === 'th' ? 'เข้าถึงแล้ว' : 'Accessed') : (lang === 'th' ? 'ยังไม่เริ่ม' : 'Not started')}
+                {accessed ? t('accessed') : t('notStarted')}
               </span>
             </div>
           );
@@ -412,7 +239,7 @@ const AgentPerformancePanel = ({
       </ModuleSection>
 
       {/* Module 2: Quiz */}
-      <ModuleSection icon={Target} color="#FBBF24" title={lang === 'th' ? 'แบบทดสอบ' : 'Quiz'} completedCount={quizPassedCount} totalCount={4}>
+      <ModuleSection icon={Target} color="#FBBF24" title={navT('quiz')} completedCount={quizPassedCount} totalCount={4}>
         {quizTopics.map(m => {
           const qs = stats.quiz[m];
           return (
@@ -428,7 +255,7 @@ const AgentPerformancePanel = ({
                 <div className="flex items-center gap-1.5">
                   <span className="text-[11px] font-bold" style={{ color: qs.passed ? '#60A5FA' : '#F87171' }}>{qs.bestScore}%</span>
                   <span className="text-[9px] px-1 py-0.5 rounded font-medium" style={{ background: qs.passed ? 'rgba(96,165,250,0.1)' : 'rgba(248,113,113,0.1)', color: qs.passed ? '#60A5FA' : '#F87171' }}>
-                    {qs.passed ? t.passedLabel : t.failedLabel}
+                    {qs.passed ? t('passedLabel') : t('failedLabel')}
                   </span>
                 </div>
               ) : <span className="text-[10px] text-muted-foreground/30">—</span>}
@@ -438,9 +265,9 @@ const AgentPerformancePanel = ({
       </ModuleSection>
 
       {/* Module 3: AI Eval */}
-      <ModuleSection icon={Zap} color="#A78BFA" title={lang === 'th' ? 'AI ประเมิน' : 'AI Eval'} completedCount={completedEvalLevels.length} totalCount={4}>
+      <ModuleSection icon={Zap} color="#A78BFA" title={navT('aiEval')} completedCount={completedEvalLevels.length} totalCount={4}>
         <div className="flex items-center justify-between">
-          <span className="text-[11px] text-muted-foreground">{t.aiEvalAvg}</span>
+          <span className="text-[11px] text-muted-foreground">{t('aiEvalAvg')}</span>
           {stats.aiEval
             ? <span className="text-[11px] font-bold" style={{ color: scoreHex(stats.aiEval.avgScore) }}>{stats.aiEval.avgScore}/100</span>
             : <span className="text-[10px] text-muted-foreground/30">—</span>
@@ -465,9 +292,9 @@ const AgentPerformancePanel = ({
       </ModuleSection>
 
       {/* Module 4: Pitch */}
-      <ModuleSection icon={TrendingUp} color="#FB923C" title={lang === 'th' ? 'พิช ซิมูเลเตอร์' : 'Pitch'} completedCount={completedPitchLevels.length} totalCount={3}>
+      <ModuleSection icon={TrendingUp} color="#FB923C" title={navT('pitch')} completedCount={completedPitchLevels.length} totalCount={3}>
         <div className="flex items-center justify-between">
-          <span className="text-[11px] text-muted-foreground">{lang === 'th' ? 'เซสชัน' : 'Sessions'}</span>
+          <span className="text-[11px] text-muted-foreground">{t('sessions', { count: 0 }).split(' ')[1]}</span>
           <span className="text-[11px] text-foreground">{stats.pitch?.sessionCount ?? 0}</span>
         </div>
         <div className="flex items-center gap-1.5 pt-0.5">
@@ -495,13 +322,12 @@ const AgentPerformancePanel = ({
  * EvalForm: The core evaluation form
  */
 const EvalForm = ({
-  criteria, onChange, lang,
+  criteria, onChange,
 }: {
   criteria: SalesCallCriteria;
   onChange: (c: SalesCallCriteria) => void;
-  lang: Lang;
 }) => {
-  const t = T[lang];
+  const t = useTranslations('evaluator');
 
   function setPerf(key: keyof SalesCallCriteria['performance'], field: keyof SalesCallPerformanceItem, val: unknown) {
     onChange({ ...criteria, performance: { ...criteria.performance, [key]: { ...criteria.performance[key], [field]: val } } });
@@ -516,34 +342,33 @@ const EvalForm = ({
       {/* Section 1: Agent Performance */}
       <motion.div variants={STAGGER_ITEM} className="rounded-2xl overflow-hidden border border-border shadow-sm">
         <div className="px-4 py-3 bg-blue-500/[0.07] border-b border-border">
-          <span className="text-xs font-black text-foreground uppercase tracking-wider">{t.agentPerfHeader}</span>
+          <span className="text-xs font-black text-foreground uppercase tracking-wider">{t('agentPerfHeader')}</span>
         </div>
         <div className="grid px-4 py-2 text-[9px] font-bold text-muted-foreground uppercase tracking-wider bg-secondary/20 border-b border-border" style={{ gridTemplateColumns: '1fr 64px 1fr' }}>
-          <span>{t.columnCategory}</span>
-          <span className="text-center">{t.columnInvolve}</span>
-          <span>{t.columnComment}</span>
+          <span>{t('columnCategory')}</span>
+          <span className="text-center">{t('columnInvolve')}</span>
+          <span>{t('columnComment')}</span>
         </div>
-        {PERFORMANCE_ITEMS.map((item, i) => {
-          const perf = criteria.performance[item.key];
+        {PERFORMANCE_KEYS.map((key, i) => {
+          const perf = criteria.performance[key];
           return (
-            <div key={item.key} className={`grid px-4 py-3 gap-3 items-start ${i < PERFORMANCE_ITEMS.length - 1 ? 'border-b border-border' : ''} ${i % 2 === 0 ? 'bg-card' : 'bg-secondary/20'}`} style={{ gridTemplateColumns: '1fr 64px 1fr' }}>
+            <div key={key} className={`grid px-4 py-3 gap-3 items-start ${i < PERFORMANCE_KEYS.length - 1 ? 'border-b border-border' : ''} ${i % 2 === 0 ? 'bg-card' : 'bg-secondary/20'}`} style={{ gridTemplateColumns: '1fr 64px 1fr' }}>
               <div>
-                <div className="text-xs font-semibold text-foreground">{lang === 'th' ? item.labelTh : item.labelEn}</div>
-                <div className="text-[10px] text-muted-foreground/60 mt-0.5">{lang === 'th' ? item.labelEn : item.labelTh}</div>
+                <div className="text-xs font-semibold text-foreground">{t(`performanceItems.${key}`)}</div>
               </div>
               <div className="flex flex-col items-center gap-1 pt-0.5">
                 <button
-                  onClick={() => setPerf(item.key, 'agentInvolve', !perf.agentInvolve)}
+                  onClick={() => setPerf(key, 'agentInvolve', !perf.agentInvolve)}
                   className="w-9 h-5 rounded-full relative transition-all"
                   style={{ background: perf.agentInvolve ? 'rgba(96,165,250,0.3)' : 'hsl(var(--secondary))', border: `1px solid ${perf.agentInvolve ? 'rgba(96,165,250,0.6)' : 'hsl(var(--border))'}` }}
                 >
                   <motion.span animate={{ x: perf.agentInvolve ? 16 : 2 }} className="absolute top-0.5 w-3.5 h-3.5 rounded-full" style={{ background: perf.agentInvolve ? '#60A5FA' : 'hsl(var(--muted-foreground) / 0.4)' }} />
                 </button>
-                <span className="text-[9px] text-muted-foreground font-bold">{perf.agentInvolve ? t.yLabel : t.nLabel}</span>
+                <span className="text-[9px] text-muted-foreground font-bold">{perf.agentInvolve ? t('yLabel') : t('nLabel')}</span>
               </div>
               <textarea
-                value={perf.comment} onChange={e => setPerf(item.key, 'comment', e.target.value)}
-                placeholder={t.commentPlaceholder} rows={2}
+                value={perf.comment} onChange={e => setPerf(key, 'comment', e.target.value)}
+                placeholder={t('commentPlaceholder')} rows={2}
                 className="w-full px-2.5 py-2 rounded-lg text-[11px] text-foreground outline-none resize-none transition-colors placeholder:text-muted-foreground/40 bg-secondary/40 border border-border focus:border-blue-500/40"
               />
             </div>
@@ -554,13 +379,13 @@ const EvalForm = ({
       {/* Section 2: QA Thoughts */}
       <motion.div variants={STAGGER_ITEM} className="rounded-2xl overflow-hidden border border-border bg-card shadow-sm">
         <div className="px-4 py-3 bg-blue-500/[0.07] border-b border-border">
-          <span className="text-xs font-black text-foreground uppercase tracking-wider">{t.qaHeader}</span>
+          <span className="text-xs font-black text-foreground uppercase tracking-wider">{t('qaHeader')}</span>
         </div>
         <div className="p-4">
-          <label className="block text-[10px] text-muted-foreground mb-2">{t.qaLabel}</label>
+          <label className="block text-[10px] text-muted-foreground mb-2">{t('qaLabel')}</label>
           <textarea
             value={criteria.qaThoughts} onChange={e => onChange({ ...criteria, qaThoughts: e.target.value })}
-            placeholder={t.qaPlaceholder} rows={4}
+            placeholder={t('qaPlaceholder')} rows={4}
             className="w-full px-3 py-2.5 rounded-xl text-xs text-foreground outline-none resize-none transition-colors placeholder:text-muted-foreground/40 bg-secondary/40 border border-border focus:border-blue-500/40"
           />
         </div>
@@ -571,26 +396,26 @@ const EvalForm = ({
         <div className={`px-4 py-3 flex items-center justify-between border-b border-border ${redFlagCount > 0 ? 'bg-red-500/10' : 'bg-red-500/5'}`}>
           <div className="flex items-center gap-2">
             <AlertTriangle size={13} className="text-red-400" />
-            <span className="text-xs font-black text-foreground uppercase tracking-wider">{t.redFlagHeader}</span>
+            <span className="text-xs font-black text-foreground uppercase tracking-wider">{t('redFlagHeader')}</span>
           </div>
           {redFlagCount > 0 && <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/40">{redFlagCount} FLAG{redFlagCount > 1 ? 'S' : ''}</span>}
         </div>
-        <div className="px-4 py-2 text-[10px] text-muted-foreground bg-secondary/10 border-b border-border">{t.redFlagNote}</div>
+        <div className="px-4 py-2 text-[10px] text-muted-foreground bg-secondary/10 border-b border-border">{t('redFlagNote')}</div>
         <div>
-          {RED_FLAG_ITEMS.map((item, i) => {
-            const checked = criteria.redFlags[item.key];
+          {RED_FLAG_KEYS.map((key, i) => {
+            const checked = criteria.redFlags[key];
             return (
-              <div key={item.key} className={`px-4 py-3 ${checked ? 'bg-red-500/5' : i % 2 === 0 ? 'bg-card' : 'bg-secondary/20'} ${i < RED_FLAG_ITEMS.length - 1 ? 'border-b border-border' : ''}`}>
+              <div key={key} className={`px-4 py-3 ${checked ? 'bg-red-500/5' : i % 2 === 0 ? 'bg-card' : 'bg-secondary/20'} ${i < RED_FLAG_KEYS.length - 1 ? 'border-b border-border' : ''}`}>
                 <div className="flex items-start gap-3">
-                  <button onClick={() => setRedFlag(item.key, !checked)} className={`mt-0.5 w-4 h-4 rounded flex items-center justify-center border ${checked ? 'bg-red-500/30 border-red-500/70' : 'bg-secondary border-border'}`}>
+                  <button onClick={() => setRedFlag(key, !checked)} className={`mt-0.5 w-4 h-4 rounded flex items-center justify-center border ${checked ? 'bg-red-500/30 border-red-500/70' : 'bg-secondary border-border'}`}>
                     {checked && <X size={9} className="text-red-400" />}
                   </button>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-xs font-semibold ${checked ? 'text-red-400' : 'text-foreground'}`}>{lang === 'th' ? item.labelTh : item.labelEn}</span>
+                      <span className={`text-xs font-semibold ${checked ? 'text-red-400' : 'text-foreground'}`}>{t(`redFlagItems.${key}.label`)}</span>
                       {checked && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-400">RED FLAG</span>}
                     </div>
-                    <div className="text-[10px] text-muted-foreground/60 mt-0.5">{lang === 'th' ? item.guidelineTh : item.guidelineEn}</div>
+                    <div className="text-[10px] text-muted-foreground/60 mt-0.5">{t(`redFlagItems.${key}.guideline`)}</div>
                   </div>
                 </div>
               </div>
@@ -601,10 +426,10 @@ const EvalForm = ({
 
       {/* General Remark */}
       <motion.div variants={STAGGER_ITEM}>
-        <label className="block text-[10px] font-bold text-muted-foreground mb-2 uppercase tracking-wider">{t.generalRemarkLabel}</label>
+        <label className="block text-[10px] font-bold text-muted-foreground mb-2 uppercase tracking-wider">{t('generalRemarkLabel')}</label>
         <textarea
           value={criteria.generalRemark} onChange={e => onChange({ ...criteria, generalRemark: e.target.value })}
-          placeholder={t.generalRemarkPlaceholder} rows={3}
+          placeholder={t('generalRemarkPlaceholder')} rows={3}
           className="w-full px-4 py-3 rounded-xl text-sm text-foreground outline-none resize-none bg-secondary/40 border border-border focus:border-blue-500/40"
         />
       </motion.div>
@@ -616,10 +441,10 @@ const EvalForm = ({
  * EvalHistoryCard: Expandable card for past evaluations
  */
 const EvalHistoryCard = ({
-  ev, onEdit, lang,
-}: { ev: AgentEvaluation; onEdit: (ev: AgentEvaluation) => void; lang: Lang }) => {
+  ev, onEdit,
+}: { ev: AgentEvaluation; onEdit: (ev: AgentEvaluation) => void; }) => {
   const [expanded, setExpanded] = useState(false);
-  const t = T[lang];
+  const t = useTranslations('evaluator');
   const c = ev.criteria as SalesCallCriteria;
   const redFlagCount = c?.redFlags ? Object.values(c.redFlags).filter(Boolean).length : 0;
 
@@ -629,12 +454,12 @@ const EvalHistoryCard = ({
         <ScoreRing score={ev.totalScore} size="sm" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-0.5">
-            <span className="text-xs font-bold text-foreground">{t.salesSimLabel}</span>
+            <span className="text-xs font-bold text-foreground">{t('salesSimLabel')}</span>
             <span className="text-[9px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{ev.evaluatorName}</span>
             {redFlagCount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-400">{redFlagCount} 🚩</span>}
           </div>
           {c?.generalRemark && <p className="text-[11px] text-muted-foreground truncate">{c.generalRemark}</p>}
-          <div className="flex items-center gap-1 mt-1"><Clock size={9} className="text-muted-foreground/40" /><span className="text-[9px] text-muted-foreground/40">{timeAgo(ev.evaluatedAt, lang)}</span></div>
+          <div className="flex items-center gap-1 mt-1"><Clock size={9} className="text-muted-foreground/40" /><span className="text-[9px] text-muted-foreground/40">{timeAgo(ev.evaluatedAt, t)}</span></div>
         </div>
         <ChevronDown size={12} className={`text-muted-foreground transition-transform ${expanded ? 'rotate-180' : ''}`} />
       </button>
@@ -645,15 +470,15 @@ const EvalHistoryCard = ({
             <div className="px-4 pb-4 space-y-3 border-t border-border bg-secondary/10">
               {c?.performance && (
                 <div className="pt-3 space-y-2">
-                  <div className="text-[9px] font-bold text-muted-foreground uppercase">{t.agentPerfSection}</div>
-                  {PERFORMANCE_ITEMS.map(item => {
-                    const p = c.performance[item.key];
+                  <div className="text-[9px] font-bold text-muted-foreground uppercase">{t('agentPerfSection')}</div>
+                  {PERFORMANCE_KEYS.map(key => {
+                    const p = c.performance[key];
                     if (!p?.comment && !p?.agentInvolve) return null;
                     return (
-                      <div key={item.key} className="flex items-start gap-2">
-                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded mt-0.5 ${p.agentInvolve ? 'bg-blue-500/10 text-blue-500' : 'bg-secondary text-muted-foreground'}`}>{p.agentInvolve ? t.yLabel : t.nLabel}</span>
+                      <div key={key} className="flex items-start gap-2">
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded mt-0.5 ${p.agentInvolve ? 'bg-blue-500/10 text-blue-500' : 'bg-secondary text-muted-foreground'}`}>{p.agentInvolve ? t('yLabel') : t('nLabel')}</span>
                         <div>
-                          <div className="text-[10px] text-muted-foreground">{lang === 'th' ? item.labelTh : item.labelEn}</div>
+                          <div className="text-[10px] text-muted-foreground">{t(`performanceItems.${key}`)}</div>
                           {p.comment && <div className="text-[11px] text-foreground mt-0.5">{p.comment}</div>}
                         </div>
                       </div>
@@ -663,11 +488,11 @@ const EvalHistoryCard = ({
               )}
               {c?.qaThoughts && (
                 <div className="rounded-xl p-2.5 bg-card border border-border">
-                  <div className="text-[9px] font-bold text-muted-foreground uppercase mb-1">{t.qaSection}</div>
+                  <div className="text-[9px] font-bold text-muted-foreground uppercase mb-1">{t('qaSection')}</div>
                   <p className="text-[11px] text-foreground whitespace-pre-wrap">{c.qaThoughts}</p>
                 </div>
               )}
-              <button onClick={() => onEdit(ev)} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors pt-2"><Edit3 size={11} /> {t.editLabel}</button>
+              <button onClick={() => onEdit(ev)} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors pt-2"><Edit3 size={11} /> {t('editLabel')}</button>
             </div>
           </motion.div>
         )}
@@ -680,15 +505,14 @@ const EvalHistoryCard = ({
  * AgentOverviewCard: Summary card for each agent in the overview grid
  */
 const AgentOverviewCard = ({
-  stats, evaluatedByMe, lang, onEvaluate,
+  stats, evaluatedByMe, onEvaluate,
 }: {
   stats: AgentStats;
   evaluatedByMe: boolean;
-  lang: Lang;
   onEvaluate: (agent: Agent) => void;
 }) => {
   const [expanded, setExpanded] = useState(false);
-  const t = T[lang];
+  const t = useTranslations('evaluator');
 
   const BADGE_STYLE: Record<string, { label: string; color: string; bg: string }> = {
     'elite':      { label: 'Elite',      color: '#A78BFA', bg: 'rgba(167,139,250,0.12)' },
@@ -714,7 +538,7 @@ const AgentOverviewCard = ({
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <span className="text-sm font-black text-foreground truncate">{stats.agent.name}</span>
             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: badge.bg, color: badge.color }}>{badge.label}</span>
-            {evaluatedByMe && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20">✓ {lang === 'th' ? 'ประเมินแล้ว' : 'Evaluated'}</span>}
+            {evaluatedByMe && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20">✓ {t('evaluated')}</span>}
           </div>
           <div className="flex gap-1.5 mt-2">
             {MODULE_ORDER.map(mod => {
@@ -732,8 +556,8 @@ const AgentOverviewCard = ({
       </div>
 
       <div className="px-4 pb-3 flex items-center gap-2">
-        <button onClick={() => onEvaluate(stats.agent)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98]"><ClipboardCheck size={12} />{t.evaluate}</button>
-        <button onClick={() => setExpanded(v => !v)} className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium border transition-all ${expanded ? 'bg-secondary border-border text-foreground' : 'border-border text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`}>{t.viewDetails}<ChevronDown size={11} className={`transition-transform ${expanded ? 'rotate-180' : ''}`} /></button>
+        <button onClick={() => onEvaluate(stats.agent)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98]"><ClipboardCheck size={12} />{t('evaluate')}</button>
+        <button onClick={() => setExpanded(v => !v)} className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium border transition-all ${expanded ? 'bg-secondary border-border text-foreground' : 'border-border text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`}>{t('viewDetails')}<ChevronDown size={11} className={`transition-transform ${expanded ? 'rotate-180' : ''}`} /></button>
       </div>
 
       <AnimatePresence>
@@ -741,7 +565,7 @@ const AgentOverviewCard = ({
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-t border-border bg-secondary/5">
             <div className="px-4 pb-4 pt-3 space-y-3">
               <div>
-                <div className="flex items-center gap-1.5 mb-1.5"><BookOpen size={9} className="text-blue-400" /><span className="text-[9px] font-bold text-muted-foreground uppercase">{lang === 'th' ? 'คอร์ส' : 'Courses'}</span></div>
+                <div className="flex items-center gap-1.5 mb-1.5"><BookOpen size={9} className="text-blue-400" /><span className="text-[9px] font-bold text-muted-foreground uppercase">{t('courses')}</span></div>
                 <div className="flex gap-1.5 flex-wrap">
                   {(['product', 'process', 'payment'] as const).map(m => {
                     const accessed = !!stats.quiz[m];
@@ -775,23 +599,22 @@ const AgentOverviewCard = ({
  * OverviewPanel: The main dashboard landing view
  */
 const OverviewPanel = ({
-  myEvals, agents, allAgentStats, lang, onEvaluate,
+  myEvals, agents, allAgentStats, onEvaluate,
 }: {
   myEvals: AgentEvaluation[];
   agents: Agent[];
   allAgentStats: AgentStats[];
-  lang: Lang;
   onEvaluate: (agent: Agent) => void;
 }) => {
-  const t = T[lang];
+  const t = useTranslations('evaluator');
   const evaluatedIds = new Set(myEvals.map(e => e.agentId));
   const recent       = myEvals.slice(0, 5);
 
   const stats = [
-    { label: t.totalEvals, value: myEvals.length, icon: ClipboardCheck, color: '#A78BFA' },
-    { label: t.todayEvals, value: myEvals.filter(e => new Date(e.evaluatedAt).toDateString() === new Date().toDateString()).length, icon: Activity, color: '#60A5FA' },
-    { label: t.avgScore, value: myEvals.length > 0 ? `${Math.round(myEvals.reduce((s, e) => s + e.totalScore, 0) / myEvals.length)}/100` : '—', icon: Star, color: '#FBBF24' },
-    { label: t.trainingTeamAvg, value: allAgentStats.length > 0 ? `${Math.round(allAgentStats.reduce((s, a) => s + a.overallScore, 0) / allAgentStats.length)}/100` : '—', icon: Users, color: '#10B981' },
+    { label: t('totalEvals'), value: myEvals.length, icon: ClipboardCheck, color: '#A78BFA' },
+    { label: t('todayEvals'), value: myEvals.filter(e => new Date(e.evaluatedAt).toDateString() === new Date().toDateString()).length, icon: Activity, color: '#60A5FA' },
+    { label: t('avgScore'), value: myEvals.length > 0 ? `${Math.round(myEvals.reduce((s, e) => s + e.totalScore, 0) / myEvals.length)}/100` : '—', icon: Star, color: '#FBBF24' },
+    { label: t('trainingTeamAvg'), value: allAgentStats.length > 0 ? `${Math.round(allAgentStats.reduce((s, a) => s + a.overallScore, 0) / allAgentStats.length)}/100` : '—', icon: Users, color: '#10B981' },
   ];
 
   return (
@@ -809,16 +632,16 @@ const OverviewPanel = ({
 
       {/* Agents Grid */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between"><div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t.agentsGrid}</div><span className="text-[10px] text-muted-foreground/60">{t.agentCount(allAgentStats.length)}</span></div>
+        <div className="flex items-center justify-between"><div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t('agentsGrid')}</div><span className="text-[10px] text-muted-foreground/60">{t('agentCount', { count: allAgentStats.length })}</span></div>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {allAgentStats.map(s => <AgentOverviewCard key={s.agent.id} stats={s} evaluatedByMe={evaluatedIds.has(s.agent.id)} lang={lang} onEvaluate={onEvaluate} />)}
+          {allAgentStats.map(s => <AgentOverviewCard key={s.agent.id} stats={s} evaluatedByMe={evaluatedIds.has(s.agent.id)} onEvaluate={onEvaluate} />)}
         </div>
       </div>
 
       {/* Recent Activity */}
       {recent.length > 0 && (
         <div className="space-y-4">
-          <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t.recentEvals}</div>
+          <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t('recentEvals')}</div>
           <div className="space-y-2">
             {recent.map(ev => (
               <motion.div key={ev.id} variants={STAGGER_ITEM} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary/20 border border-border hover:bg-secondary/30 transition-colors">
@@ -827,7 +650,7 @@ const OverviewPanel = ({
                   <div className="flex items-center gap-2"><span className="text-xs font-semibold text-foreground truncate">{agents.find(a => a.id === ev.agentId)?.name ?? ev.agentName}</span></div>
                   <div className="text-[10px] text-muted-foreground truncate">{ev.comments || '—'}</div>
                 </div>
-                <div className="text-[10px] text-muted-foreground/50 shrink-0">{timeAgo(ev.evaluatedAt, lang)}</div>
+                <div className="text-[10px] text-muted-foreground/50 shrink-0">{timeAgo(ev.evaluatedAt, t)}</div>
               </motion.div>
             ))}
           </div>
@@ -841,13 +664,14 @@ const OverviewPanel = ({
  * ChangePasswordModal: Security update interface
  */
 const ChangePasswordModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  const t = useTranslations('evaluator');
   const [newPassword, setNewPassword] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
   async function handleSave() {
-    if (newPassword.length < 4) { setError('Password must be at least 4 characters'); return; }
+    if (newPassword.length < 4) { setError(t('pwMinLength')); return; }
     setSaving(true); setError('');
     try {
       const res = await fetch('/api/admin/change-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ newPassword }) });
@@ -862,15 +686,15 @@ const ChangePasswordModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: ()
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
           <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="bg-card border border-border rounded-3xl p-8 w-full max-w-sm shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
-            <h3 className="font-black text-xl text-foreground mb-2">Change Password</h3>
-            <p className="text-sm text-muted-foreground mb-6">Update your login credentials</p>
+            <h3 className="font-black text-xl text-foreground mb-2">{t('changePw')}</h3>
+            <p className="text-sm text-muted-foreground mb-6">{t('changePwDesc')}</p>
             <div className="space-y-4">
-              <input type="text" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-secondary/40 border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground" placeholder="New password" />
+              <input type="text" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-secondary/40 border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground" placeholder={t('newPw')} />
               {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
-              {success && <p className="text-xs text-emerald-500 font-medium">Updated successfully!</p>}
+              {success && <p className="text-xs text-emerald-500 font-medium">{t('pwUpdateSuccess')}</p>}
               <div className="flex gap-3 pt-2">
-                <button onClick={handleSave} disabled={saving || success || !newPassword} className="flex-1 bg-primary text-primary-foreground py-3 rounded-xl text-sm font-bold disabled:opacity-50 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">{saving ? 'Updating...' : 'Update Password'}</button>
-                <button onClick={onClose} className="px-6 py-3 rounded-xl text-sm font-bold text-muted-foreground hover:bg-secondary transition-all">Cancel</button>
+                <button onClick={handleSave} disabled={saving || success || !newPassword} className="flex-1 bg-primary text-primary-foreground py-3 rounded-xl text-sm font-bold disabled:opacity-50 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">{saving ? t('updating') : t('updatePw')}</button>
+                <button onClick={onClose} className="px-6 py-3 rounded-xl text-sm font-bold text-muted-foreground hover:bg-secondary transition-all">{t('cancel')}</button>
               </div>
             </div>
           </motion.div>
@@ -889,9 +713,7 @@ interface EvaluatorDashboardProps {
 }
 
 export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwordChanged }: EvaluatorDashboardProps) {
-  const pathname = usePathname();
-  const lang     = (pathname.split('/')[1] === 'en' ? 'en' : 'th') as Lang;
-  const t        = T[lang];
+  const t        = useTranslations('evaluator');
 
   const [isPwModalOpen, setIsPwModalOpen] = useState(!passwordChanged);
   const [agents, setAgents]               = useState<Agent[]>([]);
@@ -909,11 +731,42 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
   const [saveSuccess, setSaveSuccess]     = useState(false);
   const [editingEval, setEditingEval]     = useState<AgentEvaluation | null>(null);
 
-  useEffect(() => {
-    fetch('/api/agents').then(r => r.json()).then(d => setAgents(d.agents ?? [])).catch(() => {});
-    fetch(`/api/evaluator/evaluations?evaluatorId=${evaluatorId}`).then(r => r.json()).then(d => setMyEvals(d.evaluations ?? [])).catch(() => {});
-    fetch('/api/evaluator/all-agent-stats').then(r => r.json()).then(d => setAllAgentStats(d.stats ?? [])).catch(() => {});
+  const [isLive, setIsLive]               = useState(false);
+  const pollTimer                         = useRef<NodeJS.Timeout | null>(null);
+
+  const loadData = useCallback(async (isSilent = false) => {
+    if (!isSilent) setIsLive(true);
+    try {
+      const [agentsRes, evalsRes, statsRes] = await Promise.all([
+        fetch('/api/agents'),
+        fetch(`/api/evaluator/evaluations?evaluatorId=${evaluatorId}`),
+        fetch('/api/evaluator/all-agent-stats')
+      ]);
+
+      if (agentsRes.ok) {
+        const d = await agentsRes.json();
+        setAgents(d.agents ?? []);
+      }
+      if (evalsRes.ok) {
+        const d = await evalsRes.json();
+        setMyEvals(d.evaluations ?? []);
+      }
+      if (statsRes.ok) {
+        const d = await statsRes.json();
+        setAllAgentStats(d.stats ?? []);
+      }
+    } catch { /* silent */ } finally {
+      if (!isSilent) setTimeout(() => setIsLive(false), 2000);
+    }
   }, [evaluatorId]);
+
+  useEffect(() => {
+    loadData();
+    pollTimer.current = setInterval(() => loadData(true), 5000);
+    return () => {
+      if (pollTimer.current) clearInterval(pollTimer.current);
+    };
+  }, [loadData]);
 
   const fetchAgentHistory = useCallback(async (agentId: string) => {
     setLoadingHistory(true);
@@ -963,11 +816,15 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
       <header className="px-5 py-4 flex items-center gap-4 shrink-0 bg-card/60 backdrop-blur-xl border-b border-border shadow-sm z-20 sticky top-0">
         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/20"><ClipboardCheck size={20} className="text-white" /></div>
         <div className="flex flex-col">
-          <span className="font-black text-xl leading-none">{t.panelTitle}</span>
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">{t.roleLabel}</span>
+          <span className="font-black text-xl leading-none">{t('panelTitle')}</span>
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('roleLabel')}</span>
         </div>
         <div className="ml-auto flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20"><div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" /><span className="text-xs font-black text-blue-600 dark:text-blue-400">{evaluatorName}</span></div>
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+            <div className={`w-1.5 h-1.5 rounded-full bg-blue-500 ${isLive ? 'animate-pulse' : ''}`} />
+            <span className="text-xs font-black text-blue-600 dark:text-blue-400">{evaluatorName}</span>
+            {isLive && <Loader2 size={10} className="animate-spin text-blue-500/50" />}
+          </div>
           <LangToggle /><ThemeToggle />
           <button onClick={() => { fetch('/api/auth/session', { method: 'DELETE' }); window.location.replace('/login'); }} className="p-2 rounded-xl text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"><LogOut size={18} /></button>
         </div>
@@ -980,9 +837,9 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
           <div className="p-4 space-y-4">
             <div className="relative">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
-              <input type="text" value={agentSearch} onChange={e => setAgentSearch(e.target.value)} placeholder={t.searchPlaceholder} className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm bg-secondary/40 border border-border focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+              <input type="text" value={agentSearch} onChange={e => setAgentSearch(e.target.value)} placeholder={t('searchPlaceholder')} className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm bg-secondary/40 border border-border focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
             </div>
-            <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t.agentCount(filteredAgents.length)}</div>
+            <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('agentCount', { count: filteredAgents.length })}</div>
           </div>
           <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-1">
             {filteredAgents.map(agent => (
@@ -998,15 +855,15 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
         {/* Content */}
         <main className="flex-1 overflow-y-auto bg-secondary/10">
           {!selectedAgent ? (
-            <OverviewPanel myEvals={myEvals} agents={agents} allAgentStats={allAgentStats} lang={lang} onEvaluate={handleSelectAgent} />
+            <OverviewPanel myEvals={myEvals} agents={agents} allAgentStats={allAgentStats} onEvaluate={handleSelectAgent} />
           ) : (
             <div className="h-full flex flex-col">
               <div className="px-6 py-4 flex items-center gap-4 bg-card/60 backdrop-blur-md border-b border-border sticky top-0 z-10">
                 <button onClick={() => setSelectedAgent(null)} className="p-2 -ml-2 rounded-xl hover:bg-secondary transition-colors"><ArrowLeft size={20} /></button>
                 <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black">{selectedAgent.name.slice(0, 2).toUpperCase()}</div>
-                <div className="flex-1 min-w-0"><h2 className="text-lg font-black truncate">{selectedAgent.name}</h2><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{t.salesEvalSubtitle}</p></div>
+                <div className="flex-1 min-w-0"><h2 className="text-lg font-black truncate">{selectedAgent.name}</h2><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{t('salesEvalSubtitle')}</p></div>
                 <div className="flex gap-1 p-1 rounded-xl bg-secondary/40 border border-border">
-                  {(['new', 'history'] as const).map(tabId => <button key={tabId} onClick={() => setTab(tabId)} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${tab === tabId ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>{tabId === 'new' ? t.tabNew : t.tabHistory(agentEvals.length)}</button>)}
+                  {(['new', 'history'] as const).map(tabId => <button key={tabId} onClick={() => setTab(tabId)} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${tab === tabId ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>{tabId === 'new' ? t('tabNew') : (agentEvals.length > 0 ? t('tabHistory', { count: agentEvals.length }) : t('tabHistoryEmpty'))}</button>)}
                 </div>
               </div>
 
@@ -1015,17 +872,17 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
                   <AnimatePresence mode="wait">
                     {tab === 'new' ? (
                       <motion.div key="new" variants={FADE_IN} initial="initial" animate="animate" exit="exit" className="flex flex-col lg:flex-row gap-8">
-                        <div className="w-full lg:w-80 shrink-0"><AgentPerformancePanel stats={agentStats} loading={loadingStats} lang={lang} /></div>
+                        <div className="w-full lg:w-80 shrink-0"><AgentPerformancePanel stats={agentStats} loading={loadingStats} /></div>
                         <div className="flex-1 space-y-6">
-                          <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-primary/5 border border-primary/10"><Activity size={18} className="text-primary" /><span className="text-sm font-bold text-primary">{t.salesSimBadge}</span></div>
-                          {editingEval && <div className="flex items-center justify-between px-5 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-bold"><span>กำลังแก้ไขการประเมินที่ผ่านมา</span><button onClick={() => { setCriteria(emptyCriteria()); setEditingEval(null); }}><X size={16} /></button></div>}
-                          <EvalForm criteria={criteria} onChange={setCriteria} lang={lang} />
-                          <button onClick={handleSave} disabled={saving || saveSuccess} className={`w-full py-4 rounded-2xl font-black text-sm transition-all shadow-xl ${saveSuccess ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-primary text-white shadow-primary/20 hover:scale-[1.01] active:scale-[0.99]'}`}>{saving ? <Loader2 className="animate-spin mx-auto" size={20} /> : saveSuccess ? <Check className="mx-auto" size={20} /> : (editingEval ? 'อัปเดตการประเมิน' : `บันทึกการประเมิน (${calcScore(criteria)}/100)`)}</button>
+                          <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-primary/5 border border-primary/10"><Activity size={18} className="text-primary" /><span className="text-sm font-bold text-primary">{t('salesSimBadge')}</span></div>
+                          {editingEval && <div className="flex items-center justify-between px-5 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-bold"><span>{t('editBanner')}</span><button onClick={() => { setCriteria(emptyCriteria()); setEditingEval(null); }}><X size={16} /></button></div>}
+                          <EvalForm criteria={criteria} onChange={setCriteria} />
+                          <button onClick={handleSave} disabled={saving || saveSuccess} className={`w-full py-4 rounded-2xl font-black text-sm transition-all shadow-xl ${saveSuccess ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-primary text-white shadow-primary/20 hover:scale-[1.01] active:scale-[0.99]'}`}>{saving ? <Loader2 className="animate-spin mx-auto" size={20} /> : saveSuccess ? <Check className="mx-auto" size={20} /> : (editingEval ? t('saveBtnEdit') : t('saveBtnNew', { score: calcScore(criteria) }))}</button>
                         </div>
                       </motion.div>
                     ) : (
                       <motion.div key="history" variants={FADE_IN} initial="initial" animate="animate" exit="exit" className="max-w-2xl mx-auto space-y-4">
-                        {loadingHistory ? <div className="py-12 text-center"><Loader2 className="animate-spin mx-auto text-primary/40" size={32} /></div> : agentEvals.length === 0 ? <div className="py-12 text-center opacity-40"><ClipboardCheck className="mx-auto mb-4" size={48} /><p>{t.noHistory}</p></div> : agentEvals.map(ev => <EvalHistoryCard key={ev.id} ev={ev} onEdit={ev => { setEditingEval(ev); setCriteria(ev.criteria as SalesCallCriteria); setTab('new'); }} lang={lang} />)}
+                        {loadingHistory ? <div className="py-12 text-center"><Loader2 className="animate-spin mx-auto text-primary/40" size={32} /></div> : agentEvals.length === 0 ? <div className="py-12 text-center opacity-40"><ClipboardCheck className="mx-auto mb-4" size={48} /><p>{t('noHistory')}</p></div> : agentEvals.map(ev => <EvalHistoryCard key={ev.id} ev={ev} onEdit={ev => { setEditingEval(ev); setCriteria(ev.criteria as SalesCallCriteria); setTab('new'); }} />)}
                       </motion.div>
                     )}
                   </AnimatePresence>

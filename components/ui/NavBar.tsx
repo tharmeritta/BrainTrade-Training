@@ -15,41 +15,38 @@ import { useState } from 'react';
 import LangToggle from '@/components/ui/LangToggle';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 
+import { useTranslations } from 'next-intl';
+
 /* ─── Nav Definition ─────────────────────────────────────── */
 
-const NAV = [
+const NAV_ITEMS = [
   {
-    label: 'Dashboard',
-    labelTh: 'หน้าหลัก',
+    key: 'dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
   },
   {
-    label: 'Learn',
-    labelTh: 'เรียนรู้',
+    key: 'learn',
     href: '/learn',
     icon: BookOpen,
     children: [
-      { label: 'Product Knowledge', labelTh: 'ความรู้ผลิตภัณฑ์', href: '/learn/product' },
-      { label: 'KYC Process',       labelTh: 'ขั้นตอน KYC',      href: '/learn/kyc'     },
-      { label: 'Website Tutorial',  labelTh: 'วิธีใช้งานเว็บไซต์',   href: '/learn/website' },
+      { key: 'productKnowledge', href: '/learn/product' },
+      { key: 'kycProcess',       href: '/learn/kyc'     },
+      { key: 'websiteTutorial',  href: '/learn/website' },
     ],
   },
   {
-    label: 'Quiz',
-    labelTh: 'ควิซ',
+    key: 'quiz',
     href: '/quiz',
     icon: ClipboardList,
   },
   {
-    label: 'AI Eval',
-    labelTh: 'AI ประเมิน',
+    key: 'aiEval',
     href: '/ai-eval',
     icon: BarChart3,
   },
   {
-    label: 'Pitch',
-    labelTh: 'ฝึกพิช',
+    key: 'pitch',
     href: '/pitch',
     icon: Mic,
   },
@@ -58,6 +55,7 @@ const NAV = [
 /* ─── Component ──────────────────────────────────────────── */
 
 export default function NavBar() {
+  const t = useTranslations('nav');
   const pathname = usePathname();
   const segments = pathname.split('/');
   const locale   = segments[1] === 'en' ? 'en' : 'th';
@@ -87,10 +85,10 @@ export default function NavBar() {
 
       {/* ── Nav Pills ────────────────────────────────────── */}
       <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-0.5 bg-muted/50 border border-border/50 rounded-full p-1">
-        {NAV.map((item) => {
+        {NAV_ITEMS.map((item) => {
           const active = isActive(item.href);
           const Icon   = item.icon;
-          const label  = locale === 'th' ? item.labelTh : item.label;
+          const label  = t(item.key);
           const hasChildren = 'children' in item && item.children;
 
           return (
@@ -150,7 +148,7 @@ export default function NavBar() {
                       className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 min-w-[176px] rounded-2xl border border-border/60 bg-background/95 backdrop-blur-md shadow-xl shadow-black/10 overflow-hidden p-1"
                     >
                       {item.children.map((child) => {
-                        const childLabel = locale === 'th' ? child.labelTh : child.label;
+                        const childLabel = t(child.key);
                         const childActive = pathname.includes(child.href);
                         return (
                           <Link
