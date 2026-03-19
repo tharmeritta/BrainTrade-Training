@@ -184,7 +184,7 @@ export default function StaffTab() {
           </div>
         ) : staff.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground text-sm">
-            No staff accounts yet. Click "Add Account" to create one.
+            No staff accounts yet. Click &quot;Add Account&quot; to create one.
           </div>
         ) : (
           <table className="w-full text-sm border-separate border-spacing-y-2 px-2">

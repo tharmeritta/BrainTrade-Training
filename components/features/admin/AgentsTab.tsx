@@ -246,7 +246,7 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
                   <td className="px-5 py-4 rounded-l-2xl border-y border-l border-border/50 group-hover:border-primary/20">
                     <div className="font-semibold text-foreground">{a.agent.name}</div>
                     {a.agent.stageName && (
-                      <div className="text-xs text-primary/70 font-medium mt-0.5">"{a.agent.stageName}"</div>
+                      <div className="text-xs text-primary/70 font-medium mt-0.5">&quot;{a.agent.stageName}&quot;</div>
                     )}
                     <div className="text-[10px] text-muted-foreground mt-1">{timeAgo(a.lastActive)}</div>
                   </td>

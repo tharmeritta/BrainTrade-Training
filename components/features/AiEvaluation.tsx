@@ -138,7 +138,7 @@ const IntroView = memo(({ onContinue, inProgressLevel }: IntroViewProps) => (
                 <div className="flex flex-wrap gap-1.5">
                   {LEVEL_LABELS[l].examples.slice(0, 2).map((ex, i) => (
                     <span key={i} className="text-[11px] bg-white dark:bg-black/20 border border-black/5 dark:border-white/10 text-muted-foreground px-3 py-1 rounded-lg font-bold italic">
-                      "{ex}"
+                      &quot;{ex}&quot;
                     </span>
                   ))}
                 </div>

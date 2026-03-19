@@ -150,7 +150,7 @@ function DetailedHumanEvaluations({ stats }: { stats: AgentStats }) {
             </div>
             {ev.comments && (
               <div className="bg-card/40 p-3 rounded-xl border border-border/30">
-                <p className="text-[11px] text-muted-foreground leading-relaxed italic">"{ev.comments}"</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed italic">&quot;{ev.comments}&quot;</p>
               </div>
             )}
           </div>

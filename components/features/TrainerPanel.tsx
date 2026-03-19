@@ -869,7 +869,7 @@ export default function TrainerPanel({ role }: TrainerPanelProps) {
             <div className="text-center py-8 px-4" style={{ color: T.sub }}>
               <GraduationCap size={28} className="mx-auto opacity-30 mb-2" />
               <p className="text-xs">ยังไม่มีรอบการฝึก</p>
-              {isTrainer && <p className="text-xs mt-1 opacity-70">กด "New Period" เพื่อสร้างรอบแรก</p>}
+              {isTrainer && <p className="text-xs mt-1 opacity-70">กด &quot;New Period&quot; เพื่อสร้างรอบแรก</p>}
             </div>
           ) : periods.map(p => (
             <motion.button

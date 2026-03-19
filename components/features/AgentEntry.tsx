@@ -217,7 +217,7 @@ const ReturningUserBanner = ({ user, onContinue, onClear }: { user: { id: string
           <div className="text-[10px] font-semibold uppercase tracking-wider mb-0.5 text-brand-cyan">ยินดีต้อนรับกลับมา</div>
           <div className="text-sm font-bold truncate" style={{ color: 'var(--hub-text)' }}>{user.name}</div>
           {user.stageName && (
-            <div className="text-[10px] font-medium truncate text-brand-cyan/80">"{user.stageName}"</div>
+            <div className="text-[10px] font-medium truncate text-brand-cyan/80">&quot;{user.stageName}&quot;</div>
           )}
         </div>
       </div>

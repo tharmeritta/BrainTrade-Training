@@ -319,7 +319,7 @@ const ProfileSidebar = memo(({
         </h2>
         {agentStageName && (
           <p className="text-xs font-semibold text-center mb-1 opacity-85" style={{ color: ringColor }}>
-            "{agentStageName}"
+            &quot;{agentStageName}&quot;
           </p>
         )}
 

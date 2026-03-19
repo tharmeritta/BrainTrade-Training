@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerUser } from '@/lib/session';
+import { getServerUser, makeSessionToken } from '@/lib/session';
 import { fsUpdate, fsGet, fsSet } from '@/lib/firestore-db';
 import type { StaffAccount } from '@/types';
 
@@ -34,7 +34,19 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    return NextResponse.json({ ok: true });
+    const res = NextResponse.json({ ok: true });
+    
+    // Update session token so passwordChanged reflects true
+    const newToken = makeSessionToken(user.role, user.uid, user.name, true);
+    res.cookies.set('session', newToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 5, // 5 days
+      path: '/',
+    });
+
+    return res;
   } catch (err) {
     console.error('Change password error:', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });

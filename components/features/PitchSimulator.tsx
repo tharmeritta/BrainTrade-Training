@@ -226,7 +226,7 @@ const EvaluationView = memo(({
         </div>
         <h3 className="font-black text-base text-[color:var(--hub-text)] uppercase tracking-tight">ทำไมลูกค้าถึงตัดสินใจซื้อ</h3>
       </div>
-      <p className="text-sm leading-relaxed text-[color:var(--hub-muted)] font-medium italic">"{evaluation.reason}"</p>
+      <p className="text-sm leading-relaxed text-[color:var(--hub-muted)] font-medium italic">&quot;{evaluation.reason}&quot;</p>
     </div>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -552,7 +552,7 @@ const ChatScreen = memo(({
                 <div className="max-w-[85%] bg-primary/5 border border-primary/10 rounded-[24px] rounded-tl-none px-6 py-5 text-sm font-bold shadow-inner">
                   <p className="text-primary text-base mb-1 uppercase tracking-tight">Mission Briefing — Level {level}</p>
                   <p className="text-muted-foreground font-medium opacity-80 leading-relaxed italic">
-                    "ลูกค้ากำลังรอสายอยู่... กรุณาแนะนำตัวอย่างเป็นมืออาชีพและนำเสนอ SmartBrain AI อย่างมั่นใจ"
+                    &quot;ลูกค้ากำลังรอสายอยู่... กรุณาแนะนำตัวอย่างเป็นมืออาชีพและนำเสนอ SmartBrain AI อย่างมั่นใจ&quot;
                   </p>
                 </div>
               </motion.div>
@@ -570,7 +570,7 @@ const ChatScreen = memo(({
                     </div>
                     <div className="relative z-10">
                       <h4 className="text-2xl font-black text-foreground uppercase tracking-tight leading-none mb-1.5">ปิดการขายสำเร็จ!</h4>
-                      <p className="text-sm font-bold text-muted-foreground opacity-80 italic">"ลูกค้าตกลงซื้อและชำระเงินเรียบร้อยแล้ว"</p>
+                      <p className="text-sm font-bold text-muted-foreground opacity-80 italic">&quot;ลูกค้าตกลงซื้อและชำระเงินเรียบร้อยแล้ว&quot;</p>
                     </div>
                   </div>
 
