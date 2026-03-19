@@ -9,6 +9,13 @@
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
+        "source": "/",
+        "run": {
+          "serviceId": "braintrade-training",
+          "region": "asia-southeast1"
+        }
+      },
+      {
         "source": "**",
         "run": {
           "serviceId": "braintrade-training",

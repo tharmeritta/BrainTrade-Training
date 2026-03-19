@@ -31,6 +31,7 @@ export interface ModuleQuizStat {
   bestScore: number;       // 0–100 percentage
   passed: boolean;
   attempts: number;
+  history?: { score: number; total: number; passed: boolean; timestamp: string }[];
 }
 
 export interface AgentStats {
@@ -40,9 +41,19 @@ export interface AgentStats {
     process?: ModuleQuizStat;
     payment?: ModuleQuizStat;
   };
-  aiEval: { avgScore: number; count: number } | null;
-  pitch: { highestLevel: number; sessionCount: number; completedLevels?: number[] } | null;
+  aiEval: { 
+    avgScore: number; 
+    count: number;
+    history?: { score: number; level: number; passed: boolean; timestamp: string }[];
+  } | null;
+  pitch: { 
+    highestLevel: number; 
+    sessionCount: number; 
+    completedLevels?: number[];
+    history?: { level: number; closedSale: boolean; timestamp: string }[];
+  } | null;
   evalCompletedLevels?: number[];
+  humanEvaluations?: AgentEvaluation[];
   overallScore: number;
   badge: 'elite' | 'strong' | 'developing' | 'needs-work';
   lastActive: string | null;

@@ -293,7 +293,7 @@ function ScoreRing({ score, size = 'md' }: { score: number; size?: 'sm' | 'md' }
           style={{ filter: `drop-shadow(0 0 4px ${clr}50)` }}
         />
       </svg>
-      <span className="font-black" style={{ fontFamily: "'Syne', sans-serif", color: clr, fontSize: fs }}>
+      <span className="font-black" style={{ color: clr, fontSize: fs }}>
         {score}
       </span>
     </div>
@@ -315,7 +315,7 @@ function ModuleSection({
         <div className="p-1 rounded-md" style={{ background: `${color}18` }}>
           <Icon size={10} style={{ color }} />
         </div>
-        <span className="text-[10px] font-black uppercase tracking-wider text-foreground" style={{ fontFamily: "'Syne', sans-serif" }}>
+        <span className="text-[10px] font-black uppercase tracking-wider text-foreground">
           {title}
         </span>
         <div className="ml-auto flex items-center gap-1">
@@ -663,7 +663,7 @@ function EvalForm({
         {/* Score preview */}
         <div className="px-4 py-3 flex items-center justify-between bg-card border-t border-border">
           <span className="text-[10px] text-muted-foreground">{t.scoreImpact(redFlagCount)}</span>
-          <span className="text-sm font-black" style={{ fontFamily: "'Syne', sans-serif", color: scoreHex(calcScore(criteria)) }}>
+          <span className="text-sm font-black" style={{ color: scoreHex(calcScore(criteria)) }}>
             {calcScore(criteria)}/100
           </span>
         </div>
@@ -705,7 +705,7 @@ function EvalHistoryCard({
         <ScoreRing score={ev.totalScore} size="sm" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-0.5">
-            <span className="text-xs font-bold text-foreground" style={{ fontFamily: "'Syne', sans-serif" }}>
+            <span className="text-xs font-bold text-foreground">
               {t.salesSimLabel}
             </span>
             <span className="text-[9px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">
@@ -826,7 +826,7 @@ function AgentOverviewCard({
         <ScoreRing score={stats.overallScore} size="sm" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="text-sm font-black text-foreground truncate" style={{ fontFamily: "'Syne', sans-serif" }}>
+            <span className="text-sm font-black text-foreground truncate">
               {stats.agent.name}
             </span>
             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: badge.bg, color: badge.color }}>
@@ -1069,7 +1069,7 @@ function OverviewPanel({
               <div className="p-2 rounded-xl w-fit" style={{ background: `${k.color}15` }}>
                 <Icon size={16} style={{ color: k.color }} />
               </div>
-              <div className="text-2xl font-black text-foreground mt-1" style={{ fontFamily: "'Syne', sans-serif" }}>{k.value}</div>
+              <div className="text-2xl font-black text-foreground mt-1">{k.value}</div>
               <div className="text-[11px] font-medium text-muted-foreground">{k.label}</div>
             </div>
           );
@@ -1349,7 +1349,7 @@ function ChangePasswordModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
           >
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
             
-            <h3 className="font-black text-xl text-foreground mb-2" style={{ fontFamily: "'Syne', sans-serif" }}>Change Password</h3>
+            <h3 className="font-black text-xl text-foreground mb-2">Change Password</h3>
             <p className="text-sm text-muted-foreground mb-6">Update your login credentials</p>
 
             <div className="space-y-4">
@@ -1373,14 +1373,14 @@ function ChangePasswordModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                   onClick={handleSave}
                   disabled={saving || success || !newPassword}
                   className="flex-1 bg-primary text-primary-foreground py-3 rounded-xl text-sm font-bold disabled:opacity-50 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
-                  style={{ fontFamily: "'Syne', sans-serif" }}
+                 
                 >
                   {saving ? 'Updating...' : success ? 'Updated!' : 'Update Password'}
                 </button>
                 <button 
                   onClick={onClose}
                   className="px-6 py-3 rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
-                  style={{ fontFamily: "'Syne', sans-serif" }}
+                 
                 >
                   Cancel
                 </button>
@@ -1519,7 +1519,7 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
         <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
           <ClipboardCheck size={16} className="text-white" />
         </div>
-        <span className="font-black text-lg bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70" style={{ fontFamily: "'Syne', sans-serif" }}>{t.panelTitle}</span>
+        <span className="font-black text-lg bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">{t.panelTitle}</span>
         
         <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/25 ml-1">
           <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
@@ -1590,7 +1590,7 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
                   }`}
                 >
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0 ${isSelected ? 'bg-blue-500/20 text-blue-500' : 'bg-secondary text-muted-foreground'}`}
-                    style={{ fontFamily: "'Syne', sans-serif" }}>
+                   >
                     {agent.name.slice(0, 2).toUpperCase()}
                   </div>
                   <span className={`text-xs font-medium truncate flex-1 ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'}`}>
@@ -1615,11 +1615,11 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
                 <button onClick={() => setSelectedAgent(null)} className="text-muted-foreground hover:text-foreground transition-colors">
                   <ArrowLeft size={15} />
                 </button>
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black shrink-0 bg-blue-500/10 border border-blue-500/25 text-blue-500" style={{ fontFamily: "'Syne', sans-serif" }}>
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black shrink-0 bg-blue-500/10 border border-blue-500/25 text-blue-500">
                   {selectedAgent.name.slice(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <h2 className="text-base font-black text-foreground" style={{ fontFamily: "'Syne', sans-serif" }}>{selectedAgent.name}</h2>
+                  <h2 className="text-base font-black text-foreground">{selectedAgent.name}</h2>
                   <p className="text-[10px] text-muted-foreground">{t.salesEvalSubtitle}</p>
                 </div>
                 {/* Tabs */}
@@ -1627,7 +1627,7 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
                   {(['new', 'history'] as const).map(tabId => (
                     <button key={tabId} onClick={() => setTab(tabId)}
                       className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${tab === tabId ? 'bg-card text-foreground shadow-sm border border-border' : 'text-muted-foreground hover:text-foreground'}`}
-                      style={{ fontFamily: "'Syne', sans-serif" }}
+                     
                     >
                       {tabId === 'new' ? t.tabNew : t.tabHistory(agentEvals.length)}
                     </button>
@@ -1668,7 +1668,7 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
                               ? 'bg-blue-500/15 text-blue-500 border border-blue-500/40 shadow-none'
                               : 'bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40 relative z-10'
                           }`}
-                          style={{ fontFamily: "'Syne', sans-serif" }}
+                         
                           whileHover={!saving && !saveSuccess ? { scale: 1.02 } : {}}
                           whileTap={!saving && !saveSuccess ? { scale: 0.99 } : {}}
                         >

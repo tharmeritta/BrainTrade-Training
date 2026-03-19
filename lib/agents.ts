@@ -30,11 +30,12 @@ export function computeOverallScore(stats: Omit<AgentStats, 'overallScore' | 'ba
 // ── Single-agent stats (used by /api/agent/progress GET) ──────────────────
 
 export async function getAgentStats(agentId: string, agentName: string): Promise<AgentStats> {
-  const [quizDocs, evalDocs, pitchDocs, progressDoc] = await Promise.all([
+  const [quizDocs, evalDocs, pitchDocs, progressDoc, humanEvals] = await Promise.all([
     gcsGetAll<QuizRecord>('quiz_results'),
     gcsGetAll<EvalRecord>('ai_eval_logs'),
     gcsGetAll<PitchRecord>('pitch_sessions'),
     gcsGet<ProgressRecord>('agent_progress', agentId).catch(() => null),
+    gcsGetAll<AgentEvaluation>('agent_evaluations'),
   ]);
 
   // Quiz per module
@@ -46,6 +47,7 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
         bestScore: Math.max(...results.map(r => Math.round((r.score / r.totalQuestions) * 100))),
         passed:    results.some(r => r.passed),
         attempts:  results.length,
+        history:   results.map(r => ({ score: r.score, total: r.totalQuestions, passed: r.passed, timestamp: r.timestamp })),
       };
     }
   }
@@ -53,7 +55,11 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
   // AI Eval
   const evals  = evalDocs.filter(e => e.agentId === agentId);
   const aiEval = evals.length > 0
-    ? { avgScore: Math.round(evals.reduce((s, e) => s + e.score, 0) / evals.length), count: evals.length }
+    ? { 
+        avgScore: Math.round(evals.reduce((s, e) => s + e.score, 0) / evals.length), 
+        count: evals.length,
+        history: evals.map(e => ({ score: e.score, level: (e as any).level || 1, passed: (e as any).passed || false, timestamp: e.timestamp })),
+      }
     : null;
 
   // Pitch
@@ -63,10 +69,16 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
     ? Math.max(...pitchCompleted)
     : pitches.length > 0 ? Math.max(...pitches.map(p => p.level)) : 0;
   const pitch = (pitches.length > 0 || pitchCompleted.length > 0)
-    ? { highestLevel: highestPitch, sessionCount: pitches.length, completedLevels: pitchCompleted }
+    ? { 
+        highestLevel: highestPitch, 
+        sessionCount: pitches.length, 
+        completedLevels: pitchCompleted,
+        history: pitches.map(p => ({ level: p.level, closedSale: (p as any).closedSale || false, timestamp: p.timestamp })),
+      }
     : null;
 
   const evalCompleted = progressDoc?.evalCompletedLevels ?? [];
+  const myHumanEvals  = humanEvals.filter(h => h.agentId === agentId).sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
 
   const lastActive = [
     ...quizDocs.filter(r => r.agentId === agentId),
@@ -75,7 +87,7 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
   ].map(r => r.timestamp).filter(Boolean).sort().at(-1) ?? null;
 
   const agent: Agent = { id: agentId, name: agentName, active: true, createdAt: new Date() };
-  const partial      = { agent, quiz, aiEval, pitch, lastActive, evalCompletedLevels: evalCompleted };
+  const partial      = { agent, quiz, aiEval, pitch, lastActive, evalCompletedLevels: evalCompleted, humanEvaluations: myHumanEvals };
   const overallScore = computeOverallScore(partial);
   return { ...partial, overallScore, badge: computeBadge(overallScore) };
 }
@@ -90,12 +102,13 @@ interface ProgressRecord { agentId: string; pitchCompletedLevels: number[]; eval
 // ── Analytics ─────────────────────────────────────────────────────────────
 
 export async function getAllAgentStats(): Promise<AgentStats[]> {
-  const [agents, quizDocs, evalDocs, pitchDocs, progressDocs] = await Promise.all([
+  const [agents, quizDocs, evalDocs, pitchDocs, progressDocs, humanEvals] = await Promise.all([
     gcsGetAll<Agent & { id: string }>('agents'),
     gcsGetAll<QuizRecord>('quiz_results'),
     gcsGetAll<EvalRecord>('ai_eval_logs'),
     gcsGetAll<PitchRecord>('pitch_sessions'),
     gcsGetAll<ProgressRecord>('agent_progress'),
+    gcsGetAll<AgentEvaluation>('agent_evaluations'),
   ]);
 
   const activeAgents = agents.filter(a => a.active);
@@ -110,6 +123,7 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
           bestScore: Math.max(...results.map(r => Math.round((r.score / r.totalQuestions) * 100))),
           passed:    results.some(r => r.passed),
           attempts:  results.length,
+          history:   results.map(r => ({ score: r.score, total: r.totalQuestions, passed: r.passed, timestamp: r.timestamp })),
         };
       }
     }
@@ -117,10 +131,14 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
     // AI Eval
     const evals  = evalDocs.filter(e => e.agentId === agent.id);
     const aiEval = evals.length > 0
-      ? { avgScore: Math.round(evals.reduce((s, e) => s + e.score, 0) / evals.length), count: evals.length }
+      ? { 
+          avgScore: Math.round(evals.reduce((s, e) => s + e.score, 0) / evals.length), 
+          count: evals.length,
+          history: evals.map(e => ({ score: e.score, level: (e as any).level || 1, passed: (e as any).passed || false, timestamp: e.timestamp })),
+        }
       : null;
 
-    // Pitch — prefer completed levels from agent_progress (more accurate than session starts)
+    // Pitch
     const progress       = progressDocs.find(p => p.agentId === agent.id);
     const pitches        = pitchDocs.filter(p => p.agentId === agent.id);
     const pitchCompleted = progress?.pitchCompletedLevels ?? [];
@@ -128,13 +146,21 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
       ? Math.max(...pitchCompleted)
       : pitches.length > 0 ? Math.max(...pitches.map(p => p.level)) : 0;
     const pitch = (pitches.length > 0 || pitchCompleted.length > 0)
-      ? { highestLevel: highestPitch, sessionCount: pitches.length, completedLevels: pitchCompleted }
+      ? { 
+          highestLevel: highestPitch, 
+          sessionCount: pitches.length, 
+          completedLevels: pitchCompleted,
+          history: pitches.map(p => ({ level: p.level, closedSale: (p as any).closedSale || false, timestamp: p.timestamp })),
+        }
       : null;
 
     // AI Eval completed levels (from agent_progress)
     const evalCompleted = progress?.evalCompletedLevels ?? [];
+    
+    // Human Evaluations
+    const myHumanEvals = humanEvals.filter(h => h.agentId === agent.id).sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
 
-    // Last active (ISO strings — direct comparison works)
+    // Last active
     const allTimes = [
       ...quizDocs.filter(r => r.agentId === agent.id),
       ...evalDocs.filter(e => e.agentId === agent.id),
@@ -142,7 +168,7 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
     ].map(r => r.timestamp).filter(Boolean).sort();
     const lastActive = allTimes.length > 0 ? allTimes[allTimes.length - 1] : null;
 
-    const partial      = { agent, quiz, aiEval, pitch, lastActive, evalCompletedLevels: evalCompleted };
+    const partial      = { agent, quiz, aiEval, pitch, lastActive, evalCompletedLevels: evalCompleted, humanEvaluations: myHumanEvals };
     const overallScore = computeOverallScore(partial);
     return { ...partial, overallScore, badge: computeBadge(overallScore) };
   });

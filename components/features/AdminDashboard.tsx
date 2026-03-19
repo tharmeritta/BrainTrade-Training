@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, FileSpreadsheet, LogOut,
   TrendingUp, Award, Target, Activity, Plus, Search,
   Download, ChevronDown, Zap, ShieldCheck, Eye, EyeOff, Pencil, Trash2, X, Check,
-  ClipboardCheck, Star, BookOpen, GraduationCap,
+  ClipboardCheck, Star, BookOpen, GraduationCap, Clock,
 } from 'lucide-react';
 import TrainerPanel from '@/components/features/TrainerPanel';
 import type { AdminOverviewData, AgentStats, StaffAccount } from '@/types';
@@ -74,7 +74,7 @@ function KpiCard({ label, value, sub, icon: Icon, themeColor }: {
       </div>
       <div>
         <p className="text-sm text-foreground/70 font-medium">{label}</p>
-        <p className="text-3xl font-black text-foreground mt-0.5 tracking-tight" style={{ fontFamily: "'Syne', sans-serif" }}>{value}</p>
+        <p className="text-3xl font-black text-foreground mt-0.5 tracking-tight">{value}</p>
         {sub && <p className="text-xs text-muted-foreground mt-1 font-medium">{sub}</p>}
       </div>
     </motion.div>
@@ -368,6 +368,246 @@ function OverviewTab() {
   );
 }
 
+// ── Agent Detail Modal ───────────────────────────────────────────────────────
+
+function DetailedQuizHistory({ stats }: { stats: AgentStats }) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 mb-4">
+        <Target size={18} className="text-amber-500" />
+        <h4 className="font-bold text-base">Quiz Attempt History</h4>
+      </div>
+      {(['product', 'process', 'payment'] as const).map(topic => {
+        const q = stats.quiz[topic];
+        const history = q?.history || [];
+        return (
+          <div key={topic} className="bg-secondary/20 rounded-2xl p-4 border border-border/50">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-bold capitalize text-foreground">{topic}</span>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-black ${scoreColor(q?.bestScore)}`}>Best: {q?.bestScore ?? 0}%</span>
+                <span className="text-[10px] text-muted-foreground uppercase">{q?.attempts ?? 0} attempts</span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {history.length === 0 ? (
+                <p className="text-[10px] text-muted-foreground italic">No attempts yet</p>
+              ) : history.map((h, i) => (
+                <div key={i} className="flex items-center justify-between bg-card/40 px-3 py-2 rounded-xl text-[11px] border border-border/30">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-1.5 h-1.5 rounded-full ${h.passed ? 'bg-blue-500' : 'bg-red-500'}`} />
+                    <span className="font-medium text-foreground">{h.score}/{h.total}</span>
+                    <span className="text-muted-foreground">({Math.round(h.score/h.total*100)}%)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`font-bold uppercase text-[9px] ${h.passed ? 'text-blue-500' : 'text-red-500'}`}>
+                      {h.passed ? 'PASS' : 'FAIL'}
+                    </span>
+                    <span className="text-muted-foreground/60">{new Date(h.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function DetailedAiEvalHistory({ stats }: { stats: AgentStats }) {
+  const history = stats.aiEval?.history || [];
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 mb-4">
+        <Zap size={18} className="text-purple-500" />
+        <h4 className="font-bold text-base">AI Evaluation Logs</h4>
+      </div>
+      <div className="grid grid-cols-1 gap-3">
+        {history.length === 0 ? (
+          <div className="text-center py-8 bg-secondary/20 rounded-2xl border border-dashed border-border text-muted-foreground text-xs">No roleplay sessions found</div>
+        ) : history.map((h, i) => (
+          <div key={i} className="flex items-center gap-4 bg-secondary/20 p-4 rounded-2xl border border-border/50">
+            <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex flex-col items-center justify-center border border-purple-500/20">
+              <span className="text-[10px] font-bold text-purple-400 uppercase leading-none mb-0.5">Lvl</span>
+              <span className="text-lg font-black text-purple-400 leading-none">{h.level}</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-1">
+                <span className={`text-sm font-black ${scoreColor(h.score)}`}>{h.score}/100</span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${h.passed ? 'bg-blue-500/10 text-blue-400' : 'bg-red-500/10 text-red-400'}`}>
+                  {h.passed ? 'PASSED' : 'NOT PASSED'}
+                </span>
+              </div>
+              <div className="text-[10px] text-muted-foreground">{new Date(h.timestamp).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DetailedPitchHistory({ stats }: { stats: AgentStats }) {
+  const history = stats.pitch?.history || [];
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 mb-4">
+        <TrendingUp size={18} className="text-orange-500" />
+        <h4 className="font-bold text-base">Pitch Simulator History</h4>
+      </div>
+      <div className="grid grid-cols-1 gap-3">
+        {history.length === 0 ? (
+          <div className="text-center py-8 bg-secondary/20 rounded-2xl border border-dashed border-border text-muted-foreground text-xs">No pitch sessions found</div>
+        ) : history.map((h, i) => (
+          <div key={i} className="flex items-center gap-4 bg-secondary/20 p-4 rounded-2xl border border-border/50">
+            <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex flex-col items-center justify-center border border-orange-500/20">
+              <span className="text-[10px] font-bold text-orange-400 uppercase leading-none mb-0.5">Lvl</span>
+              <span className="text-lg font-black text-orange-400 leading-none">{h.level}</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-1">
+                <span className={`text-xs font-bold uppercase tracking-wider ${h.closedSale ? 'text-emerald-400' : 'text-muted-foreground'}`}>
+                  {h.closedSale ? '🏆 Sale Closed' : 'No Sale'}
+                </span>
+                <span className="text-[10px] text-muted-foreground/60">{new Date(h.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+              </div>
+              <div className="h-1.5 w-full bg-card rounded-full overflow-hidden">
+                <div className={`h-full transition-all duration-500 ${h.closedSale ? 'bg-emerald-500' : 'bg-muted-foreground/20'}`} style={{ width: h.closedSale ? '100%' : '20%' }} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DetailedHumanEvaluations({ stats }: { stats: AgentStats }) {
+  const evals = stats.humanEvaluations || [];
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 mb-4">
+        <ClipboardCheck size={18} className="text-blue-500" />
+        <h4 className="font-bold text-base">Human QA Evaluations</h4>
+      </div>
+      <div className="space-y-3">
+        {evals.length === 0 ? (
+          <div className="text-center py-8 bg-secondary/20 rounded-2xl border border-dashed border-border text-muted-foreground text-xs">No human evaluations yet</div>
+        ) : evals.map((ev, i) => (
+          <div key={i} className="bg-secondary/20 p-4 rounded-2xl border border-border/50 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center font-black text-blue-400 text-sm border border-blue-500/20">
+                  {ev.totalScore}
+                </div>
+                <div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-bold">Evaluated by</div>
+                  <div className="text-xs font-bold text-foreground">{ev.evaluatorName}</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-[10px] text-muted-foreground uppercase font-bold">{new Date(ev.evaluatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</div>
+                <div className="text-[9px] text-muted-foreground/60">{timeAgo(ev.evaluatedAt)}</div>
+              </div>
+            </div>
+            {ev.comments && (
+              <div className="bg-card/40 p-3 rounded-xl border border-border/30">
+                <p className="text-[11px] text-muted-foreground leading-relaxed italic">"{ev.comments}"</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AgentDetailModal({ stats, onClose }: { stats: AgentStats; onClose: () => void }) {
+  const [activeTab, setActiveTab] = useState<'quiz' | 'ai' | 'pitch' | 'qa'>('quiz');
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 lg:p-8"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+        className="bg-card border border-border rounded-[2.5rem] w-full max-w-5xl h-[85vh] shadow-2xl relative overflow-hidden flex flex-col"
+      >
+        {/* Header Profile */}
+        <div className="px-8 py-8 bg-gradient-to-br from-secondary/50 to-secondary/20 border-b border-border relative shrink-0">
+          <button onClick={onClose} className="absolute top-6 right-6 p-2 rounded-full hover:bg-secondary transition-colors text-muted-foreground">
+            <X size={20} />
+          </button>
+          
+          <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center text-3xl font-black text-white shadow-xl shadow-blue-500/20 shrink-0">
+              {stats.agent.name.slice(0, 2).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-1.5 flex-wrap">
+                <h3 className="text-2xl font-black text-foreground tracking-tight">{stats.agent.name}</h3>
+                <BadgePill badge={stats.badge} />
+                <span className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold ${stats.agent.active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                  {stats.agent.active ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground font-medium">
+                <div className="flex items-center gap-1.5"><Clock size={14} /> Last Active: {timeAgo(stats.lastActive)}</div>
+                <div className="flex items-center gap-1.5"><GraduationCap size={14} /> Overall Score: <span className={`font-bold ${scoreColor(stats.overallScore)}`}>{stats.overallScore}%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="px-8 border-b border-border bg-card shrink-0">
+          <div className="flex gap-8 overflow-x-auto scrollbar-hide">
+            {[
+              { id: 'quiz',  label: 'Quiz History', icon: Target },
+              { id: 'ai',    label: 'AI Roleplay',  icon: Zap },
+              { id: 'pitch', label: 'Pitch Skills', icon: TrendingUp },
+              { id: 'qa',    label: 'QA Feedback',  icon: ClipboardCheck },
+            ].map(t => (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id as any)}
+                className={`py-4 border-b-2 transition-all flex items-center gap-2 text-sm font-bold whitespace-nowrap ${
+                  activeTab === t.id ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <t.icon size={16} /> {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto p-8 bg-card/30">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              {activeTab === 'quiz'  && <DetailedQuizHistory stats={stats} />}
+              {activeTab === 'ai'    && <DetailedAiEvalHistory stats={stats} />}
+              {activeTab === 'pitch' && <DetailedPitchHistory stats={stats} />}
+              {activeTab === 'qa'    && <DetailedHumanEvaluations stats={stats} />}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 // ── Agents Tab ──────────────────────────────────────────────────────────────
 
 function AgentsTab({ role }: { role: 'admin' | 'manager' | 'trainer' }) {
@@ -380,6 +620,7 @@ function AgentsTab({ role }: { role: 'admin' | 'manager' | 'trainer' }) {
   const [agentErr,     setAgentErr]     = useState('');
   const [editingAgent, setEditingAgent] = useState<{ id: string; name: string; stageName: string } | null>(null);
   const [savingAgent,  setSavingAgent]  = useState(false);
+  const [selectedForDetail, setSelectedForDetail] = useState<AgentStats | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -465,6 +706,12 @@ function AgentsTab({ role }: { role: 'admin' | 'manager' | 'trainer' }) {
 
   return (
     <div className="space-y-6">
+      <AnimatePresence>
+        {selectedForDetail && (
+          <AgentDetailModal stats={selectedForDetail} onClose={() => setSelectedForDetail(null)} />
+        )}
+      </AnimatePresence>
+
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -619,7 +866,7 @@ function AgentsTab({ role }: { role: 'admin' | 'manager' | 'trainer' }) {
                   </td>
                   <td className="px-4 py-4 text-center border-y border-border/50 group-hover:border-y-primary/20">
                     <div className="flex flex-col items-center gap-1.5">
-                      <span className={`font-black text-base tracking-tight ${scoreColor(a.overallScore)}`} style={{ fontFamily: "'Syne', sans-serif" }}>{a.overallScore}%</span>
+                      <span className={`font-black text-base tracking-tight ${scoreColor(a.overallScore)}`}>{a.overallScore}%</span>
                       <BadgePill badge={a.badge} />
                     </div>
                   </td>
@@ -630,6 +877,10 @@ function AgentsTab({ role }: { role: 'admin' | 'manager' | 'trainer' }) {
                   </td>
                   <td className="px-4 py-4 rounded-r-2xl border-y border-r border-border/50 group-hover:border-primary/20">
                     <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => setSelectedForDetail(a)}
+                        className="text-[11px] font-bold text-primary hover:text-primary/80 transition-colors whitespace-nowrap px-3 py-1.5 bg-primary/10 rounded-lg">
+                        View Details
+                      </button>
                       <button onClick={() => toggleActive(a.agent.id, a.agent.active)}
                         className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap px-2 py-1.5 bg-secondary/50 rounded-lg">
                         {a.agent.active ? 'Deactivate' : 'Reactivate'}
@@ -1229,7 +1480,7 @@ function EvaluationsTab() {
               return (
                 <div key={ev.id} className="px-6 py-4 flex items-center gap-5 bg-card/60 backdrop-blur-md hover:bg-card hover:shadow-md border border-border/50 hover:border-primary/20 rounded-2xl transition-all group">
                   <div className="w-14 text-center shrink-0">
-                    <span className={`text-xl tracking-tight font-black ${scoreColor(ev.totalScore)}`} style={{ fontFamily: "'Syne', sans-serif" }}>{ev.totalScore}</span>
+                    <span className={`text-xl tracking-tight font-black ${scoreColor(ev.totalScore)}`}>{ev.totalScore}</span>
                     <div className="text-[10px] uppercase font-bold text-muted-foreground mt-0.5">/100</div>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -1325,7 +1576,7 @@ function ChangePasswordModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
           >
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
             
-            <h3 className="font-black text-xl text-foreground mb-2" style={{ fontFamily: "'Syne', sans-serif" }}>Change Password</h3>
+            <h3 className="font-black text-xl text-foreground mb-2">Change Password</h3>
             <p className="text-sm text-muted-foreground mb-6">Update your login credentials</p>
 
             <div className="space-y-4">
@@ -1349,14 +1600,12 @@ function ChangePasswordModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                   onClick={handleSave}
                   disabled={saving || success || !newPassword}
                   className="flex-1 bg-primary text-primary-foreground py-3 rounded-xl text-sm font-bold disabled:opacity-50 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
-                  style={{ fontFamily: "'Syne', sans-serif" }}
                 >
                   {saving ? 'Updating...' : success ? 'Updated!' : 'Update Password'}
                 </button>
                 <button 
                   onClick={onClose}
                   className="px-6 py-3 rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
-                  style={{ fontFamily: "'Syne', sans-serif" }}
                 >
                   Cancel
                 </button>
@@ -1408,7 +1657,7 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
         {/* Top header */}
         <div className="bg-background/60 backdrop-blur-2xl border-b border-white/5 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
           <div>
-            <h1 className="text-xl font-black text-foreground tracking-tight" style={{ fontFamily: "'Syne', sans-serif" }}>BrainTrade Training Platform</h1>
+            <h1 className="text-xl font-black text-foreground tracking-tight">BrainTrade Training Platform</h1>
           <p className="text-xs text-muted-foreground">
             {role === 'admin' ? 'Admin' : role === 'trainer' ? 'Trainer' : 'Manager'} Control Panel · {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
           </p>

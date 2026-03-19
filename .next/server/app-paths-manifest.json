@@ -1,4 +1,8 @@
 {
+  "/api/admin/agents/route": "app/api/admin/agents/route.js",
+  "/api/trainer/training-periods/route": "app/api/trainer/training-periods/route.js",
+  "/api/admin/evaluations/route": "app/api/admin/evaluations/route.js",
+  "/api/admin/overview/route": "app/api/admin/overview/route.js",
   "/[locale]/page": "app/[locale]/page.js",
   "/[locale]/login/page": "app/[locale]/login/page.js",
   "/[locale]/admin/page": "app/[locale]/admin/page.js",

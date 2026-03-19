@@ -60,6 +60,21 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/admin/change-password/route.js"
+    ],
+    "/api/admin/agents/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/admin/agents/route.js"
+    ],
+    "/api/trainer/training-periods/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/trainer/training-periods/route.js"
+    ],
+    "/api/admin/evaluations/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/admin/evaluations/route.js"
     ]
   }
 }

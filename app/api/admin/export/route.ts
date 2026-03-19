@@ -51,28 +51,86 @@ function buildOverviewSheet(agents: AgentStats[]) {
 
 function buildIndividualSheet(stat: AgentStats) {
   const rows: (string | number)[][] = [
-    ['BrainTrade Training — Individual Report'],
-    ['Agent:', stat.agent.name],
-    ['Overall Score:', `${stat.overallScore}%`],
-    ['Performance:', stat.badge.replace('-', ' ')],
+    ['BrainTrade Training — Individual Performance Report'],
+    ['Report Date:', new Date().toISOString().slice(0, 10)],
     [],
-    ['Module', 'Best Score %', 'Passed', 'Attempts'],
+    ['AGENT PROFILE'],
+    ['Name:', stat.agent.name],
+    ['Overall Score:', `${stat.overallScore}%`],
+    ['Performance Badge:', stat.badge.toUpperCase()],
+    ['Last Active:', stat.lastActive ? stat.lastActive.slice(0, 16).replace('T', ' ') : 'N/A'],
+    [],
+    ['MODULE BREAKDOWN', 'Best Score %', 'Passed', 'Attempts'],
     ...(['product','process','payment'] as const).map(m => [
-      m.charAt(0).toUpperCase() + m.slice(1),
-      stat.quiz[m]?.bestScore ?? 'N/A',
-      stat.quiz[m]?.passed ? 'Yes' : 'No',
+      m.toUpperCase(),
+      stat.quiz[m]?.bestScore ?? '0',
+      stat.quiz[m]?.passed ? 'YES' : 'NO',
       stat.quiz[m]?.attempts ?? 0,
     ]),
     [],
-    ['AI Evaluation', 'Avg Score', 'Sessions'],
-    ['AI Eval', stat.aiEval?.avgScore ?? 'N/A', stat.aiEval?.count ?? 0],
+    ['DETAILED QUIZ HISTORY'],
+    ['Module', 'Score', 'Result', 'Date'],
+    ...(['product','process','payment'] as const).flatMap(m => 
+      (stat.quiz[m]?.history || []).map(h => [
+        m.toUpperCase(),
+        `${h.score}/${h.total} (${Math.round(h.score/h.total*100)}%)`,
+        h.passed ? 'PASS' : 'FAIL',
+        h.timestamp.slice(0, 10)
+      ])
+    ),
     [],
-    ['Pitch Simulator', 'Highest Level', 'Sessions'],
-    ['Pitch', stat.pitch?.highestLevel ?? 'N/A', stat.pitch?.sessionCount ?? 0],
+    ['AI EVALUATION (Sales Objection Roleplay)'],
+    ['Avg Score:', stat.aiEval?.avgScore ?? '0'],
+    ['Total Sessions:', stat.aiEval?.count ?? 0],
+    ['Completed Levels:', (stat.evalCompletedLevels ?? []).join(', ') || 'None'],
+    [],
+    ['AI EVAL SESSION LOGS'],
+    ['Level', 'Score', 'Result', 'Date'],
+    ...(stat.aiEval?.history || []).map(h => [
+      `Level ${h.level}`,
+      h.score,
+      h.passed ? 'PASSED' : 'NOT PASSED',
+      h.timestamp.slice(0, 10)
+    ]),
+    [],
+    ['PITCH SIMULATOR (Closing Skills)'],
+    ['Highest Level:', stat.pitch?.highestLevel ?? '0'],
+    ['Total Sessions:', stat.pitch?.sessionCount ?? 0],
+    ['Completed Levels:', (stat.pitch?.completedLevels ?? []).join(', ') || 'None'],
+    [],
+    ['PITCH SESSION LOGS'],
+    ['Level', 'Outcome', 'Date'],
+    ...(stat.pitch?.history || []).map(h => [
+      `Level ${h.level}`,
+      h.closedSale ? 'SALE CLOSED' : 'NO SALE',
+      h.timestamp.slice(0, 10)
+    ]),
+    [],
+    ['HUMAN EVALUATIONS (Quality Assurance)'],
+    ['Evaluator', 'Score', 'Date', 'Comments'],
+    ...(stat.humanEvaluations || []).map(h => [
+      h.evaluatorName,
+      h.totalScore,
+      h.evaluatedAt.slice(0, 10),
+      h.comments
+    ]),
   ];
 
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [20,15,12,12].map(wch => ({ wch }));
+  ws['!cols'] = [25, 25, 20, 50].map(wch => ({ wch }));
+  
+  // Style headers
+  const boldRows = [0, 3, 9, 12, 16, 21, 26, 31, 36, 37];
+  boldRows.forEach(r => {
+    for (let c = 0; c < 4; c++) {
+      const addr = XLSX.utils.encode_cell({ r, c });
+      if (ws[addr]) {
+        if (!ws[addr].s) ws[addr].s = {};
+        ws[addr].s.font = { bold: true };
+      }
+    }
+  });
+
   return ws;
 }
 
