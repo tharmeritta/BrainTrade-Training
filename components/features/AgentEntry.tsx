@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight, Loader2, AlertCircle, Users, Award, Layers, User,
@@ -495,10 +496,10 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                   <span className="text-[10px]" style={{ color: 'var(--hub-dim)' }}>
                     ไม่พบชื่อ? ติดต่อผู้จัดการ
                   </span>
-                  <a href="/login" className="text-[10px] transition-opacity hover:opacity-80"
+                  <Link href="/th/login" className="text-[10px] transition-opacity hover:opacity-80"
                     style={{ color: 'var(--hub-muted)' }}>
                     Admin / Evaluator →
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>

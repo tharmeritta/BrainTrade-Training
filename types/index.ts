@@ -8,6 +8,7 @@ export interface StaffAccount {
   role: 'admin' | 'manager' | 'evaluator' | 'trainer';
   active: boolean;
   createdAt: string;
+  passwordChanged?: boolean;
 }
 
 export interface PitchMessage {

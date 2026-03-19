@@ -11,6 +11,7 @@ export default async function EvaluatorPage({ params }: { params: Promise<{ loca
     <EvaluatorDashboard
       evaluatorId={user.uid}
       evaluatorName={user.name}
+      passwordChanged={user.passwordChanged}
     />
   );
 }

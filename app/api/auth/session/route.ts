@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     );
     if (account) {
       const res = NextResponse.json({ status: 'ok', role: account.role });
-      setSession(res, makeSessionToken(account.role, account.id, account.name));
+      setSession(res, makeSessionToken(account.role, account.id, account.name, !!account.passwordChanged));
       return res;
     }
   } catch {

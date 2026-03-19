@@ -6,7 +6,14 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   try {
     const user = await requireAdminManagerOrTrainer();
-    return <AdminDashboard role={user.role as 'admin' | 'manager' | 'trainer'} />;
+    return (
+      <AdminDashboard
+        role={user.role as 'admin' | 'manager' | 'trainer'}
+        uid={user.uid}
+        name={user.name}
+        passwordChanged={user.passwordChanged}
+      />
+    );
   } catch {
     redirect(`/${locale}/login`);
   }

@@ -1287,6 +1287,7 @@ function OverviewPanel({
 interface EvaluatorDashboardProps {
   evaluatorId: string;
   evaluatorName: string;
+  passwordChanged: boolean;
 }
 
 function logout() {
@@ -1294,10 +1295,114 @@ function logout() {
   window.location.replace('/login');
 }
 
-export default function EvaluatorDashboard({ evaluatorId, evaluatorName }: EvaluatorDashboardProps) {
+function ChangePasswordModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const [newPassword, setNewPassword] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+  async function handleSave() {
+    if (newPassword.length < 4) {
+      setError('Password must be at least 4 characters');
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch('/api/admin/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newPassword }),
+      });
+      if (res.ok) {
+        setSuccess(true);
+        setTimeout(() => {
+          onClose();
+          setSuccess(false);
+          setNewPassword('');
+        }, 1500);
+      } else {
+        const d = await res.json();
+        setError(d.error || 'Failed to change password');
+      }
+    } catch {
+      setError('Network error');
+    }
+    setSaving(false);
+  }
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            className="bg-card border border-border rounded-3xl p-8 w-full max-w-sm shadow-2xl relative overflow-hidden"
+          >
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
+            
+            <h3 className="font-black text-xl text-foreground mb-2" style={{ fontFamily: "'Syne', sans-serif" }}>Change Password</h3>
+            <p className="text-sm text-muted-foreground mb-6">Update your login credentials</p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">New Password</label>
+                <input
+                  type="text"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  className="w-full bg-secondary/40 border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
+                  placeholder="Enter new password"
+                  autoFocus
+                />
+              </div>
+
+              {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
+              {success && <p className="text-xs text-emerald-500 font-medium">Password updated successfully!</p>}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleSave}
+                  disabled={saving || success || !newPassword}
+                  className="flex-1 bg-primary text-primary-foreground py-3 rounded-xl text-sm font-bold disabled:opacity-50 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                  style={{ fontFamily: "'Syne', sans-serif" }}
+                >
+                  {saving ? 'Updating...' : success ? 'Updated!' : 'Update Password'}
+                </button>
+                <button 
+                  onClick={onClose}
+                  className="px-6 py-3 rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                  style={{ fontFamily: "'Syne', sans-serif" }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwordChanged }: EvaluatorDashboardProps) {
   const pathname = usePathname();
   const lang     = (pathname.split('/')[1] === 'en' ? 'en' : 'th') as Lang;
   const t        = T[lang];
+
+  const [isPwModalOpen, setIsPwModalOpen] = useState(!passwordChanged);
+
+  useEffect(() => {
+    if (!passwordChanged) setIsPwModalOpen(true);
+  }, [passwordChanged]);
 
   const [agents, setAgents]               = useState<Agent[]>([]);
   const [agentSearch, setAgentSearch]     = useState('');
@@ -1400,6 +1505,9 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName }: Evalu
 
   return (
     <div className="min-h-screen flex flex-col bg-background relative overflow-hidden" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      {/* Change Password Modal */}
+      <ChangePasswordModal isOpen={isPwModalOpen} onClose={() => setIsPwModalOpen(false)} />
+
       {/* Ambient background glows */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-500/10 dark:bg-blue-500/20 blur-[120px] rounded-full mix-blend-screen" />
@@ -1412,9 +1520,20 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName }: Evalu
           <ClipboardCheck size={16} className="text-white" />
         </div>
         <span className="font-black text-lg bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70" style={{ fontFamily: "'Syne', sans-serif" }}>{t.panelTitle}</span>
-        <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-600 dark:text-blue-400 ml-1">
-          {evaluatorName}
-        </span>
+        
+        <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/25 ml-1">
+          <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+            {evaluatorName}
+          </span>
+          <button 
+            onClick={() => setIsPwModalOpen(true)}
+            className="p-1 rounded-lg hover:bg-blue-500/10 text-blue-500/60 hover:text-blue-500 transition-colors"
+            title="Change Password"
+          >
+            <Zap size={12} />
+          </button>
+        </div>
+
         <span className="text-[10px] font-semibold px-2 py-1 rounded-lg bg-secondary/80 border border-white/5 text-muted-foreground hidden sm:block">
           {t.roleLabel}
         </span>
