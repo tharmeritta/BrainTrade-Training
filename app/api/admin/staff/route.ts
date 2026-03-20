@@ -25,19 +25,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'role must be admin, manager, evaluator, or trainer' }, { status: 400 });
   }
 
-  // Check for duplicate username
-  const existing = await fsGetAll<StaffAccount>('staff_accounts');
-  if (existing.some(s => s.username === username.trim())) {
-    return NextResponse.json({ error: 'Username already taken' }, { status: 409 });
-  }
+  try {
+    // Check for duplicate username
+    const existing = await fsGetAll<StaffAccount>('staff_accounts');
+    if (existing.some(s => s.username === username.trim())) {
+      return NextResponse.json({ error: 'Username already taken' }, { status: 409 });
+    }
 
-  const account = await fsAdd('staff_accounts', {
-    username: username.trim(),
-    password: password.trim(),
-    name: name.trim(),
-    role,
-    active: true,
-    createdAt: new Date().toISOString(),
-  });
-  return NextResponse.json(account, { status: 201 });
+    const account = await fsAdd('staff_accounts', {
+      username: username.trim(),
+      password: password.trim(),
+      name: name.trim(),
+      role,
+      active: true,
+      createdAt: new Date().toISOString(),
+    });
+    return NextResponse.json(account, { status: 201 });
+  } catch (err: any) {
+    console.error('[POST /api/admin/staff] Firestore error:', err);
+    return NextResponse.json({ error: 'Database error', details: err.message }, { status: 500 });
+  }
 }
