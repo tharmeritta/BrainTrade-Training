@@ -30,7 +30,7 @@ export async function PATCH(req: NextRequest) {
     await db.collection('module_config').doc(id).set({
       ...data,
       updatedAt: new Date().toISOString()
-    }, { merge: true });
+    });
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

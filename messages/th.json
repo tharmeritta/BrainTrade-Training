@@ -128,7 +128,7 @@
     "notFound": "ไม่พบข้อมูลแบบทดสอบ"
   },
   "agentEntry": {
-    "title": "เสริมทักษะ <span style=\"background: linear-gradient(100deg, #00B4D8 0%, #7C3AED 100%)\"; -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;\">การขาย</span> ของคุณ",
+    "title": "เสริมทักษะ <span style=\"background: linear-gradient(100deg, #00B4D8 0%, #7C3AED 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;\">การขาย</span> ของคุณ",
     "subtitle": "โปรแกรมฝึกอบรมพัฒนาทักษะการขาย ผ่านการเรียนรู้แบบโต้ตอบและ AI ที่ชาญฉลาด",
     "agents": "เอเจนต์",
     "passed": "ผ่านการทดสอบ",
@@ -212,6 +212,7 @@
       "displayName": "ชื่อที่แสดง",
       "role": "บทบาทในระบบ",
       "roles": {
+        "admin": "ผู้ดูแลระบบ",
         "manager": "ผู้จัดการ",
         "evaluator": "ผู้ประเมิน",
         "trainer": "ผู้ฝึกสอน"
@@ -403,7 +404,9 @@
     "thai": "ไทย",
     "english": "อังกฤษ",
     "infrastructure": "BrainTrade Training Infrastructure",
-    "proprietary": "Proprietary Material."
+    "proprietary": "Proprietary Material.",
+    "loadingPreview": "กำลังโหลด...",
+    "trainingModule": "โมดูลการฝึกอบรม"
   },
   "presentation": {
     "productKnowledge": "ความรู้ผลิตภัณฑ์",

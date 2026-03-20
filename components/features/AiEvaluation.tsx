@@ -13,6 +13,7 @@ import { getAgentSession } from '@/lib/agent-session';
 import { FADE_IN, TRANSITION, EASE } from '@/lib/animations';
 
 import { useTranslations } from 'next-intl';
+import { ActiveAgentUI } from '@/components/ui/ActiveAgentUI';
 
 /* ─── Constants & Types ────────────────────────────────────────────────────── */
 
@@ -225,11 +226,7 @@ const SelectionView = memo(({
           <p className="text-muted-foreground text-sm font-bold mt-1 opacity-70">{t('selectDesc')}</p>
         </div>
         <div className="flex items-center gap-3">
-          {agentName && (
-            <div className="text-[10px] font-black text-muted-foreground bg-secondary/50 px-4 py-2 rounded-xl border border-black/5 uppercase tracking-widest shadow-sm">
-              {t('activeAgent')}: <span className="text-primary">{agentName}</span>
-            </div>
-          )}
+          <ActiveAgentUI agentName={agentName} />
           <button
             onClick={onShowIntro}
             className="text-xs font-bold text-muted-foreground hover:text-foreground flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-secondary/50 transition-all"

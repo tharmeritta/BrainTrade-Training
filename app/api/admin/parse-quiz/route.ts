@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/session';
 import { getOpenAI } from '@/lib/openai';
 
+export const maxDuration = 60; // Allow up to 60s for AI parsing on Vercel
+
 const SYSTEM_PROMPT = `You are an expert AI assistant that converts raw quiz text into a strictly formatted JSON structure.
 The user will provide raw text containing quiz questions, options, correct answers, and explanations.
 Your job is to parse this text and return a JSON object with:
@@ -69,15 +71,22 @@ export async function POST(req: NextRequest) {
     }
 
     const openai = getOpenAI();
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: rawText }
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.1,
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 55000);
+    let completion;
+    try {
+      completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: rawText }
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.1,
+      }, { signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     const resultText = completion.choices[0].message.content;
     if (!resultText) {

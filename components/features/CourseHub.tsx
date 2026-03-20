@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { type CourseLang, type CourseModule } from '@/lib/courses';
 import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM, TRANSITION, stagger } from '@/lib/animations';
+import { getAgentSession } from '@/lib/agent-session';
+import { ActiveAgentUI } from '@/components/ui/ActiveAgentUI';
 
 // ─── Interfaces ─────────────────────────────────────────────────────────────
 
@@ -18,6 +20,7 @@ interface LanguagePickerProps {
 interface CourseHeaderProps {
   lang: CourseLang;
   onLangChange: (l: CourseLang) => void;
+  agentName: string | null;
 }
 
 interface CourseCardProps {
@@ -72,7 +75,7 @@ LanguagePicker.displayName = 'LanguagePicker';
 /**
  * Page header with title and language picker
  */
-const CourseHeader = memo(({ lang, onLangChange }: CourseHeaderProps) => {
+const CourseHeader = memo(({ lang, onLangChange, agentName }: CourseHeaderProps) => {
   const t = useTranslations('courseHub');
   return (
     <motion.div 
@@ -96,7 +99,10 @@ const CourseHeader = memo(({ lang, onLangChange }: CourseHeaderProps) => {
         </p>
       </div>
 
-      <LanguagePicker lang={lang} onSelect={onLangChange} />
+      <div className="flex items-center gap-4">
+        <ActiveAgentUI agentName={agentName} />
+        <LanguagePicker lang={lang} onSelect={onLangChange} />
+      </div>
     </motion.div>
   );
 });
@@ -108,6 +114,7 @@ CourseHeader.displayName = 'CourseHeader';
  */
 const CourseCard = memo(({ module, lang, index, onStart }: CourseCardProps) => {
   const t = useTranslations('courseHub');
+  const [imgStatus, setImgStatus] = useState<'loading' | 'error' | 'success'>('loading');
   const pres = module.presentations[lang];
   const title = lang === 'th' ? module.titleTh : module.title;
   const desc  = lang === 'th' ? module.descriptionTh : module.description;
@@ -132,22 +139,56 @@ const CourseCard = memo(({ module, lang, index, onStart }: CourseCardProps) => {
                  cursor-pointer"
       onClick={() => handleStart()}
     >
-      <div className={`relative h-44 bg-gradient-to-br ${module.gradient} overflow-hidden`}>
+      <div className={`relative h-44 bg-gradient-to-br ${module.gradient} overflow-hidden flex items-center justify-center`}>
+        {/* Animated Placeholder/Fallback */}
+        <AnimatePresence>
+          {(imgStatus === 'loading' || imgStatus === 'error') && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center"
+            >
+              <div className="absolute inset-0 bg-black/5 backdrop-blur-[1px]" />
+              
+              <div className="relative z-10 flex flex-col items-center">
+                 <div className="mb-3 p-3.5 bg-white/10 rounded-[20px] backdrop-blur-md border border-white/20 shadow-xl shadow-black/5">
+                   {imgStatus === 'loading' ? (
+                     <Loader2 size={28} className="text-white/80 animate-spin" />
+                   ) : (
+                     <BookOpen size={28} className="text-white/80" />
+                   )}
+                 </div>
+                 <div className="flex flex-col gap-1">
+                   <span className="text-[9px] font-black text-white/70 uppercase tracking-[0.2em]">
+                     {imgStatus === 'loading' ? t('loadingPreview') || 'Loading Preview' : t('trainingModule') || 'Training Module'}
+                   </span>
+                 </div>
+              </div>
+              
+              {/* Decorative background title */}
+              <div className="absolute -bottom-6 -right-4 text-7xl font-black text-white/5 select-none pointer-events-none uppercase italic leading-none whitespace-nowrap overflow-hidden max-w-[150%]">
+                {title}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <img
-          src={`https://drive.google.com/thumbnail?id=${pres.presentationId}&sz=w640`}
+          src={`https://docs.google.com/presentation/d/${pres.presentationId}/thumbnail?sz=w640`}
           alt={title}
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 group-hover:scale-110 z-10 ${
+            imgStatus === 'success' ? 'opacity-90 group-hover:opacity-100' : 'opacity-0'
+          }`}
           loading="lazy"
-          onError={(e) => { 
-            (e.currentTarget as HTMLImageElement).parentElement!.classList.add('flex', 'items-center', 'justify-center');
-            (e.currentTarget as HTMLImageElement).style.display = 'none'; 
-          }}
+          onLoad={() => setImgStatus('success')}
+          onError={() => setImgStatus('error')}
         />
         
-        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
+        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500 z-20" />
         
         <div className="absolute top-4 right-4 px-3 py-1.5 bg-black/40 backdrop-blur-md
-                        rounded-full text-[10px] font-black text-white uppercase tracking-widest z-10 border border-white/10">
+                        rounded-full text-[10px] font-black text-white uppercase tracking-widest z-30 border border-white/10 shadow-lg">
           {pres.totalSlides} {t('slides')}
         </div>
       </div>
@@ -228,6 +269,12 @@ export default function CourseHub({ initialModules }: { initialModules: CourseMo
 
   const [modules, setModules] = useState<CourseModule[]>(initialModules);
   const [loading, setLoading] = useState(false);
+  const [agentName, setAgentName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const session = getAgentSession();
+    if (session) setAgentName(session.name);
+  }, []);
 
   // State managed by URL query param 'lang'
   const [lang, setLang] = useState<CourseLang>(() => {
@@ -250,7 +297,7 @@ export default function CourseHub({ initialModules }: { initialModules: CourseMo
   return (
     <div className="min-h-[calc(100dvh-72px)] bg-background text-foreground px-4 py-12 md:px-10 lg:px-12 selection:bg-primary/20">
       <div className="max-w-6xl mx-auto">
-        <CourseHeader lang={lang} onLangChange={handleLangChange} />
+        <CourseHeader lang={lang} onLangChange={handleLangChange} agentName={agentName} />
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">

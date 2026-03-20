@@ -7,6 +7,9 @@ import { BookOpen, ClipboardList, PlayCircle, BarChart3, LucideIcon } from 'luci
 import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
 
 import { useTranslations } from 'next-intl';
+import { getAgentSession } from '@/lib/agent-session';
+import { ActiveAgentUI } from '@/components/ui/ActiveAgentUI';
+import { useEffect, useState } from 'react';
 
 // --- Types & Constants ---
 
@@ -51,17 +54,29 @@ const MODULES: ModuleItem[] = [
  */
 const DashboardHeader = () => {
   const t = useTranslations('dashboard');
+  const [agentName, setAgentName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const session = getAgentSession();
+    if (session) setAgentName(session.name);
+  }, []);
+
   return (
     <motion.header 
       variants={FADE_IN}
       initial="initial"
       animate="animate"
+      className="flex flex-col md:flex-row md:items-end justify-between gap-6"
     >
-      <h1 
-        className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl"
-        dangerouslySetInnerHTML={{ __html: t.raw('headerTitle') }}
-      />
-      <p className="text-muted-foreground mt-2 text-lg">{t('headerSub')}</p>
+      <div>
+        <h1 
+          className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl"
+          dangerouslySetInnerHTML={{ __html: t.raw('headerTitle') }}
+        />
+        <p className="text-muted-foreground mt-2 text-lg">{t('headerSub')}</p>
+      </div>
+
+      <ActiveAgentUI agentName={agentName} />
     </motion.header>
   );
 };

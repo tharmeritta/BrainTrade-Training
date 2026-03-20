@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { Save, RotateCcw, Target, Zap, TrendingUp, Loader2, CheckCircle2, AlertCircle, Edit3, Plus, Trash2, BookOpen, Sparkles } from 'lucide-react';
+import { Save, RotateCcw, Target, Zap, TrendingUp, Loader2, CheckCircle2, AlertCircle, Edit3, Plus, Trash2, BookOpen, Sparkles, FileUp, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 type ConfigType = 'quizzes' | 'pitch' | 'ai-eval' | 'learn';
 
@@ -109,61 +110,174 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
   const [selectedQuiz, setSelectedQuiz] = useState<string | null>(null);
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
   const [showMagicImport, setShowMagicImport] = useState(false);
+  const [showStructuredImport, setShowStructuredImport] = useState(false);
+  const [magicMode, setMagicMode] = useState<'replace' | 'append'>('replace');
   const [magicText, setMagicText] = useState('');
   const [magicParsing, setMagicParsing] = useState(false);
   const [magicError, setMagicError] = useState('');
+
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState('');
 
   const handleMagicImport = async () => {
     if (!magicText.trim() || !selectedQuiz) return;
     setMagicParsing(true);
     setMagicError('');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
     try {
       const res = await fetch('/api/admin/parse-quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rawText: magicText })
+        body: JSON.stringify({ rawText: magicText }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Parse failed');
       
       if (result.questions && Array.isArray(result.questions)) {
         const updated = { ...definitions };
         const currentQuiz = updated[selectedQuiz];
-        
-        // Update questions
-        currentQuiz.questions = result.questions;
-        
-        // Update title if AI provided one
-        if (result.title) {
-          currentQuiz.title = result.title;
-        }
 
-        let finalQuizId = selectedQuiz;
-        // If it's a new quiz OR if AI provided a better ID, we can update it
-        // To be safe and respect "auto generate based on content", we update it if AI provided one
-        if (result.id) {
-          const suggestedId = result.id.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
-          if (suggestedId && suggestedId !== selectedQuiz) {
-            // Check if suggested ID already exists (other than current)
-            if (!updated[suggestedId]) {
+        if (magicMode === 'append') {
+          // Append: add new questions after existing ones
+          currentQuiz.questions = [...(currentQuiz.questions || []), ...result.questions];
+        } else {
+          // Replace: swap all questions, and optionally update title/id
+          currentQuiz.questions = result.questions;
+
+          if (result.title) {
+            currentQuiz.title = result.title;
+          }
+
+          if (result.id) {
+            const suggestedId = result.id.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+            if (suggestedId && suggestedId !== selectedQuiz && !updated[suggestedId]) {
               updated[suggestedId] = { ...currentQuiz };
               delete updated[selectedQuiz];
-              finalQuizId = suggestedId;
+              setDefinitions(updated);
+              setSelectedQuiz(suggestedId);
+              setMagicText('');
+              setShowMagicImport(false);
+              setSelectedQuestions([]);
+              return;
             }
           }
         }
 
         setDefinitions(updated);
-        setSelectedQuiz(finalQuizId);
         setMagicText('');
         setShowMagicImport(false);
         setSelectedQuestions([]);
       }
     } catch (err: any) {
-      setMagicError(err.message);
+      clearTimeout(timeoutId);
+      setMagicError(err.name === 'AbortError' ? 'Request timed out. Try with shorter text or check your connection.' : err.message);
     } finally {
       setMagicParsing(false);
     }
+  };
+
+  const downloadTemplate = () => {
+    const template = [
+      {
+        question_en: "What is Forex?",
+        question_th: "Forex คืออะไร?",
+        type: "mcq",
+        option_1_en: "Foreign Exchange",
+        option_1_th: "การแลกเปลี่ยนเงินตรา",
+        option_2_en: "Food Export",
+        option_2_th: "การส่งออกอาหาร",
+        option_3_en: "Financial Exit",
+        option_3_th: "ทางออกทางการเงิน",
+        option_4_en: "Forward Extra",
+        option_4_th: "สัญญาซื้อขายล่วงหน้า",
+        correct_index: 0,
+        explanation_en: "Forex stands for Foreign Exchange.",
+        explanation_th: "Forex ย่อมาจากการแลกเปลี่ยนเงินตราต่างประเทศ"
+      }
+    ];
+
+    const ws = XLSX.utils.json_to_sheet(template);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Quiz Template");
+    XLSX.writeFile(wb, "quiz_template.xlsx");
+  };
+
+  const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedQuiz) return;
+
+    setImporting(true);
+    setImportError('');
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws);
+
+        if (data.length === 0) throw new Error('File is empty');
+
+        const parsedQuestions = data.map((row: any, idx: number) => {
+          // Flexible mapping
+          const qEn = row.question_en || row.en || row.Question || '';
+          const qTh = row.question_th || row.th || row.QuestionTH || '';
+          
+          if (!qEn && !qTh) return null;
+
+          const optionsEn = [];
+          const optionsTh = [];
+          
+          for (let i = 1; i <= 6; i++) {
+            const optEn = row[`option_${i}_en`] || row[`opt_${i}_en`];
+            const optTh = row[`option_${i}_th`] || row[`opt_${i}_th`];
+            if (optEn !== undefined) optionsEn.push(String(optEn));
+            if (optTh !== undefined) optionsTh.push(String(optTh));
+          }
+
+          // Fallback if th options are missing or mismatch
+          while (optionsTh.length < optionsEn.length) optionsTh.push(optionsEn[optionsTh.length]);
+
+          return {
+            en: qEn,
+            th: qTh || qEn,
+            type: row.type || 'mcq',
+            options: {
+              en: optionsEn,
+              th: optionsTh
+            },
+            correctIdx: parseInt(row.correct_index ?? row.correctIdx ?? 0),
+            explain: {
+              en: row.explanation_en || row.explain_en || '',
+              th: row.explanation_th || row.explain_th || ''
+            }
+          };
+        }).filter(Boolean);
+
+        const updated = { ...definitions };
+        const currentQuiz = updated[selectedQuiz];
+
+        if (magicMode === 'append') {
+          currentQuiz.questions = [...(currentQuiz.questions || []), ...parsedQuestions];
+        } else {
+          currentQuiz.questions = parsedQuestions;
+        }
+
+        setDefinitions(updated);
+        setShowStructuredImport(false);
+        e.target.value = ''; // Reset input
+      } catch (err: any) {
+        setImportError(err.message || 'Failed to parse file');
+      } finally {
+        setImporting(false);
+      }
+    };
+    reader.readAsBinaryString(file);
   };
 
   const handleUpdateQuiz = (quizId: string, field: string, value: any) => {
@@ -312,25 +426,114 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <label className="block text-xs font-black uppercase tracking-wider text-muted-foreground">Questions ({definitions[selectedQuiz].questions?.length || 0})</label>
-                  <button onClick={() => setShowMagicImport(!showMagicImport)} className="text-xs font-bold flex items-center gap-1 text-primary hover:text-primary/80 bg-primary/10 px-3 py-1.5 rounded-lg transition-colors">
-                    <Sparkles size={14} /> AI Magic Import
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => { setShowMagicImport(!showMagicImport); setShowStructuredImport(false); }} className={`text-xs font-bold flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors ${showMagicImport ? 'bg-primary text-primary-foreground' : 'text-primary hover:text-primary/80 bg-primary/10'}`}>
+                      <Sparkles size={14} /> AI Magic Import
+                    </button>
+                    <button onClick={() => { setShowStructuredImport(!showStructuredImport); setShowMagicImport(false); }} className={`text-xs font-bold flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors ${showStructuredImport ? 'bg-primary text-primary-foreground' : 'text-primary hover:text-primary/80 bg-primary/10'}`}>
+                      <FileUp size={14} /> Structured Import
+                    </button>
+                  </div>
                 </div>
+
+                <AnimatePresence>
+                  {showStructuredImport && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                      <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl space-y-3 mb-4">
+                        <div className="flex items-center justify-between">
+                          <h5 className="text-sm font-bold flex items-center gap-2"><FileUp size={16} className="text-primary" /> Structured Import (CSV/Excel)</h5>
+                          <button onClick={() => setShowStructuredImport(false)} className="text-xs text-muted-foreground">Cancel</button>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                          <div className="flex-1">
+                            <p className="text-xs text-muted-foreground mb-2">Upload a CSV or Excel file with your quiz data. Use our template for best results.</p>
+                            <div className="flex items-center gap-2">
+                              <button onClick={downloadTemplate} className="flex items-center gap-2 text-xs font-bold text-primary hover:underline">
+                                <Download size={14} /> Download Template
+                              </button>
+                            </div>
+                          </div>
+                          
+                          {/* Mode toggle */}
+                          <div className="flex items-center gap-1 p-1 rounded-lg bg-secondary/40 w-fit">
+                            <button
+                              onClick={() => setMagicMode('replace')}
+                              className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${magicMode === 'replace' ? 'bg-red-500/20 text-red-400' : 'text-muted-foreground hover:text-foreground'}`}
+                            >
+                              Replace
+                            </button>
+                            <button
+                              onClick={() => setMagicMode('append')}
+                              className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${magicMode === 'append' ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                            >
+                              Append
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="relative group">
+                          <input 
+                            type="file" 
+                            accept=".csv, .xlsx, .xls"
+                            onChange={handleFileImport}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            disabled={importing}
+                          />
+                          <div className="border-2 border-dashed border-border group-hover:border-primary/50 rounded-xl p-8 flex flex-col items-center justify-center gap-2 bg-background/50 transition-colors">
+                            {importing ? (
+                              <Loader2 size={24} className="animate-spin text-primary" />
+                            ) : (
+                              <FileUp size={24} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                            )}
+                            <p className="text-xs font-bold">Click to upload or drag and drop</p>
+                            <p className="text-[10px] text-muted-foreground">CSV, XLSX or XLS (max 5MB)</p>
+                          </div>
+                        </div>
+
+                        {importError && <p className="text-xs text-red-500 font-bold bg-red-500/10 p-2 rounded-lg">{importError}</p>}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 <AnimatePresence>
                   {showMagicImport && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                       <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl space-y-3 mb-4">
                         <div className="flex items-center justify-between">
-                          <h5 className="text-sm font-bold flex items-center gap-2"><Sparkles size={16} className="text-primary" /> Replace Quiz via Magic Import</h5>
+                          <h5 className="text-sm font-bold flex items-center gap-2"><Sparkles size={16} className="text-primary" /> AI Magic Import</h5>
                           <button onClick={() => setShowMagicImport(false)} className="text-xs text-muted-foreground">Cancel</button>
                         </div>
-                        <p className="text-xs text-muted-foreground">Paste your whole quiz content here. The AI will extract the questions, options, and explanations, translate them if needed, and <strong className="text-red-500">replace the current quiz questions</strong>.</p>
+
+                        {/* Mode toggle */}
+                        <div className="flex items-center gap-1 p-1 rounded-lg bg-secondary/40 w-fit">
+                          <button
+                            onClick={() => setMagicMode('replace')}
+                            className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${magicMode === 'replace' ? 'bg-red-500/20 text-red-400' : 'text-muted-foreground hover:text-foreground'}`}
+                          >
+                            Replace All
+                          </button>
+                          <button
+                            onClick={() => setMagicMode('append')}
+                            className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${magicMode === 'append' ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                          >
+                            Append
+                          </button>
+                        </div>
+
+                        <p className="text-xs text-muted-foreground">
+                          {magicMode === 'replace'
+                            ? <>Paste quiz content below. AI will extract questions and <strong className="text-red-500">replace all existing questions</strong>. Best for 10–15 questions at a time.</>
+                            : <>Paste a batch of questions below. AI will extract them and <strong className="text-primary">add to the end</strong> of existing questions. Use this to import in chunks.</>
+                          }
+                        </p>
                         <textarea value={magicText} onChange={e => setMagicText(e.target.value)} placeholder="e.g. 1. What is Forex? A) Foreign Exchange B) Food Export..." className="w-full h-32 text-xs bg-background p-3 rounded-lg border border-border focus:ring-2 focus:ring-primary/20" />
                         {magicError && <p className="text-xs text-red-500 font-bold">{magicError}</p>}
                         <div className="flex justify-end">
                           <button onClick={handleMagicImport} disabled={magicParsing || !magicText.trim()} className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50">
-                            {magicParsing ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} Parse & Replace Questions
+                            {magicParsing ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                            {magicMode === 'replace' ? 'Parse & Replace' : 'Parse & Append'}
                           </button>
                         </div>
                       </div>

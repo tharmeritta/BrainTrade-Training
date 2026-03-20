@@ -209,6 +209,7 @@ export default function QuizIndexPage() {
         <div className="space-y-3 mb-8">
           {SECTION_1.map((m, i) => {
             const quiz = MODULE_QUIZ_MAP[m.id];
+            if (!quiz) return null;
             return (
               <ModuleCard
                 key={m.id}
@@ -241,7 +242,9 @@ export default function QuizIndexPage() {
         <div className="space-y-3">
           {SECTION_2.map((m, i) => {
             const quiz = MODULE_QUIZ_MAP[m.id];
-            const prevTitle = i > 0 ? MODULE_QUIZ_MAP[SECTION_2[i - 1].id].title[lang] : undefined;
+            if (!quiz) return null;
+            const prevQuiz = i > 0 ? MODULE_QUIZ_MAP[SECTION_2[i - 1].id] : undefined;
+            const prevTitle = prevQuiz?.title[lang];
             return (
               <ModuleCard
                 key={m.id}

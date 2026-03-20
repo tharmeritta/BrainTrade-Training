@@ -128,7 +128,7 @@
     "notFound": "Quiz data not found"
   },
   "agentEntry": {
-    "title": "Empower your <span style=\"background: linear-gradient(100deg, #00B4D8 0%, #7C3AED 100%)\"; -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;\">Sales</span> skills",
+    "title": "Empower your <span style=\"background: linear-gradient(100deg, #00B4D8 0%, #7C3AED 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;\">Sales</span> skills",
     "subtitle": "Sales training program to develop skills through interactive learning and smart AI.",
     "agents": "Agents",
     "passed": "Passed",
@@ -212,6 +212,7 @@
       "displayName": "Display Name",
       "role": "System Role",
       "roles": {
+        "admin": "Administrator",
         "manager": "Manager",
         "evaluator": "Evaluator",
         "trainer": "Trainer"
@@ -403,7 +404,9 @@
     "thai": "Thai",
     "english": "English",
     "infrastructure": "BrainTrade Training Infrastructure",
-    "proprietary": "Proprietary Material."
+    "proprietary": "Proprietary Material.",
+    "loadingPreview": "Loading Preview...",
+    "trainingModule": "Training Module"
   },
   "presentation": {
     "productKnowledge": "Product Knowledge",

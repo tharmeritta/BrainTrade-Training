@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useMemo, memo, useCallback } from 'react';
+import React, { useMemo, memo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import {
   CheckCircle2, XCircle, Lock, GraduationCap, ClipboardList, Mic, PlayCircle,
-  Trophy, RotateCcw, ArrowRight, LogOut, Zap, type LucideIcon,
+  Trophy, RotateCcw, ArrowRight, LogOut, Zap,
 } from 'lucide-react';
 
 import type { AgentStats } from '@/types';
@@ -442,7 +442,7 @@ const ModuleHeader = memo(({ doneCount }: { doneCount: number }) => {
       <div className="flex items-center gap-3">
         <div>
           <p className="text-[9px] font-black uppercase tracking-[0.28em] mb-0.5 text-[color:var(--hub-dim)]">
-            Training Modules
+            {t('progress')}
           </p>
           <h2 className="text-base font-black leading-none text-[color:var(--hub-text)]">
             {t('trainingModules')}

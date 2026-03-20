@@ -14,6 +14,7 @@ import { getAgentSession, type AgentSession } from '@/lib/agent-session';
 import { FADE_IN, TRANSITION, EASE } from '@/lib/animations';
 
 import { useTranslations } from 'next-intl';
+import { ActiveAgentUI } from '@/components/ui/ActiveAgentUI';
 
 // ─── Theme Configuration ─────────────────────────────────────────────────────
 const C = {
@@ -48,6 +49,7 @@ interface QuizHeaderProps {
   onPhaseFilter: (p: number | null) => void;
   onBack: () => void;
   finished: boolean;
+  agentName: string | null;
 }
 
 interface QuestionCardProps {
@@ -78,20 +80,24 @@ interface ResultViewProps {
  * QuizHeader: Logo, title, progress bar and phase filters
  */
 const QuizHeader = memo(({
-  quiz, lang, progressPct, phases, activePhase, onPhaseFilter, onBack, finished
+  quiz, lang, progressPct, phases, activePhase, onPhaseFilter, onBack, finished, agentName
 }: QuizHeaderProps) => {
   const t = useTranslations('quiz');
   
   return (
     <div className="mb-6">
-      <button
-        onClick={onBack}
-        className="inline-flex items-center gap-1.5 mb-5 text-sm transition-opacity hover:opacity-70 font-medium"
-        style={{ color: C.muted }}
-      >
-        <ChevronLeft size={16} />
-        {t('chooseAssessment')}
-      </button>
+      <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
+        <button
+          onClick={onBack}
+          className="inline-flex items-center gap-1.5 text-sm transition-opacity hover:opacity-70 font-medium"
+          style={{ color: C.muted }}
+        >
+          <ChevronLeft size={16} />
+          {t('chooseAssessment')}
+        </button>
+
+        <ActiveAgentUI agentName={agentName} />
+      </div>
 
       <div className="mb-6">
         <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 11, fontWeight: 600, color: C.hint, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
@@ -594,6 +600,7 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
                 onPhaseFilter={handlePhaseFilter}
                 onBack={() => router.push(`/${locale}/quiz`)}
                 finished={finished}
+                agentName={agent?.name || null}
               />
 
               <AnimatePresence mode="wait">

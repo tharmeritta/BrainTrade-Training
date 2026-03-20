@@ -14,6 +14,7 @@ import { getAgentSession } from '@/lib/agent-session';
 import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM, TRANSITION, EASE } from '@/lib/animations';
 
 import { useTranslations } from 'next-intl';
+import { ActiveAgentUI } from '@/components/ui/ActiveAgentUI';
 
 // ─── Constants & Types ────────────────────────────────────────────────────────
 
@@ -365,17 +366,7 @@ const SelectionScreen = memo(({
             </p>
           </div>
           
-          {agentName && (
-            <div className="flex items-center gap-4 px-6 py-3 rounded-[24px] bg-white/50 dark:bg-white/5 backdrop-blur-md border border-black/5 dark:border-white/10 shadow-xl shadow-black/5 self-start md:self-auto">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                <UserIcon size={18} />
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Active Agent</p>
-                <p className="font-black text-base">{agentName}</p>
-              </div>
-            </div>
-          )}
+          <ActiveAgentUI agentName={agentName} />
         </motion.div>
 
         <AnimatePresence>

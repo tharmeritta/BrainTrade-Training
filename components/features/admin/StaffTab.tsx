@@ -11,7 +11,7 @@ interface EditState {
   username: string;
   password: string;
   name: string;
-  role: 'manager' | 'evaluator' | 'trainer';
+  role: 'admin' | 'manager' | 'evaluator' | 'trainer';
 }
 
 export default function StaffTab() {
@@ -25,7 +25,7 @@ export default function StaffTab() {
   const [staffErr, setStaffErr] = useState('');
 
   // New account form state
-  const [newUser, setNewUser] = useState({ username: '', password: '', name: '', role: 'manager' as 'manager' | 'evaluator' | 'trainer' });
+  const [newUser, setNewUser] = useState({ username: '', password: '', name: '', role: 'manager' as 'admin' | 'manager' | 'evaluator' | 'trainer' });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -110,6 +110,7 @@ export default function StaffTab() {
   }
 
   const ROLE_COLORS: Record<string, string> = {
+    admin:     'bg-red-500/15 text-red-400',
     manager:   'bg-blue-500/15 text-blue-400',
     evaluator: 'bg-violet-500/15 text-violet-400',
     trainer:   'bg-amber-500/15 text-amber-400',
@@ -153,8 +154,9 @@ export default function StaffTab() {
               </div>
               <div>
                 <label className="text-xs text-muted-foreground font-medium block mb-1">{t('staff.role')}</label>
-                <select value={newUser.role} onChange={e => setNewUser(v => ({ ...v, role: e.target.value as 'manager' | 'evaluator' | 'trainer' }))}
+                <select value={newUser.role} onChange={e => setNewUser(v => ({ ...v, role: e.target.value as 'admin' | 'manager' | 'evaluator' | 'trainer' }))}
                   className="w-full bg-secondary/40 border border-border rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20">
+                  <option value="admin">{t('staff.roles.admin')}</option>
                   <option value="manager">{t('staff.roles.manager')}</option>
                   <option value="evaluator">{t('staff.roles.evaluator')}</option>
                   <option value="trainer">{t('staff.roles.trainer')}</option>
@@ -231,8 +233,9 @@ export default function StaffTab() {
                           className="w-full bg-secondary/40 border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                       </td>
                       <td className="px-4 py-3 text-center border-y border-border/50 group-hover:border-y-primary/20">
-                        <select value={editing.role} onChange={e => setEditing(v => v && ({ ...v, role: e.target.value as 'manager' | 'evaluator' | 'trainer' }))}
+                        <select value={editing.role} onChange={e => setEditing(v => v && ({ ...v, role: e.target.value as 'admin' | 'manager' | 'evaluator' | 'trainer' }))}
                           className="bg-secondary/40 border border-border rounded-lg px-2 py-1.5 text-xs focus:outline-none">
+                          <option value="admin">{t('staff.roles.admin')}</option>
                           <option value="manager">{t('staff.roles.manager')}</option>
                           <option value="evaluator">{t('staff.roles.evaluator')}</option>
                           <option value="trainer">{t('staff.roles.trainer')}</option>

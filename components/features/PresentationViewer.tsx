@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import type { CourseModule, CourseLang } from '@/lib/courses';
 import { FADE_IN, TRANSITION, EASE } from '@/lib/animations';
+import { getAgentSession } from '@/lib/agent-session';
+import { ActiveAgentUI } from '@/components/ui/ActiveAgentUI';
 
 // --- Types ---
 
@@ -24,6 +26,7 @@ interface SlideHeaderProps {
   lang: CourseLang;
   onLangChange: (l: CourseLang) => void;
   onBack: () => void;
+  agentName: string | null;
 }
 
 interface SlideControlsProps {
@@ -41,7 +44,7 @@ interface SlideControlsProps {
 /**
  * SlideHeader: Title, breadcrumbs and language switcher
  */
-function SlideHeader({ title, lang, onLangChange, onBack }: SlideHeaderProps) {
+function SlideHeader({ title, lang, onLangChange, onBack, agentName }: SlideHeaderProps) {
   const t = useTranslations('presentation');
   return (
     <motion.div
@@ -70,21 +73,24 @@ function SlideHeader({ title, lang, onLangChange, onBack }: SlideHeaderProps) {
           </div>
         </div>
 
-        {/* Language selector */}
-        <div className="flex shrink-0 gap-1 rounded-xl border border-black/5 bg-black/5 p-1 dark:border-white/5 dark:bg-white/5">
-          {(['th', 'en'] as const).map((l) => (
-            <button
-              key={l}
-              onClick={() => onLangChange(l)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
-                lang === l
-                  ? 'bg-background text-primary shadow-md shadow-black/5'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {l.toUpperCase()}
-            </button>
-          ))}
+        <div className="flex items-center gap-4">
+          <ActiveAgentUI agentName={agentName} />
+          {/* Language selector */}
+          <div className="flex shrink-0 gap-1 rounded-xl border border-black/5 bg-black/5 p-1 dark:border-white/5 dark:bg-white/5">
+            {(['th', 'en'] as const).map((l) => (
+              <button
+                key={l}
+                onClick={() => onLangChange(l)}
+                className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
+                  lang === l
+                    ? 'bg-background text-primary shadow-md shadow-black/5'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {l.toUpperCase()}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </motion.div>
@@ -182,8 +188,14 @@ export default function PresentationViewer({ module, locale, initialLang }: Pres
   const [slide, setSlide] = useState(1);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [agentName, setAgentName] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const session = getAgentSession();
+    if (session) setAgentName(session.name);
+  }, []);
 
   const currentPresentation = module.presentations[lang];
   const { presentationId, totalSlides: total } = currentPresentation;
@@ -257,6 +269,7 @@ export default function PresentationViewer({ module, locale, initialLang }: Pres
         lang={lang}
         onLangChange={handleLangChange}
         onBack={() => router.push(`/${locale}/learn`)}
+        agentName={agentName}
       />
 
       {/* ── Viewer ─────────────────────────────────────────── */}

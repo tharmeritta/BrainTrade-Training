@@ -126,7 +126,7 @@ const BrandingPanel = () => {
           animate="animate"
         >
           <h1 className="text-4xl md:text-5xl lg:text-5xl font-black leading-tight tracking-tight text-[color:var(--hub-text)] mb-3"
-            dangerouslySetInnerHTML={{ __html: t('title') }}
+            dangerouslySetInnerHTML={{ __html: t.raw('title') }}
           />
           <p className="text-sm leading-relaxed max-w-[340px]" style={{ color: 'var(--hub-muted)' }}>
             {t('subtitle')}
@@ -342,7 +342,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
           <div className="lg:hidden mb-6 text-center">
             <p className="text-[10px] font-semibold tracking-[0.2em] uppercase mb-1 text-brand-cyan">Sales Excellence Academy</p>
             <h1 className="text-xl font-black" style={{ color: 'var(--hub-text)' }}
-              dangerouslySetInnerHTML={{ __html: t('title') }}
+              dangerouslySetInnerHTML={{ __html: t.raw('title') }}
             />
           </div>
 
