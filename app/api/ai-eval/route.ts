@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
     const windowedMessages = (messages as PitchMessage[]).slice(-10);
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt + levelContext },
         ...windowedMessages.map((m: PitchMessage) => ({
