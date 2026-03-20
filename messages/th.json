@@ -195,7 +195,8 @@
       "evaluations": "การประเมิน",
       "reports": "รายงาน",
       "staff": "บัญชีเจ้าหน้าที่",
-      "adjustments": "การปรับแต่ง"
+      "adjustments": "การปรับแต่ง",
+      "profile": "โปรไฟล์ผู้ใช้"
     },
     "roles": {
       "admin": "ผู้ดูแลระบบ",
@@ -475,6 +476,8 @@
     "searchPlaceholder": "ค้นหาเอเจนต์...",
     "noAgents": "ไม่พบเอเจนต์",
     "agentCount": "{count} เอเจนต์",
+    "overview": "ภาพรวม",
+    "profile": "โปรไฟล์ผู้ใช้",
     "totalEvals": "ประเมินทั้งหมด",
     "todayEvals": "วันนี้",
     "avgScore": "คะแนนเฉลี่ย",

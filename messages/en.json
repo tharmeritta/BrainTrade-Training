@@ -195,7 +195,8 @@
       "evaluations": "Evaluations",
       "reports": "Reports",
       "staff": "Staff Accounts",
-      "adjustments": "Adjustments"
+      "adjustments": "Adjustments",
+      "profile": "User Profile"
     },
     "roles": {
       "admin": "Administrator",
@@ -475,6 +476,8 @@
     "searchPlaceholder": "Search agents...",
     "noAgents": "No agents found",
     "agentCount": "{count} agent{count, plural, =1 {} other {s}}",
+    "overview": "Overview",
+    "profile": "User Profile",
     "totalEvals": "Total Evaluations",
     "todayEvals": "Today",
     "avgScore": "Avg Score",

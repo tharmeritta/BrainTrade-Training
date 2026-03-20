@@ -20,7 +20,7 @@ import EvaluationsTab from './admin/EvaluationsTab';
 import AdjustmentsTab from './admin/AdjustmentsTab';
 import ChangePasswordModal from './admin/ChangePasswordModal';
 
-type Tab = 'overview' | 'agents' | 'reports' | 'staff' | 'evaluations' | 'training' | 'adjustments';
+type Tab = 'overview' | 'agents' | 'reports' | 'staff' | 'evaluations' | 'training' | 'adjustments' | 'profile';
 
 function logout() {
   fetch('/api/auth/session', { method: 'DELETE' });
@@ -30,11 +30,7 @@ function logout() {
 export default function AdminDashboard({ role, uid, name, passwordChanged }: { role: 'admin' | 'manager' | 'trainer'; uid: string; name: string; passwordChanged: boolean }) {
   const t = useTranslations('admin');
   const [tab, setTab] = useState<Tab>(role === 'trainer' ? 'training' : 'overview');
-  const [isPwModalOpen, setIsPwModalOpen] = useState(!passwordChanged);
-
-  useEffect(() => {
-    if (!passwordChanged) setIsPwModalOpen(true);
-  }, [passwordChanged]);
+  const [isPwModalOpen, setIsPwModalOpen] = useState(false);
 
   const TABS: { id: Tab; labelKey: string; icon: React.ElementType; adminOnly?: boolean; hideForTrainer?: boolean }[] = [
     { id: 'overview',    labelKey: 'overview',       icon: LayoutDashboard,  hideForTrainer: false },
@@ -44,6 +40,7 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
     { id: 'reports',     labelKey: 'reports',        icon: FileSpreadsheet,  hideForTrainer: true },
     { id: 'staff',       labelKey: 'staff',          icon: ShieldCheck,      adminOnly: true },
     { id: 'adjustments', labelKey: 'adjustments',    icon: Edit3,            adminOnly: true },
+    { id: 'profile',     labelKey: 'profile',        icon: Zap },
   ];
 
   const visibleTabs = TABS.filter(t => {
@@ -87,8 +84,8 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
               </span>
               <span className="text-xs font-bold text-foreground pr-1">{name}</span>
               <button 
-                onClick={() => setIsPwModalOpen(true)}
-                className="p-1.5 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                onClick={() => setTab('profile')}
+                className={`p-1.5 rounded-lg transition-colors ${tab === 'profile' ? 'bg-primary/20 text-primary' : 'hover:bg-primary/10 text-muted-foreground hover:text-primary'}`}
                 title={t('changePw')}
               >
                 <Zap size={14} />
@@ -143,6 +140,47 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
               {tab === 'reports'     && <ReportsTab />}
               {tab === 'staff'       && role === 'admin' && <StaffTab />}
               {tab === 'adjustments' && role === 'admin' && <AdjustmentsTab />}
+              {tab === 'profile'     && (
+                <div className="max-w-md mx-auto">
+                  <div className="bg-card/50 backdrop-blur-xl border border-border rounded-3xl p-8 shadow-xl">
+                    <div className="flex items-center gap-4 mb-8">
+                      <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                        <Users size={24} />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-black text-foreground">User Profile</h2>
+                        <p className="text-xs text-muted-foreground">Manage your account settings</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-6">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Display Name</label>
+                        <div className="px-4 py-3 rounded-xl bg-secondary/30 border border-border text-sm font-bold text-foreground">
+                          {name}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">System Role</label>
+                        <div className="px-4 py-3 rounded-xl bg-secondary/30 border border-border text-sm font-bold text-foreground capitalize">
+                          {role}
+                        </div>
+                      </div>
+
+                      <div className="pt-4">
+                        <button 
+                          onClick={() => setIsPwModalOpen(true)}
+                          className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-[0.98]"
+                        >
+                          <Zap size={18} />
+                          {t('changePw')}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
         </div>

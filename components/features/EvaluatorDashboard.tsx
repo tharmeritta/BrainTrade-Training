@@ -715,11 +715,11 @@ interface EvaluatorDashboardProps {
 export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwordChanged }: EvaluatorDashboardProps) {
   const t        = useTranslations('evaluator');
 
-  const [isPwModalOpen, setIsPwModalOpen] = useState(!passwordChanged);
+  const [isPwModalOpen, setIsPwModalOpen] = useState(false);
   const [agents, setAgents]               = useState<Agent[]>([]);
   const [agentSearch, setAgentSearch]     = useState('');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
-  const [tab, setTab]                     = useState<'new' | 'history'>('new');
+  const [tab, setTab]                     = useState<'new' | 'history' | 'profile'>('new');
   const [agentStats, setAgentStats]       = useState<AgentStats | null>(null);
   const [loadingStats, setLoadingStats]   = useState(false);
   const [allAgentStats, setAllAgentStats] = useState<AgentStats[]>([]);
@@ -822,9 +822,20 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
         <div className="ml-auto flex items-center gap-3">
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
             <div className={`w-1.5 h-1.5 rounded-full bg-blue-500 ${isLive ? 'animate-pulse' : ''}`} />
-            <span className="text-xs font-black text-blue-600 dark:text-blue-400">{evaluatorName}</span>
+            <button 
+              onClick={() => { setSelectedAgent(null); setTab('profile'); }}
+              className={`text-xs font-black hover:text-blue-500 transition-colors ${tab === 'profile' ? 'text-blue-500' : 'text-blue-600 dark:text-blue-400'}`}
+            >
+              {evaluatorName}
+            </button>
             {isLive && <Loader2 size={10} className="animate-spin text-blue-500/50" />}
           </div>
+          <button 
+            onClick={() => { setSelectedAgent(null); setTab('profile'); }}
+            className={`p-2 rounded-xl transition-all ${tab === 'profile' ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-secondary'}`}
+          >
+            <Zap size={18} />
+          </button>
           <LangToggle /><ThemeToggle />
           <button onClick={() => { fetch('/api/auth/session', { method: 'DELETE' }); window.location.replace('/login'); }} className="p-2 rounded-xl text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"><LogOut size={18} /></button>
         </div>
@@ -842,6 +853,14 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
             <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('agentCount', { count: filteredAgents.length })}</div>
           </div>
           <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-1">
+            <button 
+              onClick={() => { setSelectedAgent(null); setTab('new'); }}
+              className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${!selectedAgent && tab !== 'profile' ? 'bg-primary/10 border-primary/20 text-primary' : 'hover:bg-secondary/40 text-muted-foreground hover:text-foreground'}`}
+            >
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black ${!selectedAgent && tab !== 'profile' ? 'bg-primary/20' : 'bg-secondary'}`}><Activity size={14} /></div>
+              <span className="text-sm font-bold truncate flex-1">{t('overview')}</span>
+            </button>
+            <div className="my-2 border-t border-border/50" />
             {filteredAgents.map(agent => (
               <button key={agent.id} onClick={() => handleSelectAgent(agent)} className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${selectedAgent?.id === agent.id ? 'bg-primary/10 border-primary/20 text-primary' : 'hover:bg-secondary/40 text-muted-foreground hover:text-foreground'}`}>
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black ${selectedAgent?.id === agent.id ? 'bg-primary/20' : 'bg-secondary'}`}>{agent.name.slice(0, 2).toUpperCase()}</div>
@@ -854,7 +873,49 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto bg-secondary/10">
-          {!selectedAgent ? (
+          {tab === 'profile' ? (
+            <div className="p-6 h-full flex items-center justify-center">
+              <motion.div variants={FADE_IN} initial="initial" animate="animate" className="max-w-md w-full">
+                <div className="bg-card/50 backdrop-blur-xl border border-border rounded-3xl p-8 shadow-xl">
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                      <Users size={24} />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-black text-foreground">User Profile</h2>
+                      <p className="text-xs text-muted-foreground">Manage your account settings</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Display Name</label>
+                      <div className="px-4 py-3 rounded-xl bg-secondary/30 border border-border text-sm font-bold text-foreground">
+                        {evaluatorName}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">System Role</label>
+                      <div className="px-4 py-3 rounded-xl bg-secondary/30 border border-border text-sm font-bold text-foreground capitalize">
+                        Evaluator
+                      </div>
+                    </div>
+
+                    <div className="pt-4">
+                      <button 
+                        onClick={() => setIsPwModalOpen(true)}
+                        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-[0.98]"
+                      >
+                        <Zap size={18} />
+                        {t('changePw')}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          ) : !selectedAgent ? (
             <OverviewPanel myEvals={myEvals} agents={agents} allAgentStats={allAgentStats} onEvaluate={handleSelectAgent} />
           ) : (
             <div className="h-full flex flex-col">
