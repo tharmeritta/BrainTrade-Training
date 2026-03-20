@@ -128,8 +128,33 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
       
       if (result.questions && Array.isArray(result.questions)) {
         const updated = { ...definitions };
-        updated[selectedQuiz].questions = result.questions;
+        const currentQuiz = updated[selectedQuiz];
+        
+        // Update questions
+        currentQuiz.questions = result.questions;
+        
+        // Update title if AI provided one
+        if (result.title) {
+          currentQuiz.title = result.title;
+        }
+
+        let finalQuizId = selectedQuiz;
+        // If it's a new quiz OR if AI provided a better ID, we can update it
+        // To be safe and respect "auto generate based on content", we update it if AI provided one
+        if (result.id) {
+          const suggestedId = result.id.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+          if (suggestedId && suggestedId !== selectedQuiz) {
+            // Check if suggested ID already exists (other than current)
+            if (!updated[suggestedId]) {
+              updated[suggestedId] = { ...currentQuiz };
+              delete updated[selectedQuiz];
+              finalQuizId = suggestedId;
+            }
+          }
+        }
+
         setDefinitions(updated);
+        setSelectedQuiz(finalQuizId);
         setMagicText('');
         setShowMagicImport(false);
         setSelectedQuestions([]);
@@ -260,7 +285,7 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <label className="block text-xs font-black uppercase tracking-wider text-muted-foreground">Category / ID (Unique Key)</label>
-                  <input type="text" defaultValue={selectedQuiz} onBlur={e => handleUpdateQuizId(selectedQuiz, e.target.value)} placeholder="e.g. product_knowledge" className="w-full bg-secondary/30 p-3 rounded-xl text-sm border-none focus:ring-2 focus:ring-primary/20" title="Click outside to save category ID change" />
+                  <input key={selectedQuiz} type="text" defaultValue={selectedQuiz} onBlur={e => handleUpdateQuizId(selectedQuiz, e.target.value)} placeholder="e.g. product_knowledge" className="w-full bg-secondary/30 p-3 rounded-xl text-sm border-none focus:ring-2 focus:ring-primary/20" title="Click outside to save category ID change" />
                   <p className="text-[10px] text-muted-foreground mt-1">Change and click outside the input to update the ID.</p>
                 </div>
                 <div className="space-y-4">

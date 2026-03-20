@@ -4,7 +4,10 @@ import { getOpenAI } from '@/lib/openai';
 
 const SYSTEM_PROMPT = `You are an expert AI assistant that converts raw quiz text into a strictly formatted JSON structure.
 The user will provide raw text containing quiz questions, options, correct answers, and explanations.
-Your job is to parse this text and return a JSON object with a single key "questions" containing an array of question objects.
+Your job is to parse this text and return a JSON object with:
+1. "title": { "en": string, "th": string } - A concise, professional title for the quiz.
+2. "id": string - A unique, descriptive ID in snake_case (e.g., "forex_basics", "risk_management_101").
+3. "questions": array of QuestionData objects.
 
 Each question object MUST follow this TypeScript interface:
 interface QuestionData {
@@ -31,6 +34,8 @@ Rules:
 
 Example Output format:
 {
+  "title": { "en": "Introduction to Forex", "th": "พื้นฐานการแลกเปลี่ยนเงินตราต่างประเทศ" },
+  "id": "intro_to_forex",
   "questions": [
     {
       "en": "What is Forex?",
@@ -80,7 +85,11 @@ export async function POST(req: NextRequest) {
     }
 
     const parsed = JSON.parse(resultText);
-    return NextResponse.json({ questions: parsed.questions });
+    return NextResponse.json({ 
+      questions: parsed.questions,
+      title: parsed.title,
+      id: parsed.id
+    });
 
   } catch (err: any) {
     console.error('Parse quiz error:', err);
