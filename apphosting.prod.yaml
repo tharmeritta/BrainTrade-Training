@@ -6,23 +6,21 @@ env:
   - variable: ADMIN_USERNAME
     value: "Tharme Ritta"
   - variable: ADMIN_PASSWORD
-    value: "Admin@123"
+    secret: admin-password
   
   # Session Configuration
   - variable: SESSION_SECRET
-    value: "bt-admin-s3cr3t-2026"
+    secret: session-secret
 
-  # Firebase Admin SDK (Fallbacks for GCS_ prefixes in your env.yaml)
+  # Firebase Admin SDK
   - variable: FIREBASE_PROJECT_ID
-    value: "bt-training-firebase"
-  - variable: GCS_PROJECT_ID
     value: "bt-training-firebase"
   - variable: FIREBASE_CLIENT_EMAIL
     value: "firebase-adminsdk-fbsvc@bt-training-firebase.iam.gserviceaccount.com"
-  - variable: GCS_CLIENT_EMAIL
-    value: "firebase-adminsdk-fbsvc@bt-training-firebase.iam.gserviceaccount.com"
+  - variable: FIREBASE_PRIVATE_KEY
+    secret: firebase-private-key
 
-  # Client-side Firebase Config
+  # Client-side Firebase Config (Public)
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
     value: "bt-training-firebase"
 
