@@ -1,0 +1,30 @@
+# Firebase App Hosting configuration
+# Documentation: https://firebase.google.com/docs/app-hosting/configure
+
+env:
+  # Admin Fallback Credentials
+  - variable: ADMIN_USERNAME
+    value: "Tharme Ritta"
+  - variable: ADMIN_PASSWORD
+    value: "Admin@123"
+  
+  # Session Configuration
+  - variable: SESSION_SECRET
+    value: "bt-admin-s3cr3t-2026"
+
+  # Firebase Admin SDK (Fallbacks for GCS_ prefixes in your env.yaml)
+  - variable: FIREBASE_PROJECT_ID
+    value: "bt-training-firebase"
+  - variable: GCS_PROJECT_ID
+    value: "bt-training-firebase"
+  - variable: FIREBASE_CLIENT_EMAIL
+    value: "firebase-adminsdk-fbsvc@bt-training-firebase.iam.gserviceaccount.com"
+  - variable: GCS_CLIENT_EMAIL
+    value: "firebase-adminsdk-fbsvc@bt-training-firebase.iam.gserviceaccount.com"
+
+  # Client-side Firebase Config
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: "bt-training-firebase"
+
+# NOTE: For GCS_PRIVATE_KEY / FIREBASE_PRIVATE_KEY, it is HIGHLY recommended 
+# to use the Firebase Console to add it as a Secret managed by Secret Manager.

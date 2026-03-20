@@ -29,21 +29,49 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const staff = await fsGetAll<StaffAccount>('staff_accounts');
-    const account = staff.find(
+    // 1. Try standard staff_accounts
+    let staff = await fsGetAll<StaffAccount>('staff_accounts');
+    let account = staff.find(
       s => s.username === username && s.password === password && s.active,
     );
+
+    // 2. Fallback to 'users' collection (for credentials from seed-admin.mjs)
+    if (!account) {
+      const users = await fsGetAll<any>('users');
+      // seed-admin.mjs uses email as the identifier, but we check both username and email
+      const userMatch = users.find(
+        u => (u.username === username || u.email === username) && 
+             (u.password === password || u.password === undefined) && // users might use Firebase Auth
+             u.active
+      );
+      if (userMatch) {
+        account = {
+          id: userMatch.uid || userMatch.id,
+          username: userMatch.username || userMatch.email,
+          password: userMatch.password,
+          name: userMatch.name,
+          role: userMatch.role || 'admin',
+          active: true,
+          passwordChanged: true
+        };
+      }
+    }
+
     if (account) {
       const res = NextResponse.json({ status: 'ok', role: account.role });
       setSession(res, makeSessionToken(account.role, account.id, account.name, !!account.passwordChanged));
       return res;
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error('Login Database Error:', err);
-    return NextResponse.json({ error: 'Database connection failed' }, { status: 503 });
+    return NextResponse.json({ 
+      error: 'Database error', 
+      details: err.message,
+      code: err.code 
+    }, { status: 503 });
   }
 
-  return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+  return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
 }
 
 export async function DELETE() {
