@@ -1,47 +1,94 @@
 import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, Firestore } from 'firebase-admin/firestore';
 
+/**
+ * Clean surrounding quotes from an environment variable value.
+ * Helpful for Docker, .env, or some CI platforms that wrap secrets in quotes.
+ */
+function cleanValue(val: string | undefined): string {
+  if (!val) return '';
+  let s = val.trim();
+  while ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+    s = s.substring(1, s.length - 1).trim();
+  }
+  return s;
+}
+
+/**
+ * Robustly initializes the Firebase Admin SDK.
+ * Handles single JSON string (FIREBASE_SERVICE_ACCOUNT), base64 encoded strings, 
+ * and multiple individual environment variables.
+ */
 function getAdminApp(): App {
-  if (getApps().length > 0) return getApps()[0];
+  const apps = getApps();
+  if (apps.length > 0) return apps[0];
 
-  const projectId   = process.env.FIREBASE_PROJECT_ID   || process.env.GCS_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL || process.env.GCS_CLIENT_EMAIL;
-  
-  // Robust private key parsing
-  let rawKey = process.env.FIREBASE_PRIVATE_KEY || process.env.GCS_PRIVATE_KEY;
-  
-  if (rawKey) {
-    // 1. Remove potential surrounding quotes if the secret was stored as a quoted string
-    rawKey = rawKey.trim();
-    if (rawKey.startsWith('"') && rawKey.endsWith('"')) {
-      rawKey = rawKey.substring(1, rawKey.length - 1);
+  // 1. Gather all possible sources (Standard and GCS aliases)
+  const saJson       = cleanValue(process.env.FIREBASE_SERVICE_ACCOUNT || process.env.GCS_SERVICE_ACCOUNT);
+  let projectId     = cleanValue(process.env.FIREBASE_PROJECT_ID      || process.env.GCS_PROJECT_ID);
+  let clientEmail   = cleanValue(process.env.FIREBASE_CLIENT_EMAIL    || process.env.GCS_CLIENT_EMAIL);
+  let rawPrivateKey = cleanValue(process.env.FIREBASE_PRIVATE_KEY     || process.env.GCS_PRIVATE_KEY);
+
+  // 2. If saJson is provided, extract its values for anything missing
+  if (saJson && saJson.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(saJson);
+      if (!projectId)   projectId   = parsed.project_id   || '';
+      if (!clientEmail) clientEmail = parsed.client_email || '';
+      if (!rawPrivateKey) rawPrivateKey = parsed.private_key || '';
+    } catch (e) {
+      console.warn('[Firebase Admin] Failed to parse FIREBASE_SERVICE_ACCOUNT JSON:', (e as Error).message);
     }
-    // 2. Convert literal \n strings to real newlines
-    rawKey = rawKey.replace(/\\n/g, '\n');
   }
 
-  const privateKey = rawKey;
+  // 3. Base64 check for the private key
+  if (rawPrivateKey && !rawPrivateKey.includes('\n') && !rawPrivateKey.includes(' ') && !rawPrivateKey.includes('-----BEGIN')) {
+    try {
+      const decoded = Buffer.from(rawPrivateKey, 'base64').toString('utf8');
+      if (decoded.includes('-----BEGIN') || decoded.trim().startsWith('{')) {
+        rawPrivateKey = decoded.trim();
+      }
+    } catch (e) {
+      // Not base64, continue with original
+    }
+  }
 
+  // 4. If the private key variable itself contains the full JSON string
+  if (rawPrivateKey.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(rawPrivateKey);
+      rawPrivateKey = parsed.private_key || '';
+      if (!projectId)   projectId   = parsed.project_id   || '';
+      if (!clientEmail) clientEmail = parsed.client_email || '';
+    } catch (e) {
+      // Not valid JSON, continue with original
+    }
+  }
+
+  // 5. Final sanitization of the private key (PEM formatting)
+  const privateKey = rawPrivateKey.replace(/\\n/g, '\n').replace(/\r/g, '').trim();
+
+  // 6. Mandatory field check
   if (!projectId || !clientEmail || !privateKey) {
     const missing = [];
-    if (!projectId) missing.push('PROJECT_ID');
+    if (!projectId)   missing.push('PROJECT_ID');
     if (!clientEmail) missing.push('CLIENT_EMAIL');
-    if (!privateKey) missing.push('PRIVATE_KEY');
+    if (!privateKey)  missing.push('PRIVATE_KEY');
     
     console.error('Firebase Admin Init Failed. Missing vars:', missing.join(', '));
     throw new Error(`Missing Firebase Admin credentials: ${missing.join(', ')}`);
   }
 
-  // Diagnostic (Safe): Check key structure without logging the actual secret
-  console.log('Firebase Admin Diagnostics:', {
+  // 7. Safe Diagnostics (Logged once per initialization)
+  console.log('[Firebase Admin Diagnostics]', {
     projectId,
     clientEmail,
     keyLength: privateKey.length,
-    keyStartsWithPrefix: privateKey.startsWith('-----BEGIN PRIVATE KEY-----'),
-    keyEndsWithSuffix: privateKey.includes('-----END PRIVATE KEY-----'),
-    newlineCount: (privateKey.match(/\n/g) || []).length
+    keyPrefix: privateKey.substring(0, 26) + '...',
+    hasNewlines: privateKey.includes('\n'),
+    isPem: privateKey.includes('-----BEGIN PRIVATE KEY-----')
   });
-  
+
   try {
     return initializeApp({
       credential: cert({
@@ -56,4 +103,17 @@ function getAdminApp(): App {
   }
 }
 
-export const getAdminDb = () => getFirestore(getAdminApp());
+// Module-level cache for the Firestore instance
+let cachedDb: Firestore | null = null;
+
+/**
+ * Returns the Firestore Admin DB instance, initializing the App if necessary.
+ * Caches the Firestore instance for efficiency across multiple calls.
+ */
+export const getAdminDb = (): Firestore => {
+  if (!cachedDb) {
+    const app = getAdminApp();
+    cachedDb = getFirestore(app);
+  }
+  return cachedDb;
+};

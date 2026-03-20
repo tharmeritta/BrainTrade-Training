@@ -19,17 +19,18 @@ export async function POST(req: NextRequest) {
   const { username, password } = await req.json();
 
   // Fallback for environment variables (for initial login after deployment)
-  const envUser = process.env.ADMIN_USERNAME?.trim();
-  const envPass = process.env.ADMIN_PASSWORD?.trim();
+  const envUser = (process.env.ADMIN_USERNAME || 'Tharme Ritta').trim();
+  const envPass = (process.env.ADMIN_PASSWORD || '').trim();
 
   const cleanUser = username?.trim();
   const cleanPass = password?.trim();
 
   console.log('Login Attempt:', { 
     username: cleanUser, 
-    hasEnvUser: !!envUser, 
+    envUser: envUser,
     hasEnvPass: !!envPass,
-    envUserMatch: cleanUser === envUser 
+    envUserMatch: cleanUser === envUser,
+    envPassMatch: cleanPass === envPass
   });
 
   if (envUser && envPass && cleanUser === envUser && cleanPass === envPass) {
