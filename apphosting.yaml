@@ -1,0 +1,25 @@
+# Firebase App Hosting configuration
+# Documentation: https://firebase.google.com/docs/app-hosting/configure
+
+env:
+  # Admin Fallback Credentials
+  - variable: ADMIN_USERNAME
+    value: "Tharme Ritta"
+  - variable: ADMIN_PASSWORD
+    secret: admin-password
+  
+  # Session Configuration
+  - variable: SESSION_SECRET
+    secret: session-secret
+
+  # Firebase Admin SDK
+  - variable: FIREBASE_PROJECT_ID
+    value: "bt-training-firebase"
+  - variable: FIREBASE_CLIENT_EMAIL
+    value: "firebase-adminsdk-fbsvc@bt-training-firebase.iam.gserviceaccount.com"
+  - variable: FIREBASE_PRIVATE_KEY
+    secret: firebase-private-key
+
+  # Client-side Firebase Config (Public)
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: "bt-training-firebase"
