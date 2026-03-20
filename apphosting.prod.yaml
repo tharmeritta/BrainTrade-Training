@@ -23,6 +23,3 @@ env:
   # Client-side Firebase Config (Public)
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
     value: "bt-training-firebase"
-
-# NOTE: For GCS_PRIVATE_KEY / FIREBASE_PRIVATE_KEY, it is HIGHLY recommended 
-# to use the Firebase Console to add it as a Secret managed by Secret Manager.

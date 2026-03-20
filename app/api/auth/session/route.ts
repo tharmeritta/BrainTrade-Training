@@ -22,14 +22,25 @@ export async function POST(req: NextRequest) {
   const envUser = process.env.ADMIN_USERNAME;
   const envPass = process.env.ADMIN_PASSWORD;
 
-  if (envUser && envPass && username === envUser && password === envPass) {
+  const cleanUser = username?.trim();
+  const cleanPass = password?.trim();
+
+  console.log('Login Attempt:', { 
+    username: cleanUser, 
+    hasEnvUser: !!envUser, 
+    hasEnvPass: !!envPass,
+    envUserMatch: cleanUser === envUser 
+  });
+
+  if (envUser && envPass && cleanUser === envUser && cleanPass === envPass) {
+    console.log('Login Success: Environment Fallback');
     const res = NextResponse.json({ status: 'ok', role: 'admin' });
     setSession(res, makeSessionToken('admin', 'env-admin', 'Environment Admin', true));
     return res;
   }
 
   try {
-    // 1. Try standard staff_accounts
+    console.log('Attempting Firestore Login...');
     let staff = await fsGetAll<StaffAccount>('staff_accounts');
     let account = staff.find(
       s => s.username === username && s.password === password && s.active,
