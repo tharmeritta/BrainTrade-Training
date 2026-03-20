@@ -24,18 +24,33 @@ function getAdminApp(): App {
   if (apps.length > 0) return apps[0];
 
   // 1. Gather all possible sources (Standard and GCS aliases)
-  const saJson       = cleanValue(process.env.FIREBASE_SERVICE_ACCOUNT || process.env.GCS_SERVICE_ACCOUNT);
-  let projectId     = cleanValue(process.env.FIREBASE_PROJECT_ID      || process.env.GCS_PROJECT_ID);
+  let saJson        = cleanValue(process.env.FIREBASE_SERVICE_ACCOUNT || process.env.GCS_SERVICE_ACCOUNT);
+  let projectId     = cleanValue(process.env.FIREBASE_PROJECT_ID      || process.env.GCS_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
   let clientEmail   = cleanValue(process.env.FIREBASE_CLIENT_EMAIL    || process.env.GCS_CLIENT_EMAIL);
   let rawPrivateKey = cleanValue(process.env.FIREBASE_PRIVATE_KEY     || process.env.GCS_PRIVATE_KEY);
+  let source = 'individual-vars';
+
+  // 1b. If saJson looks like base64, decode it first
+  if (saJson && !saJson.startsWith('{') && (saJson.length > 100)) {
+    try {
+      const decoded = Buffer.from(saJson, 'base64').toString('utf8');
+      if (decoded.trim().startsWith('{')) {
+        saJson = decoded.trim();
+      }
+    } catch (e) {
+      // Not base64, continue
+    }
+  }
 
   // 2. If saJson is provided, extract its values for anything missing
   if (saJson && saJson.startsWith('{')) {
     try {
       const parsed = JSON.parse(saJson);
-      if (!projectId)   projectId   = parsed.project_id   || '';
-      if (!clientEmail) clientEmail = parsed.client_email || '';
-      if (!rawPrivateKey) rawPrivateKey = parsed.private_key || '';
+      source = 'service-account-json';
+      // Prefer values from the JSON as it's the definitive source
+      if (parsed.project_id)   projectId   = parsed.project_id;
+      if (parsed.client_email) clientEmail = parsed.client_email;
+      if (parsed.private_key)  rawPrivateKey = parsed.private_key;
     } catch (e) {
       console.warn('[Firebase Admin] Failed to parse FIREBASE_SERVICE_ACCOUNT JSON:', (e as Error).message);
     }
@@ -66,7 +81,19 @@ function getAdminApp(): App {
   }
 
   // 5. Final sanitization of the private key (PEM formatting)
-  const privateKey = rawPrivateKey.replace(/\\n/g, '\n').replace(/\r/g, '').trim();
+  let privateKey = rawPrivateKey.replace(/\\n/g, '\n').replace(/\r/g, '').trim();
+  
+  // Ensure PEM headers/footers if missing but it looks like a key
+  if (privateKey && !privateKey.includes('-----BEGIN PRIVATE KEY-----') && privateKey.length > 100) {
+    console.warn('[Firebase Admin] Private key missing PEM header, attempting to wrap it.');
+    privateKey = `-----BEGIN PRIVATE KEY-----\n${privateKey}\n-----END PRIVATE KEY-----`;
+  }
+
+  // If it has headers but no newlines, it's definitely broken for Google
+  if (privateKey && privateKey.includes('-----BEGIN PRIVATE KEY-----') && !privateKey.includes('\n', privateKey.indexOf('-----BEGIN PRIVATE KEY-----') + 26)) {
+     console.warn('[Firebase Admin] Private key has headers but no internal newlines. This will likely fail.');
+     // We could try to fix it here, but it's risky. Let's at least log it.
+  }
 
   // 6. Mandatory field check
   if (!projectId || !clientEmail || !privateKey) {
@@ -81,16 +108,19 @@ function getAdminApp(): App {
 
   // 7. Safe Diagnostics (Logged once per initialization)
   console.log('[Firebase Admin Diagnostics]', {
+    source,
     projectId,
     clientEmail,
     keyLength: privateKey.length,
-    keyPrefix: privateKey.substring(0, 26) + '...',
+    keyStart: privateKey.substring(0, 30) + '...',
+    keyEnd: privateKey.substring(privateKey.length - 30),
     hasNewlines: privateKey.includes('\n'),
-    isPem: privateKey.includes('-----BEGIN PRIVATE KEY-----')
+    isPem: privateKey.includes('-----BEGIN PRIVATE KEY-----') && privateKey.includes('-----END PRIVATE KEY-----')
   });
 
   try {
     return initializeApp({
+      projectId, // Adding at root for some Firestore client versions
       credential: cert({
         projectId,
         clientEmail,
