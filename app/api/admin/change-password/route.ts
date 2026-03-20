@@ -16,10 +16,12 @@ export async function POST(req: NextRequest) {
     }
 
     const existing = await fsGet<StaffAccount>('staff_accounts', user.uid);
+    console.log('[Change Password] Fetched existing account:', !!existing);
 
     if (existing) {
       // Document exists, update it
       await fsUpdate('staff_accounts', user.uid, { password: newPassword, passwordChanged: true });
+      console.log('[Change Password] Update successful');
     } else {
       // Document doesn't exist (e.g. bootstrap admin), create it
       await fsSet('staff_accounts', user.uid, {
@@ -32,6 +34,7 @@ export async function POST(req: NextRequest) {
         createdAt: new Date().toISOString(),
         passwordChanged: true,
       });
+      console.log('[Change Password] Set (creation) successful');
     }
 
     const res = NextResponse.json({ ok: true });

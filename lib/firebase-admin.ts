@@ -119,14 +119,20 @@ function getAdminApp(): App {
   });
 
   try {
-    return initializeApp({
-      projectId, // Adding at root for some Firestore client versions
+    const config = {
+      projectId: projectId.trim(),
       credential: cert({
-        projectId,
-        clientEmail,
-        privateKey,
+        projectId: projectId.trim(),
+        clientEmail: clientEmail.trim(),
+        privateKey: privateKey,
       }),
-    });
+    };
+    
+    console.log('[Firebase Admin] Attempting initializeApp with projectId:', config.projectId);
+    
+    const app = initializeApp(config);
+    console.log('[Firebase Admin] initializeApp success');
+    return app;
   } catch (err: any) {
     console.error('Firebase Admin initializeApp failed:', err);
     throw err;
@@ -141,9 +147,15 @@ let cachedDb: Firestore | null = null;
  * Caches the Firestore instance for efficiency across multiple calls.
  */
 export const getAdminDb = (): Firestore => {
-  if (!cachedDb) {
-    const app = getAdminApp();
-    cachedDb = getFirestore(app);
+  try {
+    if (!cachedDb) {
+      const app = getAdminApp();
+      cachedDb = getFirestore(app);
+      // Test the connection immediately if possible? No, Firestore is lazy.
+    }
+    return cachedDb;
+  } catch (e: any) {
+    console.error('[Firebase Admin] getAdminDb fatal error:', e.message);
+    throw e;
   }
-  return cachedDb;
 };
