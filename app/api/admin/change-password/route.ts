@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       // Document doesn't exist (e.g. bootstrap admin), create it
       await fsSet('staff_accounts', user.uid, {
         id: user.uid,
-        username: 'admin', // Default for bootstrap
+        username: user.name, // Use the username from the session
         password: newPassword,
         name: user.name,
         role: user.role,

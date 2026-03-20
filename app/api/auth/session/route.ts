@@ -35,7 +35,9 @@ export async function POST(req: NextRequest) {
   if (envUser && envPass && cleanUser === envUser && cleanPass === envPass) {
     console.log('Login Success: Environment Fallback');
     const res = NextResponse.json({ status: 'ok', role: 'admin' });
-    setSession(res, makeSessionToken('admin', 'env-admin', 'Environment Admin', true));
+    // Set passwordChanged to false to prompt for a password change in the UI
+    // Use the actual username so that change-password API knows what username to save in Firestore
+    setSession(res, makeSessionToken('admin', 'env-admin', envUser, false));
     return res;
   }
 
