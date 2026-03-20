@@ -48,11 +48,12 @@ export async function POST(req: NextRequest) {
         account = {
           id: userMatch.uid || userMatch.id,
           username: userMatch.username || userMatch.email,
-          password: userMatch.password,
-          name: userMatch.name,
-          role: userMatch.role || 'admin',
+          password: userMatch.password || '',
+          name: userMatch.name || 'Admin',
+          role: (userMatch.role as any) || 'admin',
           active: true,
-          passwordChanged: true
+          passwordChanged: true,
+          createdAt: userMatch.createdAt || new Date().toISOString()
         };
       }
     }
