@@ -42,44 +42,56 @@ export default function StaffTab() {
     e.preventDefault();
     setSaving(true);
     setStaffErr('');
-    const res = await fetch('/api/admin/staff', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newUser),
-    });
-    if (res.ok) {
-      setNewUser({ username: '', password: '', name: '', role: 'manager' });
-      setShowForm(false);
-      await load();
-    } else {
-      const d = await res.json();
-      setStaffErr(d.error ?? 'Failed to create account');
+    try {
+      const res = await fetch('/api/admin/staff', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUser),
+      });
+      if (res.ok) {
+        setNewUser({ username: '', password: '', name: '', role: 'manager' });
+        setShowForm(false);
+        await load();
+      } else {
+        let errMsg = 'Failed to create account';
+        try { const d = await res.json(); errMsg = d.error ?? errMsg; } catch {}
+        setStaffErr(errMsg);
+      }
+    } catch {
+      setStaffErr('Network error — please try again');
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   }
 
   async function saveEdit() {
     if (!editing) return;
     setSaving(true);
     setStaffErr('');
-    const res = await fetch(`/api/admin/staff/${editing.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: editing.username,
-        password: editing.password,
-        name: editing.name,
-        role: editing.role,
-      }),
-    });
-    if (res.ok) {
-      setEditing(null);
-      await load();
-    } else {
-      const d = await res.json();
-      setStaffErr(d.error ?? 'Failed to save');
+    try {
+      const res = await fetch(`/api/admin/staff/${editing.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: editing.username,
+          password: editing.password,
+          name: editing.name,
+          role: editing.role,
+        }),
+      });
+      if (res.ok) {
+        setEditing(null);
+        await load();
+      } else {
+        let errMsg = 'Failed to save';
+        try { const d = await res.json(); errMsg = d.error ?? errMsg; } catch {}
+        setStaffErr(errMsg);
+      }
+    } catch {
+      setStaffErr('Network error — please try again');
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   }
 
   async function toggleStaffActive(id: string, active: boolean) {
