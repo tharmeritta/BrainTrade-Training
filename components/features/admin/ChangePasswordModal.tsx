@@ -31,7 +31,8 @@ export default function ChangePasswordModal({ isOpen, onClose }: { isOpen: boole
         }, 1500);
       } else {
         const d = await res.json();
-        setError(d.error || 'Failed to change password');
+        const msg = d.details ? `${d.error}: ${d.details}` : (d.error || 'Failed to change password');
+        setError(msg);
       }
     } catch {
       setError('Network error');

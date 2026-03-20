@@ -42,13 +42,18 @@ function getAdminApp(): App {
     newlineCount: (privateKey.match(/\n/g) || []).length
   });
   
-  return initializeApp({
-    credential: cert({
-      projectId,
-      clientEmail,
-      privateKey,
-    }),
-  });
+  try {
+    return initializeApp({
+      credential: cert({
+        projectId,
+        clientEmail,
+        privateKey,
+      }),
+    });
+  } catch (err: any) {
+    console.error('Firebase Admin initializeApp failed:', err);
+    throw err;
+  }
 }
 
 export const getAdminDb = () => getFirestore(getAdminApp());

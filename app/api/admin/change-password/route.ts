@@ -47,8 +47,13 @@ export async function POST(req: NextRequest) {
     });
 
     return res;
-  } catch (err) {
+  } catch (err: any) {
     console.error('Change password error:', err);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Server error', 
+      details: err.message,
+      code: err.code,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    }, { status: 500 });
   }
 }
