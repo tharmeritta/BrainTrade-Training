@@ -25,25 +25,17 @@ export async function fsAdd<T extends object>(
 // ── Get all docs in a collection ───────────────────────────────────────────
 
 export async function fsGetAll<T>(collection: string): Promise<T[]> {
-  try {
-    const db      = getAdminDb();
-    const snap    = await db.collection(collection).get();
-    return snap.docs.map(d => d.data() as T);
-  } catch {
-    return [];
-  }
+  const db      = getAdminDb();
+  const snap    = await db.collection(collection).get();
+  return snap.docs.map(d => d.data() as T);
 }
 
 // ── Get a single doc by key ────────────────────────────────────────────────
 
 export async function fsGet<T>(collection: string, id: string): Promise<T | null> {
-  try {
-    const db   = getAdminDb();
-    const snap = await db.collection(collection).doc(id).get();
-    return snap.exists ? (snap.data() as T) : null;
-  } catch {
-    return null;
-  }
+  const db   = getAdminDb();
+  const snap = await db.collection(collection).doc(id).get();
+  return snap.exists ? (snap.data() as T) : null;
 }
 
 // ── Partial update (patch) ─────────────────────────────────────────────────
