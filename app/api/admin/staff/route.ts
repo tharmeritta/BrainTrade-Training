@@ -9,15 +9,23 @@ export async function GET() {
   try {
     const staff = await fsGetAll<StaffAccount>('staff_accounts');
     return NextResponse.json({ staff });
-  } catch {
-    return NextResponse.json({ staff: [] });
+  } catch (err: any) {
+    console.error('[GET /api/admin/staff] Firestore error:', err);
+    return NextResponse.json({ error: 'Database error', details: err.message }, { status: 500 });
   }
 }
 
-// POST /api/admin/staff — create new manager or evaluator
 export async function POST(req: NextRequest) {
   try { await requireAdmin(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
-  const { username, password, name, role } = await req.json();
+  
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  const { username, password, name, role } = body;
   if (!username?.trim() || !password?.trim() || !name?.trim()) {
     return NextResponse.json({ error: 'username, password, and name are required' }, { status: 400 });
   }

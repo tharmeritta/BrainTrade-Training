@@ -9,7 +9,8 @@ export async function getServerUser(): Promise<{ uid: string; name: string; role
   const token = cookieStore.get('session')?.value;
   if (!token) return null;
 
-  const secret = process.env.SESSION_SECRET!;
+  const secret = process.env.SESSION_SECRET || '';
+  if (!secret) return null;
 
   // Format: secret|role|uid|passwordChanged|encodedName
   if (token.startsWith(secret + '|')) {
@@ -34,7 +35,7 @@ export async function getServerUser(): Promise<{ uid: string; name: string; role
 }
 
 export function makeSessionToken(role: UserRole, uid: string, name: string, passwordChanged: boolean = false): string {
-  const secret = process.env.SESSION_SECRET!;
+  const secret = process.env.SESSION_SECRET || 'fallback-secret-for-dev-only';
   return `${secret}|${role}|${uid}|${passwordChanged ? '1' : '0'}|${encodeURIComponent(name)}`;
 }
 

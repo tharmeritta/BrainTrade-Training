@@ -13,9 +13,9 @@ export async function GET() {
       configs[doc.id] = doc.data();
     });
     return NextResponse.json({ configs });
-  } catch (err) {
+  } catch (err: any) {
     console.error('Fetch config error:', err);
-    return NextResponse.json({ error: 'Failed to fetch config' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch config', details: err.message }, { status: 500 });
   }
 }
 
@@ -33,8 +33,8 @@ export async function PATCH(req: NextRequest) {
     }, { merge: true });
 
     return NextResponse.json({ success: true });
-  } catch (err) {
+  } catch (err: any) {
     console.error('Update config error:', err);
-    return NextResponse.json({ error: 'Failed to update config' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update config', details: err.message }, { status: 500 });
   }
 }

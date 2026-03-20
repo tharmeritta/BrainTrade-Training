@@ -102,8 +102,8 @@ function getAdminApp(): App {
     if (!clientEmail) missing.push('CLIENT_EMAIL');
     if (!privateKey)  missing.push('PRIVATE_KEY');
     
-    console.error('Firebase Admin Init Failed. Missing vars:', missing.join(', '));
-    throw new Error(`Missing Firebase Admin credentials: ${missing.join(', ')}`);
+    console.error('Firebase Admin Init Failed. Missing required environment variables:', missing.join(', '));
+    throw new Error(`Firebase Admin credentials incomplete. Please check your .env.local or env.yaml for: ${missing.join(', ')}`);
   }
 
   // 7. Safe Diagnostics (Logged once per initialization)

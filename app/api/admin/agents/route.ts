@@ -8,16 +8,30 @@ export async function GET() {
   try {
     const agents = await getAllAgentStats();
     return NextResponse.json({ agents });
-  } catch (err) {
+  } catch (err: any) {
     console.error('admin agents error:', err);
-    return NextResponse.json({ agents: [] });
+    return NextResponse.json({ error: 'Failed to fetch agents', details: err.message }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try { await requireAdminOrManager(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
-  const { name } = await req.json();
+  
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  const { name } = body;
   if (!name?.trim()) return NextResponse.json({ error: 'Name required' }, { status: 400 });
-  const agent = await fsAdd('agents', { name: name.trim(), active: true });
-  return NextResponse.json(agent);
+
+  try {
+    const agent = await fsAdd('agents', { name: name.trim(), active: true });
+    return NextResponse.json(agent);
+  } catch (err: any) {
+    console.error('Create agent error:', err);
+    return NextResponse.json({ error: 'Failed to create agent', details: err.message }, { status: 500 });
+  }
 }
