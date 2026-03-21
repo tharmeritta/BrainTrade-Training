@@ -108,6 +108,7 @@ export interface SalesCallCriteria {
   };
   // Section 2 – QA Thoughts
   qaThoughts: string;
+  qaImpact?: 'immediate_fail' | 'notify_improve' | 'none';
   // Section 3 – Red Flags (true = agent mentioned it = red flag)
   redFlags: {
     officeLocation:         boolean;
@@ -117,6 +118,10 @@ export interface SalesCallCriteria {
   };
   // Overall evaluator remark
   generalRemark: string;
+
+  // Final evaluation result
+  finalResult?: 'passed' | 'failed';
+  failReason?: string;
 }
 
 /** Backward-compat alias — keep existing import sites working */
@@ -174,6 +179,7 @@ export interface TrainingPeriod {
   startDate: string;      // YYYY-MM-DD
   trainerId: string;
   trainerName: string;
+  dayTopics?: Record<number, string>; // dayNumber -> topic
   active: boolean;
   createdAt: string;
   updatedAt?: string;
@@ -185,14 +191,14 @@ export interface TrainingDayRecord {
   agentId: string;
   dayNumber: number;      // 1-based
   date: string;           // YYYY-MM-DD
-  attendance: 'present' | 'late' | 'absent';
+  attendance: 'present' | 'late' | 'sick_leave' | 'personal_leave' | 'absent_no_reason';
   topics: string;
   notes: string;
   createdAt: string;
   updatedAt?: string;
 }
 
-export type DisciplineType = 'late' | 'sick_leave' | 'personal_leave' | 'absent_no_reason' | 'other';
+export type DisciplineType = 'phone_usage' | 'dress_code' | 'misconduct' | 'warning_issued' | 'other';
 
 export interface DisciplineRecord {
   id: string;

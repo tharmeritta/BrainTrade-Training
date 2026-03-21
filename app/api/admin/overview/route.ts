@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { requireAdminManagerOrTrainer } from '@/lib/session';
 import { fsGetAll } from '@/lib/firestore-db';
-import { getAllAgentStats, getModuleStats } from '@/lib/agents';
-import type { AdminOverviewData } from '@/types';
+import { computeOverallScore, computeBadge } from '@/lib/agents';
+import type { AdminOverviewData, Agent, AgentStats, ModuleStat, AgentEvaluation } from '@/types';
 
 const EMPTY: AdminOverviewData = {
   totalAgents: 0, activeAgents: 0, overallPassRate: 0,
@@ -16,25 +16,115 @@ const EMPTY: AdminOverviewData = {
   leaderboard: [], passFail: { passed: 0, failed: 0 },
 };
 
+const MODULES = ['foundation', 'product', 'process'] as const;
+
 export async function GET() {
-  try { await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { 
+    await requireAdminManagerOrTrainer(); 
+  } catch { 
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); 
+  }
 
   try {
-    const [allStats, moduleStats, quizDocs, evalDocs, pitchDocs] = await Promise.all([
-      getAllAgentStats(),
-      getModuleStats(),
-      fsGetAll<{ agentId: string; passed: boolean; score: number; timestamp: string }>('quiz_results'),
-      fsGetAll<{ agentId: string; score: number; timestamp: string }>('ai_eval_logs'),
-      fsGetAll<{ agentId: string; timestamp: string }>('pitch_sessions'),
+    // Single fetch for all data to avoid redundant Firestore calls
+    const [agents, quizDocs, evalDocs, pitchDocs, progressDocs, humanEvals] = await Promise.all([
+      fsGetAll<Agent & { id: string }>('agents'),
+      fsGetAll<{ id: string; agentId: string; moduleId: string; score: number; totalQuestions: number; passed: boolean; timestamp: string }>('quiz_results'),
+      fsGetAll<{ id: string; agentId: string; score: number; timestamp: string }>('ai_eval_logs'),
+      fsGetAll<{ id: string; agentId: string; level: number; timestamp: string }>('pitch_sessions'),
+      fsGetAll<{ agentId: string; pitchCompletedLevels: number[]; evalCompletedLevels: number[]; updatedAt: string }>('agent_progress'),
+      fsGetAll<AgentEvaluation>('agent_evaluations'),
     ]);
 
-    // Pass rate = agents who passed ALL 3 quiz modules (not individual attempt count)
-    const quizModuleStat  = moduleStats.find(m => m.moduleId === 'quiz');
-    const passedAgents    = quizModuleStat?.passCount ?? 0;
-    const totalAgents     = allStats.length;
-    const overallPassRate = totalAgents > 0 ? Math.round((passedAgents / totalAgents) * 100) : 0;
+    const activeAgents = agents.filter(a => a.active);
+    const totalAgents  = activeAgents.length;
 
-    const avgAiEvalScore  = evalDocs.length > 0
+    if (totalAgents === 0) return NextResponse.json(EMPTY);
+
+    // Compute AgentStats for leaderboard
+    const allStats: AgentStats[] = activeAgents.map(agent => {
+      // Quiz per module
+      const quiz: AgentStats['quiz'] = {};
+      for (const mod of MODULES) {
+        const results = quizDocs.filter(r => r.agentId === agent.id && r.moduleId === mod);
+        if (results.length > 0) {
+          quiz[mod] = {
+            bestScore: Math.max(...results.map(r => Math.round((r.score / r.totalQuestions) * 100))),
+            passed:    results.some(r => r.passed),
+            attempts:  results.length,
+            history:   results.map(r => ({ score: r.score, total: r.totalQuestions, passed: r.passed, timestamp: r.timestamp })),
+          };
+        }
+      }
+
+      // AI Eval
+      const evals  = evalDocs.filter(e => e.agentId === agent.id);
+      const aiEval = evals.length > 0
+        ? { 
+            avgScore: Math.round(evals.reduce((s, e) => s + e.score, 0) / evals.length), 
+            count: evals.length,
+            history: evals.map(e => ({ score: e.score, level: (e as any).level || 1, passed: (e as any).passed || false, timestamp: e.timestamp })),
+          }
+        : null;
+
+      // Pitch
+      const progress       = progressDocs.find(p => p.agentId === agent.id);
+      const pitches        = pitchDocs.filter(p => p.agentId === agent.id);
+      const pitchCompleted = progress?.pitchCompletedLevels ?? [];
+      const highestPitch   = pitchCompleted.length > 0
+        ? Math.max(...pitchCompleted)
+        : pitches.length > 0 ? Math.max(...pitches.map(p => p.level)) : 0;
+      const pitch = (pitches.length > 0 || pitchCompleted.length > 0)
+        ? { 
+            highestLevel: highestPitch, 
+            sessionCount: pitches.length, 
+            completedLevels: pitchCompleted,
+            history: pitches.map(p => ({ level: p.level, closedSale: (p as any).closedSale || false, timestamp: p.timestamp })),
+          }
+        : null;
+
+      const evalCompleted = progress?.evalCompletedLevels ?? [];
+      const myHumanEvals  = humanEvals.filter(h => h.agentId === agent.id).sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
+
+      const allTimes = [
+        ...quizDocs.filter(r => r.agentId === agent.id),
+        ...evalDocs.filter(e => e.agentId === agent.id),
+        ...pitchDocs.filter(p => p.agentId === agent.id),
+      ].map(r => r.timestamp).filter(Boolean).sort();
+      const lastActive = allTimes.length > 0 ? allTimes[allTimes.length - 1] : null;
+
+      const partial      = { agent, quiz, aiEval, pitch, lastActive, evalCompletedLevels: evalCompleted, humanEvaluations: myHumanEvals };
+      const overallScore = computeOverallScore(partial);
+      return { ...partial, overallScore, badge: computeBadge(overallScore) };
+    });
+
+    // Module stats
+    const pct = (n: number) => Math.round((n / totalAgents) * 100);
+    const moduleStats: ModuleStat[] = [
+      { 
+        moduleId: 'learn', label: 'Learn', 
+        passCount: activeAgents.filter(a => quizDocs.some(q => q.agentId === a.id)).length,
+        avgScore: 0, totalAttempts: totalAgents 
+      },
+      { 
+        moduleId: 'quiz', label: 'Quiz', 
+        passCount: activeAgents.filter(a => MODULES.every(m => quizDocs.filter(q => q.agentId === a.id && q.moduleId === m).some(q => q.passed))).length,
+        avgScore: 0, totalAttempts: totalAgents 
+      },
+      { 
+        moduleId: 'ai-eval', label: 'AI Eval', 
+        passCount: activeAgents.filter(a => evalDocs.some(e => e.agentId === a.id)).length,
+        avgScore: 0, totalAttempts: totalAgents 
+      },
+      { 
+        moduleId: 'pitch', label: 'Pitch', 
+        passCount: activeAgents.filter(a => (progressDocs.find(p => p.agentId === a.id)?.pitchCompletedLevels.length ?? 0) >= 3).length,
+        avgScore: 0, totalAttempts: totalAgents 
+      }
+    ];
+    moduleStats.forEach(m => m.avgScore = pct(m.passCount));
+
+    const avgAiEvalScore = evalDocs.length > 0
       ? Math.round(evalDocs.reduce((s, e) => s + e.score, 0) / evalDocs.length) : 0;
 
     const weekAgo    = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -47,12 +137,12 @@ export async function GET() {
     const data: AdminOverviewData = {
       totalAgents,
       activeAgents: activeIds.size,
-      overallPassRate,
+      overallPassRate: pct(moduleStats.find(m => m.moduleId === 'quiz')?.passCount ?? 0),
       avgAiEvalScore,
       weekSessions,
       moduleStats,
       leaderboard: allStats.sort((a, b) => b.overallScore - a.overallScore),
-      passFail: { passed: passedAgents, failed: totalAgents - passedAgents },
+      passFail: { passed: moduleStats.find(m => m.moduleId === 'quiz')?.passCount ?? 0, failed: totalAgents - (moduleStats.find(m => m.moduleId === 'quiz')?.passCount ?? 0) },
     };
 
     return NextResponse.json(data);

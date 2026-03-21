@@ -33,7 +33,8 @@
       "Bash(firebase login:*)",
       "Bash(grep:*)",
       "WebFetch(domain:drive.google.com)",
-      "Bash(mkdir scripts:*)"
+      "Bash(mkdir scripts:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

@@ -3,11 +3,19 @@ import { requireAdmin, requireAdminManagerOrTrainer } from '@/lib/session';
 import { fsUpdate, fsDelete } from '@/lib/firestore-db';
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  try { await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  let user;
+  try { user = await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  
   const { id } = await params;
   const body = await req.json();
   const update: Record<string, unknown> = {};
-  if (typeof body.active === 'boolean') update.active = body.active;
+
+  if (typeof body.active === 'boolean') {
+    if (user.role !== 'admin') {
+      return NextResponse.json({ error: 'Only admins can change agent status' }, { status: 403 });
+    }
+    update.active = body.active;
+  }
   if (typeof body.name === 'string') {
     if (!body.name.trim()) return NextResponse.json({ error: 'Name required' }, { status: 400 });
     update.name = body.name.trim();

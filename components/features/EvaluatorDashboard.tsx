@@ -6,47 +6,49 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import {
-  Search, Users, ClipboardCheck, ChevronRight, Save, Check,
-  Clock, Edit3, X, ChevronDown, Loader2, Star, BarChart3,
-  Activity, TrendingUp, BookOpen, Target, ArrowLeft,
-  CheckCircle2, Circle, Zap, AlertTriangle, MessageSquare, LogOut,
+  Search, Users, ClipboardCheck, Check, Clock, Edit3, X,
+  ChevronDown, Loader2, Star, BarChart3, Activity, TrendingUp,
+  BookOpen, Target, ArrowLeft, CheckCircle2, Circle, Zap,
+  AlertTriangle, LogOut, ChevronRight, ShieldCheck, AlertCircle,
+  Flag,
 } from 'lucide-react';
 
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import LangToggle from '@/components/ui/LangToggle';
-import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM, TRANSITION, EASE } from '@/lib/animations';
+import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM, EASE } from '@/lib/animations';
+import { getCompletionStatus, type CompletionStatus } from '@/lib/completion';
+import { BADGE_CONFIG } from '@/components/features/admin/AdminHelpers';
+import AgentDetailModal from '@/components/features/admin/AgentDetailModal';
+import ChangePasswordModal from '@/components/features/admin/ChangePasswordModal';
 
 import type {
   Agent, AgentEvaluation, AgentStats,
   SalesCallCriteria, SalesCallPerformanceItem,
 } from '@/types';
 
-// --- Types & Config ---
+// --- Config ---
 
 const PERFORMANCE_KEYS: (keyof SalesCallCriteria['performance'])[] = [
-  'agentStruggle',
-  'unhandledQuestions',
-  'toneOfVoice',
-  'chemistryFriendliness',
+  'agentStruggle', 'unhandledQuestions', 'toneOfVoice', 'chemistryFriendliness',
 ];
 
 const RED_FLAG_KEYS: (keyof SalesCallCriteria['redFlags'])[] = [
-  'officeLocation',
-  'withdrawalAfterDeposit',
-  'exaggeratingProfit',
-  'actualCommission',
+  'officeLocation', 'withdrawalAfterDeposit', 'exaggeratingProfit', 'actualCommission',
 ];
 
-const MODULE_ORDER = [
-  { key: 'learn',   labelKey: 'learn',   icon: BookOpen,   color: '#60A5FA' },
-  { key: 'quiz',    labelKey: 'quiz',    icon: Target,     color: '#FBBF24' },
-  { key: 'ai-eval', labelKey: 'aiEval',  icon: Zap,        color: '#A78BFA' },
-  { key: 'pitch',   labelKey: 'pitch',   icon: TrendingUp, color: '#FB923C' },
-] as const;
+const STATUS_CFG: Record<CompletionStatus, { color: string; bg: string; border: string; dot: string; label: string }> = {
+  'needs-eval':  { color: 'text-amber-400',       bg: 'bg-amber-500/10',    border: 'border-amber-500/25',   dot: 'bg-amber-400',              label: 'Needs Eval'  },
+  'cleared':     { color: 'text-emerald-400',      bg: 'bg-emerald-500/10',  border: 'border-emerald-500/25', dot: 'bg-emerald-400',            label: 'Cleared'     },
+  'in-progress': { color: 'text-blue-400',         bg: 'bg-blue-500/10',     border: 'border-blue-500/25',    dot: 'bg-blue-400',               label: 'In Progress' },
+  'not-started': { color: 'text-muted-foreground', bg: 'bg-secondary/30',    border: 'border-border',         dot: 'bg-muted-foreground/30',    label: 'Not Started' },
+};
+
+const STATUS_ORDER: Record<CompletionStatus, number> = {
+  'needs-eval': 0, 'in-progress': 1, 'cleared': 2, 'not-started': 3,
+};
 
 // --- Helpers ---
 
@@ -57,32 +59,32 @@ function emptyPerf(): SalesCallPerformanceItem {
 function emptyCriteria(): SalesCallCriteria {
   return {
     performance: {
-      agentStruggle:         emptyPerf(),
-      unhandledQuestions:    emptyPerf(),
-      toneOfVoice:           emptyPerf(),
-      chemistryFriendliness: emptyPerf(),
+      agentStruggle: emptyPerf(), unhandledQuestions: emptyPerf(),
+      toneOfVoice: emptyPerf(), chemistryFriendliness: emptyPerf(),
     },
     qaThoughts: '',
+    qaImpact: 'none',
     redFlags: {
-      officeLocation:         false,
-      withdrawalAfterDeposit: false,
-      exaggeratingProfit:     false,
-      actualCommission:       false,
+      officeLocation: false, withdrawalAfterDeposit: false,
+      exaggeratingProfit: false, actualCommission: false,
     },
     generalRemark: '',
+    finalResult: 'passed',
+    failReason: '',
   };
 }
 
 function calcScore(criteria: SalesCallCriteria): number {
-  const flagCount = Object.values(criteria.redFlags).filter(Boolean).length;
-  return Math.max(0, 100 - flagCount * 25);
+  if (criteria.finalResult === 'failed') return 0;
+  return Math.max(0, 100 - Object.values(criteria.redFlags).filter(Boolean).length * 25);
 }
 
 function scoreHex(n: number) {
   return n >= 70 ? '#60A5FA' : n >= 50 ? '#FBBF24' : '#F87171';
 }
 
-function timeAgo(iso: string, t: any): string {
+function timeAgo(iso: string | null, t: (key: string, p?: any) => string): string {
+  if (!iso) return '—';
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60000);
   if (m < 2)  return t('justNow');
@@ -92,20 +94,15 @@ function timeAgo(iso: string, t: any): string {
   return t('dayAgo', { d: Math.floor(h / 24) });
 }
 
-// --- Sub-components ---
+// --- ScoreRing ---
 
-/**
- * ScoreRing: Reusable circular score indicator
- */
 const ScoreRing = ({ score, size = 'md' }: { score: number; size?: 'sm' | 'md' }) => {
-  const dim  = size === 'sm' ? 56 : 72;
-  const r    = size === 'sm' ? 20 : 28;
-  const sw   = size === 'sm' ? 4  : 5;
-  const fs   = size === 'sm' ? 13 : 16;
+  const dim  = size === 'sm' ? 52 : 68;
+  const r    = size === 'sm' ? 18 : 26;
+  const sw   = size === 'sm' ? 3.5 : 4.5;
+  const fs   = size === 'sm' ? 12 : 15;
   const circ = 2 * Math.PI * r;
-  const dash = (score / 100) * circ;
   const clr  = scoreHex(score);
-  
   return (
     <div className="relative flex items-center justify-center shrink-0" style={{ width: dim, height: dim }}>
       <svg className="absolute inset-0" viewBox={`0 0 ${dim} ${dim}`} style={{ transform: 'rotate(-90deg)' }}>
@@ -114,213 +111,233 @@ const ScoreRing = ({ score, size = 'md' }: { score: number; size?: 'sm' | 'md' }
           cx={dim/2} cy={dim/2} r={r} fill="none" stroke={clr} strokeWidth={sw}
           strokeLinecap="round" strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
-          animate={{ strokeDashoffset: circ - dash }}
+          animate={{ strokeDashoffset: circ - (score / 100) * circ }}
           transition={{ duration: 1.2, ease: EASE.smooth }}
           style={{ filter: `drop-shadow(0 0 4px ${clr}50)` }}
         />
       </svg>
-      <span className="font-black" style={{ color: clr, fontSize: fs }}>
-        {score}
-      </span>
+      <span className="font-black tabular-nums" style={{ color: clr, fontSize: fs }}>{score}</span>
     </div>
   );
 };
 
-/**
- * ModuleSection: Small summary section for training modules
- */
-const ModuleSection = ({
-  icon: Icon, color, title, completedCount, totalCount, children,
-}: {
-  icon: React.ElementType; color: string; title: string;
-  completedCount: number; totalCount: number; children: React.ReactNode;
-}) => {
-  const isComplete = completedCount >= totalCount;
-  return (
-    <div className="rounded-xl overflow-hidden border border-border">
-      <div className="px-3 py-2 flex items-center gap-2 border-b border-border" style={{ background: `${color}08` }}>
-        <div className="p-1 rounded-md" style={{ background: `${color}18` }}>
-          <Icon size={10} style={{ color }} />
-        </div>
-        <span className="text-[10px] font-black uppercase tracking-wider text-foreground">
-          {title}
-        </span>
-        <div className="ml-auto flex items-center gap-1">
-          <span className="text-[10px] font-bold" style={{ color: isComplete ? '#60A5FA' : completedCount > 0 ? color : 'hsl(var(--muted-foreground) / 0.3)' }}>
-            {completedCount}/{totalCount}
-          </span>
-          {isComplete
-            ? <CheckCircle2 size={10} className="text-blue-500" />
-            : <Circle size={10} className="text-muted-foreground/25" />
-          }
-        </div>
-      </div>
-      <div className="bg-card px-3 py-2.5 space-y-1.5">
-        {children}
-      </div>
-    </div>
-  );
-};
+// --- AgentPerformancePanel ---
 
-/**
- * AgentPerformancePanel: Side panel showing selected agent's training stats
- */
 const AgentPerformancePanel = ({
-  stats, loading,
-}: { stats: AgentStats | null; loading: boolean; }) => {
-  const t = useTranslations('evaluator');
-  const navT = useTranslations('nav');
+  stats, loading, onViewFullHistory,
+}: {
+  stats: AgentStats | null;
+  loading: boolean;
+  onViewFullHistory: () => void;
+}) => {
+  const t      = useTranslations('evaluator');
+  const navT   = useTranslations('nav');
+  const adminT = useTranslations('admin');
 
   if (loading) return (
     <div className="flex items-center justify-center h-48">
-      <Loader2 size={22} className="animate-spin text-blue-500/50" />
+      <Loader2 size={22} className="animate-spin text-blue-500/40" />
     </div>
   );
   if (!stats) return (
-    <div className="flex flex-col items-center justify-center h-48 gap-2 text-muted-foreground/40">
-      <BarChart3 size={24} />
-      <p className="text-xs">{t('noTrainingData')}</p>
+    <div className="flex flex-col items-center justify-center h-48 gap-3 text-muted-foreground/40">
+      <BarChart3 size={28} />
+      <p className="text-sm">{t('noTrainingData')}</p>
     </div>
   );
 
-  const BADGE_STYLE: Record<string, { label: string; color: string; bg: string }> = {
-    'elite':      { label: 'Elite',      color: '#A78BFA', bg: 'rgba(167,139,250,0.12)' },
-    'strong':     { label: 'Strong',     color: '#60A5FA', bg: 'rgba(96,165,250,0.12)'  },
-    'developing': { label: 'Developing', color: '#FBBF24', bg: 'rgba(251,191,36,0.12)'  },
-    'needs-work': { label: 'Needs Help', color: '#F87171', bg: 'rgba(248,113,113,0.12)' },
-  };
-  const badge = BADGE_STYLE[stats.badge] ?? BADGE_STYLE['needs-work'];
-
+  const badge = BADGE_CONFIG[stats.badge] ?? BADGE_CONFIG['needs-work'];
   const quizTopics          = ['foundation', 'product', 'process', 'payment'] as const;
-  const learnAccessed       = quizTopics.filter(m => !!stats.quiz[m]).length;
   const quizPassedCount     = quizTopics.filter(m => stats.quiz[m]?.passed).length;
   const completedPitchLevels = stats.pitch?.completedLevels ?? [];
   const completedEvalLevels  = stats.evalCompletedLevels ?? [];
 
   return (
-    <motion.div variants={FADE_IN} initial="initial" animate="animate" className="space-y-2.5">
-      {/* Overall score */}
-      <div className="bg-card border border-border rounded-xl p-3.5 flex items-center gap-3">
+    <motion.div variants={FADE_IN} initial="initial" animate="animate" className="space-y-3">
+
+      {/* Overall score card */}
+      <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-4">
         <ScoreRing score={stats.overallScore} />
         <div className="flex-1 min-w-0">
-          <div className="text-[10px] text-muted-foreground mb-1">{t('trainingScore')}</div>
-          <div className="text-xs font-bold px-2 py-0.5 rounded-full inline-block" style={{ background: badge.bg, color: badge.color }}>
-            {badge.label}
-          </div>
+          <div className="text-xs text-muted-foreground mb-1.5">{t('trainingScore')}</div>
+          <span className={`text-xs font-bold px-2.5 py-1 rounded-full inline-block ${badge.bg} ${badge.text}`}>
+            {adminT(`badges.${stats.badge}`)}
+          </span>
           {stats.lastActive && (
-            <div className="flex items-center gap-1 mt-1.5">
-              <Clock size={9} className="text-muted-foreground/50" />
-              <span className="text-[10px] text-muted-foreground/50">{timeAgo(stats.lastActive, t)}</span>
+            <div className="flex items-center gap-1 mt-2">
+              <Clock size={10} className="text-muted-foreground/40" />
+              <span className="text-xs text-muted-foreground/50">{timeAgo(stats.lastActive, t)}</span>
             </div>
           )}
         </div>
       </div>
 
-      {/* Module 1: Learn */}
-      <ModuleSection icon={BookOpen} color="#60A5FA" title={`${navT('learn')} — ${t('courses')}`} completedCount={learnAccessed} totalCount={4}>
-        {quizTopics.map(m => {
-          const accessed = !!stats.quiz[m];
-          const passed   = stats.quiz[m]?.passed;
-          return (
-            <div key={m} className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                {accessed
-                  ? <CheckCircle2 size={9} style={{ color: passed ? '#60A5FA' : '#FBBF24' }} />
-                  : <Circle size={9} className="text-muted-foreground/25" />
-                }
-                <span className="text-[11px] capitalize text-foreground">{m}</span>
-              </div>
-              <span className="text-[10px] font-medium" style={{ color: accessed ? (passed ? '#60A5FA' : '#FBBF24') : 'hsl(var(--muted-foreground) / 0.3)' }}>
-                {accessed ? t('accessed') : t('notStarted')}
-              </span>
+      {/* Module progress summary */}
+      <div className="bg-card border border-border rounded-2xl overflow-hidden">
+        <div className="px-4 py-2.5 border-b border-border bg-secondary/20">
+          <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">{t('trainingProgress')}</span>
+        </div>
+        <div className="p-3 space-y-3">
+          {/* Quiz */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Target size={13} className="text-amber-400" />
+              <span className="text-sm font-semibold text-foreground">{navT('quiz')}</span>
             </div>
-          );
-        })}
-      </ModuleSection>
-
-      {/* Module 2: Quiz */}
-      <ModuleSection icon={Target} color="#FBBF24" title={navT('quiz')} completedCount={quizPassedCount} totalCount={4}>
-        {quizTopics.map(m => {
-          const qs = stats.quiz[m];
-          return (
-            <div key={m} className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                {qs?.passed
-                  ? <CheckCircle2 size={9} className="text-blue-500" />
-                  : qs ? <AlertTriangle size={9} className="text-amber-400" /> : <Circle size={9} className="text-muted-foreground/25" />
-                }
-                <span className="text-[11px] capitalize text-foreground">{m}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-foreground">{quizPassedCount}/4</span>
+              <div className="w-14 h-1.5 bg-secondary rounded-full overflow-hidden">
+                <div className="h-full rounded-full bg-amber-400 transition-all" style={{ width: `${quizPassedCount / 4 * 100}%` }} />
               </div>
-              {qs ? (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] font-bold" style={{ color: qs.passed ? '#60A5FA' : '#F87171' }}>{qs.bestScore}%</span>
-                  <span className="text-[9px] px-1 py-0.5 rounded font-medium" style={{ background: qs.passed ? 'rgba(96,165,250,0.1)' : 'rgba(248,113,113,0.1)', color: qs.passed ? '#60A5FA' : '#F87171' }}>
-                    {qs.passed ? t('passedLabel') : t('failedLabel')}
-                  </span>
+            </div>
+          </div>
+
+          {/* AI Eval */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Zap size={13} className="text-purple-400" />
+              <span className="text-sm font-semibold text-foreground">{navT('aiEval')}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {stats.aiEval
+                ? <span className="text-sm font-bold" style={{ color: scoreHex(stats.aiEval.avgScore) }}>{stats.aiEval.avgScore}/100</span>
+                : <span className="text-xs text-muted-foreground/40">—</span>
+              }
+              <div className="flex gap-0.5">
+                {[1, 2, 3, 4].map(l => {
+                  const done = completedEvalLevels.includes(l);
+                  return (
+                    <div key={l} className="w-4 h-4 rounded flex items-center justify-center text-[9px] font-black"
+                      style={{
+                        background: done ? 'rgba(167,139,250,0.18)' : 'hsl(var(--secondary))',
+                        color: done ? '#A78BFA' : 'hsl(var(--muted-foreground) / 0.3)',
+                        border: `1px solid ${done ? 'rgba(167,139,250,0.35)' : 'hsl(var(--border))'}`,
+                      }}
+                    >
+                      {done ? <Check size={6} /> : l}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Pitch */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp size={13} className="text-orange-400" />
+              <span className="text-sm font-semibold text-foreground">{navT('pitch')}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground/60">{t('sessions', { count: stats.pitch?.sessionCount ?? 0 })}</span>
+              <div className="flex gap-0.5">
+                {[1, 2, 3].map(l => {
+                  const done = completedPitchLevels.includes(l);
+                  return (
+                    <div key={l} className="w-5 h-5 rounded flex items-center justify-center text-[9px] font-black"
+                      style={{
+                        background: done ? 'rgba(251,146,60,0.18)' : 'hsl(var(--secondary))',
+                        color: done ? '#FB923C' : 'hsl(var(--muted-foreground) / 0.3)',
+                        border: `1px solid ${done ? 'rgba(251,146,60,0.35)' : 'hsl(var(--border))'}`,
+                      }}
+                    >
+                      {done ? <Check size={7} /> : l}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quiz per-topic scores */}
+      <div className="bg-card border border-border rounded-2xl overflow-hidden">
+        <div className="px-4 py-2.5 border-b border-border bg-secondary/20">
+          <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">{t('quizScores')}</span>
+        </div>
+        <div className="p-3 space-y-2.5">
+          {quizTopics.map(m => {
+            const qs = stats.quiz[m];
+            return (
+              <div key={m} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {qs?.passed
+                    ? <CheckCircle2 size={12} className="text-blue-500" />
+                    : qs ? <AlertTriangle size={12} className="text-amber-400" />
+                         : <Circle size={12} className="text-muted-foreground/25" />
+                  }
+                  <span className="text-sm capitalize text-foreground">{adminT(`modules.${m}`)}</span>
                 </div>
-              ) : <span className="text-[10px] text-muted-foreground/30">—</span>}
-            </div>
-          );
-        })}
-      </ModuleSection>
-
-      {/* Module 3: AI Eval */}
-      <ModuleSection icon={Zap} color="#A78BFA" title={navT('aiEval')} completedCount={completedEvalLevels.length} totalCount={4}>
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] text-muted-foreground">{t('aiEvalAvg')}</span>
-          {stats.aiEval
-            ? <span className="text-[11px] font-bold" style={{ color: scoreHex(stats.aiEval.avgScore) }}>{stats.aiEval.avgScore}/100</span>
-            : <span className="text-[10px] text-muted-foreground/30">—</span>
-          }
-        </div>
-        <div className="flex items-center gap-1.5 pt-0.5">
-          {[1, 2, 3, 4].map(l => {
-            const done = completedEvalLevels.includes(l);
-            return (
-              <div key={l} className="w-5 h-5 rounded flex items-center justify-center text-[9px] font-black"
-                style={{
-                  background: done ? 'rgba(167,139,250,0.15)' : 'hsl(var(--secondary))',
-                  color: done ? '#A78BFA' : 'hsl(var(--muted-foreground) / 0.3)',
-                  border: `1px solid ${done ? 'rgba(167,139,250,0.3)' : 'hsl(var(--border))'}`,
-                }}
-              >
-                {done ? <Check size={7} /> : l}
+                {qs ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold" style={{ color: qs.passed ? '#60A5FA' : '#F87171' }}>{qs.bestScore}%</span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                      style={{ background: qs.passed ? 'rgba(96,165,250,0.1)' : 'rgba(248,113,113,0.1)', color: qs.passed ? '#60A5FA' : '#F87171' }}>
+                      {qs.passed ? t('passedLabel') : t('failedLabel')}
+                    </span>
+                  </div>
+                ) : <span className="text-sm text-muted-foreground/30">—</span>}
               </div>
             );
           })}
         </div>
-      </ModuleSection>
+      </div>
 
-      {/* Module 4: Pitch */}
-      <ModuleSection icon={TrendingUp} color="#FB923C" title={navT('pitch')} completedCount={completedPitchLevels.length} totalCount={3}>
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] text-muted-foreground">{t('sessions', { count: 0 }).split(' ')[1]}</span>
-          <span className="text-[11px] text-foreground">{stats.pitch?.sessionCount ?? 0}</span>
-        </div>
-        <div className="flex items-center gap-1.5 pt-0.5">
-          {[1, 2, 3].map(l => {
-            const done = completedPitchLevels.includes(l);
-            return (
-              <div key={l} className="w-5 h-5 rounded flex items-center justify-center text-[9px] font-black"
-                style={{
-                  background: done ? 'rgba(251,146,60,0.15)' : 'hsl(var(--secondary))',
-                  color: done ? '#FB923C' : 'hsl(var(--muted-foreground) / 0.3)',
-                  border: `1px solid ${done ? 'rgba(251,146,60,0.3)' : 'hsl(var(--border))'}`,
-                }}
-              >
-                {done ? <Check size={7} /> : l}
+      {/* Previous Human Evaluations */}
+      {stats.humanEvaluations && stats.humanEvaluations.length > 0 && (
+        <div className="bg-card border border-border rounded-2xl overflow-hidden">
+          <div className="px-4 py-2.5 border-b border-border bg-secondary/20 flex items-center justify-between">
+            <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">{t('qaEvaluations')}</span>
+            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+              {stats.humanEvaluations.length}
+            </span>
+          </div>
+          <div className="p-3 space-y-2">
+            {stats.humanEvaluations.slice(0, 3).map((ev, i) => {
+              const c = ev.criteria as SalesCallCriteria;
+              const flags = c?.redFlags ? Object.values(c.redFlags).filter(Boolean).length : 0;
+              return (
+                <div key={ev.id ?? i} className="flex items-center gap-3">
+                  <ScoreRing score={ev.totalScore} size="sm" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-semibold text-foreground truncate">{ev.evaluatorName}</div>
+                    <div className="flex items-center gap-1">
+                      <Clock size={9} className="text-muted-foreground/40" />
+                      <span className="text-[10px] text-muted-foreground/40">{timeAgo(ev.evaluatedAt, t)}</span>
+                    </div>
+                  </div>
+                  {flags > 0 && (
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-400 flex items-center gap-0.5 shrink-0">
+                      <Flag size={7} /> {flags}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+            {stats.humanEvaluations.length > 3 && (
+              <div className="text-[10px] text-muted-foreground/40 text-center pt-1">
+                +{stats.humanEvaluations.length - 3} {t('moreLabel')}
               </div>
-            );
-          })}
+            )}
+          </div>
         </div>
-      </ModuleSection>
+      )}
+
+      {/* Full history CTA */}
+      <button
+        onClick={onViewFullHistory}
+        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all"
+      >
+        <BarChart3 size={14} />
+        {t('fullHistory')}
+      </button>
     </motion.div>
   );
 };
 
-/**
- * EvalForm: The core evaluation form
- */
+// --- EvalForm ---
+
 const EvalForm = ({
   criteria, onChange,
 }: {
@@ -341,81 +358,134 @@ const EvalForm = ({
     <motion.div variants={STAGGER_CONTAINER} initial="initial" animate="animate" className="space-y-5">
       {/* Section 1: Agent Performance */}
       <motion.div variants={STAGGER_ITEM} className="rounded-2xl overflow-hidden border border-border shadow-sm">
-        <div className="px-4 py-3 bg-blue-500/[0.07] border-b border-border">
+        <div className="px-4 py-3 bg-blue-500/[0.07] border-b border-border flex items-center justify-between">
           <span className="text-xs font-black text-foreground uppercase tracking-wider">{t('agentPerfHeader')}</span>
+          {(() => {
+            const n = PERFORMANCE_KEYS.filter(k => criteria.performance[k].agentInvolve || criteria.performance[k].comment).length;
+            const done = n === PERFORMANCE_KEYS.length;
+            return (
+              <span className={`text-[10px] font-semibold flex items-center gap-1 ${done ? 'text-emerald-400' : 'text-muted-foreground/40'}`}>
+                {done && <Check size={9} />}
+                {t('itemsFilled', { n, total: PERFORMANCE_KEYS.length })}
+              </span>
+            );
+          })()}
         </div>
-        <div className="grid px-4 py-2 text-[9px] font-bold text-muted-foreground uppercase tracking-wider bg-secondary/20 border-b border-border" style={{ gridTemplateColumns: '1fr 64px 1fr' }}>
-          <span>{t('columnCategory')}</span>
-          <span className="text-center">{t('columnInvolve')}</span>
-          <span>{t('columnComment')}</span>
+        <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {PERFORMANCE_KEYS.map((key) => {
+            const perf = criteria.performance[key];
+            return (
+              <div key={key}
+                className={`rounded-xl border p-4 space-y-3 transition-colors ${perf.agentInvolve ? 'border-blue-500/30 bg-blue-500/[0.04]' : 'border-border bg-card'}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <span className={`text-sm font-semibold leading-snug ${perf.agentInvolve ? 'text-blue-400' : 'text-foreground'}`}>
+                    {t(`performanceItems.${key}`)}
+                  </span>
+                  <div className="flex flex-col items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => setPerf(key, 'agentInvolve', !perf.agentInvolve)}
+                      className={`w-11 h-6 rounded-full relative transition-all shadow-inner ${perf.agentInvolve ? 'bg-blue-500' : 'bg-secondary border border-border'}`}
+                    >
+                      <motion.div
+                        animate={{ x: perf.agentInvolve ? 22 : 2 }}
+                        className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm flex items-center justify-center"
+                      >
+                        {perf.agentInvolve ? <Check size={8} className="text-blue-500" /> : <X size={8} className="text-muted-foreground" />}
+                      </motion.div>
+                    </button>
+                    <span className={`text-[10px] font-black ${perf.agentInvolve ? 'text-blue-400' : 'text-muted-foreground/50'}`}>
+                      {perf.agentInvolve ? t('yLabel') : t('nLabel')}
+                    </span>
+                  </div>
+                </div>
+                <textarea
+                  value={perf.comment} onChange={e => setPerf(key, 'comment', e.target.value)}
+                  placeholder={t('commentPlaceholder')} rows={2}
+                  className="w-full px-3 py-2 rounded-lg text-xs text-foreground outline-none resize-none transition-colors placeholder:text-muted-foreground/40 bg-secondary/40 border border-border focus:border-blue-500/40"
+                />
+              </div>
+            );
+          })}
         </div>
-        {PERFORMANCE_KEYS.map((key, i) => {
-          const perf = criteria.performance[key];
-          return (
-            <div key={key} className={`grid px-4 py-3 gap-3 items-start ${i < PERFORMANCE_KEYS.length - 1 ? 'border-b border-border' : ''} ${i % 2 === 0 ? 'bg-card' : 'bg-secondary/20'}`} style={{ gridTemplateColumns: '1fr 64px 1fr' }}>
-              <div>
-                <div className="text-xs font-semibold text-foreground">{t(`performanceItems.${key}`)}</div>
-              </div>
-              <div className="flex flex-col items-center gap-1 pt-0.5">
-                <button
-                  onClick={() => setPerf(key, 'agentInvolve', !perf.agentInvolve)}
-                  className="w-9 h-5 rounded-full relative transition-all"
-                  style={{ background: perf.agentInvolve ? 'rgba(96,165,250,0.3)' : 'hsl(var(--secondary))', border: `1px solid ${perf.agentInvolve ? 'rgba(96,165,250,0.6)' : 'hsl(var(--border))'}` }}
-                >
-                  <motion.span animate={{ x: perf.agentInvolve ? 16 : 2 }} className="absolute top-0.5 w-3.5 h-3.5 rounded-full" style={{ background: perf.agentInvolve ? '#60A5FA' : 'hsl(var(--muted-foreground) / 0.4)' }} />
-                </button>
-                <span className="text-[9px] text-muted-foreground font-bold">{perf.agentInvolve ? t('yLabel') : t('nLabel')}</span>
-              </div>
-              <textarea
-                value={perf.comment} onChange={e => setPerf(key, 'comment', e.target.value)}
-                placeholder={t('commentPlaceholder')} rows={2}
-                className="w-full px-2.5 py-2 rounded-lg text-[11px] text-foreground outline-none resize-none transition-colors placeholder:text-muted-foreground/40 bg-secondary/40 border border-border focus:border-blue-500/40"
-              />
-            </div>
-          );
-        })}
       </motion.div>
 
       {/* Section 2: QA Thoughts */}
       <motion.div variants={STAGGER_ITEM} className="rounded-2xl overflow-hidden border border-border bg-card shadow-sm">
-        <div className="px-4 py-3 bg-blue-500/[0.07] border-b border-border">
+        <div className="px-4 py-3 bg-blue-500/[0.07] border-b border-border flex items-center justify-between">
           <span className="text-xs font-black text-foreground uppercase tracking-wider">{t('qaHeader')}</span>
+          {criteria.qaThoughts.trim() && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />}
         </div>
-        <div className="p-4">
-          <label className="block text-[10px] text-muted-foreground mb-2">{t('qaLabel')}</label>
-          <textarea
-            value={criteria.qaThoughts} onChange={e => onChange({ ...criteria, qaThoughts: e.target.value })}
-            placeholder={t('qaPlaceholder')} rows={4}
-            className="w-full px-3 py-2.5 rounded-xl text-xs text-foreground outline-none resize-none transition-colors placeholder:text-muted-foreground/40 bg-secondary/40 border border-border focus:border-blue-500/40"
-          />
+        <div className="p-4 space-y-4">
+          <div>
+            <label className="block text-xs text-muted-foreground mb-2">{t('qaLabel')}</label>
+            <textarea
+              value={criteria.qaThoughts} onChange={e => onChange({ ...criteria, qaThoughts: e.target.value })}
+              placeholder={t('qaPlaceholder')} rows={4}
+              className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none resize-none transition-colors placeholder:text-muted-foreground/40 bg-secondary/40 border border-border focus:border-blue-500/40"
+            />
+          </div>
+
+          <div className="pt-2 border-t border-border/50">
+            <label className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">{t('qaImpactLabel')}</label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {(['none', 'notify_improve', 'immediate_fail'] as const).map(impact => (
+                <button
+                  key={impact}
+                  onClick={() => onChange({ ...criteria, qaImpact: impact })}
+                  className={`px-3 py-2.5 rounded-xl text-[11px] font-bold border transition-all flex items-center justify-center gap-2 ${criteria.qaImpact === impact ? 'bg-primary/10 border-primary text-primary shadow-sm' : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/60'}`}
+                >
+                  {impact === 'none' && <Activity size={12} />}
+                  {impact === 'notify_improve' && <Zap size={12} />}
+                  {impact === 'immediate_fail' && <AlertTriangle size={12} />}
+                  {t(impact === 'none' ? 'qaImpactNone' : impact === 'notify_improve' ? 'qaImpactNotifyImprove' : 'qaImpactImmediateFail')}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </motion.div>
 
       {/* Section 3: Red Flags */}
-      <motion.div variants={STAGGER_ITEM} className={`rounded-2xl overflow-hidden border transition-colors shadow-sm ${redFlagCount > 0 ? 'border-red-500/35' : 'border-border'}`}>
-        <div className={`px-4 py-3 flex items-center justify-between border-b border-border ${redFlagCount > 0 ? 'bg-red-500/10' : 'bg-red-500/5'}`}>
+      <motion.div variants={STAGGER_ITEM} className={`rounded-2xl overflow-hidden border transition-colors shadow-sm ${redFlagCount === 4 ? 'border-red-500/60' : redFlagCount > 0 ? 'border-red-500/35' : 'border-border'}`}>
+        <div className={`px-4 py-3 flex items-center justify-between border-b border-border ${redFlagCount === 4 ? 'bg-red-500/20' : redFlagCount > 0 ? 'bg-red-500/10' : 'bg-red-500/5'}`}>
           <div className="flex items-center gap-2">
-            <AlertTriangle size={13} className="text-red-400" />
+            <AlertTriangle size={14} className="text-red-400" />
             <span className="text-xs font-black text-foreground uppercase tracking-wider">{t('redFlagHeader')}</span>
           </div>
-          {redFlagCount > 0 && <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/40">{redFlagCount} FLAG{redFlagCount > 1 ? 'S' : ''}</span>}
+          <div className="flex items-center gap-2">
+            {redFlagCount > 0 && (
+              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/40">
+                −{redFlagCount * 25} pts
+              </span>
+            )}
+            {redFlagCount === 4 && (
+              <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-red-600/30 text-red-300 border border-red-500/50 animate-pulse">
+                {t('failedCaps')}
+              </span>
+            )}
+          </div>
         </div>
-        <div className="px-4 py-2 text-[10px] text-muted-foreground bg-secondary/10 border-b border-border">{t('redFlagNote')}</div>
+        <div className="px-4 py-2 text-xs text-muted-foreground bg-secondary/10 border-b border-border">{t('redFlagNote')}</div>
         <div>
           {RED_FLAG_KEYS.map((key, i) => {
             const checked = criteria.redFlags[key];
             return (
               <div key={key} className={`px-4 py-3 ${checked ? 'bg-red-500/5' : i % 2 === 0 ? 'bg-card' : 'bg-secondary/20'} ${i < RED_FLAG_KEYS.length - 1 ? 'border-b border-border' : ''}`}>
                 <div className="flex items-start gap-3">
-                  <button onClick={() => setRedFlag(key, !checked)} className={`mt-0.5 w-4 h-4 rounded flex items-center justify-center border ${checked ? 'bg-red-500/30 border-red-500/70' : 'bg-secondary border-border'}`}>
+                  <button onClick={() => setRedFlag(key, !checked)}
+                    className={`mt-0.5 w-4 h-4 rounded flex items-center justify-center border shrink-0 ${checked ? 'bg-red-500/30 border-red-500/70' : 'bg-secondary border-border'}`}>
                     {checked && <X size={9} className="text-red-400" />}
                   </button>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-xs font-semibold ${checked ? 'text-red-400' : 'text-foreground'}`}>{t(`redFlagItems.${key}.label`)}</span>
-                      {checked && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-400">RED FLAG</span>}
+                      <span className={`text-sm font-semibold ${checked ? 'text-red-400' : 'text-foreground'}`}>{t(`redFlagItems.${key}.label`)}</span>
+                      {checked
+                        ? <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-400">{t('redFlagPts')}</span>
+                        : <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-secondary text-muted-foreground/35">{t('ptsIfFlagged')}</span>
+                      }
                     </div>
-                    <div className="text-[10px] text-muted-foreground/60 mt-0.5">{t(`redFlagItems.${key}.guideline`)}</div>
+                    <div className="text-xs text-muted-foreground/60 mt-0.5">{t(`redFlagItems.${key}.guideline`)}</div>
                   </div>
                 </div>
               </div>
@@ -424,9 +494,50 @@ const EvalForm = ({
         </div>
       </motion.div>
 
+      {/* Section 4: Final Evaluation Result */}
+      <motion.div variants={STAGGER_ITEM} className="rounded-2xl overflow-hidden border border-border bg-card shadow-sm">
+        <div className="px-4 py-3 bg-primary/5 border-b border-border flex items-center justify-between">
+          <span className="text-xs font-black text-foreground uppercase tracking-wider">{t('finalResultHeader')}</span>
+        </div>
+        <div className="p-4 space-y-4">
+          <div className="flex gap-3">
+            <button
+              onClick={() => onChange({ ...criteria, finalResult: 'passed' })}
+              className={`flex-1 py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${criteria.finalResult === 'passed' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-lg shadow-emerald-500/10' : 'border-border bg-secondary/20 text-muted-foreground opacity-60 hover:opacity-100'}`}
+            >
+              <CheckCircle2 size={24} />
+              <span className="text-sm font-black">{t('finalResultPassed')}</span>
+            </button>
+            <button
+              onClick={() => onChange({ ...criteria, finalResult: 'failed' })}
+              className={`flex-1 py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${criteria.finalResult === 'failed' ? 'border-red-500 bg-red-500/10 text-red-600 shadow-lg shadow-red-500/10' : 'border-border bg-secondary/20 text-muted-foreground opacity-60 hover:opacity-100'}`}
+            >
+              <AlertCircle size={24} />
+              <span className="text-sm font-black">{t('finalResultFailed')}</span>
+            </button>
+          </div>
+
+          {criteria.finalResult === 'failed' && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
+              <label className="text-xs font-bold text-red-500 uppercase tracking-widest">{t('failReasonLabel')}</label>
+              <textarea
+                value={criteria.failReason || ''}
+                onChange={e => onChange({ ...criteria, failReason: e.target.value })}
+                placeholder={t('failReasonPlaceholder')}
+                rows={3}
+                className="w-full px-4 py-3 rounded-xl text-sm text-foreground outline-none resize-none bg-red-500/[0.03] border border-red-500/20 focus:border-red-500/40"
+              />
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
+
       {/* General Remark */}
       <motion.div variants={STAGGER_ITEM}>
-        <label className="block text-[10px] font-bold text-muted-foreground mb-2 uppercase tracking-wider">{t('generalRemarkLabel')}</label>
+        <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">
+          {t('generalRemarkLabel')}
+          {criteria.generalRemark.trim() && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />}
+        </label>
         <textarea
           value={criteria.generalRemark} onChange={e => onChange({ ...criteria, generalRemark: e.target.value })}
           placeholder={t('generalRemarkPlaceholder')} rows={3}
@@ -437,9 +548,8 @@ const EvalForm = ({
   );
 };
 
-/**
- * EvalHistoryCard: Expandable card for past evaluations
- */
+// --- EvalHistoryCard ---
+
 const EvalHistoryCard = ({
   ev, onEdit,
 }: { ev: AgentEvaluation; onEdit: (ev: AgentEvaluation) => void; }) => {
@@ -451,142 +561,107 @@ const EvalHistoryCard = ({
   return (
     <motion.div variants={FADE_IN} className="rounded-2xl overflow-hidden bg-card border border-border shadow-sm">
       <button className="w-full flex items-center gap-4 px-4 py-3.5 text-left hover:bg-secondary/30 transition-colors" onClick={() => setExpanded(v => !v)}>
-        <ScoreRing score={ev.totalScore} size="sm" />
+        <div className="relative shrink-0">
+          <ScoreRing score={ev.totalScore} size="sm" />
+          {c?.finalResult === 'failed' && (
+            <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 border-2 border-card">
+              <X size={8} strokeWidth={4} />
+            </div>
+          )}
+        </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-0.5">
-            <span className="text-xs font-bold text-foreground">{t('salesSimLabel')}</span>
-            <span className="text-[9px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{ev.evaluatorName}</span>
-            {redFlagCount > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-400">{redFlagCount} 🚩</span>}
+            <span className="text-sm font-bold text-foreground">{t('salesSimLabel')}</span>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${c?.finalResult === 'failed' ? 'bg-red-500/15 text-red-500 border border-red-500/20' : 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/20'}`}>
+              {c?.finalResult === 'failed' ? t('failedCaps') : t('passedCaps')}
+            </span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{ev.evaluatorName}</span>
+            {redFlagCount > 0 && (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-400 flex items-center gap-1">
+                <Flag size={8} /> {redFlagCount}
+              </span>
+            )}
           </div>
-          {c?.generalRemark && <p className="text-[11px] text-muted-foreground truncate">{c.generalRemark}</p>}
-          <div className="flex items-center gap-1 mt-1"><Clock size={9} className="text-muted-foreground/40" /><span className="text-[9px] text-muted-foreground/40">{timeAgo(ev.evaluatedAt, t)}</span></div>
+          {c?.generalRemark && <p className="text-xs text-muted-foreground truncate">{c.generalRemark}</p>}
+          <div className="flex items-center gap-1 mt-1">
+            <Clock size={9} className="text-muted-foreground/40" />
+            <span className="text-[10px] text-muted-foreground/40">{timeAgo(ev.evaluatedAt, t)}</span>
+          </div>
         </div>
-        <ChevronDown size={12} className={`text-muted-foreground transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        <ChevronDown size={13} className={`text-muted-foreground transition-transform shrink-0 ${expanded ? 'rotate-180' : ''}`} />
       </button>
 
       <AnimatePresence>
         {expanded && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
             <div className="px-4 pb-4 space-y-3 border-t border-border bg-secondary/10">
-              {c?.performance && (
-                <div className="pt-3 space-y-2">
-                  <div className="text-[9px] font-bold text-muted-foreground uppercase">{t('agentPerfSection')}</div>
-                  {PERFORMANCE_KEYS.map(key => {
-                    const p = c.performance[key];
-                    if (!p?.comment && !p?.agentInvolve) return null;
-                    return (
-                      <div key={key} className="flex items-start gap-2">
-                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded mt-0.5 ${p.agentInvolve ? 'bg-blue-500/10 text-blue-500' : 'bg-secondary text-muted-foreground'}`}>{p.agentInvolve ? t('yLabel') : t('nLabel')}</span>
-                        <div>
-                          <div className="text-[10px] text-muted-foreground">{t(`performanceItems.${key}`)}</div>
-                          {p.comment && <div className="text-[11px] text-foreground mt-0.5">{p.comment}</div>}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-              {c?.qaThoughts && (
-                <div className="rounded-xl p-2.5 bg-card border border-border">
-                  <div className="text-[9px] font-bold text-muted-foreground uppercase mb-1">{t('qaSection')}</div>
-                  <p className="text-[11px] text-foreground whitespace-pre-wrap">{c.qaThoughts}</p>
-                </div>
-              )}
-              <button onClick={() => onEdit(ev)} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors pt-2"><Edit3 size={11} /> {t('editLabel')}</button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
-};
-
-/**
- * AgentOverviewCard: Summary card for each agent in the overview grid
- */
-const AgentOverviewCard = ({
-  stats, evaluatedByMe, onEvaluate,
-}: {
-  stats: AgentStats;
-  evaluatedByMe: boolean;
-  onEvaluate: (agent: Agent) => void;
-}) => {
-  const [expanded, setExpanded] = useState(false);
-  const t = useTranslations('evaluator');
-
-  const BADGE_STYLE: Record<string, { label: string; color: string; bg: string }> = {
-    'elite':      { label: 'Elite',      color: '#A78BFA', bg: 'rgba(167,139,250,0.12)' },
-    'strong':     { label: 'Strong',     color: '#60A5FA', bg: 'rgba(96,165,250,0.12)'  },
-    'developing': { label: 'Developing', color: '#FBBF24', bg: 'rgba(251,191,36,0.12)'  },
-    'needs-work': { label: 'Needs Help', color: '#F87171', bg: 'rgba(248,113,113,0.12)' },
-  };
-  const badge = BADGE_STYLE[stats.badge] ?? BADGE_STYLE['needs-work'];
-
-  function moduleScore(key: string): number {
-    if (key === 'learn')   return Object.keys(stats.quiz).length > 0 ? 100 : 0;
-    if (key === 'quiz')    return Math.round((['foundation', 'product', 'process', 'payment'] as const).filter(m => stats.quiz[m]?.passed).length / 4 * 100);
-    if (key === 'ai-eval') return stats.aiEval ? Math.min(100, Math.round(stats.aiEval.count / 4 * 100)) : 0;
-    if (key === 'pitch')   return Math.round((stats.pitch?.completedLevels?.length ?? 0) / 3 * 100);
-    return 0;
-  }
-
-  return (
-    <motion.div variants={STAGGER_ITEM} className="bg-card/60 backdrop-blur-md border border-border rounded-2xl overflow-hidden hover:border-blue-500/40 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 relative group">
-      <div className="p-4 flex items-start gap-3">
-        <ScoreRing score={stats.overallScore} size="sm" />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="text-sm font-black text-foreground truncate">{stats.agent.name}</span>
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: badge.bg, color: badge.color }}>{badge.label}</span>
-            {evaluatedByMe && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20">✓ {t('evaluated')}</span>}
-          </div>
-          <div className="flex gap-1.5 mt-2">
-            {MODULE_ORDER.map(mod => {
-              const pct = moduleScore(mod.key);
-              return (
-                <div key={mod.key} className="flex-1">
-                  <div className="h-1 rounded-full bg-secondary overflow-hidden">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} className="h-full rounded-full" style={{ background: pct === 100 ? '#60A5FA' : mod.color }} />
+              {c?.finalResult === 'failed' && c?.failReason && (
+                <div className="pt-3">
+                  <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-3">
+                    <div className="text-[10px] font-bold text-red-500 uppercase mb-1 flex items-center gap-1.5">
+                      <AlertCircle size={10} /> {t('reasonForFailure')}
+                    </div>
+                    <p className="text-sm text-foreground">{c.failReason}</p>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+              )}
+              
+              {c?.performance && (
+                <div className="pt-3 space-y-2">
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase">{t('agentPerfSection')}</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {PERFORMANCE_KEYS.map(key => {
+                      const p = c.performance[key];
+                      if (!p?.comment && !p?.agentInvolve) return null;
+                      return (
+                        <div key={key} className="flex items-start gap-2 bg-card p-2.5 rounded-xl border border-border">
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded mt-0.5 ${p.agentInvolve ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' : 'bg-secondary text-muted-foreground border border-border'}`}>
+                            {p.agentInvolve ? t('yLabel') : t('nLabel')}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="text-[10px] font-bold text-muted-foreground truncate">{t(`performanceItems.${key}`)}</div>
+                            {p.comment && <div className="text-xs text-foreground mt-0.5 leading-snug">{p.comment}</div>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
-      <div className="px-4 pb-3 flex items-center gap-2">
-        <button onClick={() => onEvaluate(stats.agent)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98]"><ClipboardCheck size={12} />{t('evaluate')}</button>
-        <button onClick={() => setExpanded(v => !v)} className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium border transition-all ${expanded ? 'bg-secondary border-border text-foreground' : 'border-border text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`}>{t('viewDetails')}<ChevronDown size={11} className={`transition-transform ${expanded ? 'rotate-180' : ''}`} /></button>
-      </div>
+              {c?.qaThoughts && (
+                <div className="rounded-xl p-3 bg-card border border-border">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="text-[10px] font-bold text-muted-foreground uppercase">{t('qaSection')}</div>
+                    {c?.qaImpact && c.qaImpact !== 'none' && (
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 ${c.qaImpact === 'immediate_fail' ? 'bg-red-500/10 text-red-500' : 'bg-primary/10 text-primary'}`}>
+                        {c.qaImpact === 'immediate_fail' ? <AlertTriangle size={8} /> : <Zap size={8} />}
+                        {t(c.qaImpact === 'notify_improve' ? 'qaImpactNotifyImprove' : 'qaImpactImmediateFail')}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-foreground whitespace-pre-wrap">{c.qaThoughts}</p>
+                </div>
+              )}
 
-      <AnimatePresence>
-        {expanded && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-t border-border bg-secondary/5">
-            <div className="px-4 pb-4 pt-3 space-y-3">
-              <div>
-                <div className="flex items-center gap-1.5 mb-1.5"><BookOpen size={9} className="text-blue-400" /><span className="text-[9px] font-bold text-muted-foreground uppercase">{t('courses')}</span></div>
-                <div className="flex gap-1.5 flex-wrap">
-                  {(['product', 'process', 'payment'] as const).map(m => {
-                    const accessed = !!stats.quiz[m];
-                    return (
-                      <div key={m} className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-medium border ${accessed ? 'bg-blue-500/10 border-blue-500/20 text-blue-500' : 'bg-secondary border-transparent text-muted-foreground/40'}`}>
-                        {accessed ? <CheckCircle2 size={7} /> : <Circle size={7} />}<span className="capitalize ml-0.5">{m}</span>
+              {c?.redFlags && Object.values(c.redFlags).some(Boolean) && (
+                <div className="rounded-xl p-3 bg-red-500/5 border border-red-500/20">
+                  <div className="text-[10px] font-bold text-red-400/70 uppercase mb-2 flex items-center gap-1.5">
+                    <AlertTriangle size={10} /> {t('redFlagsTitle')}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {RED_FLAG_KEYS.filter(k => c.redFlags[k]).map(key => (
+                      <div key={key} className="flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 border border-red-500/20">
+                        <X size={8} className="text-red-400 shrink-0" />
+                        <span className="text-[10px] font-bold text-red-400">{t(`redFlagItems.${key}.label`)}</span>
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-2">
-                <div className="flex-1 rounded-lg p-2 bg-secondary/30">
-                  <div className="flex items-center gap-1 mb-1.5"><Zap size={9} className="text-purple-400" /><span className="text-[9px] font-bold text-muted-foreground uppercase">AI Eval</span></div>
-                  {stats.aiEval ? <span className="text-[11px] font-bold" style={{ color: scoreHex(stats.aiEval.avgScore) }}>{stats.aiEval.avgScore}/100</span> : <span className="text-[10px] text-muted-foreground/40">—</span>}
-                </div>
-                <div className="flex-1 rounded-lg p-2 bg-secondary/30">
-                  <div className="flex items-center gap-1 mb-1.5"><TrendingUp size={9} className="text-orange-400" /><span className="text-[9px] font-bold text-muted-foreground uppercase">Pitch</span></div>
-                  <span className="text-[11px] font-bold text-foreground">{stats.pitch?.sessionCount ?? 0} <span className="text-[9px] font-normal text-muted-foreground">sessions</span></span>
-                </div>
-              </div>
+              )}
+              <button onClick={() => onEdit(ev)} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors pt-2">
+                <Edit3 size={12} /> {t('editLabel')}
+              </button>
             </div>
           </motion.div>
         )}
@@ -595,9 +670,8 @@ const AgentOverviewCard = ({
   );
 };
 
-/**
- * OverviewPanel: The main dashboard landing view
- */
+// --- OverviewPanel ---
+
 const OverviewPanel = ({
   myEvals, agents, allAgentStats, onEvaluate,
 }: {
@@ -606,101 +680,167 @@ const OverviewPanel = ({
   allAgentStats: AgentStats[];
   onEvaluate: (agent: Agent) => void;
 }) => {
-  const t = useTranslations('evaluator');
+  const t      = useTranslations('evaluator');
+  const adminT = useTranslations('admin');
   const evaluatedIds = new Set(myEvals.map(e => e.agentId));
   const recent       = myEvals.slice(0, 5);
 
+  // Priority queue — agents who need evaluation
+  const needsEvalStats = allAgentStats.filter(s => getCompletionStatus(s).status === 'needs-eval');
+
   const stats = [
-    { label: t('totalEvals'), value: myEvals.length, icon: ClipboardCheck, color: '#A78BFA' },
-    { label: t('todayEvals'), value: myEvals.filter(e => new Date(e.evaluatedAt).toDateString() === new Date().toDateString()).length, icon: Activity, color: '#60A5FA' },
-    { label: t('avgScore'), value: myEvals.length > 0 ? `${Math.round(myEvals.reduce((s, e) => s + e.totalScore, 0) / myEvals.length)}/100` : '—', icon: Star, color: '#FBBF24' },
-    { label: t('trainingTeamAvg'), value: allAgentStats.length > 0 ? `${Math.round(allAgentStats.reduce((s, a) => s + a.overallScore, 0) / allAgentStats.length)}/100` : '—', icon: Users, color: '#10B981' },
+    { label: t('totalEvals'),       value: myEvals.length,           icon: ClipboardCheck, color: '#A78BFA' },
+    { label: t('todayEvals'),        value: myEvals.filter(e => new Date(e.evaluatedAt).toDateString() === new Date().toDateString()).length, icon: Activity, color: '#60A5FA' },
+    { label: t('avgScore'),          value: myEvals.length > 0 ? `${Math.round(myEvals.reduce((s, e) => s + e.totalScore, 0) / myEvals.length)}/100` : '—', icon: Star, color: '#FBBF24' },
+    { label: t('trainingTeamAvg'),   value: allAgentStats.length > 0 ? `${Math.round(allAgentStats.reduce((s, a) => s + a.overallScore, 0) / allAgentStats.length)}/100` : '—', icon: Users, color: '#10B981' },
   ];
 
   return (
-    <motion.div variants={STAGGER_CONTAINER} initial="initial" animate="animate" className="p-6 space-y-8">
-      {/* Stats Cards */}
+    <motion.div variants={STAGGER_CONTAINER} initial="initial" animate="animate" className="space-y-8">
+
+      {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {stats.map((k, i) => (
-          <motion.div key={i} variants={STAGGER_ITEM} className="bg-card/60 backdrop-blur-md border border-border rounded-2xl p-4 shadow-sm group hover:border-primary/20 transition-colors">
-            <div className="p-2 rounded-xl w-fit mb-3" style={{ background: `${k.color}15` }}><k.icon size={16} style={{ color: k.color }} /></div>
+          <motion.div key={i} variants={STAGGER_ITEM} className="bg-card/60 backdrop-blur-md border border-border rounded-2xl p-5 shadow-sm hover:border-primary/20 transition-colors">
+            <div className="p-2 rounded-xl w-fit mb-3" style={{ background: `${k.color}15` }}>
+              <k.icon size={16} style={{ color: k.color }} />
+            </div>
             <div className="text-2xl font-black text-foreground">{k.value}</div>
-            <div className="text-[11px] font-medium text-muted-foreground">{k.label}</div>
+            <div className="text-xs font-medium text-muted-foreground mt-0.5">{k.label}</div>
           </motion.div>
         ))}
       </div>
 
-      {/* Agents Grid */}
+      {/* Priority Queue: Needs Evaluation */}
+      {needsEvalStats.length > 0 && (
+        <motion.div variants={STAGGER_ITEM}>
+          <div className="bg-amber-500/5 border border-amber-500/25 rounded-2xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-amber-500/15 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-1.5 rounded-lg bg-amber-500/15">
+                  <AlertCircle size={15} className="text-amber-400" />
+                </div>
+                <div>
+                  <div className="text-sm font-black text-foreground">{t('needsEvaluation')}</div>
+                  <div className="text-xs text-muted-foreground">{t('needsEvalDesc', { count: needsEvalStats.length })}</div>
+                </div>
+              </div>
+              <span className="text-[11px] font-black px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                {t('pendingCaps')}
+              </span>
+            </div>
+            <div className="p-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+              {needsEvalStats.map(s => (
+                <motion.div key={s.agent.id} variants={STAGGER_ITEM}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-card/60 border border-amber-500/15 hover:border-amber-500/30 transition-colors">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-sm font-black text-amber-500 shrink-0">
+                    {s.agent.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-bold text-foreground truncate">{s.agent.name}</div>
+                    <div className="text-xs text-muted-foreground">{t('scoreLabel')} {s.overallScore}%</div>
+                  </div>
+                  <button
+                    onClick={() => onEvaluate(s.agent)}
+                    className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/15 text-amber-500 hover:bg-amber-500/25 border border-amber-500/30 transition-all"
+                  >
+                    {t('evaluate')}
+                  </button>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Mini pipeline summary */}
+      <motion.div variants={STAGGER_ITEM} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {(
+          [
+            { status: 'not-started', icon: AlertCircle, labelKey: 'statusNotStarted'  },
+            { status: 'in-progress', icon: Clock,       labelKey: 'statusInProgress'  },
+            { status: 'needs-eval',  icon: CheckCircle2, labelKey: 'statusNeedsEval'   },
+            { status: 'cleared',     icon: ShieldCheck,  labelKey: 'statusCleared'     },
+          ] as { status: CompletionStatus; icon: React.ElementType; labelKey: string }[]
+        ).map(({ status, icon: Icon, labelKey }) => {
+          const cfg   = STATUS_CFG[status];
+          const count = allAgentStats.filter(s => getCompletionStatus(s).status === status).length;
+          return (
+            <div key={status} className={`rounded-xl border p-4 ${cfg.bg} ${cfg.border}`}>
+              <Icon size={16} className={`mb-2 ${cfg.color}`} />
+              <p className={`text-2xl font-black ${cfg.color}`}>{count}</p>
+              <p className={`text-xs font-semibold mt-0.5 ${cfg.color}`}>{t(labelKey)}</p>
+            </div>
+          );
+        })}
+      </motion.div>
+
+      {/* All Agents grid */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between"><div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t('agentsGrid')}</div><span className="text-[10px] text-muted-foreground/60">{t('agentCount', { count: allAgentStats.length })}</span></div>
+        <div className="flex items-center justify-between">
+          <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t('agentsGrid')}</div>
+          <span className="text-xs text-muted-foreground/60">{t('agentCount', { count: allAgentStats.length })}</span>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {allAgentStats.map(s => <AgentOverviewCard key={s.agent.id} stats={s} evaluatedByMe={evaluatedIds.has(s.agent.id)} onEvaluate={onEvaluate} />)}
+          {allAgentStats
+            .map(s => ({ ...s, completion: getCompletionStatus(s) }))
+            .sort((a, b) => STATUS_ORDER[a.completion.status] - STATUS_ORDER[b.completion.status])
+            .map(s => {
+              const cfg = STATUS_CFG[s.completion.status];
+              return (
+                <motion.div key={s.agent.id} variants={STAGGER_ITEM}
+                  className="bg-card/60 backdrop-blur-md border border-border rounded-2xl overflow-hidden hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300">
+                  <div className="p-4 flex items-start gap-3">
+                    <ScoreRing score={s.overallScore} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="text-sm font-black text-foreground truncate">{s.agent.name}</span>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${BADGE_CONFIG[s.badge].bg} ${BADGE_CONFIG[s.badge].text}`}>
+                          {adminT(`badges.${s.badge}`)}
+                        </span>
+                      </div>
+                      <div className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${cfg.bg} ${cfg.color} border ${cfg.border}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+                        {t(s.completion.status === 'not-started' ? 'statusNotStarted' : s.completion.status === 'in-progress' ? 'statusInProgress' : s.completion.status === 'needs-eval' ? 'statusNeedsEval' : 'statusCleared')}
+                        {evaluatedIds.has(s.agent.id) && <span className="ml-1 opacity-60">· {t('evaluatedLabel')}</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="px-4 pb-4">
+                    <button
+                      onClick={() => onEvaluate(s.agent)}
+                      className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-lg shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      <ClipboardCheck size={12} /> {t('evaluate')}
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })
+          }
         </div>
       </div>
 
-      {/* Recent Activity */}
+      {/* Recent Evaluations */}
       {recent.length > 0 && (
         <div className="space-y-4">
           <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t('recentEvals')}</div>
           <div className="space-y-2">
             {recent.map(ev => (
-              <motion.div key={ev.id} variants={STAGGER_ITEM} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary/20 border border-border hover:bg-secondary/30 transition-colors">
+              <motion.div key={ev.id} variants={STAGGER_ITEM}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary/20 border border-border hover:bg-secondary/30 transition-colors">
                 <ScoreRing score={ev.totalScore} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2"><span className="text-xs font-semibold text-foreground truncate">{agents.find(a => a.id === ev.agentId)?.name ?? ev.agentName}</span></div>
-                  <div className="text-[10px] text-muted-foreground truncate">{ev.comments || '—'}</div>
+                  <span className="text-sm font-semibold text-foreground truncate block">{agents.find(a => a.id === ev.agentId)?.name ?? ev.agentName}</span>
+                  <div className="text-xs text-muted-foreground truncate">{ev.comments || '—'}</div>
                 </div>
-                <div className="text-[10px] text-muted-foreground/50 shrink-0">{timeAgo(ev.evaluatedAt, t)}</div>
+                <div className="text-xs text-muted-foreground/50 shrink-0">{timeAgo(ev.evaluatedAt, t)}</div>
               </motion.div>
             ))}
           </div>
         </div>
       )}
     </motion.div>
-  );
-};
-
-/**
- * ChangePasswordModal: Security update interface
- */
-const ChangePasswordModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-  const t = useTranslations('evaluator');
-  const [newPassword, setNewPassword] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-
-  async function handleSave() {
-    if (newPassword.length < 4) { setError(t('pwMinLength')); return; }
-    setSaving(true); setError('');
-    try {
-      const res = await fetch('/api/admin/change-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ newPassword }) });
-      if (res.ok) { setSuccess(true); setTimeout(() => { onClose(); setSuccess(false); setNewPassword(''); }, 1500); }
-      else { const d = await res.json(); setError(d.error || 'Failed to change password'); }
-    } catch { setError('Network error'); } finally { setSaving(false); }
-  }
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
-          <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="bg-card border border-border rounded-3xl p-8 w-full max-w-sm shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
-            <h3 className="font-black text-xl text-foreground mb-2">{t('changePw')}</h3>
-            <p className="text-sm text-muted-foreground mb-6">{t('changePwDesc')}</p>
-            <div className="space-y-4">
-              <input type="text" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full bg-secondary/40 border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground" placeholder={t('newPw')} />
-              {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
-              {success && <p className="text-xs text-emerald-500 font-medium">{t('pwUpdateSuccess')}</p>}
-              <div className="flex gap-3 pt-2">
-                <button onClick={handleSave} disabled={saving || success || !newPassword} className="flex-1 bg-primary text-primary-foreground py-3 rounded-xl text-sm font-bold disabled:opacity-50 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">{saving ? t('updating') : t('updatePw')}</button>
-                <button onClick={onClose} className="px-6 py-3 rounded-xl text-sm font-bold text-muted-foreground hover:bg-secondary transition-all">{t('cancel')}</button>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
   );
 };
 
@@ -713,48 +853,47 @@ interface EvaluatorDashboardProps {
 }
 
 export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwordChanged }: EvaluatorDashboardProps) {
-  const t        = useTranslations('evaluator');
+  const t = useTranslations('evaluator');
 
-  const [isPwModalOpen, setIsPwModalOpen] = useState(false);
-  const [agents, setAgents]               = useState<Agent[]>([]);
-  const [agentSearch, setAgentSearch]     = useState('');
-  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
-  const [tab, setTab]                     = useState<'new' | 'history' | 'profile'>('new');
-  const [agentStats, setAgentStats]       = useState<AgentStats | null>(null);
-  const [loadingStats, setLoadingStats]   = useState(false);
-  const [allAgentStats, setAllAgentStats] = useState<AgentStats[]>([]);
-  const [myEvals, setMyEvals]             = useState<AgentEvaluation[]>([]);
-  const [agentEvals, setAgentEvals]       = useState<AgentEvaluation[]>([]);
+  // Layout state
+  const [sidebarCollapsed, setSidebarCollapsed]   = useState(false);
+  const [profileOpen, setProfileOpen]             = useState(false);
+  const [isPwModalOpen, setIsPwModalOpen]         = useState(false);
+
+  // Data state
+  const [agents, setAgents]                 = useState<Agent[]>([]);
+  const [agentSearch, setAgentSearch]       = useState('');
+  const [statusFilter, setStatusFilter]     = useState<CompletionStatus | ''>('');
+  const [selectedAgent, setSelectedAgent]   = useState<Agent | null>(null);
+  const [tab, setTab]                       = useState<'new' | 'history'>('new');
+  const [agentStats, setAgentStats]         = useState<AgentStats | null>(null);
+  const [loadingStats, setLoadingStats]     = useState(false);
+  const [allAgentStats, setAllAgentStats]   = useState<AgentStats[]>([]);
+  const [myEvals, setMyEvals]               = useState<AgentEvaluation[]>([]);
+  const [agentEvals, setAgentEvals]         = useState<AgentEvaluation[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
-  const [criteria, setCriteria]           = useState<SalesCallCriteria>(emptyCriteria());
-  const [saving, setSaving]               = useState(false);
-  const [saveSuccess, setSaveSuccess]     = useState(false);
-  const [editingEval, setEditingEval]     = useState<AgentEvaluation | null>(null);
+  const [criteria, setCriteria]             = useState<SalesCallCriteria>(emptyCriteria());
+  const [saving, setSaving]                 = useState(false);
+  const [saveSuccess, setSaveSuccess]       = useState(false);
+  const [saveError, setSaveError]           = useState(false);
+  const [editingEval, setEditingEval]       = useState<AgentEvaluation | null>(null);
+  const [detailStats, setDetailStats]       = useState<AgentStats | null>(null);
 
-  const [isLive, setIsLive]               = useState(false);
-  const pollTimer                         = useRef<NodeJS.Timeout | null>(null);
+  const [isLive, setIsLive]     = useState(false);
+  const pollTimer               = useRef<NodeJS.Timeout | null>(null);
 
+  // Load overview data
   const loadData = useCallback(async (isSilent = false) => {
     if (!isSilent) setIsLive(true);
     try {
       const [agentsRes, evalsRes, statsRes] = await Promise.all([
         fetch('/api/agents'),
         fetch(`/api/evaluator/evaluations?evaluatorId=${evaluatorId}`),
-        fetch('/api/evaluator/all-agent-stats')
+        fetch('/api/evaluator/all-agent-stats'),
       ]);
-
-      if (agentsRes.ok) {
-        const d = await agentsRes.json();
-        setAgents(d.agents ?? []);
-      }
-      if (evalsRes.ok) {
-        const d = await evalsRes.json();
-        setMyEvals(d.evaluations ?? []);
-      }
-      if (statsRes.ok) {
-        const d = await statsRes.json();
-        setAllAgentStats(d.stats ?? []);
-      }
+      if (agentsRes.ok)  { const d = await agentsRes.json();  setAgents(d.agents ?? []); }
+      if (evalsRes.ok)   { const d = await evalsRes.json();   setMyEvals(d.evaluations ?? []); }
+      if (statsRes.ok)   { const d = await statsRes.json();   setAllAgentStats(d.stats ?? []); }
     } catch { /* silent */ } finally {
       if (!isSilent) setTimeout(() => setIsLive(false), 2000);
     }
@@ -763,10 +902,13 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
   useEffect(() => {
     loadData();
     pollTimer.current = setInterval(() => loadData(true), 5000);
-    return () => {
-      if (pollTimer.current) clearInterval(pollTimer.current);
-    };
+    return () => { if (pollTimer.current) clearInterval(pollTimer.current); };
   }, [loadData]);
+
+  // Force password change on first login
+  useEffect(() => {
+    if (!passwordChanged) setIsPwModalOpen(true);
+  }, [passwordChanged]);
 
   const fetchAgentHistory = useCallback(async (agentId: string) => {
     setLoadingHistory(true);
@@ -780,10 +922,18 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
     catch { setAgentStats(null); } finally { setLoadingStats(false); }
   }, []);
 
-  useEffect(() => { if (selectedAgent && tab === 'history') fetchAgentHistory(selectedAgent.id); }, [selectedAgent, tab, fetchAgentHistory]);
+  useEffect(() => {
+    if (selectedAgent && tab === 'history') fetchAgentHistory(selectedAgent.id);
+  }, [selectedAgent, tab, fetchAgentHistory]);
 
   const handleSelectAgent = (agent: Agent) => {
-    setSelectedAgent(agent); setTab('new'); setCriteria(emptyCriteria()); setSaveSuccess(false); setEditingEval(null); fetchAgentStats(agent.id);
+    setSelectedAgent(agent);
+    setTab('new');
+    setCriteria(emptyCriteria());
+    setSaveSuccess(false);
+    setEditingEval(null);
+    fetchAgentStats(agent.id);
+    fetchAgentHistory(agent.id);
   };
 
   const handleSave = async () => {
@@ -791,167 +941,431 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
     setSaving(true);
     const totalScore = calcScore(criteria);
     try {
-      const body = { agentId: selectedAgent.id, agentName: selectedAgent.name, evaluatorId, evaluatorName, criteria, totalScore, comments: criteria.generalRemark || criteria.qaThoughts, sessionNotes: '', sessionType: 'roleplay' };
-      if (editingEval) { await fetch(`/api/evaluator/evaluations/${editingEval.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); }
-      else { const data = await fetch('/api/evaluator/evaluations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json()); if (data.evaluation) setMyEvals(prev => [data.evaluation, ...prev]); }
+      // Create a summary comment for the list view
+      let summary = criteria.generalRemark || criteria.qaThoughts;
+      if (criteria.finalResult === 'failed') {
+        summary = `[FAILED] ${criteria.failReason ? criteria.failReason + ' — ' : ''}${summary}`;
+      } else {
+        summary = `[PASSED] ${summary}`;
+      }
+
+      const body = { 
+        agentId: selectedAgent.id, 
+        agentName: selectedAgent.name, 
+        evaluatorId, 
+        evaluatorName, 
+        criteria, 
+        totalScore, 
+        comments: summary, 
+        sessionNotes: '', 
+        sessionType: 'roleplay' 
+      };
+
+      if (editingEval) {
+        const res = await fetch(`/api/evaluator/evaluations/${editingEval.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        if (!res.ok) throw new Error('PATCH failed');
+      } else {
+        const res  = await fetch('/api/evaluator/evaluations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        if (!res.ok) throw new Error('POST failed');
+        const data = await res.json();
+        if (data.evaluation) setMyEvals(prev => [data.evaluation, ...prev]);
+      }
       setSaveSuccess(true);
       setTimeout(() => { setCriteria(emptyCriteria()); setSaveSuccess(false); setEditingEval(null); fetchAgentHistory(selectedAgent.id); }, 1400);
-    } catch { /* silent */ } finally { setSaving(false); }
+    } catch {
+      setSaveError(true);
+      setTimeout(() => setSaveError(false), 3000);
+    } finally { setSaving(false); }
   };
 
-  const filteredAgents = agents.filter(a => a.name.toLowerCase().includes(agentSearch.toLowerCase()));
-  const evaluatedIds   = new Set(myEvals.map(e => e.agentId));
+  // Sidebar agent list — filtered + sorted by priority
+  const filteredAgents = agents
+    .map(a => {
+      const stats = allAgentStats.find(s => s.agent.id === a.id);
+      const status = stats ? getCompletionStatus(stats).status : 'not-started' as CompletionStatus;
+      return { agent: a, status };
+    })
+    .filter(({ agent, status }) => {
+      const nameMatch = agent.name.toLowerCase().includes(agentSearch.toLowerCase());
+      if (!nameMatch) return false;
+      if (statusFilter) return status === statusFilter;
+      return true;
+    })
+    .sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status]);
+
+  const evaluatedIds = new Set(myEvals.map(e => e.agentId));
 
   return (
-    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-screen bg-background relative selection:bg-primary/20" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <ChangePasswordModal isOpen={isPwModalOpen} onClose={() => setIsPwModalOpen(false)} />
+      <AnimatePresence>
+        {detailStats && (
+          <AgentDetailModal stats={detailStats} onClose={() => setDetailStats(null)} />
+        )}
+      </AnimatePresence>
 
       {/* Ambient background glows */}
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 blur-[120px] rounded-full" />
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[100px]" />
+        <div className="absolute top-[40%] right-[-10%] w-[30%] h-[40%] bg-purple-500/10 rounded-full blur-[100px]" />
+        <div className="absolute -bottom-[10%] left-[20%] w-[30%] h-[30%] bg-amber-500/10 rounded-full blur-[80px]" />
       </div>
 
-      {/* Header */}
-      <header className="px-5 py-4 flex items-center gap-4 shrink-0 bg-card/60 backdrop-blur-xl border-b border-border shadow-sm z-20 sticky top-0">
-        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/20"><ClipboardCheck size={20} className="text-white" /></div>
-        <div className="flex flex-col">
-          <span className="font-black text-xl leading-none">{t('panelTitle')}</span>
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">{t('roleLabel')}</span>
-        </div>
-        <div className="ml-auto flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
-            <div className={`w-1.5 h-1.5 rounded-full bg-blue-500 ${isLive ? 'animate-pulse' : ''}`} />
-            <button 
-              onClick={() => { setSelectedAgent(null); setTab('profile'); }}
-              className={`text-xs font-black hover:text-blue-500 transition-colors ${tab === 'profile' ? 'text-blue-500' : 'text-blue-600 dark:text-blue-400'}`}
-            >
-              {evaluatorName}
-            </button>
-            {isLive && <Loader2 size={10} className="animate-spin text-blue-500/50" />}
-          </div>
-          <button 
-            onClick={() => { setSelectedAgent(null); setTab('profile'); }}
-            className={`p-2 rounded-xl transition-all ${tab === 'profile' ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:bg-secondary'}`}
-          >
-            <Zap size={18} />
-          </button>
-          <LangToggle /><ThemeToggle />
-          <button onClick={() => { fetch('/api/auth/session', { method: 'DELETE' }); window.location.replace('/login'); }} className="p-2 rounded-xl text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"><LogOut size={18} /></button>
-        </div>
-      </header>
+      <div className="relative z-10 flex min-h-screen">
 
-      {/* Body */}
-      <div className="flex flex-1 overflow-hidden relative z-10">
-        {/* Sidebar */}
-        <aside className="w-64 xl:w-72 shrink-0 flex flex-col bg-card/40 backdrop-blur-md border-r border-border">
-          <div className="p-4 space-y-4">
-            <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
-              <input type="text" value={agentSearch} onChange={e => setAgentSearch(e.target.value)} placeholder={t('searchPlaceholder')} className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm bg-secondary/40 border border-border focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+        {/* ── Sidebar ──────────────────────────────────────────────────── */}
+        <aside className={`flex flex-col shrink-0 bg-background/70 backdrop-blur-2xl border-r border-border/40 sticky top-0 h-screen transition-all duration-300 ${sidebarCollapsed ? 'w-[60px]' : 'w-[220px]'}`}>
+
+          {/* Logo */}
+          <div className={`flex items-center h-16 border-b border-border/40 px-4 ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
+            <div className="relative w-8 h-8 rounded-xl overflow-hidden shrink-0">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-violet-500 to-orange-400" />
+              <span className="relative z-10 flex items-center justify-center w-full h-full text-[10px] font-black text-white tracking-tight">BT</span>
             </div>
-            <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{t('agentCount', { count: filteredAgents.length })}</div>
+            {!sidebarCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-black text-foreground tracking-tight truncate">BrainTrade</p>
+                <p className="text-[10px] text-muted-foreground truncate">{t('evaluatorPanel')}</p>
+              </div>
+            )}
           </div>
-          <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-1">
-            <button 
-              onClick={() => { setSelectedAgent(null); setTab('new'); }}
-              className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${!selectedAgent && tab !== 'profile' ? 'bg-primary/10 border-primary/20 text-primary' : 'hover:bg-secondary/40 text-muted-foreground hover:text-foreground'}`}
+
+          {/* User badge — profile popover */}
+          <div className="px-3 pt-4 pb-2 relative">
+            <button
+              onClick={() => setProfileOpen(v => !v)}
+              title={sidebarCollapsed ? evaluatorName : undefined}
+              className={`w-full flex items-center gap-2.5 rounded-xl border transition-all hover:opacity-80 active:scale-[0.98]
+                bg-blue-500/15 text-blue-400 border-blue-500/20
+                ${sidebarCollapsed ? 'justify-center p-2' : 'px-3 py-2.5'}
+              `}
             >
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black ${!selectedAgent && tab !== 'profile' ? 'bg-primary/20' : 'bg-secondary'}`}><Activity size={14} /></div>
-              <span className="text-sm font-bold truncate flex-1">{t('overview')}</span>
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black uppercase shrink-0 bg-blue-500/15 text-blue-400 border border-blue-500/20">
+                {evaluatorName.charAt(0)}
+              </div>
+              {!sidebarCollapsed && (
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-xs font-bold text-foreground truncate">{evaluatorName}</p>
+                  <p className="text-[10px] font-black uppercase tracking-wider text-blue-400">{t('evaluatorRole')}</p>
+                </div>
+              )}
             </button>
-            <div className="my-2 border-t border-border/50" />
-            {filteredAgents.map(agent => (
-              <button key={agent.id} onClick={() => handleSelectAgent(agent)} className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${selectedAgent?.id === agent.id ? 'bg-primary/10 border-primary/20 text-primary' : 'hover:bg-secondary/40 text-muted-foreground hover:text-foreground'}`}>
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black ${selectedAgent?.id === agent.id ? 'bg-primary/20' : 'bg-secondary'}`}>{agent.name.slice(0, 2).toUpperCase()}</div>
-                <span className="text-sm font-bold truncate flex-1">{agent.name}</span>
-                {evaluatedIds.has(agent.id) && <CheckCircle2 size={12} className="text-primary/60" />}
-              </button>
-            ))}
+
+            {/* Profile popover */}
+            <AnimatePresence>
+              {profileOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 4, scale: 0.97 }}
+                    transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                    className={`absolute z-50 top-full mt-2 bg-card/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl shadow-black/20 overflow-hidden
+                      ${sidebarCollapsed ? 'left-full ml-2 top-0 mt-0 w-[220px]' : 'left-3 right-3'}
+                    `}
+                  >
+                    <div className="px-4 py-3 border-b border-border/50 flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black uppercase border shrink-0 bg-blue-500/15 text-blue-400 border-blue-500/20">
+                        {evaluatorName.charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-foreground truncate">{evaluatorName}</p>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-blue-400">{t('evaluatorRole')}</p>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <button
+                        onClick={() => { setIsPwModalOpen(true); setProfileOpen(false); }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all"
+                      >
+                        <Zap size={14} className="shrink-0" /> Change Password
+                      </button>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Nav — Overview */}
+          <nav className="flex flex-col gap-0.5 px-2 py-2">
+            {!sidebarCollapsed && (
+              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 px-3 mb-1">{t('workspace')}</p>
+            )}
+            <button
+              onClick={() => setSelectedAgent(null)}
+              title={sidebarCollapsed ? t('overview') : undefined}
+              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all
+                ${!selectedAgent ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'}
+                ${sidebarCollapsed ? 'justify-center px-2' : ''}
+              `}
+            >
+              {!selectedAgent && (
+                <motion.div layoutId="sidebar-indicator"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-full"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                />
+              )}
+              <Activity size={16} className="shrink-0" />
+              {!sidebarCollapsed && <span className="flex-1 text-left">{t('overview')}</span>}
+              {!sidebarCollapsed && isLive && <Loader2 size={10} className="animate-spin text-blue-500/50" />}
+            </button>
+          </nav>
+
+          {/* Agents section */}
+          <div className="flex-1 flex flex-col min-h-0">
+            {!sidebarCollapsed && (
+              <div className="px-3 pb-2 space-y-2">
+                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 px-0 pt-2">{t('agents')}</p>
+                {/* Search */}
+                <div className="relative">
+                  <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
+                  <input
+                    type="text"
+                    value={agentSearch}
+                    onChange={e => setAgentSearch(e.target.value)}
+                    placeholder={t('searchPlaceholder')}
+                    className="w-full pl-7 pr-3 py-1.5 rounded-lg text-xs bg-secondary/40 border border-border focus:ring-1 focus:ring-primary/20 outline-none"
+                  />
+                </div>
+                {/* Status filter */}
+                <select
+                  value={statusFilter}
+                  onChange={e => setStatusFilter(e.target.value as CompletionStatus | '')}
+                  className="w-full px-2.5 py-1.5 rounded-lg text-xs bg-secondary/40 border border-border outline-none appearance-none cursor-pointer text-foreground"
+                >
+                  <option value="">{t('allStatus')}</option>
+                  <option value="needs-eval">{t('statusNeedsEval')}</option>
+                  <option value="in-progress">{t('statusInProgress')}</option>
+                  <option value="cleared">{t('statusCleared')}</option>
+                  <option value="not-started">{t('statusNotStarted')}</option>
+                </select>
+                <p className="text-[10px] text-muted-foreground/50">{t('agentCount', { count: filteredAgents.length })}</p>
+              </div>
+            )}
+
+            <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-0.5">
+              {filteredAgents.map(({ agent, status }) => {
+                const cfg    = STATUS_CFG[status];
+                const active = selectedAgent?.id === agent.id;
+                return (
+                  <button
+                    key={agent.id}
+                    onClick={() => handleSelectAgent(agent)}
+                    title={sidebarCollapsed ? agent.name : undefined}
+                    className={`relative w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all
+                      ${active ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'}
+                      ${sidebarCollapsed ? 'justify-center px-2' : ''}
+                    `}
+                  >
+                    {active && (
+                      <motion.div layoutId="sidebar-indicator"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-full"
+                        transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                      />
+                    )}
+                    {/* Status dot */}
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />
+                    {!sidebarCollapsed && (
+                      <>
+                        <span className="flex-1 text-left truncate">{agent.name}</span>
+                        {evaluatedIds.has(agent.id) && <CheckCircle2 size={11} className="text-primary/60 shrink-0" />}
+                      </>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Bottom: logout + collapse */}
+          <div className="border-t border-border/40 p-2 flex flex-col gap-1">
+            <button
+              onClick={() => { fetch('/api/auth/session', { method: 'DELETE' }); window.location.replace('/login'); }}
+              title={t('signOut')}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all ${sidebarCollapsed ? 'justify-center' : ''}`}
+            >
+              <LogOut size={15} className="shrink-0" />
+              {!sidebarCollapsed && <span>{t('signOut')}</span>}
+            </button>
+            <button
+              onClick={() => setSidebarCollapsed(v => !v)}
+              className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-muted-foreground/60 hover:text-muted-foreground hover:bg-secondary/40 transition-all ${sidebarCollapsed ? 'justify-center' : ''}`}
+            >
+              <ChevronRight size={13} className={`shrink-0 transition-transform duration-300 ${sidebarCollapsed ? '' : 'rotate-180'}`} />
+              {!sidebarCollapsed && <span>{t('collapse')}</span>}
+            </button>
           </div>
         </aside>
 
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto bg-secondary/10">
-          {tab === 'profile' ? (
-            <div className="p-6 h-full flex items-center justify-center">
-              <motion.div variants={FADE_IN} initial="initial" animate="animate" className="max-w-md w-full">
-                <div className="bg-card/50 backdrop-blur-xl border border-border rounded-3xl p-8 shadow-xl">
-                  <div className="flex items-center gap-4 mb-8">
-                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                      <Users size={24} />
+        {/* ── Main area ──────────────────────────────────────────────── */}
+        <div className="flex flex-col flex-1 min-w-0">
+
+          {/* Top bar */}
+          <header className="sticky top-0 z-40 flex items-center justify-between h-16 px-6 bg-background/60 backdrop-blur-2xl border-b border-border/40">
+            <div className="flex items-center gap-2 min-w-0">
+              {selectedAgent ? (
+                <>
+                  <button onClick={() => setSelectedAgent(null)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground shrink-0">
+                    <ArrowLeft size={16} />
+                  </button>
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-xs shrink-0">
+                    {selectedAgent.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <h1 className="text-sm font-black text-foreground tracking-tight leading-tight truncate">{selectedAgent.name}</h1>
+                    <p className="text-[10px] text-muted-foreground leading-tight">{t('salesEvalSubtitle')}</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Activity size={18} className="text-primary shrink-0" />
+                  <div>
+                    <h1 className="text-sm font-black text-foreground tracking-tight leading-tight">{t('overview')}</h1>
+                    <p className="text-[10px] text-muted-foreground leading-tight">
+                      {new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {selectedAgent && (
+                <div className="flex gap-1 p-1 bg-muted/30 border border-border/40 rounded-xl">
+                  {(['new', 'history'] as const).map(tabId => (
+                    <button
+                      key={tabId}
+                      onClick={() => setTab(tabId)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${tab === tabId ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                      {tabId === 'new' ? t('tabNew') : (agentEvals.length > 0 ? t('tabHistory', { count: agentEvals.length }) : t('tabHistoryEmpty'))}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="flex items-center gap-0.5 p-1 bg-muted/50 border border-border/50 rounded-full">
+                <LangToggle />
+                <ThemeToggle />
+              </div>
+            </div>
+          </header>
+
+          {/* Page content */}
+          <main className="flex-1 overflow-auto bg-secondary/5">
+            <AnimatePresence mode="wait">
+              {!selectedAgent ? (
+                <motion.div key="overview" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="p-6">
+                  <OverviewPanel myEvals={myEvals} agents={agents} allAgentStats={allAgentStats} onEvaluate={handleSelectAgent} />
+                </motion.div>
+              ) : tab === 'new' ? (
+                <motion.div key="eval-new" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="p-6">
+                  <div className="max-w-5xl mx-auto flex flex-col lg:flex-row gap-8">
+                    {/* Left: performance panel */}
+                    <div className="w-full lg:w-72 shrink-0">
+                      <AgentPerformancePanel
+                        stats={agentStats}
+                        loading={loadingStats}
+                        onViewFullHistory={() => agentStats && setDetailStats(agentStats)}
+                      />
                     </div>
-                    <div>
-                      <h2 className="text-xl font-black text-foreground">User Profile</h2>
-                      <p className="text-xs text-muted-foreground">Manage your account settings</p>
+                    {/* Right: eval form */}
+                    <div className="flex-1 space-y-5">
+                      <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-primary/5 border border-primary/10">
+                        <Activity size={18} className="text-primary" />
+                        <span className="text-sm font-bold text-primary">{t('salesSimBadge')}</span>
+                      </div>
+                      {editingEval && (
+                        <div className="flex items-center justify-between px-5 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-sm font-bold">
+                          <span>{t('editBanner')}</span>
+                          <button onClick={() => { setCriteria(emptyCriteria()); setEditingEval(null); }}>
+                            <X size={16} />
+                          </button>
+                        </div>
+                      )}
+                      <EvalForm criteria={criteria} onChange={setCriteria} />
                     </div>
                   </div>
-                  
-                  <div className="space-y-6">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Display Name</label>
-                      <div className="px-4 py-3 rounded-xl bg-secondary/30 border border-border text-sm font-bold text-foreground">
-                        {evaluatorName}
+                </motion.div>
+              ) : (
+                <motion.div key="eval-history" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="p-6">
+                  <div className="max-w-2xl mx-auto space-y-4">
+                    {loadingHistory ? (
+                      <div className="py-12 text-center"><Loader2 className="animate-spin mx-auto text-primary/40" size={32} /></div>
+                    ) : agentEvals.length === 0 ? (
+                      <div className="py-12 text-center opacity-40">
+                        <ClipboardCheck className="mx-auto mb-4" size={48} />
+                        <p className="text-sm">{t('noHistory')}</p>
                       </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">System Role</label>
-                      <div className="px-4 py-3 rounded-xl bg-secondary/30 border border-border text-sm font-bold text-foreground capitalize">
-                        Evaluator
-                      </div>
-                    </div>
-
-                    <div className="pt-4">
-                      <button 
-                        onClick={() => setIsPwModalOpen(true)}
-                        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-[0.98]"
-                      >
-                        <Zap size={18} />
-                        {t('changePw')}
-                      </button>
-                    </div>
+                    ) : agentEvals.map(ev => (
+                      <EvalHistoryCard
+                        key={ev.id}
+                        ev={ev}
+                        onEdit={ev => { setEditingEval(ev); setCriteria({ ...emptyCriteria(), ...(ev.criteria as SalesCallCriteria) }); setTab('new'); }}
+                      />
+                    ))}
                   </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </main>
+
+          {/* Sticky Save Bar */}
+          <AnimatePresence>
+            {selectedAgent && tab === 'new' && (
+              <motion.div
+                initial={{ y: 60, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 60, opacity: 0 }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="border-t border-border/40 bg-background/80 backdrop-blur-xl px-6 py-3.5 flex items-center justify-center z-30"
+              >
+                <div className="w-full max-w-5xl flex items-center gap-4">
+                  <ScoreRing score={calcScore(criteria)} size="sm" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-bold text-foreground flex items-center gap-2">
+                      {saveSuccess ? t('saved') : editingEval ? t('editingEvaluation') : t('salesSimStatus')}
+                      {!saveSuccess && (
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-black ${criteria.finalResult === 'failed' ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'}`}>
+                          {criteria.finalResult === 'failed' ? t('failedCaps') : t('passedCaps')}
+                        </span>
+                      )}
+                    </div>
+                    {(() => {
+                      if (criteria.finalResult === 'failed' && criteria.failReason) {
+                        return <div className="text-xs text-red-500 font-bold truncate max-w-md">{criteria.failReason}</div>;
+                      }
+                      const fc = Object.values(criteria.redFlags).filter(Boolean).length;
+                      if (fc === 4) return <div className="text-xs text-red-400 font-black">{t('failAllFlags')}</div>;
+                      if (fc > 0)  return <div className="text-xs text-red-400 font-semibold">{t('redFlagDeduction', { points: fc * 25, count: fc })}</div>;
+                      return <div className="text-xs text-muted-foreground/40">{t('noRedFlags')}</div>;
+                    })()}
+                  </div>
+                  <button
+                    onClick={handleSave}
+                    disabled={saving || saveSuccess}
+                    className={`shrink-0 px-6 py-2.5 rounded-xl font-black text-sm transition-all shadow-lg ${
+                      saveSuccess
+                        ? 'bg-emerald-500 text-white shadow-emerald-500/20'
+                        : saveError
+                          ? 'bg-red-500 text-white shadow-red-500/20'
+                          : 'bg-primary text-white shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]'
+                    }`}
+                  >
+                    {saving
+                      ? <Loader2 className="animate-spin" size={16} />
+                      : saveSuccess
+                        ? <span className="flex items-center gap-1.5"><Check size={14} /> {t('saved')}</span>
+                        : saveError
+                          ? <span className="flex items-center gap-1.5"><AlertTriangle size={14} /> {t('saveFailed')}</span>
+                          : (editingEval ? t('saveBtnEdit') : t('saveBtnNew', { score: calcScore(criteria) }))}
+                  </button>
                 </div>
               </motion.div>
-            </div>
-          ) : !selectedAgent ? (
-            <OverviewPanel myEvals={myEvals} agents={agents} allAgentStats={allAgentStats} onEvaluate={handleSelectAgent} />
-          ) : (
-            <div className="h-full flex flex-col">
-              <div className="px-6 py-4 flex items-center gap-4 bg-card/60 backdrop-blur-md border-b border-border sticky top-0 z-10">
-                <button onClick={() => setSelectedAgent(null)} className="p-2 -ml-2 rounded-xl hover:bg-secondary transition-colors"><ArrowLeft size={20} /></button>
-                <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black">{selectedAgent.name.slice(0, 2).toUpperCase()}</div>
-                <div className="flex-1 min-w-0"><h2 className="text-lg font-black truncate">{selectedAgent.name}</h2><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{t('salesEvalSubtitle')}</p></div>
-                <div className="flex gap-1 p-1 rounded-xl bg-secondary/40 border border-border">
-                  {(['new', 'history'] as const).map(tabId => <button key={tabId} onClick={() => setTab(tabId)} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${tab === tabId ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>{tabId === 'new' ? t('tabNew') : (agentEvals.length > 0 ? t('tabHistory', { count: agentEvals.length }) : t('tabHistoryEmpty'))}</button>)}
-                </div>
-              </div>
-
-              <div className="flex-1 p-6">
-                <div className="max-w-5xl mx-auto">
-                  <AnimatePresence mode="wait">
-                    {tab === 'new' ? (
-                      <motion.div key="new" variants={FADE_IN} initial="initial" animate="animate" exit="exit" className="flex flex-col lg:flex-row gap-8">
-                        <div className="w-full lg:w-80 shrink-0"><AgentPerformancePanel stats={agentStats} loading={loadingStats} /></div>
-                        <div className="flex-1 space-y-6">
-                          <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-primary/5 border border-primary/10"><Activity size={18} className="text-primary" /><span className="text-sm font-bold text-primary">{t('salesSimBadge')}</span></div>
-                          {editingEval && <div className="flex items-center justify-between px-5 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-bold"><span>{t('editBanner')}</span><button onClick={() => { setCriteria(emptyCriteria()); setEditingEval(null); }}><X size={16} /></button></div>}
-                          <EvalForm criteria={criteria} onChange={setCriteria} />
-                          <button onClick={handleSave} disabled={saving || saveSuccess} className={`w-full py-4 rounded-2xl font-black text-sm transition-all shadow-xl ${saveSuccess ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-primary text-white shadow-primary/20 hover:scale-[1.01] active:scale-[0.99]'}`}>{saving ? <Loader2 className="animate-spin mx-auto" size={20} /> : saveSuccess ? <Check className="mx-auto" size={20} /> : (editingEval ? t('saveBtnEdit') : t('saveBtnNew', { score: calcScore(criteria) }))}</button>
-                        </div>
-                      </motion.div>
-                    ) : (
-                      <motion.div key="history" variants={FADE_IN} initial="initial" animate="animate" exit="exit" className="max-w-2xl mx-auto space-y-4">
-                        {loadingHistory ? <div className="py-12 text-center"><Loader2 className="animate-spin mx-auto text-primary/40" size={32} /></div> : agentEvals.length === 0 ? <div className="py-12 text-center opacity-40"><ClipboardCheck className="mx-auto mb-4" size={48} /><p>{t('noHistory')}</p></div> : agentEvals.map(ev => <EvalHistoryCard key={ev.id} ev={ev} onEdit={ev => { setEditingEval(ev); setCriteria(ev.criteria as SalesCallCriteria); setTab('new'); }} />)}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-            </div>
-          )}
-        </main>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

@@ -13,6 +13,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (body.agentIds) update.agentIds = body.agentIds;
   if (body.agentNames) update.agentNames = body.agentNames;
   if (typeof body.startDate === 'string') update.startDate = body.startDate;
+  if (body.dayTopics) update.dayTopics = body.dayTopics;
   await fsUpdate('training_periods', id, update);
   return NextResponse.json({ ok: true });
 }

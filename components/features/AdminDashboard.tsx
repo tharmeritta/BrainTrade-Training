@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import {
   LayoutDashboard, Users, FileSpreadsheet, LogOut,
-  ShieldCheck, ClipboardCheck, GraduationCap, Zap, Edit3
+  ShieldCheck, ClipboardCheck, GraduationCap, Zap, Edit3, ChevronRight,
 } from 'lucide-react';
 
 import TrainerPanel from '@/components/features/TrainerPanel';
@@ -20,7 +20,7 @@ import EvaluationsTab from './admin/EvaluationsTab';
 import AdjustmentsTab from './admin/AdjustmentsTab';
 import ChangePasswordModal from './admin/ChangePasswordModal';
 
-type Tab = 'overview' | 'agents' | 'reports' | 'staff' | 'evaluations' | 'training' | 'adjustments' | 'profile';
+type Tab = 'overview' | 'agents' | 'reports' | 'staff' | 'evaluations' | 'training' | 'adjustments';
 
 function logout() {
   fetch('/api/auth/session', { method: 'DELETE' });
@@ -31,16 +31,17 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
   const t = useTranslations('admin');
   const [tab, setTab] = useState<Tab>(role === 'trainer' ? 'training' : 'overview');
   const [isPwModalOpen, setIsPwModalOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
-  const TABS: { id: Tab; labelKey: string; icon: React.ElementType; adminOnly?: boolean; hideForTrainer?: boolean }[] = [
-    { id: 'overview',    labelKey: 'overview',       icon: LayoutDashboard,  hideForTrainer: false },
-    { id: 'agents',      labelKey: 'agents',         icon: Users },
-    { id: 'training',    labelKey: 'training',       icon: GraduationCap },
-    { id: 'evaluations', labelKey: 'evaluations',    icon: ClipboardCheck,   hideForTrainer: true },
-    { id: 'reports',     labelKey: 'reports',        icon: FileSpreadsheet,  hideForTrainer: true },
-    { id: 'staff',       labelKey: 'staff',          icon: ShieldCheck,      adminOnly: true },
-    { id: 'adjustments', labelKey: 'adjustments',    icon: Edit3,            adminOnly: true },
-    { id: 'profile',     labelKey: 'profile',        icon: Zap },
+  const TABS: { id: Tab; labelKey: string; icon: React.ElementType; adminOnly?: boolean; hideForTrainer?: boolean; group?: string }[] = [
+    { id: 'overview',    labelKey: 'overview',       icon: LayoutDashboard,  group: 'main' },
+    { id: 'agents',      labelKey: 'agents',         icon: Users,            group: 'main' },
+    { id: 'training',    labelKey: 'training',       icon: GraduationCap,    group: 'main' },
+    { id: 'evaluations', labelKey: 'evaluations',    icon: ClipboardCheck,   hideForTrainer: true, group: 'main' },
+    { id: 'reports',     labelKey: 'reports',        icon: FileSpreadsheet,  hideForTrainer: true, group: 'main' },
+    { id: 'staff',       labelKey: 'staff',          icon: ShieldCheck,      adminOnly: true, group: 'admin' },
+    { id: 'adjustments', labelKey: 'adjustments',    icon: Edit3,            adminOnly: true, group: 'admin' },
   ];
 
   const visibleTabs = TABS.filter(t => {
@@ -49,9 +50,64 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
     return true;
   });
 
+  const mainTabs  = visibleTabs.filter(t => t.group === 'main');
+  const adminTabs = visibleTabs.filter(t => t.group === 'admin');
+
+  const activeTab = visibleTabs.find(t => t.id === tab);
+
+  const roleBadgeClass =
+    role === 'admin'   ? 'bg-purple-500/15 text-purple-400 border-purple-500/20' :
+    role === 'trainer' ? 'bg-amber-500/15 text-amber-400 border-amber-500/20' :
+                         'bg-blue-500/15 text-blue-400 border-blue-500/20';
+
+  function NavGroup({ label, items }: { label?: string; items: typeof visibleTabs }) {
+    if (items.length === 0) return null;
+    return (
+      <div className="mb-2">
+        {label && !sidebarCollapsed && (
+          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 px-3 mb-1.5 mt-3">
+            {label}
+          </p>
+        )}
+        {label && sidebarCollapsed && <div className="my-2 border-t border-border/30" />}
+        <div className="flex flex-col gap-0.5">
+          {items.map(item => {
+            const Icon = item.icon;
+            const active = tab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setTab(item.id)}
+                title={sidebarCollapsed ? t(`tabs.${item.labelKey}`) : undefined}
+                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all group
+                  ${active
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+                  }
+                  ${sidebarCollapsed ? 'justify-center px-2' : ''}
+                `}
+              >
+                {active && (
+                  <motion.div
+                    layoutId="sidebar-indicator"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-full"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  />
+                )}
+                <Icon size={16} className={`shrink-0 ${active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
+                {!sidebarCollapsed && (
+                  <span className="flex-1 text-left">{t(`tabs.${item.labelKey}`)}</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background relative selection:bg-primary/20">
-      {/* Change Password Modal */}
       <ChangePasswordModal isOpen={isPwModalOpen} onClose={() => setIsPwModalOpen(false)} />
 
       {/* Ambient background */}
@@ -61,128 +117,167 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
         <div className="absolute -bottom-[10%] left-[20%] w-[30%] h-[30%] bg-amber-500/10 rounded-full blur-[100px]" />
       </div>
 
-      <div className="relative z-10 flex flex-col min-h-screen">
-        {/* Top header */}
-        <div className="bg-background/60 backdrop-blur-2xl border-b border-white/5 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
-          <div>
-            <h1 className="text-xl font-black text-foreground tracking-tight">{t('title')}</h1>
-            <p className="text-xs text-muted-foreground">
-              {t('controlPanel', { role: t(`roles.${role}`) })} · {new Date().toLocaleDateString(t('tabs.overview') === 'ภาพรวม' ? 'th-TH' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <LangToggle />
-            <ThemeToggle />
+      <div className="relative z-10 flex min-h-screen">
 
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-secondary/50 border border-border/50">
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                role === 'admin' ? 'bg-purple-500/15 text-purple-400' :
-                role === 'trainer' ? 'bg-amber-500/15 text-amber-400' :
-                'bg-blue-500/15 text-blue-400'
-              }`}>
-                {t(`roles.${role}`)}
+        {/* ── Sidebar ──────────────────────────────────────── */}
+        <aside className={`flex flex-col shrink-0 bg-background/70 backdrop-blur-2xl border-r border-border/40 sticky top-0 h-screen transition-all duration-300 ${sidebarCollapsed ? 'w-[60px]' : 'w-[220px]'}`}>
+
+          {/* Logo */}
+          <div className={`flex items-center h-16 border-b border-border/40 px-4 ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
+            <div className="relative w-8 h-8 rounded-xl overflow-hidden shrink-0">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-violet-500 to-orange-400" />
+              <span className="relative z-10 flex items-center justify-center w-full h-full text-[10px] font-black text-white tracking-tight">
+                BT
               </span>
-              <span className="text-xs font-bold text-foreground pr-1">{name}</span>
-              <button 
-                onClick={() => setTab('profile')}
-                className={`p-1.5 rounded-lg transition-colors ${tab === 'profile' ? 'bg-primary/20 text-primary' : 'hover:bg-primary/10 text-muted-foreground hover:text-primary'}`}
-                title={t('changePw')}
-              >
-                <Zap size={14} />
-              </button>
             </div>
-
-            <button onClick={logout}
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-destructive transition-colors border border-border px-3 py-2 rounded-xl hover:border-destructive/30"
-            >
-              <LogOut size={16} /> {t('signOut')}
-            </button>
+            {!sidebarCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-black text-foreground tracking-tight truncate">{t('title')}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{t('controlPanel', { role: '' }).trim()}</p>
+              </div>
+            )}
           </div>
-        </div>
 
-        {/* Tab bar */}
-        <div className="px-6 mt-6 w-full max-w-7xl mx-auto">
-          <div className="inline-flex max-w-full overflow-x-auto gap-1 p-1.5 bg-secondary/50 backdrop-blur-md rounded-2xl border border-border/50 shadow-sm scrollbar-hide">
-            {visibleTabs.map(t_item => {
-              const Icon = t_item.icon;
-              const active = tab === t_item.id;
-              return (
-                <button
-                  key={t_item.id}
-                  onClick={() => setTab(t_item.id)}
-                  className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all whitespace-nowrap ${
-                    active
-                      ? 'bg-background shadow-sm text-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
-                  }`}
-                >
-                  <Icon size={16} className={active ? "text-primary" : ""} /> {t(`tabs.${t_item.labelKey}`)}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={tab}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
+          {/* User badge — clickable to open profile popover */}
+          <div className={`px-3 pt-4 pb-2 relative`}>
+            <button
+              onClick={() => setProfileOpen(v => !v)}
+              className={`w-full flex items-center gap-2.5 rounded-xl border transition-all hover:opacity-80 active:scale-[0.98]
+                ${roleBadgeClass}
+                ${sidebarCollapsed ? 'justify-center p-2' : 'px-3 py-2.5'}
+              `}
+              title={sidebarCollapsed ? name : undefined}
             >
-              {tab === 'overview'    && <OverviewTab />}
-              {tab === 'agents'      && <AgentsTab role={role} />}
-              {tab === 'training'    && <TrainerPanel role={role} />}
-              {tab === 'evaluations' && <EvaluationsTab />}
-              {tab === 'reports'     && <ReportsTab />}
-              {tab === 'staff'       && role === 'admin' && <StaffTab />}
-              {tab === 'adjustments' && role === 'admin' && <AdjustmentsTab />}
-              {tab === 'profile'     && (
-                <div className="max-w-md mx-auto">
-                  <div className="bg-card/50 backdrop-blur-xl border border-border rounded-3xl p-8 shadow-xl">
-                    <div className="flex items-center gap-4 mb-8">
-                      <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                        <Users size={24} />
-                      </div>
-                      <div>
-                        <h2 className="text-xl font-black text-foreground">User Profile</h2>
-                        <p className="text-xs text-muted-foreground">Manage your account settings</p>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-6">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Display Name</label>
-                        <div className="px-4 py-3 rounded-xl bg-secondary/30 border border-border text-sm font-bold text-foreground">
-                          {name}
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">System Role</label>
-                        <div className="px-4 py-3 rounded-xl bg-secondary/30 border border-border text-sm font-bold text-foreground capitalize">
-                          {role}
-                        </div>
-                      </div>
-
-                      <div className="pt-4">
-                        <button 
-                          onClick={() => setIsPwModalOpen(true)}
-                          className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-[0.98]"
-                        >
-                          <Zap size={18} />
-                          {t('changePw')}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+              <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black uppercase shrink-0 ${roleBadgeClass}`}>
+                {name.charAt(0)}
+              </div>
+              {!sidebarCollapsed && (
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-xs font-bold text-foreground truncate">{name}</p>
+                  <p className="text-[10px] font-black uppercase tracking-wider">{t(`roles.${role}`)}</p>
                 </div>
               )}
-            </motion.div>
-          </AnimatePresence>
+            </button>
+
+            {/* Profile popover */}
+            <AnimatePresence>
+              {profileOpen && (
+                <>
+                  {/* Backdrop */}
+                  <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 4, scale: 0.97 }}
+                    transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                    className={`absolute z-50 top-full mt-2 bg-card/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl shadow-black/20 overflow-hidden
+                      ${sidebarCollapsed ? 'left-full ml-2 top-0 mt-0 w-[220px]' : 'left-3 right-3'}
+                    `}
+                  >
+                    {/* Header */}
+                    <div className={`px-4 py-3 border-b border-border/50 flex items-center gap-3`}>
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black uppercase border shrink-0 ${roleBadgeClass}`}>
+                        {name.charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-foreground truncate">{name}</p>
+                        <p className={`text-[10px] font-black uppercase tracking-wider`}>{t(`roles.${role}`)}</p>
+                      </div>
+                    </div>
+                    {/* Actions */}
+                    <div className="p-2">
+                      <button
+                        onClick={() => { setIsPwModalOpen(true); setProfileOpen(false); }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all"
+                      >
+                        <Zap size={14} className="shrink-0" />
+                        {t('changePw')}
+                      </button>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Nav */}
+          <nav className="flex-1 overflow-y-auto px-2 py-2 scrollbar-hide">
+            <NavGroup items={mainTabs} />
+            {adminTabs.length > 0 && <NavGroup label="Admin" items={adminTabs} />}
+          </nav>
+
+          {/* Bottom: collapse + logout */}
+          <div className={`border-t border-border/40 p-2 flex flex-col gap-1`}>
+            <button
+              onClick={logout}
+              title={t('signOut')}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all ${sidebarCollapsed ? 'justify-center' : ''}`}
+            >
+              <LogOut size={15} className="shrink-0" />
+              {!sidebarCollapsed && <span>{t('signOut')}</span>}
+            </button>
+            <button
+              onClick={() => setSidebarCollapsed(v => !v)}
+              className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-muted-foreground/60 hover:text-muted-foreground hover:bg-secondary/40 transition-all ${sidebarCollapsed ? 'justify-center' : ''}`}
+            >
+              <ChevronRight size={13} className={`shrink-0 transition-transform duration-300 ${sidebarCollapsed ? '' : 'rotate-180'}`} />
+              {!sidebarCollapsed && <span>Collapse</span>}
+            </button>
+          </div>
+        </aside>
+
+        {/* ── Main area ─────────────────────────────────────── */}
+        <div className="flex flex-col flex-1 min-w-0">
+
+          {/* Top bar */}
+          <header className="sticky top-0 z-40 flex items-center justify-between h-16 px-6 bg-background/60 backdrop-blur-2xl border-b border-border/40">
+            <div className="flex items-center gap-2 min-w-0">
+              {activeTab && (
+                <>
+                  <activeTab.icon size={18} className="text-primary shrink-0" />
+                  <div>
+                    <h1 className="text-sm font-black text-foreground tracking-tight leading-tight">
+                      {t(`tabs.${activeTab.labelKey}`)}
+                    </h1>
+                    <p className="text-[10px] text-muted-foreground leading-tight">
+                      {new Date().toLocaleDateString(
+                        t('tabs.overview') === 'ภาพรวม' ? 'th-TH' : 'en-GB',
+                        { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }
+                      )}
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-0.5 p-1 bg-muted/50 border border-border/50 rounded-full">
+                <LangToggle />
+                <ThemeToggle />
+              </div>
+            </div>
+          </header>
+
+          {/* Page content */}
+          <main className="flex-1 px-6 py-8 overflow-auto">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={tab}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+              >
+                {tab === 'overview'    && <OverviewTab />}
+                {tab === 'agents'      && <AgentsTab role={role} />}
+                {tab === 'training'    && <TrainerPanel role={role} uid={uid} name={name} />}
+                {tab === 'evaluations' && <EvaluationsTab />}
+                {tab === 'reports'     && <ReportsTab />}
+                {tab === 'staff'       && role === 'admin' && <StaffTab />}
+                {tab === 'adjustments' && role === 'admin' && <AdjustmentsTab />}
+              </motion.div>
+            </AnimatePresence>
+          </main>
         </div>
       </div>
     </div>

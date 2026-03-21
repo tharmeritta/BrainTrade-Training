@@ -107,24 +107,26 @@ function getAdminApp(): App {
   }
 
   // 7. Safe Diagnostics (Logged once per initialization)
-  console.log('[Firebase Admin Diagnostics]', {
-    source,
-    projectId,
-    clientEmail,
-    keyLength: privateKey.length,
-    keyStart: privateKey.substring(0, 30) + '...',
-    keyEnd: privateKey.substring(privateKey.length - 30),
-    hasNewlines: privateKey.includes('\n'),
-    isPem: privateKey.includes('-----BEGIN PRIVATE KEY-----') && privateKey.includes('-----END PRIVATE KEY-----')
-  });
+  try {
+    console.log('[Firebase Admin Diagnostics]', {
+      source,
+      projectId: (projectId || '').toString().substring(0, 10) + '...',
+      clientEmail: (clientEmail || '').toString().substring(0, 15) + '...',
+      keyLength: (privateKey || '').length,
+      hasNewlines: (privateKey || '').includes('\n'),
+      isPem: (privateKey || '').includes('-----BEGIN PRIVATE KEY-----')
+    });
+  } catch (diagErr) {
+    console.warn('[Firebase Admin] Diagnostics failed:', diagErr);
+  }
 
   try {
     const config = {
-      projectId: projectId.trim(),
+      projectId: (projectId || '').trim(),
       credential: cert({
-        projectId: projectId.trim(),
-        clientEmail: clientEmail.trim(),
-        privateKey: privateKey,
+        projectId: (projectId || '').trim(),
+        clientEmail: (clientEmail || '').trim(),
+        privateKey: (privateKey || '').trim(),
       }),
     };
     
@@ -134,7 +136,7 @@ function getAdminApp(): App {
     console.log('[Firebase Admin] initializeApp success');
     return app;
   } catch (err: any) {
-    console.error('Firebase Admin initializeApp failed:', err);
+    console.error('Firebase Admin initializeApp fatal error:', err.message);
     throw err;
   }
 }

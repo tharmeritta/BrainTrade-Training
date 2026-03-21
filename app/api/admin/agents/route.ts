@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminOrManager, requireAdminManagerOrTrainer } from '@/lib/session';
+import { requireAdmin, requireAdminManagerOrTrainer } from '@/lib/session';
 import { fsAdd } from '@/lib/firestore-db';
 import { getAllAgentStats } from '@/lib/agents';
 
@@ -15,7 +15,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  try { await requireAdminOrManager(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { await requireAdmin(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   
   let body;
   try {
@@ -24,11 +24,38 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const { name } = body;
+  // Handle bulk import
+  if (Array.isArray(body)) {
+    const agentsToCreate = body.filter(a => a.name?.trim());
+    if (agentsToCreate.length === 0) return NextResponse.json({ error: 'No valid agents provided' }, { status: 400 });
+
+    try {
+      const results = [];
+      for (const a of agentsToCreate) {
+        const agent = await fsAdd('agents', { 
+          name: a.name.trim(), 
+          stageName: a.stageName?.trim() || '',
+          active: true 
+        });
+        results.push(agent);
+      }
+      return NextResponse.json({ success: true, count: results.length, agents: results });
+    } catch (err: any) {
+      console.error('Bulk create agents error:', err);
+      return NextResponse.json({ error: 'Failed to create agents', details: err.message }, { status: 500 });
+    }
+  }
+
+  // Handle single creation
+  const { name, stageName } = body;
   if (!name?.trim()) return NextResponse.json({ error: 'Name required' }, { status: 400 });
 
   try {
-    const agent = await fsAdd('agents', { name: name.trim(), active: true });
+    const agent = await fsAdd('agents', { 
+      name: name.trim(), 
+      stageName: stageName?.trim() || '',
+      active: true 
+    });
     return NextResponse.json(agent);
   } catch (err: any) {
     console.error('Create agent error:', err);

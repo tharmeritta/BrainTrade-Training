@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import {
   GraduationCap, Plus, ChevronDown, ChevronRight, X, Check,
   Calendar, Users, Clock, AlertTriangle, BookOpen, Pencil,
-  Trash2, Save, ToggleLeft, ToggleRight, Loader2,
+  Trash2, Save, ToggleLeft, ToggleRight, Loader2, TrendingUp,
+  UserMinus, UserX,
 } from 'lucide-react';
 import type { TrainingPeriod, TrainingDayRecord, DisciplineRecord, AgentStats, DisciplineType } from '@/types';
 
@@ -17,7 +18,7 @@ const T = {
   card:   'rgba(10,20,36,0.92)',
   border: 'rgba(255,255,255,0.08)',
   text:   '#E8F4FF',
-  sub:    '#4A6A8A',
+  sub:    '#8AAAC8',
   amber:  '#F59E0B',
   amberBg: 'rgba(245,158,11,0.10)',
   amberBorder: 'rgba(245,158,11,0.20)',
@@ -39,18 +40,23 @@ function Spinner() {
 
 interface NewPeriodModalProps {
   agents: { id: string; name: string }[];
+  trainers: { id: string; name: string }[];
+  currentUser: { uid?: string; name?: string; role: string };
   onClose: () => void;
   onCreated: (p: TrainingPeriod) => void;
 }
 
-function NewPeriodModal({ agents, onClose, onCreated }: NewPeriodModalProps) {
+function NewPeriodModal({ agents, trainers, currentUser, onClose, onCreated }: NewPeriodModalProps) {
   const t = useTranslations('trainer');
   const [name,        setName]        = useState('');
   const [startDate,   setStartDate]   = useState(new Date().toISOString().slice(0, 10));
   const [totalDays,   setTotalDays]   = useState(5);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [trainerId,   setTrainerId]   = useState(currentUser.role === 'trainer' ? (currentUser.uid || '') : (trainers[0]?.id || ''));
   const [saving,      setSaving]      = useState(false);
   const [err,         setErr]         = useState('');
+
+  const canPickTrainer = currentUser.role === 'admin' || currentUser.role === 'manager';
 
   function toggleAgent(id: string) {
     setSelectedIds(prev => {
@@ -71,16 +77,25 @@ function NewPeriodModal({ agents, onClose, onCreated }: NewPeriodModalProps) {
         const a = agents.find(a => a.id === id);
         if (a) agentNames[id] = a.name;
       }
+      
+      const selectedTrainer = trainers.find(st => st.id === trainerId);
+      const body: any = {
+        name: name.trim(),
+        startDate,
+        totalDays,
+        agentIds: Array.from(selectedIds),
+        agentNames,
+      };
+      
+      if (canPickTrainer && selectedTrainer) {
+        body.trainerId = selectedTrainer.id;
+        body.trainerName = selectedTrainer.name;
+      }
+
       const res = await fetch('/api/trainer/training-periods', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name.trim(),
-          startDate,
-          totalDays,
-          agentIds: Array.from(selectedIds),
-          agentNames,
-        }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) { const d = await res.json(); setErr(d.error ?? 'Failed to create'); return; }
       const period = await res.json();
@@ -109,9 +124,9 @@ function NewPeriodModal({ agents, onClose, onCreated }: NewPeriodModalProps) {
         <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: `1px solid ${T.border}` }}>
           <div className="flex items-center gap-2">
             <GraduationCap size={18} style={{ color: T.amber }} />
-            <span className="font-bold text-base" style={{ color: T.text }}>{t('createPeriodTitle')}</span>
+            <span className="font-bold text-base text-foreground">{t('createPeriodTitle')}</span>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg transition-colors hover:bg-white/5" style={{ color: T.sub }}>
+          <button onClick={onClose} className="p-1.5 rounded-lg transition-colors hover:bg-muted/30 text-muted-foreground">
             <X size={16} />
           </button>
         </div>
@@ -119,37 +134,53 @@ function NewPeriodModal({ agents, onClose, onCreated }: NewPeriodModalProps) {
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {/* Name */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: T.sub }}>{t('batchName')}</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5 text-muted-foreground">{t('batchName')}</label>
             <input
               value={name} onChange={e => setName(e.target.value)}
               placeholder={t('batchNamePlaceholder')}
               required
-              className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-colors"
-              style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}`, color: T.text }}
+              className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-colors text-foreground"
+              style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}` }}
               onFocus={e => { e.currentTarget.style.borderColor = T.amber + '60'; }}
               onBlur={e => { e.currentTarget.style.borderColor = T.border; }}
             />
           </div>
 
+          {/* Trainer selection (if admin/manager) */}
+          {canPickTrainer && trainers.length > 0 && (
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5 text-muted-foreground">{t('trainerLabel')}</label>
+              <select
+                value={trainerId} onChange={e => setTrainerId(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-colors text-foreground"
+                style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}` }}
+              >
+                {trainers.map(tr => (
+                  <option key={tr.id} value={tr.id}>{tr.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Date + Days row */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: T.sub }}>{t('startDate')}</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5 text-muted-foreground">{t('startDate')}</label>
               <input
                 type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-colors"
-                style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}`, color: T.text }}
+                className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-colors text-foreground"
+                style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}` }}
                 onFocus={e => { e.currentTarget.style.borderColor = T.amber + '60'; }}
                 onBlur={e => { e.currentTarget.style.borderColor = T.border; }}
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: T.sub }}>{t('totalDays')}</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5 text-muted-foreground">{t('totalDays')}</label>
               <input
                 type="number" min={1} max={60} value={totalDays}
                 onChange={e => setTotalDays(Math.max(1, parseInt(e.target.value) || 5))}
-                className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-colors"
-                style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}`, color: T.text }}
+                className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-colors text-foreground"
+                style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}` }}
                 onFocus={e => { e.currentTarget.style.borderColor = T.amber + '60'; }}
                 onBlur={e => { e.currentTarget.style.borderColor = T.border; }}
               />
@@ -158,17 +189,17 @@ function NewPeriodModal({ agents, onClose, onCreated }: NewPeriodModalProps) {
 
           {/* Agent selection */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: T.sub }}>
+            <label className="block text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">
               {t('selectAgents', { count: selectedIds.size })}
             </label>
-            <div className="rounded-xl overflow-hidden max-h-48 overflow-y-auto" style={{ border: `1px solid ${T.border}` }}>
+            <div className="rounded-xl overflow-hidden max-h-48 overflow-y-auto border border-border">
               {agents.length === 0 ? (
-                <div className="px-4 py-3 text-sm" style={{ color: T.sub }}>{t('noAgents')}</div>
+                <div className="px-4 py-3 text-sm text-muted-foreground">{t('noAgents')}</div>
               ) : agents.map(a => (
                 <button
                   key={a.id} type="button"
                   onClick={() => toggleAgent(a.id)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/30"
                   style={{ borderBottom: `1px solid ${T.border}` }}
                 >
                   <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-colors"
@@ -178,7 +209,7 @@ function NewPeriodModal({ agents, onClose, onCreated }: NewPeriodModalProps) {
                     }}>
                     {selectedIds.has(a.id) && <Check size={11} className="text-white" />}
                   </div>
-                  <span className="text-sm" style={{ color: selectedIds.has(a.id) ? T.text : T.sub }}>{a.name}</span>
+                  <span className={`text-sm ${selectedIds.has(a.id) ? 'text-foreground' : 'text-muted-foreground'}`}>{a.name}</span>
                 </button>
               ))}
             </div>
@@ -198,8 +229,7 @@ function NewPeriodModal({ agents, onClose, onCreated }: NewPeriodModalProps) {
               {saving ? t('creating') : t('createBtn')}
             </button>
             <button type="button" onClick={onClose}
-              className="px-5 py-2.5 rounded-xl text-sm transition-colors hover:bg-white/5"
-              style={{ color: T.sub }}>
+              className="px-5 py-2.5 rounded-xl text-sm transition-colors hover:bg-muted/30 text-muted-foreground">
               {t('cancel')}
             </button>
           </div>
@@ -218,22 +248,27 @@ interface DayRecordFormProps {
   dayNumber: number;
   existing?: TrainingDayRecord;
   onSaved: (r: TrainingDayRecord) => void;
+  onRemoveAgent: (id: string, name: string) => void;
+  onDeactivateAgent: (id: string, name: string) => void;
   readOnly: boolean;
+  canDeactivate: boolean;
 }
 
-function DayRecordForm({ periodId, agentId, agentName, dayNumber, existing, onSaved, readOnly }: DayRecordFormProps) {
+function DayRecordForm({ periodId, agentId, agentName, dayNumber, existing, onSaved, onRemoveAgent, onDeactivateAgent, readOnly, canDeactivate }: DayRecordFormProps) {
   const t = useTranslations('trainer');
-  const [attendance, setAttendance] = useState<'present' | 'late' | 'absent'>(existing?.attendance ?? 'present');
-  const [topics,     setTopics]     = useState(existing?.topics ?? '');
+  const [attendance, setAttendance] = useState<'present' | 'late' | 'sick_leave' | 'personal_leave' | 'absent_no_reason'>(existing?.attendance ?? 'present');
   const [notes,      setNotes]      = useState(existing?.notes ?? '');
   const [date,       setDate]       = useState(existing?.date ?? new Date().toISOString().slice(0, 10));
   const [saving,     setSaving]     = useState(false);
   const [saved,      setSaved]      = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
 
   const ATTENDANCE_COLORS: Record<string, string> = {
-    present: 'bg-emerald-500/15 text-emerald-400',
-    late:    'bg-amber-500/15 text-amber-400',
-    absent:  'bg-red-500/15 text-red-400',
+    present:          'bg-emerald-500/15 text-emerald-400',
+    late:             'bg-amber-500/15 text-amber-400',
+    sick_leave:       'bg-blue-500/15 text-blue-400',
+    personal_leave:   'bg-violet-500/15 text-violet-400',
+    absent_no_reason: 'bg-red-500/15 text-red-400',
   };
 
   async function handleSave() {
@@ -243,11 +278,11 @@ function DayRecordForm({ periodId, agentId, agentName, dayNumber, existing, onSa
       const res = await fetch(`/api/trainer/training-periods/${periodId}/days`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agentId, dayNumber, date, attendance, topics, notes }),
+        body: JSON.stringify({ agentId, dayNumber, date, attendance, notes }),
       });
       if (res.ok) {
         const d = await res.json();
-        onSaved({ ...d, agentId, dayNumber, trainingPeriodId: periodId, attendance, topics, notes, date } as TrainingDayRecord);
+        onSaved({ ...d, agentId, dayNumber, trainingPeriodId: periodId, attendance, notes, date } as TrainingDayRecord);
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
       }
@@ -255,20 +290,95 @@ function DayRecordForm({ periodId, agentId, agentName, dayNumber, existing, onSa
     finally { setSaving(false); }
   }
 
+  const isFilled = !!(existing || notes);
+
   return (
-    <div className="rounded-xl p-4 space-y-3" style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${T.border}` }}>
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold" style={{ color: T.text }}>{agentName}</span>
-        <div className="flex gap-1.5">
-          {(['present', 'late', 'absent'] as const).map(a => (
+    <div
+      className="rounded-2xl overflow-hidden border transition-all bg-card"
+      style={{
+        borderColor: isFilled ? T.amberBorder : undefined,
+        borderLeftWidth: '4px',
+        borderLeftColor: isFilled ? T.amber : 'rgba(156,163,175,0.4)',
+        boxShadow: isFilled ? `0 4px 20px -5px ${T.amber}20` : 'none'
+      }}
+    >
+      {/* Agent header */}
+      <div
+        className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3.5 gap-3 bg-muted/40 border-b border-border"
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-[12px] font-black uppercase flex-shrink-0"
+            style={{ background: T.amberBg, color: T.amber, border: `1px solid ${T.amberBorder}` }}
+          >
+            {agentName.charAt(0)}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-foreground leading-tight">{agentName}</span>
+              {isFilled && (
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md"
+                  style={{ background: 'rgba(52,211,153,0.12)', color: '#34D399', border: '1px solid rgba(52,211,153,0.2)' }}>
+                  {t('saved')}
+                </span>
+              )}
+            </div>
+            <p className="text-[10px] text-muted-foreground font-semibold mt-0.5">{t('day', { day: dayNumber })}</p>
+          </div>
+          
+          {!readOnly && (
+            <div className="relative ml-1">
+              <button 
+                onClick={() => setShowOptions(!showOptions)}
+                className="p-1.5 rounded-lg hover:bg-muted/30 text-muted-foreground/40 hover:text-red-400 transition-colors"
+                title={t('terminatedResigned')}
+              >
+                <UserMinus size={14} />
+              </button>
+              
+              <AnimatePresence>
+                {showOptions && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setShowOptions(false)} />
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: 5 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: 5 }}
+                      className="absolute left-0 mt-2 w-56 bg-card border border-border rounded-xl shadow-xl z-20 p-1.5"
+                    >
+                      <button
+                        onClick={() => { onRemoveAgent(agentId, agentName); setShowOptions(false); }}
+                        className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-foreground hover:bg-muted/30 flex items-center gap-2"
+                      >
+                        <UserMinus size={13} className="text-amber-500" />
+                        {t('removeFromPeriod')}
+                      </button>
+                      {canDeactivate && (
+                        <button
+                          onClick={() => { onDeactivateAgent(agentId, agentName); setShowOptions(false); }}
+                          className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-red-400 hover:bg-red-500/10 flex items-center gap-2"
+                        >
+                          <UserX size={13} />
+                          {t('deactivateAgent')}
+                        </button>
+                      )}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+        </div>
+        <div className="flex gap-1 flex-wrap justify-end">
+          {(['present', 'late', 'sick_leave', 'personal_leave', 'absent_no_reason'] as const).map(a => (
             <button
               key={a} type="button"
               disabled={readOnly}
               onClick={() => setAttendance(a)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-                attendance === a ? ATTENDANCE_COLORS[a] : 'text-[#4A6A8A] hover:bg-white/5'
+              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all uppercase tracking-tight ${
+                attendance === a ? ATTENDANCE_COLORS[a] : 'text-muted-foreground/60 hover:bg-muted/30'
               }`}
-              style={{ border: `1px solid ${attendance === a ? 'currentColor' : T.border}`, opacity: readOnly ? 0.7 : 1 }}
+              style={{ border: `1px solid ${attendance === a ? 'currentColor' : 'rgba(255,255,255,0.06)'}`, opacity: readOnly ? 0.7 : 1 }}
             >
               {t(`attendanceLabels.${a}`)}
             </button>
@@ -276,56 +386,54 @@ function DayRecordForm({ periodId, agentId, agentName, dayNumber, existing, onSa
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-[10px] font-medium uppercase tracking-wider mb-1" style={{ color: T.sub }}>{t('startDate')}</label>
-          <input
-            type="date" value={date} onChange={e => setDate(e.target.value)}
-            disabled={readOnly}
-            className="w-full px-3 py-2 rounded-lg text-xs outline-none"
-            style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}`, color: T.text, opacity: readOnly ? 0.7 : 1 }}
-          />
+      {/* Fields Container */}
+      <div className="p-4 space-y-4">
+        
+        {/* Date and Notes Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
+              <Calendar size={12} className="text-blue-400" /> {t('startDate')}
+            </label>
+            <input
+              type="date" value={date} onChange={e => setDate(e.target.value)}
+              disabled={readOnly}
+              className="w-full px-3.5 py-2 rounded-xl text-xs outline-none text-foreground focus:ring-1 focus:ring-blue-500/30 transition-all bg-background border border-border"
+              style={{ opacity: readOnly ? 0.7 : 1 }}
+            />
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
+              <Pencil size={12} className="text-emerald-400" /> {t('notes')}
+            </label>
+            <textarea
+              value={notes} onChange={e => setNotes(e.target.value)}
+              placeholder={t('notesPlaceholder')}
+              rows={1}
+              disabled={readOnly}
+              className="w-full px-3.5 py-2 rounded-xl text-xs outline-none resize-none text-foreground transition-all focus:ring-1 focus:ring-emerald-500/30 bg-background border border-border"
+              style={{ opacity: readOnly ? 0.7 : 1 }}
+            />
+          </div>
         </div>
-        <div>
-          <label className="block text-[10px] font-medium uppercase tracking-wider mb-1" style={{ color: T.sub }}>{t('topics')}</label>
-          <input
-            value={topics} onChange={e => setTopics(e.target.value)}
-            placeholder={t('topicsPlaceholder')}
-            disabled={readOnly}
-            className="w-full px-3 py-2 rounded-lg text-xs outline-none"
-            style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}`, color: T.text, opacity: readOnly ? 0.7 : 1 }}
-          />
-        </div>
-      </div>
 
-      <div>
-        <label className="block text-[10px] font-medium uppercase tracking-wider mb-1" style={{ color: T.sub }}>{t('notes')}</label>
-        <textarea
-          value={notes} onChange={e => setNotes(e.target.value)}
-          placeholder={t('notesPlaceholder')}
-          rows={2}
-          disabled={readOnly}
-          className="w-full px-3 py-2 rounded-lg text-xs outline-none resize-none"
-          style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}`, color: T.text, opacity: readOnly ? 0.7 : 1 }}
-        />
+        {!readOnly && (
+          <div className="flex justify-end pt-1">
+            <button
+              onClick={handleSave} disabled={saving}
+              className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all"
+              style={{
+                background: saved ? 'rgba(52,211,153,0.15)' : T.amberBg,
+                color: saved ? '#34D399' : T.amber,
+                border: `1px solid ${saved ? 'rgba(52,211,153,0.25)' : T.amberBorder}`,
+              }}
+            >
+              {saving ? <Spinner /> : saved ? <Check size={14} /> : <Save size={14} />}
+              {saving ? t('saving') : saved ? t('saved') : t('save')}
+            </button>
+          </div>
+        )}
       </div>
-
-      {!readOnly && (
-        <div className="flex justify-end">
-          <button
-            onClick={handleSave} disabled={saving}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            style={{
-              background: saved ? 'rgba(52,211,153,0.15)' : T.amberBg,
-              color: saved ? '#34D399' : T.amber,
-              border: `1px solid ${saved ? 'rgba(52,211,153,0.25)' : T.amberBorder}`,
-            }}
-          >
-            {saving ? <Spinner /> : saved ? <Check size={12} /> : <Save size={12} />}
-            {saving ? t('saving') : saved ? t('saved') : t('save')}
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -336,12 +444,18 @@ interface DaysTabProps {
   period: TrainingPeriod;
   records: TrainingDayRecord[];
   onRecordSaved: (r: TrainingDayRecord) => void;
+  onPeriodUpdated: (p: TrainingPeriod) => void;
+  onRemoveAgent: (id: string, name: string) => void;
+  onDeactivateAgent: (id: string, name: string) => void;
   readOnly: boolean;
+  role: 'admin' | 'manager' | 'trainer';
 }
 
-function DaysSubTab({ period, records, onRecordSaved, readOnly }: DaysTabProps) {
+function DaysSubTab({ period, records, onRecordSaved, onPeriodUpdated, onRemoveAgent, onDeactivateAgent, readOnly, role }: DaysTabProps) {
   const t = useTranslations('trainer');
   const [expandedDay, setExpandedDay] = useState<number | null>(1);
+  const [editingTopic, setEditingTopic] = useState<{ day: number, value: string } | null>(null);
+  const [savingTopic, setSavingTopic] = useState(false);
 
   function getRecord(agentId: string, dayNumber: number): TrainingDayRecord | undefined {
     return records.find(r => r.agentId === agentId && r.dayNumber === dayNumber);
@@ -351,10 +465,30 @@ function DaysSubTab({ period, records, onRecordSaved, readOnly }: DaysTabProps) 
     return period.agentIds.filter(id => !!getRecord(id, dayNumber)).length;
   }
 
+  async function handleSaveTopic(day: number) {
+    if (!editingTopic || editingTopic.day !== day) return;
+    setSavingTopic(true);
+    try {
+      const newDayTopics = { ...(period.dayTopics || {}), [day]: editingTopic.value };
+      const res = await fetch(`/api/trainer/training-periods/${period.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dayTopics: newDayTopics }),
+      });
+      if (res.ok) {
+        onPeriodUpdated({ ...period, dayTopics: newDayTopics });
+        setEditingTopic(null);
+      }
+    } catch { /* silent */ }
+    finally { setSavingTopic(false); }
+  }
+
+  const canDeactivate = role === 'admin';
+
   return (
     <div className="space-y-3">
       {period.agentIds.length === 0 && (
-        <div className="text-center py-12" style={{ color: T.sub }}>
+        <div className="text-center py-12 text-muted-foreground">
           <Users size={32} className="mx-auto opacity-30 mb-3" />
           <p className="text-sm">{t('noAgentsInPeriod')}</p>
         </div>
@@ -363,56 +497,160 @@ function DaysSubTab({ period, records, onRecordSaved, readOnly }: DaysTabProps) 
         const isExpanded = expandedDay === day;
         const done = dayCompletionCount(day);
         const total = period.agentIds.length;
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        const isComplete = total > 0 && done === total;
+        const isPartial  = done > 0 && done < total;
+
+        const accentColor  = isComplete ? '#34D399' : isPartial ? T.amber : 'rgba(255,255,255,0.15)';
+        const borderColor  = isExpanded
+          ? (isComplete ? 'rgba(52,211,153,0.3)' : T.amberBorder)
+          : 'rgba(255,255,255,0.10)';
+        const headerBg     = isExpanded
+          ? (isComplete ? 'rgba(52,211,153,0.05)' : 'rgba(245,158,11,0.06)')
+          : undefined;
+        const badgeBg      = isComplete ? 'rgba(52,211,153,0.15)' : T.amberBg;
+        const badgeColor   = isComplete ? '#34D399' : T.amber;
+        const badgeBorder  = isComplete ? 'rgba(52,211,153,0.3)' : T.amberBorder;
+        const barColor     = isComplete ? '#34D399' : T.amber;
+
+        const dayTopic = period.dayTopics?.[day] || '';
+
         return (
-          <div key={day} className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${T.border}` }}>
-            <button
+          <div key={day}
+            className="rounded-2xl overflow-hidden transition-all bg-card border"
+            style={{
+              borderTopColor: borderColor,
+              borderRightColor: borderColor,
+              borderBottomColor: borderColor,
+              borderLeftColor: accentColor,
+              borderLeftWidth: '3px',
+            }}
+          >
+            {/* ── Collapsed / Header row ── */}
+            <div
+              className="w-full flex items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-muted/40 cursor-pointer"
+              style={{ background: headerBg ?? 'transparent' }}
               onClick={() => setExpandedDay(isExpanded ? null : day)}
-              className="w-full flex items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-white/3"
-              style={{ background: isExpanded ? 'rgba(245,158,11,0.05)' : 'rgba(255,255,255,0.02)' }}
             >
+              {/* Day badge */}
               <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm flex-shrink-0"
-                style={{ background: T.amberBg, color: T.amber, border: `1px solid ${T.amberBorder}` }}>
+                style={{ background: badgeBg, color: badgeColor, border: `1px solid ${badgeBorder}` }}>
                 {day}
               </div>
-              <div className="flex-1">
-                <div className="font-semibold text-sm" style={{ color: T.text }}>{t('day', { day })}</div>
-                <div className="text-xs mt-0.5" style={{ color: T.sub }}>
-                  {t('recordsDone', { done, total })}
+
+              {/* Title + sub-info */}
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-sm text-foreground flex items-center gap-2">
+                  {t('day', { day })}
+                  {dayTopic && (
+                    <span className="font-normal text-muted-foreground truncate italic">— {dayTopic}</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs text-muted-foreground">{t('recordsDone', { done, total })}</span>
+                  {total > 0 && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                      style={{
+                        background: isComplete ? 'rgba(52,211,153,0.12)' : isPartial ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.06)',
+                        color: isComplete ? '#34D399' : isPartial ? T.amber : 'rgba(255,255,255,0.35)',
+                      }}>
+                      {isComplete ? t('dayComplete') : isPartial ? `${pct}%` : t('dayNotStarted')}
+                    </span>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+
+              {/* Progress bar + chevron */}
+              <div className="flex items-center gap-3 flex-shrink-0">
                 {total > 0 && (
-                  <div className="w-24 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                    <div className="h-full rounded-full transition-all" style={{ background: T.amber, width: `${Math.round((done / total) * 100)}%` }} />
+                  <div className="flex flex-col items-end gap-1 hidden sm:flex">
+                    <div className="w-28 h-2 rounded-full overflow-hidden bg-muted">
+                      <div className="h-full rounded-full transition-all duration-500"
+                        style={{ background: barColor, width: `${pct}%` }} />
+                    </div>
+                    <span className="text-[10px] text-muted-foreground">{t('dayAgentsProgress', { done, total })}</span>
                   </div>
                 )}
-                {isExpanded ? <ChevronDown size={16} style={{ color: T.sub }} /> : <ChevronRight size={16} style={{ color: T.sub }} />}
+                {isExpanded
+                  ? <ChevronDown size={16} className="text-muted-foreground" />
+                  : <ChevronRight size={16} className="text-muted-foreground" />}
               </div>
-            </button>
+            </div>
 
+            {/* ── Expanded content ── */}
             <AnimatePresence>
-              {isExpanded && period.agentIds.length > 0 && (
+              {isExpanded && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                   className="overflow-hidden"
                 >
-                  <div className="px-5 pb-5 pt-2 grid grid-cols-1 lg:grid-cols-2 gap-3">
-                    {period.agentIds.map(agentId => (
-                      <DayRecordForm
-                        key={agentId}
-                        periodId={period.id}
-                        agentId={agentId}
-                        agentName={period.agentNames[agentId] ?? agentId}
-                        dayNumber={day}
-                        existing={getRecord(agentId, day)}
-                        onSaved={onRecordSaved}
-                        readOnly={readOnly}
-                      />
-                    ))}
+                  {/* Topic Section */}
+                  <div className="px-5 py-4 border-t border-border bg-muted/30">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-500/80">
+                        <BookOpen size={12} /> {t('topics')}
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          value={editingTopic?.day === day ? editingTopic.value : dayTopic}
+                          onChange={e => setEditingTopic({ day, value: e.target.value })}
+                          placeholder={t('topicsPlaceholder')}
+                          disabled={readOnly}
+                          className="flex-1 px-3.5 py-2 rounded-xl text-xs outline-none text-foreground transition-all focus:ring-1 focus:ring-amber-500/30 bg-background border border-border"
+                          style={{ opacity: readOnly ? 0.7 : 1 }}
+                        />
+                        {!readOnly && editingTopic?.day === day && (
+                          <button
+                            onClick={() => handleSaveTopic(day)}
+                            disabled={savingTopic}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50"
+                          >
+                            {savingTopic ? <Spinner /> : <Save size={14} />}
+                            {savingTopic ? t('saving') : t('save')}
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Summary strip */}
+                  <div className="flex items-center justify-between px-5 py-2.5 border-t border-border bg-muted/20">
+                    <span className="text-[11px] font-semibold text-muted-foreground">
+                      {period.agentIds.length === 0 ? t('noAgentsInPeriod') : done === 0
+                        ? t('dayNoRecords')
+                        : t('dayAgentsRecorded', { done, total })}
+                    </span>
+                    {isComplete && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                        style={{ background: 'rgba(52,211,153,0.12)', color: '#34D399', border: '1px solid rgba(52,211,153,0.2)' }}>
+                        {t('dayAllDone')}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Agent cards grid */}
+                  {period.agentIds.length > 0 && (
+                    <div className="px-5 pb-5 pt-3 grid grid-cols-1 lg:grid-cols-2 gap-4 bg-muted/10">
+                      {period.agentIds.map(agentId => (
+                        <DayRecordForm
+                          key={agentId}
+                          periodId={period.id}
+                          agentId={agentId}
+                          agentName={period.agentNames[agentId] ?? agentId}
+                          dayNumber={day}
+                          existing={getRecord(agentId, day)}
+                          onSaved={onRecordSaved}
+                          onRemoveAgent={onRemoveAgent}
+                          onDeactivateAgent={onDeactivateAgent}
+                          readOnly={readOnly}
+                          canDeactivate={canDeactivate}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -439,7 +677,7 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
   const [form, setForm] = useState({
     agentId: period.agentIds[0] ?? '',
     date: new Date().toISOString().slice(0, 10),
-    type: 'late' as DisciplineType,
+    type: 'phone_usage' as DisciplineType,
     description: '',
   });
   const [saving, setSaving] = useState(false);
@@ -467,7 +705,7 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
       const rec = await res.json();
       onAdded(rec);
       setShowForm(false);
-      setForm({ agentId: period.agentIds[0] ?? '', date: new Date().toISOString().slice(0, 10), type: 'late', description: '' });
+      setForm({ agentId: period.agentIds[0] ?? '', date: new Date().toISOString().slice(0, 10), type: 'phone_usage', description: '' });
     } catch { setErr('Network error'); }
     finally { setSaving(false); }
   }
@@ -481,7 +719,14 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
   const inputStyle = {
     background: 'rgba(255,255,255,0.05)',
     border: `1px solid ${T.border}`,
-    color: T.text,
+  };
+
+  const DISC_COLORS: Record<string, { bg: string; color: string; border: string }> = {
+    phone_usage:    { bg: 'rgba(245,158,11,0.12)',  color: '#F59E0B', border: 'rgba(245,158,11,0.25)' },
+    dress_code:     { bg: 'rgba(96,165,250,0.12)',  color: '#60A5FA', border: 'rgba(96,165,250,0.25)' },
+    misconduct:     { bg: 'rgba(248,113,113,0.12)', color: '#F87171', border: 'rgba(248,113,113,0.25)' },
+    warning_issued: { bg: 'rgba(167,139,250,0.12)', color: '#A78BFA', border: 'rgba(167,139,250,0.25)' },
+    other:          { bg: 'rgba(156,163,175,0.12)', color: '#9CA3AF', border: 'rgba(156,163,175,0.20)' },
   };
 
   return (
@@ -511,10 +756,10 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
             <p className="text-sm font-bold" style={{ color: T.amber }}>{t('disciplineTitle')}</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: T.sub }}>{t('agent')}</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1 text-muted-foreground">{t('agent')}</label>
                 <select
                   value={form.agentId} onChange={e => setForm(v => ({ ...v, agentId: e.target.value }))}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none text-foreground"
                   style={inputStyle}
                 >
                   {period.agentIds.map(id => (
@@ -523,31 +768,31 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: T.sub }}>{t('type')}</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1 text-muted-foreground">{t('type')}</label>
                 <select
                   value={form.type} onChange={e => setForm(v => ({ ...v, type: e.target.value as DisciplineType }))}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none text-foreground"
                   style={inputStyle}
                 >
-                  {(['late', 'sick_leave', 'personal_leave', 'absent_no_reason', 'other'] as const).map(k => (
+                  {(['phone_usage', 'dress_code', 'misconduct', 'warning_issued', 'other'] as const).map(k => (
                     <option key={k} value={k}>{t(`disciplineLabels.${k}`)}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: T.sub }}>{t('startDate')}</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1 text-muted-foreground">{t('startDate')}</label>
                 <input
                   type="date" value={form.date} onChange={e => setForm(v => ({ ...v, date: e.target.value }))}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none text-foreground"
                   style={inputStyle}
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: T.sub }}>{t('description')}</label>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1 text-muted-foreground">{t('description')}</label>
                 <input
                   value={form.description} onChange={e => setForm(v => ({ ...v, description: e.target.value }))}
                   placeholder={t('descriptionPlaceholder')}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none text-foreground"
                   style={inputStyle}
                 />
               </div>
@@ -561,49 +806,60 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
                 {saving ? t('saving') : t('save')}
               </button>
               <button type="button" onClick={() => setShowForm(false)}
-                className="px-4 py-2.5 rounded-xl text-sm hover:bg-white/5 transition-colors"
-                style={{ color: T.sub }}>{t('cancel')}</button>
+                className="px-4 py-2.5 rounded-xl text-sm hover:bg-muted/30 transition-colors text-muted-foreground">{t('cancel')}</button>
             </div>
           </motion.form>
         )}
       </AnimatePresence>
 
       {/* Records table */}
-      <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${T.border}` }}>
+      <div className="rounded-2xl overflow-hidden border border-border">
         {records.length === 0 ? (
-          <div className="text-center py-12" style={{ color: T.sub }}>
+          <div className="text-center py-12 text-muted-foreground">
             <AlertTriangle size={28} className="mx-auto opacity-30 mb-3" />
             <p className="text-sm">{t('noDiscipline')}</p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: `1px solid ${T.border}` }}>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: T.sub }}>{t('agent')}</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: T.sub }}>{t('type')}</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: T.sub }}>{t('startDate')}</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: T.sub }}>{t('description')}</th>
+              <tr className="bg-muted/20" style={{ borderBottom: `1px solid ${T.border}` }}>
+                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('agent')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('type')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('startDate')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('description')}</th>
                 {!readOnly && <th className="px-4 py-3" />}
               </tr>
             </thead>
             <tbody>
               {records.map((r, i) => (
                 <tr key={r.id} style={{ borderBottom: i < records.length - 1 ? `1px solid ${T.border}` : 'none' }}
-                  className="hover:bg-white/2 transition-colors">
-                  <td className="px-5 py-3.5 font-semibold" style={{ color: T.text }}>{r.agentName}</td>
-                  <td className="px-4 py-3.5">
-                    <span className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                      style={{ background: 'rgba(245,158,11,0.12)', color: T.amber, border: `1px solid ${T.amberBorder}` }}>
-                      {t(`disciplineLabels.${r.type}`)}
-                    </span>
+                  className="hover:bg-muted/30 transition-colors">
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-black uppercase shrink-0"
+                        style={{ background: T.amberBg, color: T.amber, border: `1px solid ${T.amberBorder}` }}>
+                        {r.agentName.charAt(0)}
+                      </div>
+                      <span className="font-semibold text-foreground text-sm">{r.agentName}</span>
+                    </div>
                   </td>
-                  <td className="px-4 py-3.5 text-xs" style={{ color: T.sub }}>{fmtDate(r.date)}</td>
-                  <td className="px-4 py-3.5 text-xs max-w-xs truncate" style={{ color: T.sub }}>{r.description || '—'}</td>
+                  <td className="px-4 py-3.5">
+                    {(() => {
+                      const dc = DISC_COLORS[r.type] ?? DISC_COLORS.other;
+                      return (
+                        <span className="px-2.5 py-1 rounded-full text-xs font-semibold"
+                          style={{ background: dc.bg, color: dc.color, border: `1px solid ${dc.border}` }}>
+                          {t(`disciplineLabels.${r.type}`)}
+                        </span>
+                      );
+                    })()}
+                  </td>
+                  <td className="px-4 py-3.5 text-xs text-muted-foreground">{fmtDate(r.date)}</td>
+                  <td className="px-4 py-3.5 text-xs max-w-xs truncate text-muted-foreground">{r.description || '—'}</td>
                   {!readOnly && (
                     <td className="px-4 py-3.5 text-right">
                       <button onClick={() => handleDelete(r.id)}
-                        className="p-1.5 rounded-lg transition-colors hover:bg-red-500/10 hover:text-red-400"
-                        style={{ color: T.sub }}>
+                        className="p-1.5 rounded-lg transition-colors hover:bg-red-500/10 hover:text-red-400 text-muted-foreground">
                         <Trash2 size={13} />
                       </button>
                     </td>
@@ -622,19 +878,24 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
 
 interface PeriodDetailProps {
   period: TrainingPeriod;
+  agents: { id: string; name: string }[];
   role: 'admin' | 'manager' | 'trainer';
   onPeriodUpdated: (p: TrainingPeriod) => void;
+  onPeriodDeleted?: (id: string) => void;
 }
 
-function PeriodDetail({ period, role, onPeriodUpdated }: PeriodDetailProps) {
+function PeriodDetail({ period, agents, role, onPeriodUpdated, onPeriodDeleted }: PeriodDetailProps) {
   const t = useTranslations('trainer');
   const locale = t('management') === 'จัดการการฝึกอบรม' ? 'th-TH' : 'en-GB';
   const [subTab,    setSubTab]    = useState<'days' | 'discipline'>('days');
   const [dayRecs,   setDayRecs]   = useState<TrainingDayRecord[]>([]);
   const [discRecs,  setDiscRecs]  = useState<DisciplineRecord[]>([]);
   const [loading,   setLoading]   = useState(true);
+  const [addingAgent, setAddingAgent] = useState(false);
+  const [selectedToAdd, setSelectedToAdd] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
-  const isTrainer = role === 'trainer';
+  const canEdit = role === 'trainer' || role === 'admin' || role === 'manager';
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -670,6 +931,35 @@ function PeriodDetail({ period, role, onPeriodUpdated }: PeriodDetailProps) {
     if (res.ok) onPeriodUpdated({ ...period, active: !period.active });
   }
 
+  async function handleAddAgent() {
+    if (!selectedToAdd) return;
+    if (period.agentIds.includes(selectedToAdd)) {
+      alert(t('agentAlreadyInPeriod'));
+      return;
+    }
+
+    const agent = agents.find(a => a.id === selectedToAdd);
+    if (!agent) return;
+
+    setAddingAgent(true);
+    try {
+      const newAgentIds = [...period.agentIds, selectedToAdd];
+      const newAgentNames = { ...period.agentNames, [selectedToAdd]: agent.name };
+
+      const res = await fetch(`/api/trainer/training-periods/${period.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentIds: newAgentIds, agentNames: newAgentNames }),
+      });
+
+      if (res.ok) {
+        onPeriodUpdated({ ...period, agentIds: newAgentIds, agentNames: newAgentNames });
+        setSelectedToAdd('');
+      }
+    } catch { /* silent */ }
+    finally { setAddingAgent(false); }
+  }
+
   function handleDaySaved(r: TrainingDayRecord) {
     setDayRecs(prev => {
       const idx = prev.findIndex(x => x.agentId === r.agentId && x.dayNumber === r.dayNumber);
@@ -678,77 +968,179 @@ function PeriodDetail({ period, role, onPeriodUpdated }: PeriodDetailProps) {
     });
   }
 
+  async function handleRemoveAgent(agentId: string, agentName: string) {
+    if (!confirm(t('removeFromPeriodConfirm', { name: agentName }))) return;
+    const newAgentIds = period.agentIds.filter(id => id !== agentId);
+    const newAgentNames = { ...period.agentNames };
+    delete newAgentNames[agentId];
+    const res = await fetch(`/api/trainer/training-periods/${period.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agentIds: newAgentIds, agentNames: newAgentNames }),
+    });
+    if (res.ok) onPeriodUpdated({ ...period, agentIds: newAgentIds, agentNames: newAgentNames });
+  }
+
+  async function handleDeactivateAgent(agentId: string, agentName: string) {
+    if (!confirm(t('deactivateAgentConfirm', { name: agentName }))) return;
+    await fetch(`/api/admin/agents/${agentId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ active: false }),
+    });
+    const newAgentIds = period.agentIds.filter(id => id !== agentId);
+    const newAgentNames = { ...period.agentNames };
+    delete newAgentNames[agentId];
+    const res = await fetch(`/api/trainer/training-periods/${period.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agentIds: newAgentIds, agentNames: newAgentNames }),
+    });
+    if (res.ok) onPeriodUpdated({ ...period, agentIds: newAgentIds, agentNames: newAgentNames });
+  }
+
+  async function handleDeletePeriod() {
+    if (!confirm(t('deletePeriodConfirm'))) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/trainer/training-periods/${period.id}`, { method: 'DELETE' });
+      if (res.ok) onPeriodDeleted?.(period.id);
+    } catch { /* silent */ }
+    finally { setDeleting(false); }
+  }
+
   return (
     <div className="flex-1 flex flex-col min-h-0">
       {/* Period header */}
-      <div className="px-6 py-5 flex-shrink-0" style={{ borderBottom: `1px solid ${T.border}` }}>
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <h2 className="text-lg font-black" style={{ color: T.text }}>{period.name}</h2>
-              <span className="px-2 py-0.5 rounded-full text-xs font-bold"
-                style={{
-                  background: period.active ? 'rgba(52,211,153,0.12)' : 'rgba(107,114,128,0.12)',
-                  color: period.active ? '#34D399' : '#6B7280',
-                  border: `1px solid ${period.active ? 'rgba(52,211,153,0.2)' : 'rgba(107,114,128,0.2)'}`,
-                }}>
-                {period.active ? t('active') : t('inactive')}
-              </span>
-            </div>
-            <div className="flex items-center gap-4 text-xs" style={{ color: T.sub }}>
-              <span className="flex items-center gap-1.5"><Calendar size={11} /> {t('startDate')} {fmtDate(period.startDate, locale)}</span>
-              <span className="flex items-center gap-1.5"><Users size={11} /> {period.agentIds.length} {t('noAgents').includes('ไม่มี') ? 'เอเจนต์' : 'agents'}</span>
-              <span className="flex items-center gap-1.5"><BookOpen size={11} /> {period.totalDays} {t('totalDays')}</span>
-              <span className="flex items-center gap-1.5"><Clock size={11} /> {period.trainerName}</span>
-            </div>
-          </div>
+      <div className="px-6 pt-5 pb-0 flex-shrink-0">
 
-          {isTrainer && (
-            <div className="flex items-center gap-3 flex-shrink-0">
-              {/* Days adjuster */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs" style={{ color: T.sub }}>{t('daysAdjust')}</span>
-                <div className="flex items-center gap-1 rounded-xl overflow-hidden" style={{ border: `1px solid ${T.border}` }}>
-                  <button onClick={() => adjustDays(-1)}
-                    className="px-3 py-1.5 text-sm font-bold transition-colors hover:bg-white/8"
-                    style={{ color: T.amber }}>−</button>
-                  <span className="px-3 py-1.5 text-sm font-black" style={{ color: T.text, background: 'rgba(255,255,255,0.04)' }}>{period.totalDays}</span>
-                  <button onClick={() => adjustDays(+1)}
-                    className="px-3 py-1.5 text-sm font-bold transition-colors hover:bg-white/8"
-                    style={{ color: T.amber }}>+</button>
-                </div>
-              </div>
-              {/* Active toggle */}
-              <button onClick={toggleActive}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors hover:bg-white/5"
-                style={{ color: period.active ? '#34D399' : T.sub, border: `1px solid ${T.border}` }}>
-                {period.active ? <ToggleRight size={15} /> : <ToggleLeft size={15} />}
-                {period.active ? t('active') : t('inactive')}
-              </button>
-            </div>
+        {/* ── Row 1: title + status ── */}
+        <div className="flex items-center gap-2.5 mb-3">
+          <h2 className="text-lg font-black text-foreground leading-tight">{period.name}</h2>
+          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold"
+            style={{
+              background: period.active ? 'rgba(52,211,153,0.12)' : 'rgba(156,163,175,0.12)',
+              color: period.active ? '#34D399' : '#9CA3AF',
+              border: `1px solid ${period.active ? 'rgba(52,211,153,0.25)' : 'rgba(156,163,175,0.2)'}`,
+            }}>
+            {period.active ? t('active') : t('inactive')}
+          </span>
+          {role === 'admin' && onPeriodDeleted && (
+            <button
+              onClick={handleDeletePeriod}
+              disabled={deleting}
+              title="Delete period"
+              className="ml-auto p-1.5 rounded-lg text-muted-foreground/40 hover:text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-40"
+            >
+              {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+            </button>
           )}
         </div>
 
-        {/* Sub-tabs */}
-        <div className="flex gap-1 mt-5">
+        {/* ── Row 2: meta chips ── */}
+        <div className="flex items-center flex-wrap gap-2 mb-4">
+          {(() => {
+            const totalPossible = period.agentIds.length * period.totalDays;
+            const completionPct = !loading && totalPossible > 0 ? Math.round((dayRecs.length / totalPossible) * 100) : null;
+            return [
+              { icon: Calendar,    label: fmtDate(period.startDate, locale) },
+              { icon: Users,       label: `${period.agentIds.length} ${t('noAgents').includes('ไม่มี') ? 'เอเจนต์' : 'agents'}` },
+              { icon: BookOpen,    label: `${period.totalDays} ${t('totalDays')}` },
+              { icon: Clock,       label: period.trainerName },
+              ...(completionPct !== null ? [{ icon: TrendingUp, label: `${completionPct}% filled` }] : []),
+            ];
+          })().map(({ icon: Icon, label }) => (
+            <span key={label} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs text-muted-foreground"
+              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }}>
+              <Icon size={11} className="opacity-60" /> {label}
+            </span>
+          ))}
+        </div>
+
+        {/* ── Row 3: controls toolbar ── */}
+        {canEdit && (
+          <div className="flex items-center gap-2 flex-wrap p-2 rounded-xl mb-4"
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+
+            {/* Add agent */}
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              <select
+                value={selectedToAdd}
+                onChange={e => setSelectedToAdd(e.target.value)}
+                className="flex-1 min-w-0 px-3 py-1.5 rounded-lg text-xs outline-none text-foreground"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}
+              >
+                <option value="">{t('selectAgentToAdd')}</option>
+                {agents && agents
+                  .filter(a => !period.agentIds.includes(a.id))
+                  .map(a => <option key={a.id} value={a.id}>{a.name}</option>)
+                }
+              </select>
+              <button
+                onClick={handleAddAgent}
+                disabled={!selectedToAdd || addingAgent}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-40 whitespace-nowrap"
+                style={{ background: T.amberBg, color: T.amber, border: `1px solid ${T.amberBorder}` }}
+              >
+                {addingAgent ? <Spinner /> : <Plus size={13} />}
+                {addingAgent ? t('addingAgent') : t('addAgent')}
+              </button>
+            </div>
+
+            {/* Divider */}
+            <div className="w-px h-6 self-center" style={{ background: 'rgba(255,255,255,0.10)' }} />
+
+            {/* Days stepper */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-[11px] text-muted-foreground whitespace-nowrap">{t('daysAdjust')}</span>
+              <div className="flex items-center rounded-lg overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.12)' }}>
+                <button onClick={() => adjustDays(-1)}
+                  className="w-7 h-7 flex items-center justify-center text-sm font-bold hover:bg-muted/30 transition-colors"
+                  style={{ color: T.amber }}>−</button>
+                <span className="px-2.5 text-sm font-black text-foreground" style={{ background: 'rgba(255,255,255,0.05)' }}>{period.totalDays}</span>
+                <button onClick={() => adjustDays(+1)}
+                  className="w-7 h-7 flex items-center justify-center text-sm font-bold hover:bg-muted/30 transition-colors"
+                  style={{ color: T.amber }}>+</button>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="w-px h-6 self-center" style={{ background: 'rgba(255,255,255,0.10)' }} />
+
+            {/* Active toggle */}
+            <button onClick={toggleActive}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex-shrink-0"
+              style={{
+                background: period.active ? 'rgba(52,211,153,0.10)' : 'rgba(255,255,255,0.04)',
+                color: period.active ? '#34D399' : '#9CA3AF',
+                border: `1px solid ${period.active ? 'rgba(52,211,153,0.25)' : 'rgba(255,255,255,0.10)'}`,
+              }}>
+              {period.active ? <ToggleRight size={15} /> : <ToggleLeft size={15} />}
+              {period.active ? t('active') : t('inactive')}
+            </button>
+          </div>
+        )}
+
+        {/* ── Sub-tabs ── */}
+        <div className="flex gap-0.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           {(['days', 'discipline'] as const).map(st => (
             <button key={st} onClick={() => setSubTab(st)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
-              style={{
-                background: subTab === st ? T.amberBg : 'transparent',
-                color: subTab === st ? T.amber : T.sub,
-                border: `1px solid ${subTab === st ? T.amberBorder : 'transparent'}`,
-              }}>
+              className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold transition-all relative"
+              style={{ color: subTab === st ? T.amber : '#6B7280' }}>
               {st === 'days' ? <><BookOpen size={14} /> {t('trainingDays')}</> : <><AlertTriangle size={14} /> {t('discipline')}</>}
+              {subTab === st && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
+                  style={{ background: T.amber }} />
+              )}
             </button>
           ))}
         </div>
       </div>
 
       {/* Sub-tab content */}
-      <div className="flex-1 overflow-y-auto px-6 py-5">
+      <div className="flex-1 overflow-y-auto px-6 pt-5 pb-6">
         {loading ? (
-          <div className="flex items-center justify-center h-40 gap-3" style={{ color: T.sub }}>
+          <div className="flex items-center justify-center h-40 gap-3 text-muted-foreground">
             <Spinner /> <span className="text-sm">{t('loading')}</span>
           </div>
         ) : subTab === 'days' ? (
@@ -756,7 +1148,11 @@ function PeriodDetail({ period, role, onPeriodUpdated }: PeriodDetailProps) {
             period={period}
             records={dayRecs}
             onRecordSaved={handleDaySaved}
-            readOnly={!isTrainer}
+            onPeriodUpdated={onPeriodUpdated}
+            onRemoveAgent={handleRemoveAgent}
+            onDeactivateAgent={handleDeactivateAgent}
+            readOnly={!canEdit}
+            role={role}
           />
         ) : (
           <DisciplineSubTab
@@ -764,7 +1160,7 @@ function PeriodDetail({ period, role, onPeriodUpdated }: PeriodDetailProps) {
             records={discRecs}
             onAdded={r => setDiscRecs(prev => [r, ...prev])}
             onDeleted={id => setDiscRecs(prev => prev.filter(r => r.id !== id))}
-            readOnly={!isTrainer}
+            readOnly={!canEdit}
           />
         )}
       </div>
@@ -776,18 +1172,22 @@ function PeriodDetail({ period, role, onPeriodUpdated }: PeriodDetailProps) {
 
 interface TrainerPanelProps {
   role: 'admin' | 'manager' | 'trainer';
+  uid?: string;
+  name?: string;
 }
 
-export default function TrainerPanel({ role }: TrainerPanelProps) {
+export default function TrainerPanel({ role, uid, name }: TrainerPanelProps) {
   const t = useTranslations('trainer');
   const locale = t('management') === 'จัดการการฝึกอบรม' ? 'th-TH' : 'en-GB';
   const [periods,          setPeriods]          = useState<TrainingPeriod[]>([]);
   const [agents,           setAgents]           = useState<{ id: string; name: string }[]>([]);
+  const [staff,            setStaff]            = useState<{ id: string; name: string; role: string }[]>([]);
   const [selectedPeriodId, setSelectedPeriodId] = useState<string | null>(null);
   const [loadingPeriods,   setLoadingPeriods]   = useState(true);
   const [showNewPeriod,    setShowNewPeriod]     = useState(false);
 
-  const isTrainer = role === 'trainer';
+  const canManage = role === 'trainer' || role === 'admin' || role === 'manager';
+  const hasAutoSelected = useRef(false);
 
   const loadPeriods = useCallback(async () => {
     setLoadingPeriods(true);
@@ -797,21 +1197,32 @@ export default function TrainerPanel({ role }: TrainerPanelProps) {
         const d = await res.json();
         const list: TrainingPeriod[] = d.periods ?? [];
         setPeriods(list);
-        if (list.length > 0 && !selectedPeriodId) {
+        if (list.length > 0 && !hasAutoSelected.current) {
           setSelectedPeriodId(list[0].id);
+          hasAutoSelected.current = true;
         }
       }
     } catch { /* silent */ }
     finally { setLoadingPeriods(false); }
-  }, [selectedPeriodId]);
+  }, []);
 
   useEffect(() => {
     loadPeriods();
+    
+    // Fetch agents
     fetch('/api/admin/agents')
       .then(r => r.json())
       .then(d => setAgents((d.agents ?? []).map((a: AgentStats) => ({ id: a.agent.id, name: a.agent.name }))))
       .catch(() => {});
-  }, [loadPeriods]);
+
+    // Fetch staff if admin/manager to allow assigning trainers
+    if (role === 'admin' || role === 'manager') {
+      fetch('/api/admin/staff')
+        .then(r => r.json())
+        .then(d => setStaff(d.staff ?? []))
+        .catch(() => {});
+    }
+  }, [loadPeriods, role]);
 
   const selectedPeriod = periods.find(p => p.id === selectedPeriodId) ?? null;
 
@@ -825,98 +1236,116 @@ export default function TrainerPanel({ role }: TrainerPanelProps) {
     setPeriods(prev => prev.map(x => x.id === p.id ? p : x));
   }
 
+  function handlePeriodDeleted(id: string) {
+    setPeriods(prev => prev.filter(p => p.id !== id));
+    setSelectedPeriodId(prev => prev === id ? null : prev);
+  }
+
   return (
     <div className="flex flex-col" style={{ minHeight: 'calc(100vh - 160px)' }}>
       {/* Panel header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: T.amberBg, border: `1px solid ${T.amberBorder}` }}>
-            < GraduationCap size={20} style={{ color: T.amber }} />
-          </div>
-          <div>
-            <h2 className="text-lg font-black" style={{ color: T.text }}>{t('management')}</h2>
-            <p className="text-xs" style={{ color: T.sub }}>{t('managementDesc')}</p>
-          </div>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+          style={{ background: T.amberBg, border: `1px solid ${T.amberBorder}` }}>
+          <GraduationCap size={20} style={{ color: T.amber }} />
         </div>
-        {isTrainer && (
-          <button
-            onClick={() => setShowNewPeriod(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
-            style={{ background: T.amber, color: '#fff', boxShadow: `0 4px 16px rgba(245,158,11,0.25)` }}
-          >
-            <Plus size={16} /> {t('newPeriod')}
-          </button>
-        )}
+        <div>
+          <h2 className="text-lg font-black text-foreground">{t('management')}</h2>
+          <p className="text-xs text-muted-foreground">{t('managementDesc')}</p>
+        </div>
       </div>
 
       <div className="gap-5 flex flex-1 min-h-0">
         {/* Left sidebar — period list */}
         <div className="w-64 flex-shrink-0 flex flex-col gap-2">
-          <p className="text-[10px] font-bold uppercase tracking-widest px-1 mb-1" style={{ color: T.sub }}>
-            {t('trainingPeriods', { count: periods.length })}
-          </p>
+
+          {/* Sidebar header with single create button */}
+          <div className="flex items-center justify-between px-1 mb-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              {t('trainingPeriods', { count: periods.length })}
+            </p>
+            {canManage && (
+              <button
+                onClick={() => setShowNewPeriod(true)}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all hover:opacity-80"
+                style={{ background: T.amberBg, color: T.amber, border: `1px solid ${T.amberBorder}` }}
+              >
+                <Plus size={11} /> {t('newPeriod')}
+              </button>
+            )}
+          </div>
+
           {loadingPeriods ? (
-            <div className="flex items-center justify-center py-8 gap-2" style={{ color: T.sub }}>
+            <div className="flex items-center justify-center py-8 gap-2 text-muted-foreground">
               <Spinner /> <span className="text-xs">{t('loading')}</span>
             </div>
           ) : periods.length === 0 ? (
-            <div className="text-center py-8 px-4" style={{ color: T.sub }}>
+            <div className="text-center py-8 px-4 text-muted-foreground">
               <GraduationCap size={28} className="mx-auto opacity-30 mb-2" />
               <p className="text-xs">{t('noPeriods')}</p>
-              {isTrainer && <p className="text-xs mt-1 opacity-70">{t('newPeriodHint')}</p>}
+              {canManage && <p className="text-xs mt-1 opacity-70">{t('newPeriodHint')}</p>}
             </div>
           ) : periods.map(p => (
             <motion.button
               key={p.id}
               onClick={() => setSelectedPeriodId(p.id)}
-              whileHover={ { x: 2 } }
-              className="w-full text-left px-4 py-3.5 rounded-xl transition-all"
-              style={{
-                background: selectedPeriodId === p.id ? T.amberBg : 'rgba(255,255,255,0.02)',
-                border: `1px solid ${selectedPeriodId === p.id ? T.amberBorder : T.border}`,
-              }}
+              whileHover={{ x: 2 }}
+              className={`w-full text-left rounded-xl overflow-hidden transition-all border ${selectedPeriodId === p.id ? '' : 'bg-card border-border'}`}
+              style={selectedPeriodId === p.id ? { background: T.amberBg, border: `1px solid ${T.amberBorder}` } : {}}
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-semibold truncate" style={{ color: selectedPeriodId === p.id ? T.amber : T.text }}>
-                  {p.name}
-                </span>
-                {!p.active && (
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full ml-1 flex-shrink-0"
-                    style={{ background: 'rgba(107,114,128,0.15)', color: '#6B7280' }}>off</span>
-                )}
+              <div className="flex">
+                {/* Active status strip */}
+                <div className="w-1 flex-shrink-0"
+                  style={{ background: p.active ? T.amber : '#374151' }} />
+                <div className="flex-1 px-4 py-3.5">
+                  <div className="flex items-start justify-between gap-1.5 mb-1.5">
+                    <span className={`text-sm font-semibold leading-tight ${selectedPeriodId === p.id ? 'text-amber-500' : 'text-foreground'}`}>
+                      {p.name}
+                    </span>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5"
+                      style={{
+                        background: p.active ? 'rgba(52,211,153,0.12)' : 'rgba(156,163,175,0.15)',
+                        color: p.active ? '#34D399' : '#9CA3AF',
+                      }}>
+                      {p.active ? t('active') : t('inactive')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1"><Users size={11} /> {p.agentIds.length}</span>
+                    <span className="flex items-center gap-1"><BookOpen size={11} /> {p.totalDays}d</span>
+                  </div>
+                  <div className="flex items-center justify-between mt-1 gap-2">
+                    <span className="text-xs text-muted-foreground">{fmtDate(p.startDate, locale)}</span>
+                    {p.trainerName && (
+                      <span className="text-[10px] text-muted-foreground/60 flex items-center gap-0.5 truncate max-w-[80px] shrink-0">
+                        <Clock size={9} className="shrink-0" /> {p.trainerName}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="text-xs" style={{ color: T.sub }}>
-                {p.agentIds.length} {t('noAgents').includes('ไม่มี') ? 'เอเจนต์' : 'agents'} · {p.totalDays} {t('totalDays')}
-              </div>
-              <div className="text-xs mt-0.5" style={{ color: T.sub }}>{fmtDate(p.startDate, locale)}</div>
             </motion.button>
           ))}
         </div>
 
         {/* Right content */}
-        <div className="flex-1 min-w-0 rounded-2xl overflow-hidden flex flex-col"
-          style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid ${T.border}` }}>
+        <div className="flex-1 min-w-0 rounded-2xl overflow-hidden flex flex-col bg-card border border-border">
           {selectedPeriod ? (
             <PeriodDetail
               key={selectedPeriod.id}
               period={selectedPeriod}
+              agents={agents}
               role={role}
               onPeriodUpdated={handlePeriodUpdated}
+              onPeriodDeleted={handlePeriodDeleted}
             />
           ) : (
-            <div className="flex flex-col items-center justify-center flex-1 py-20" style={{ color: T.sub }}>
+            <div className="flex flex-col items-center justify-center flex-1 py-20 text-muted-foreground">
               <GraduationCap size={40} className="opacity-20 mb-4" style={{ color: T.amber }} />
-              <p className="text-base font-semibold mb-1" style={{ color: T.text }}>{t('selectPeriod')}</p>
-              <p className="text-sm">{t('selectPeriodHint')}</p>
-              {isTrainer && periods.length === 0 && (
-                <button
-                  onClick={() => setShowNewPeriod(true)}
-                  className="mt-5 flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
-                  style={{ background: T.amber, color: '#fff' }}>
-                  <Plus size={15} /> {t('createFirst')}
-                </button>
-              )}
+              <p className="text-base font-semibold mb-1 text-foreground">{t('selectPeriod')}</p>
+              <p className="text-sm text-center max-w-xs">
+                {periods.length === 0 ? t('newPeriodHint') : t('selectPeriodHint')}
+              </p>
             </div>
           )}
         </div>
@@ -927,6 +1356,8 @@ export default function TrainerPanel({ role }: TrainerPanelProps) {
         {showNewPeriod && (
           <NewPeriodModal
             agents={agents}
+            trainers={staff.filter(s => s.role === 'trainer')}
+            currentUser={{ uid, name, role }}
             onClose={() => setShowNewPeriod(false)}
             onCreated={handlePeriodCreated}
           />

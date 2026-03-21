@@ -15,9 +15,15 @@ interface FeedItem {
 }
 
 export async function GET() {
-  try { await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { 
+    await requireAdminManagerOrTrainer(); 
+  } catch { 
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); 
+  }
 
   try {
+    // We could optimize this by using a "limit" and "orderBy" in Firestore,
+    // but fsGetAll doesn't support it yet.
     const [quizDocs, evalDocs, pitchDocs] = await Promise.all([
       fsGetAll<{ id: string; agentId: string; agentName: string; moduleId: string; score: number; totalQuestions: number; passed: boolean; timestamp: string }>('quiz_results'),
       fsGetAll<{ id: string; agentId: string; agentName: string; level: number; score: number; timestamp: string; passed: boolean }>('ai_eval_logs'),

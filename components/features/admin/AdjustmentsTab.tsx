@@ -10,7 +10,7 @@ type ConfigType = 'quizzes' | 'pitch' | 'ai-eval' | 'learn';
 
 export default function AdjustmentsTab() {
   const t = useTranslations('admin');
-  const [activeTab, setActiveTab] = useState<ConfigType>('quizzes');
+  const [activeTab, setActiveTab] = useState<ConfigType>('learn');
   const [configs, setConfigs] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -79,25 +79,25 @@ export default function AdjustmentsTab() {
       </div>
 
       <div className="flex p-1 rounded-xl bg-secondary/30 border border-border w-fit overflow-x-auto scrollbar-hide">
+        <button onClick={() => setActiveTab('learn')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'learn' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          <BookOpen size={16} /> Learn Courses
+        </button>
         <button onClick={() => setActiveTab('quizzes')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'quizzes' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
           <Target size={16} /> Quizzes
-        </button>
-        <button onClick={() => setActiveTab('pitch')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'pitch' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-          <TrendingUp size={16} /> Pitch Scenarios
         </button>
         <button onClick={() => setActiveTab('ai-eval')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'ai-eval' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
           <Zap size={16} /> AI Eval Prompt
         </button>
-        <button onClick={() => setActiveTab('learn')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'learn' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-          <BookOpen size={16} /> Learn Courses
+        <button onClick={() => setActiveTab('pitch')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'pitch' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          <TrendingUp size={16} /> Pitch Scenarios
         </button>
       </div>
 
       <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
-        {activeTab === 'quizzes' && <QuizzesEditor data={configs.quizzes} onSave={(data) => handleSave('quizzes', data)} saving={saving} />}
-        {activeTab === 'pitch' && <PitchEditor configs={configs} onSave={handleSave} saving={saving} />}
-        {activeTab === 'ai-eval' && <AiEvalEditor data={configs.ai_eval} onSave={(data) => handleSave('ai_eval', data)} saving={saving} />}
         {activeTab === 'learn' && <LearnEditor data={configs.learn} onSave={(data) => handleSave('learn', data)} saving={saving} />}
+        {activeTab === 'quizzes' && <QuizzesEditor data={configs.quizzes} onSave={(data) => handleSave('quizzes', data)} saving={saving} />}
+        {activeTab === 'ai-eval' && <AiEvalEditor data={configs.ai_eval} onSave={(data) => handleSave('ai_eval', data)} saving={saving} />}
+        {activeTab === 'pitch' && <PitchEditor configs={configs} onSave={handleSave} saving={saving} />}
       </div>
     </div>
   );
@@ -370,12 +370,28 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {Object.entries(definitions).map(([id, quiz]: [string, any]) => (
+        {['foundation', 'product', 'process'].map((id) => {
+          const quiz = definitions[id];
+          if (!quiz) return null;
+          return (
+            <div key={id} className={`group relative p-4 rounded-2xl border text-left transition-all ${selectedQuiz === id ? 'border-primary ring-2 ring-primary/10 bg-primary/5' : 'border-border bg-secondary/10 hover:border-primary/50'}`}>
+              <button onClick={() => { setSelectedQuiz(id); setSelectedQuestions([]); setShowMagicImport(false); }} className="w-full text-left">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground block mb-1">{id}</span>
+                <h4 className="font-bold text-sm truncate">{quiz?.title?.en || 'Untitled Quiz'}</h4>
+                <p className="text-[10px] text-muted-foreground">{(quiz?.questions?.length || 0)} Questions</p>
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); handleDeleteQuiz(id); }} className="absolute top-2 right-2 p-1.5 bg-background/80 backdrop-blur-sm rounded-lg text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/10">
+                <Trash2 size={14} />
+              </button>
+            </div>
+          );
+        })}
+        {Object.keys(definitions).filter(id => !['foundation', 'product', 'process'].includes(id)).map((id) => (
           <div key={id} className={`group relative p-4 rounded-2xl border text-left transition-all ${selectedQuiz === id ? 'border-primary ring-2 ring-primary/10 bg-primary/5' : 'border-border bg-secondary/10 hover:border-primary/50'}`}>
             <button onClick={() => { setSelectedQuiz(id); setSelectedQuestions([]); setShowMagicImport(false); }} className="w-full text-left">
               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground block mb-1">{id}</span>
-              <h4 className="font-bold text-sm truncate">{quiz?.title?.en || 'Untitled Quiz'}</h4>
-              <p className="text-[10px] text-muted-foreground">{(quiz?.questions?.length || 0)} Questions</p>
+              <h4 className="font-bold text-sm truncate">{definitions[id]?.title?.en || 'Untitled Quiz'}</h4>
+              <p className="text-[10px] text-muted-foreground">{(definitions[id]?.questions?.length || 0)} Questions</p>
             </button>
             <button onClick={(e) => { e.stopPropagation(); handleDeleteQuiz(id); }} className="absolute top-2 right-2 p-1.5 bg-background/80 backdrop-blur-sm rounded-lg text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/10">
               <Trash2 size={14} />
@@ -728,7 +744,28 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {Object.entries(modules).map(([id, mod]: [string, any]) => (
+        {['product', 'kyc', 'website'].map((id) => {
+          const mod = modules[id];
+          if (!mod) return null;
+          return (
+            <div key={id} className={`p-4 rounded-2xl border transition-all ${editingId === id ? 'border-primary ring-2 ring-primary/10 bg-primary/5' : 'border-border bg-secondary/10'}`}>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">{id}</span>
+                <div className="flex items-center gap-1">
+                  <button onClick={() => handleDeleteModule(id)} className="p-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors">
+                    <Trash2 size={16} />
+                  </button>
+                  <button onClick={() => setEditingId(editingId === id ? null : id)} className="p-2 rounded-lg hover:bg-background text-primary transition-colors">
+                    <Edit3 size={16} />
+                  </button>
+                </div>
+              </div>
+              <h4 className="font-bold truncate">{mod.title}</h4>
+              <p className="text-xs text-muted-foreground truncate">{mod.titleTh}</p>
+            </div>
+          );
+        })}
+        {Object.entries(modules).filter(([id]) => !['product', 'kyc', 'website'].includes(id)).map(([id, mod]: [string, any]) => (
           <div key={id} className={`p-4 rounded-2xl border transition-all ${editingId === id ? 'border-primary ring-2 ring-primary/10 bg-primary/5' : 'border-border bg-secondary/10'}`}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">{id}</span>
