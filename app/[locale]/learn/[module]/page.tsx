@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import PresentationViewer from '@/components/features/PresentationViewer';
 import { getCourseModule, type CourseLang } from '@/lib/courses';
+import { getServerUser } from '@/lib/session';
 
 export default async function LearnPage({
   params,
@@ -15,7 +16,15 @@ export default async function LearnPage({
   const course = await getCourseModule(module);
   if (!course) redirect('/dashboard');
 
+  const user = await getServerUser();
   const initialLang: CourseLang = lang === 'en' ? 'en' : 'th';
 
-  return <PresentationViewer module={course} locale={locale} initialLang={initialLang} />;
+  return (
+    <PresentationViewer
+      module={course}
+      locale={locale}
+      initialLang={initialLang}
+      user={user}
+    />
+  );
 }

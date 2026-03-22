@@ -125,7 +125,20 @@
     "pctCorrect": "% correct",
     "yourAnswer": "You answered:",
     "correctAnswer": "Correct:",
-    "notFound": "Quiz data not found"
+    "notFound": "Quiz data not found",
+    "startFull": "Full Assessment",
+    "practiceByPhase": "Practice by Phase",
+    "fullModeTag": "Official · Scored",
+    "practiceModeTag": "Practice Only · Not Scored",
+    "retryWrong": "Retry Wrong Answers",
+    "questionsLabel": "Questions",
+    "passScoreLabel": "Pass Score",
+    "phasesLabel": "Phases",
+    "selectMode": "Select Mode",
+    "begin": "Begin",
+    "orPractice": "or practice",
+    "officialNote": "Official · Score submitted",
+    "practiceRun": "Practice Run"
   },
   "agentEntry": {
     "title": "Empower your <span style=\"background: linear-gradient(100deg, #00B4D8 0%, #7C3AED 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;\">Sales</span> skills",
@@ -443,7 +456,19 @@
     "syncingSlide": "Syncing Slide {slide}",
     "arrowsNavigate": "ARROWS TO NAVIGATE",
     "slide": "Slide",
-    "back": "Go back"
+    "back": "Go back",
+    "loadError": "Could not load presentation",
+    "retry": "Retry",
+    "moduleComplete": "Module Complete",
+    "controlledBy": "Controlled by {name}",
+    "syncActive": "Sync Active",
+    "takeControl": "Take Control",
+    "stopControl": "Stop Control",
+    "participants": "Participants",
+    "inControl": "In Control",
+    "following": "Following Sync",
+    "preloading": "Pre-loading Presentation...",
+    "preloadingDetail": "Downloading high-quality slides for instant access"
   },
   "trainer": {
     "management": "Training Management",
@@ -521,7 +546,11 @@
     "dayAllDone": "All done",
     "dayNoRecords": "No records yet — fill in each agent below",
     "dayAgentsRecorded": "{done} of {total} {total, plural, =1 {agent} other {agents}} recorded",
-    "dayAgentsProgress": "{done}/{total} agents"
+    "dayAgentsProgress": "{done}/{total} agents",
+    "livePresentation": "Live Lessons",
+    "launchSync": "Start Sync Session",
+    "viewAsTrainer": "Open Presentation",
+    "syncDescription": "Control the slides for all agents in this batch in real-time."
   },
   "evaluator": {
     "panelTitle": "Evaluator Panel",
@@ -696,6 +725,14 @@
     "placeholder": "Type your message to respond to the customer...",
     "evaluate": "Evaluate",
     "feedback": "AI Feedback",
+    "hideCoaching": "Hide Advice",
+    "viewCoaching": "View Coaching",
+    "strengthsLabel": "Strengths",
+    "improvementsLabel": "Improvements",
+    "techniqueLabel": "Technique",
+    "scriptLabel": "Try This",
+    "levelLabel": "Level",
+    "systemTitle": "AI Evaluation",
     "levels": {
       "1": {
         "th": "General Rejection",
@@ -755,9 +792,12 @@
   "quizSelection": {
     "title": "Module Assessment",
     "subtitle": "Select a topic to begin your knowledge test",
-    "questions": "{count} questions",
+    "questions": "{count} {count, plural, =1 {question} other {questions}}",
     "passScore": "Pass: {threshold}%",
     "passFirst": "Pass \"{title}\" first",
+    "passed": "Passed",
+    "prereqLocked": "Complete \"{title}\" to unlock",
+    "prereqUnlocked": "\"{title}\" complete — unlocked",
     "sections": {
       "foundation": {
         "label": "Section 1 — Foundation Knowledge",

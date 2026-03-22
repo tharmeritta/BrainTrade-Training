@@ -2,6 +2,23 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Wide open rules for presentation_sync to allow real-time collaboration
+    // between staff (authenticated) and agents (unauthenticated/local storage)
+    match /presentation_sync/{moduleId} {
+      allow read, write: if true;
+      
+      // Allow recursive access to participants subcollection
+      match /participants/{participantId} {
+        allow read, write: if true;
+      }
+      
+      // Catch-all for any other nested paths under presentation_sync
+      match /{allPaths=**} {
+        allow read, write: if true;
+      }
+    }
+    
+    // Default Deny for all other collections to ensure security
     match /{document=**} {
       allow read, write: if false;
     }

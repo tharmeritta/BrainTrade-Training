@@ -636,26 +636,105 @@ function PitchEditor({ configs, onSave, saving }: { configs: any, onSave: (id: s
 
 function AiEvalEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => void, saving: boolean }) {
   const [prompt, setPrompt] = useState(data?.systemPrompt || '');
+  const levels = [1, 2, 3, 4];
   
   return (
-    <div className="p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-bold flex items-center gap-2"><Zap size={16} className="text-purple-400" /> AI Trainer System Prompt</h3>
-        <button onClick={() => onSave({ ...data, systemPrompt: prompt })} disabled={saving} className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50">
-          {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save Prompt
-        </button>
+    <div className="p-6 space-y-8">
+      {/* Global System Prompt */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold flex items-center gap-2"><Zap size={16} className="text-purple-400" /> AI Trainer System Prompt</h3>
+          <button onClick={() => onSave({ ...data, systemPrompt: prompt })} disabled={saving} className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50">
+            {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save System Prompt
+          </button>
+        </div>
+        <p className="text-xs text-muted-foreground italic">This global prompt controls the base behavior and JSON output format. Be extremely careful with changes.</p>
+        <textarea 
+          value={prompt} onChange={e => setPrompt(e.target.value)}
+          className="w-full h-96 text-sm bg-secondary/20 p-4 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 font-mono"
+        />
       </div>
-      <p className="text-xs text-muted-foreground italic">This prompt controls the behavior of the AI Evaluator. Be careful with changes as they affect the grading logic.</p>
-      <textarea 
-        value={prompt} onChange={e => setPrompt(e.target.value)}
-        className="w-full h-[600px] text-sm bg-secondary/20 p-4 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary/20"
-      />
+
+      <div className="h-px bg-border" />
+
+      {/* Level Specific Contexts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {levels.map(l => {
+          const field = `level${l}Prompt`;
+          const currentVal = data?.[field] || '';
+          return (
+            <div key={l} className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="font-black text-xs uppercase tracking-widest text-muted-foreground">Level {l} Context</h4>
+                <button 
+                  onClick={() => {
+                    const val = (document.getElementById(`ai-eval-l${l}`) as HTMLTextAreaElement).value;
+                    onSave({ ...data, [field]: val });
+                  }} 
+                  disabled={saving}
+                  className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors disabled:opacity-50"
+                >
+                  {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                </button>
+              </div>
+              <textarea 
+                id={`ai-eval-l${l}`}
+                defaultValue={currentVal}
+                placeholder={`Specific instructions for Level ${l} persona and objections...`}
+                className="w-full h-40 text-sm bg-secondary/10 p-3 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary/10"
+              />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
+const LEARN_DEFAULT_MODULES: Record<string, any> = {
+  product: {
+    id: 'product',
+    title: 'What is Stock?',
+    titleTh: 'หุ้นคืออะไร?',
+    description: 'Learn the fundamentals of stocks, equity, and how the stock market works.',
+    descriptionTh: 'เรียนรู้พื้นฐานของหุ้น ส่วนของผู้ถือหุ้น และวิธีการทำงานของตลาดหลักทรัพย์',
+    gradient: 'from-blue-600 to-indigo-700',
+    presentations: {
+      th: { presentationId: '1SNZxAJAZets0wMIGsLSoaVDtV2tTP21i', totalSlides: 16 },
+      en: { presentationId: '1U0Vbd0NgJIfKfiTl17Q4c67ytl1GMtY-', totalSlides: 16 },
+    },
+  },
+  kyc: {
+    id: 'kyc',
+    title: 'Know Your Customer (KYC)',
+    titleTh: 'รู้จักลูกค้า (KYC)',
+    description: 'Learn the KYC process, customer verification, and compliance requirements for financial services.',
+    descriptionTh: 'เรียนรู้กระบวนการ KYC การตรวจสอบตัวตนลูกค้า และข้อกำหนดด้านการปฏิบัติตามกฎระเบียบสำหรับบริการทางการเงิน',
+    gradient: 'from-emerald-600 to-teal-700',
+    presentations: {
+      th: { presentationId: '1DMs0-BZ1dI0KE6HYncMzeNjDUavdPOtA', totalSlides: 11 },
+      en: { presentationId: '1SeHjETc4hrYlo4QAQREk5yzjOMznfdxm', totalSlides: 11 },
+    },
+  },
+  website: {
+    id: 'website',
+    title: 'BrainTrade Website',
+    titleTh: 'เว็บไซต์ BrainTrade',
+    description: 'A walkthrough of the BrainTrade platform, its features, and how to navigate and use the website effectively.',
+    descriptionTh: 'แนะนำแพลตฟอร์ม BrainTrade ฟีเจอร์ต่างๆ และวิธีการใช้งานเว็บไซต์อย่างมีประสิทธิภาพ',
+    gradient: 'from-violet-600 to-purple-700',
+    presentations: {
+      th: { presentationId: '1DZvsOEv_0G4ZLm1hC6JQlxm2EpaLHqk6', totalSlides: 16 },
+      en: { presentationId: '1FW-wC8qqlvHyTo8mhliCqoOC0kL7mYXK', totalSlides: 16 },
+    },
+  },
+};
+
 function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => void, saving: boolean }) {
-  const [modules, setModules] = useState<any>(data?.modules || {});
+  const initialModules = data?.modules && Object.keys(data.modules).length > 0
+    ? data.modules
+    : LEARN_DEFAULT_MODULES;
+  const [modules, setModules] = useState<any>(initialModules);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const extractPresentationId = (input: string) => {
@@ -744,28 +823,7 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {['product', 'kyc', 'website'].map((id) => {
-          const mod = modules[id];
-          if (!mod) return null;
-          return (
-            <div key={id} className={`p-4 rounded-2xl border transition-all ${editingId === id ? 'border-primary ring-2 ring-primary/10 bg-primary/5' : 'border-border bg-secondary/10'}`}>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">{id}</span>
-                <div className="flex items-center gap-1">
-                  <button onClick={() => handleDeleteModule(id)} className="p-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors">
-                    <Trash2 size={16} />
-                  </button>
-                  <button onClick={() => setEditingId(editingId === id ? null : id)} className="p-2 rounded-lg hover:bg-background text-primary transition-colors">
-                    <Edit3 size={16} />
-                  </button>
-                </div>
-              </div>
-              <h4 className="font-bold truncate">{mod.title}</h4>
-              <p className="text-xs text-muted-foreground truncate">{mod.titleTh}</p>
-            </div>
-          );
-        })}
-        {Object.entries(modules).filter(([id]) => !['product', 'kyc', 'website'].includes(id)).map(([id, mod]: [string, any]) => (
+        {Object.entries(modules).map(([id, mod]: [string, any]) => (
           <div key={id} className={`p-4 rounded-2xl border transition-all ${editingId === id ? 'border-primary ring-2 ring-primary/10 bg-primary/5' : 'border-border bg-secondary/10'}`}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">{id}</span>

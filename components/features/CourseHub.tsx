@@ -175,7 +175,7 @@ const CourseCard = memo(({ module, lang, index, onStart }: CourseCardProps) => {
         </AnimatePresence>
 
         <img
-          src={`https://docs.google.com/presentation/d/${pres.presentationId}/thumbnail?sz=w640`}
+          src={`https://docs.google.com/presentation/d/${pres.presentationId}/export/png?pageid=p1`}
           alt={title}
           className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 group-hover:scale-110 z-10 ${
             imgStatus === 'success' ? 'opacity-90 group-hover:opacity-100' : 'opacity-0'

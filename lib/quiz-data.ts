@@ -2467,6 +2467,16 @@ export const MODULE_QUIZ_MAP: Record<string, QuizDefinition> = {
     ],
     questions: [...KYC_PART1, ...KYC_PART2, ...KYC_PART3, ...KYC_PART4, ...KYC_PART5, ...KYC_PART6],
   },
+  payment: {
+    id: 'payment-training',
+    title: { en: 'Payment & Packages', th: 'การชำระเงินและแพ็กเกจ' },
+    description: {
+      en: 'Questions covering BrainTrade subscription packages, pricing, payment methods, and handling payment objections.',
+      th: 'ข้อสอบครอบคลุมแพ็กเกจ ราคา วิธีชำระเงินของ BrainTrade และการรับมือข้อโต้แย้งด้านราคา',
+    },
+    passThreshold: 0.8,
+    questions: [], // loaded from Firestore at runtime
+  },
 };
 
 export const PASS_THRESHOLD = 0.8; // 80%

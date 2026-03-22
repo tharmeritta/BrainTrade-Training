@@ -374,35 +374,44 @@ const EvalForm = ({
         <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
           {PERFORMANCE_KEYS.map((key) => {
             const perf = criteria.performance[key];
+            const isUnhandled = key === 'unhandledQuestions';
+            const isActive = perf.agentInvolve;
+            
+            // Base colors for active state: red for unhandled questions, blue for others
+            const activeBorder = isUnhandled ? 'border-red-500/30' : 'border-blue-500/30';
+            const activeBg = isUnhandled ? 'bg-red-500/[0.04]' : 'bg-blue-500/[0.04]';
+            const activeText = isUnhandled ? 'text-red-400' : 'text-blue-400';
+            const activeToggleBg = isUnhandled ? 'bg-red-500' : 'bg-blue-500';
+
             return (
               <div key={key}
-                className={`rounded-xl border p-4 space-y-3 transition-colors ${perf.agentInvolve ? 'border-blue-500/30 bg-blue-500/[0.04]' : 'border-border bg-card'}`}
+                className={`rounded-xl border p-4 space-y-3 transition-colors ${isActive ? `${activeBorder} ${activeBg}` : 'border-border bg-card'}`}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <span className={`text-sm font-semibold leading-snug ${perf.agentInvolve ? 'text-blue-400' : 'text-foreground'}`}>
+                  <span className={`text-sm font-semibold leading-snug ${isActive ? activeText : 'text-foreground'}`}>
                     {t(`performanceItems.${key}`)}
                   </span>
                   <div className="flex flex-col items-center gap-1 shrink-0">
                     <button
                       onClick={() => setPerf(key, 'agentInvolve', !perf.agentInvolve)}
-                      className={`w-11 h-6 rounded-full relative transition-all shadow-inner ${perf.agentInvolve ? 'bg-blue-500' : 'bg-secondary border border-border'}`}
+                      className={`w-11 h-6 rounded-full relative transition-all shadow-inner ${isActive ? activeToggleBg : 'bg-secondary border border-border'}`}
                     >
                       <motion.div
-                        animate={{ x: perf.agentInvolve ? 22 : 2 }}
+                        animate={{ x: isActive ? 22 : 2 }}
                         className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm flex items-center justify-center"
                       >
-                        {perf.agentInvolve ? <Check size={8} className="text-blue-500" /> : <X size={8} className="text-muted-foreground" />}
+                        {isActive ? <Check size={8} className={isUnhandled ? 'text-red-500' : 'text-blue-500'} /> : <X size={8} className="text-muted-foreground" />}
                       </motion.div>
                     </button>
-                    <span className={`text-[10px] font-black ${perf.agentInvolve ? 'text-blue-400' : 'text-muted-foreground/50'}`}>
-                      {perf.agentInvolve ? t('yLabel') : t('nLabel')}
+                    <span className={`text-[10px] font-black ${isActive ? activeText : 'text-muted-foreground/50'}`}>
+                      {isActive ? t('yLabel') : t('nLabel')}
                     </span>
                   </div>
                 </div>
                 <textarea
                   value={perf.comment} onChange={e => setPerf(key, 'comment', e.target.value)}
                   placeholder={t('commentPlaceholder')} rows={2}
-                  className="w-full px-3 py-2 rounded-lg text-xs text-foreground outline-none resize-none transition-colors placeholder:text-muted-foreground/40 bg-secondary/40 border border-border focus:border-blue-500/40"
+                  className={`w-full px-3 py-2 rounded-lg text-xs text-foreground outline-none resize-none transition-colors placeholder:text-muted-foreground/40 bg-secondary/40 border border-border focus:border-blue-500/40 ${isActive && isUnhandled ? 'focus:border-red-500/40' : 'focus:border-blue-500/40'}`}
                 />
               </div>
             );
@@ -429,18 +438,29 @@ const EvalForm = ({
           <div className="pt-2 border-t border-border/50">
             <label className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">{t('qaImpactLabel')}</label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {(['none', 'notify_improve', 'immediate_fail'] as const).map(impact => (
-                <button
-                  key={impact}
-                  onClick={() => onChange({ ...criteria, qaImpact: impact })}
-                  className={`px-3 py-2.5 rounded-xl text-[11px] font-bold border transition-all flex items-center justify-center gap-2 ${criteria.qaImpact === impact ? 'bg-primary/10 border-primary text-primary shadow-sm' : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/60'}`}
-                >
-                  {impact === 'none' && <Activity size={12} />}
-                  {impact === 'notify_improve' && <Zap size={12} />}
-                  {impact === 'immediate_fail' && <AlertTriangle size={12} />}
-                  {t(impact === 'none' ? 'qaImpactNone' : impact === 'notify_improve' ? 'qaImpactNotifyImprove' : 'qaImpactImmediateFail')}
-                </button>
-              ))}
+              {(['none', 'notify_improve', 'immediate_fail'] as const).map(impact => {
+                const isActive = criteria.qaImpact === impact;
+                let activeClass = 'bg-primary/10 border-primary text-primary shadow-sm';
+                
+                if (impact === 'immediate_fail') {
+                  activeClass = 'bg-red-500/10 border-red-500 text-red-500 shadow-sm';
+                } else if (impact === 'notify_improve') {
+                  activeClass = 'bg-amber-500/10 border-amber-500 text-amber-500 shadow-sm';
+                }
+
+                return (
+                  <button
+                    key={impact}
+                    onClick={() => onChange({ ...criteria, qaImpact: impact })}
+                    className={`px-3 py-2.5 rounded-xl text-[11px] font-bold border transition-all flex items-center justify-center gap-2 ${isActive ? activeClass : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/60'}`}
+                  >
+                    {impact === 'none' && <Activity size={12} />}
+                    {impact === 'notify_improve' && <Zap size={12} />}
+                    {impact === 'immediate_fail' && <AlertTriangle size={12} />}
+                    {t(impact === 'none' ? 'qaImpactNone' : impact === 'notify_improve' ? 'qaImpactNotifyImprove' : 'qaImpactImmediateFail')}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

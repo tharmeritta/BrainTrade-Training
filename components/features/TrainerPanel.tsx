@@ -7,7 +7,7 @@ import {
   GraduationCap, Plus, ChevronDown, ChevronRight, X, Check,
   Calendar, Users, Clock, AlertTriangle, BookOpen, Pencil,
   Trash2, Save, ToggleLeft, ToggleRight, Loader2, TrendingUp,
-  UserMinus, UserX,
+  UserMinus, UserX, Radio, Zap
 } from 'lucide-react';
 import type { TrainingPeriod, TrainingDayRecord, DisciplineRecord, AgentStats, DisciplineType } from '@/types';
 
@@ -874,6 +874,58 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
   );
 }
 
+// ── Live Sub-tab ─────────────────────────────────────────────────────────────
+
+interface LiveSubTabProps {
+  period: TrainingPeriod;
+  locale: string;
+}
+
+function LiveSubTab({ period, locale }: LiveSubTabProps) {
+  const t = useTranslations('trainer');
+  const [loading, setLoading] = useState(false);
+  const [modules, setModules] = useState<any[]>([]);
+
+  useEffect(() => {
+    // In a real app, fetch from API. For now, use the main ones.
+    setModules([
+      { id: 'product', title: 'What is Stock?', titleTh: 'หุ้นคืออะไร?' },
+      { id: 'kyc', title: 'Know Your Customer (KYC)', titleTh: 'รู้จักลูกค้า (KYC)' },
+      { id: 'website', title: 'BrainTrade Website', titleTh: 'เว็บไซต์ BrainTrade' },
+    ]);
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-2xl p-6 bg-primary/5 border border-primary/10 flex flex-col md:flex-row items-center gap-6">
+        <div className="flex-1">
+          <h3 className="text-lg font-black text-primary mb-1">{t('livePresentation')}</h3>
+          <p className="text-sm text-muted-foreground">{t('syncDescription')}</p>
+        </div>
+        <Radio className="text-primary animate-pulse hidden md:block" size={48} />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {modules.map(mod => (
+          <div key={mod.id} className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-4 group hover:border-primary/30 transition-all">
+            <div className="flex-1">
+              <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">{mod.id}</span>
+              <h4 className="text-sm font-bold text-foreground mt-1">{locale === 'th-TH' ? mod.titleTh : mod.title}</h4>
+            </div>
+            <button
+              onClick={() => window.open(`/${locale.split('-')[0]}/learn/${mod.id}?sync=true`, '_blank')}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold bg-primary text-white shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+            >
+              <Zap size={14} />
+              {t('launchSync')}
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Period Detail Panel ───────────────────────────────────────────────────────
 
 interface PeriodDetailProps {
@@ -887,7 +939,7 @@ interface PeriodDetailProps {
 function PeriodDetail({ period, agents, role, onPeriodUpdated, onPeriodDeleted }: PeriodDetailProps) {
   const t = useTranslations('trainer');
   const locale = t('management') === 'จัดการการฝึกอบรม' ? 'th-TH' : 'en-GB';
-  const [subTab,    setSubTab]    = useState<'days' | 'discipline'>('days');
+  const [subTab,    setSubTab]    = useState<'days' | 'discipline' | 'live'>('days');
   const [dayRecs,   setDayRecs]   = useState<TrainingDayRecord[]>([]);
   const [discRecs,  setDiscRecs]  = useState<DisciplineRecord[]>([]);
   const [loading,   setLoading]   = useState(true);
@@ -1123,11 +1175,13 @@ function PeriodDetail({ period, agents, role, onPeriodUpdated, onPeriodDeleted }
 
         {/* ── Sub-tabs ── */}
         <div className="flex gap-0.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          {(['days', 'discipline'] as const).map(st => (
+          {(['days', 'discipline', 'live'] as const).map(st => (
             <button key={st} onClick={() => setSubTab(st)}
               className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold transition-all relative"
               style={{ color: subTab === st ? T.amber : '#6B7280' }}>
-              {st === 'days' ? <><BookOpen size={14} /> {t('trainingDays')}</> : <><AlertTriangle size={14} /> {t('discipline')}</>}
+              {st === 'days' ? <><BookOpen size={14} /> {t('trainingDays')}</> : 
+               st === 'discipline' ? <><AlertTriangle size={14} /> {t('discipline')}</> :
+               <><Radio size={14} /> {t('liveLessons')}</>}
               {subTab === st && (
                 <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full"
                   style={{ background: T.amber }} />
@@ -1154,13 +1208,18 @@ function PeriodDetail({ period, agents, role, onPeriodUpdated, onPeriodDeleted }
             readOnly={!canEdit}
             role={role}
           />
-        ) : (
+        ) : subTab === 'discipline' ? (
           <DisciplineSubTab
             period={period}
             records={discRecs}
             onAdded={r => setDiscRecs(prev => [r, ...prev])}
             onDeleted={id => setDiscRecs(prev => prev.filter(r => r.id !== id))}
             readOnly={!canEdit}
+          />
+        ) : (
+          <LiveSubTab
+            period={period}
+            locale={locale}
           />
         )}
       </div>

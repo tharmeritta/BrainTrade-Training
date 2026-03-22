@@ -125,7 +125,20 @@
     "pctCorrect": "เปอร์เซ็นต์ที่ถูก",
     "yourAnswer": "คำตอบของคุณ:",
     "correctAnswer": "คำตอบที่ถูก:",
-    "notFound": "ไม่พบข้อมูลแบบทดสอบ"
+    "notFound": "ไม่พบข้อมูลแบบทดสอบ",
+    "startFull": "ทดสอบเต็มรูปแบบ",
+    "practiceByPhase": "ฝึกตามระยะ",
+    "fullModeTag": "ทางการ · บันทึกผล",
+    "practiceModeTag": "โหมดฝึกฝน · ไม่บันทึก",
+    "retryWrong": "ทำข้อที่ผิดซ้ำ",
+    "questionsLabel": "คำถาม",
+    "passScoreLabel": "คะแนนผ่าน",
+    "phasesLabel": "ระยะ",
+    "selectMode": "เลือกโหมด",
+    "begin": "เริ่ม",
+    "orPractice": "หรือฝึกฝน",
+    "officialNote": "ทางการ · บันทึกคะแนน",
+    "practiceRun": "โหมดฝึกฝน"
   },
   "agentEntry": {
     "title": "เสริมทักษะ <span style=\"background: linear-gradient(100deg, #00B4D8 0%, #7C3AED 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;\">การขาย</span> ของคุณ",
@@ -443,7 +456,19 @@
     "syncingSlide": "กำลังซิงค์สไลด์ {slide}",
     "arrowsNavigate": "ใช้ลูกศรเพื่อเลื่อน",
     "slide": "สไลด์",
-    "back": "ย้อนกลับ"
+    "back": "ย้อนกลับ",
+    "loadError": "ไม่สามารถโหลดการนำเสนอได้",
+    "retry": "ลองอีกครั้ง",
+    "moduleComplete": "โมดูลเสร็จสมบูรณ์",
+    "controlledBy": "ควบคุมโดย {name}",
+    "syncActive": "การซิงค์เปิดอยู่",
+    "takeControl": "ควบคุมการนำเสนอ",
+    "stopControl": "หยุดการควบคุม",
+    "participants": "ผู้เข้าร่วม",
+    "inControl": "กำลังควบคุม",
+    "following": "กำลังติดตาม",
+    "preloading": "กำลังโหลดข้อมูลการนำเสนอ...",
+    "preloadingDetail": "ดาวน์โหลดสไลด์ความละเอียดสูงเพื่อการใช้งานที่รวดเร็ว"
   },
   "trainer": {
     "management": "จัดการการฝึกอบรม",
@@ -521,7 +546,11 @@
     "dayAllDone": "เสร็จทั้งหมด",
     "dayNoRecords": "ยังไม่มีบันทึก — กรอกข้อมูลเอเจนต์แต่ละคนด้านล่าง",
     "dayAgentsRecorded": "บันทึกแล้ว {done} จาก {total} เอเจนต์",
-    "dayAgentsProgress": "{done}/{total} เอเจนต์"
+    "dayAgentsProgress": "{done}/{total} เอเจนต์",
+    "livePresentation": "บทเรียนสด",
+    "launchSync": "เริ่มเซสชันซิงค์",
+    "viewAsTrainer": "เปิดการนำเสนอ",
+    "syncDescription": "ควบคุมสไลด์ให้กับเอเจนต์ในรุ่นนี้แบบเรียลไทม์"
   },
   "evaluator": {
     "panelTitle": "แผงผู้ประเมิน",
@@ -635,7 +664,7 @@
     "pwMinLength": "รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร",
     "pwUpdateSuccess": "อัปเดตเรียบร้อยแล้ว!",
     "performanceItems": {
-      "agentStruggle": "การดิ้นรน / ความลำบาก",
+      "agentStruggle": "ความพยายาม",
       "unhandledQuestions": "คำถามที่ตอบไม่ได้",
       "toneOfVoice": "น้ำเสียง",
       "chemistryFriendliness": "เคมี / ความเป็นมิตร"
@@ -696,6 +725,14 @@
     "placeholder": "พิมพ์ข้อความเพื่อตอบโต้ลูกค้า...",
     "evaluate": "ประเมินผล",
     "feedback": "คำแนะนำจาก AI",
+    "hideCoaching": "ซ่อนคำแนะนำ",
+    "viewCoaching": "ดูคำแนะนำจากโค้ช",
+    "strengthsLabel": "จุดดี",
+    "improvementsLabel": "ควรปรับ",
+    "techniqueLabel": "เทคนิค",
+    "scriptLabel": "ลองพูดแบบนี้",
+    "levelLabel": "ระดับ",
+    "systemTitle": "AI ประเมินผล",
     "levels": {
       "1": {
         "th": "ปฏิเสธทั่วไป",
@@ -758,6 +795,9 @@
     "questions": "{count} ข้อ",
     "passScore": "เกณฑ์ผ่าน: {threshold}%",
     "passFirst": "ต้องผ่าน \"{title}\" ก่อน",
+    "passed": "ผ่านแล้ว",
+    "prereqLocked": "ต้องผ่าน \"{title}\" เพื่อปลดล็อก",
+    "prereqUnlocked": "\"{title}\" ผ่านแล้ว — ปลดล็อกแล้ว",
     "sections": {
       "foundation": {
         "label": "ส่วนที่ 1 — ความรู้พื้นฐาน",
