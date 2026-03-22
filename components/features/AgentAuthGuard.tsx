@@ -9,12 +9,24 @@ import { getAgentSession } from '@/lib/agent-session';
  * dashboard (AgentEntry) before they can access course, quiz, or ai-eval
  * pages. Renders nothing until the session check resolves.
  */
-export default function AgentAuthGuard({ children }: { children: React.ReactNode }) {
+export default function AgentAuthGuard({ 
+  children,
+  allowStaff = false
+}: { 
+  children: React.ReactNode,
+  allowStaff?: boolean
+}) {
   const router   = useRouter();
   const pathname = usePathname();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // If allowStaff is true, we immediately permit access.
+    if (allowStaff) {
+      setReady(true);
+      return;
+    }
+
     const session = getAgentSession();
 
     if (!session) {
@@ -24,7 +36,7 @@ export default function AgentAuthGuard({ children }: { children: React.ReactNode
     } else {
       setReady(true);
     }
-  }, [pathname, router]);
+  }, [pathname, router, allowStaff]);
 
   if (!ready) return null;
 

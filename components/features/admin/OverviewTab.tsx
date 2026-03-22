@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { Users, Target, Award, Activity, TrendingUp, BookOpen, Zap, Loader2, CheckCircle2, Clock, AlertCircle, ShieldCheck, type LucideIcon } from 'lucide-react';
 import type { AdminOverviewData } from '@/types';
-import { KpiCard, DonutChart, ModuleBar, BadgePill } from './AdminComponents';
+import { KpiCard, DonutChart, ModuleBar, BadgePill, StatusPipeline } from './AdminComponents';
 import { scoreColor, scoreBg, timeAgo } from './AdminHelpers';
 import LiveFeed from './LiveFeed';
 import { getCompletionStatus, type CompletionStatus } from '@/lib/completion';
@@ -84,18 +84,7 @@ export default function OverviewTab() {
     </div>
   );
 
-  // Compute pipeline counts from the leaderboard (which has full AgentStats)
-  const pipelineCounts = { 'not-started': 0, 'in-progress': 0, 'needs-eval': 0, 'cleared': 0 };
-  for (const agent of data.leaderboard) {
-    pipelineCounts[getCompletionStatus(agent).status]++;
-  }
 
-  const PIPELINE_STEPS: { status: CompletionStatus; label: string; icon: LucideIcon; color: string; bg: string; border: string }[] = [
-    { status: 'not-started', label: t('overview.statusNotStarted'), icon: AlertCircle,  color: 'text-muted-foreground', bg: 'bg-secondary/40',    border: 'border-border' },
-    { status: 'in-progress', label: t('overview.statusInProgress'), icon: Clock,        color: 'text-blue-400',         bg: 'bg-blue-500/10',     border: 'border-blue-500/20' },
-    { status: 'needs-eval',  label: t('overview.statusNeedsEval'),  icon: CheckCircle2, color: 'text-amber-400',        bg: 'bg-amber-500/10',    border: 'border-amber-500/20' },
-    { status: 'cleared',     label: t('overview.statusCleared'),    icon: ShieldCheck,  color: 'text-emerald-400',      bg: 'bg-emerald-500/10',  border: 'border-emerald-500/20' },
-  ];
 
   // Roster: agents who have started (in-progress or beyond), sorted by status priority
   const STATUS_ORDER: Record<CompletionStatus, number> = { cleared: 0, 'needs-eval': 1, 'in-progress': 2, 'not-started': 3 };
@@ -121,28 +110,7 @@ export default function OverviewTab() {
           <p className="text-xs text-muted-foreground mt-0.5">{t('overview.pipelineDesc')}</p>
         </div>
 
-        {/* Funnel counts */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {PIPELINE_STEPS.map((step, i) => {
-            const Icon = step.icon;
-            const count = pipelineCounts[step.status];
-            return (
-              <div key={step.status} className={`relative rounded-xl border p-4 ${step.bg} ${step.border}`}>
-                {i < PIPELINE_STEPS.length - 1 && (
-                  <div className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded-full bg-secondary border border-border items-center justify-center">
-                    <svg width="10" height="10" viewBox="0 0 10 10" className="text-muted-foreground/60 fill-current"><path d="M2 1l5 4-5 4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  </div>
-                )}
-                <Icon size={18} className={`mb-2 ${step.color}`} />
-                <p className={`text-3xl font-black ${step.color}`}>{count}</p>
-                <p className={`text-xs font-semibold mt-0.5 ${step.color}`}>{step.label}</p>
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  {data.totalAgents > 0 ? Math.round((count / data.totalAgents) * 100) : 0}% {t('overview.ofAgents')}
-                </p>
-              </div>
-            );
-          })}
-        </div>
+        <StatusPipeline stats={data.leaderboard} totalCount={data.totalAgents} />
 
         {/* Graduation Roster */}
         <div>

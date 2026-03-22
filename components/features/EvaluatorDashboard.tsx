@@ -23,6 +23,7 @@ import { getCompletionStatus, type CompletionStatus } from '@/lib/completion';
 import { BADGE_CONFIG } from '@/components/features/admin/AdminHelpers';
 import AgentDetailModal from '@/components/features/admin/AgentDetailModal';
 import ChangePasswordModal from '@/components/features/admin/ChangePasswordModal';
+import { StatusPipeline } from '@/components/features/admin/AdminComponents';
 
 import type {
   Agent, AgentEvaluation, AgentStats,
@@ -746,25 +747,8 @@ const OverviewPanel = ({
       )}
 
       {/* Mini pipeline summary */}
-      <motion.div variants={STAGGER_ITEM} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {(
-          [
-            { status: 'not-started', icon: AlertCircle, labelKey: 'statusNotStarted'  },
-            { status: 'in-progress', icon: Clock,       labelKey: 'statusInProgress'  },
-            { status: 'needs-eval',  icon: CheckCircle2, labelKey: 'statusNeedsEval'   },
-            { status: 'cleared',     icon: ShieldCheck,  labelKey: 'statusCleared'     },
-          ] as { status: CompletionStatus; icon: React.ElementType; labelKey: string }[]
-        ).map(({ status, icon: Icon, labelKey }) => {
-          const cfg   = STATUS_CFG[status];
-          const count = allAgentStats.filter(s => getCompletionStatus(s).status === status).length;
-          return (
-            <div key={status} className={`rounded-xl border p-4 ${cfg.bg} ${cfg.border}`}>
-              <Icon size={16} className={`mb-2 ${cfg.color}`} />
-              <p className={`text-2xl font-black ${cfg.color}`}>{count}</p>
-              <p className={`text-xs font-semibold mt-0.5 ${cfg.color}`}>{t(labelKey)}</p>
-            </div>
-          );
-        })}
+      <motion.div variants={STAGGER_ITEM}>
+        <StatusPipeline stats={allAgentStats} />
       </motion.div>
 
       {/* All Agents grid */}

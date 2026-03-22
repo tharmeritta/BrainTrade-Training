@@ -7,7 +7,8 @@ import {
   GraduationCap, Plus, ChevronDown, ChevronRight, X, Check,
   Calendar, Users, Clock, AlertTriangle, BookOpen, Pencil,
   Trash2, Save, ToggleLeft, ToggleRight, Loader2, TrendingUp,
-  UserMinus, UserX, Radio, Zap
+  UserMinus, UserX, Radio, Zap, HelpCircle, Copy, Eye,
+  Square, Send, RotateCcw
 } from 'lucide-react';
 import type { TrainingPeriod, TrainingDayRecord, DisciplineRecord, AgentStats, DisciplineType } from '@/types';
 
@@ -34,6 +35,14 @@ function fmtDate(iso: string, locale: string = 'en-GB') {
 
 function Spinner() {
   return <Loader2 size={16} className="animate-spin" style={{ color: T.amber }} />;
+}
+
+function fmtElapsed(secs: number) {
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
 // ── New Period Modal ─────────────────────────────────────────────────────────
@@ -881,48 +890,411 @@ interface LiveSubTabProps {
   locale: string;
 }
 
-function LiveSubTab({ period, locale }: LiveSubTabProps) {
-  const t = useTranslations('trainer');
-  const [loading, setLoading] = useState(false);
-  const [modules, setModules] = useState<any[]>([]);
+type LivePhase = 'setup' | 'active' | 'summary';
 
+interface SessionSummaryData {
+  module: { id: string; title: string; titleTh: string };
+  durationSecs: number;
+  agentCount: number;
+}
+
+const LIVE_MODULES = [
+  { id: 'product', title: 'What is Stock?',           titleTh: 'หุ้นคืออะไร?' },
+  { id: 'kyc',     title: 'Know Your Customer (KYC)', titleTh: 'รู้จักลูกค้า (KYC)' },
+  { id: 'website', title: 'BrainTrade Website',       titleTh: 'เว็บไซต์ BrainTrade' },
+];
+
+function LiveSubTab({ period, locale }: LiveSubTabProps) {
+  const t   = useTranslations('trainer');
+  const lang = locale.split('-')[0];
+
+  const [phase,          setPhase]          = useState<LivePhase>('setup');
+  const [selectedModId,  setSelectedModId]  = useState(LIVE_MODULES[0].id);
+  const [copied,         setCopied]         = useState(false);
+  const [elapsed,        setElapsed]        = useState(0);
+  const [broadcastText,  setBroadcastText]  = useState('');
+  const [broadcastSent,  setBroadcastSent]  = useState(false);
+  const [sessionNotes,   setSessionNotes]   = useState('');
+  const [confirmEnd,     setConfirmEnd]     = useState(false);
+  const [summary,        setSummary]        = useState<SessionSummaryData | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const agentLearnUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/${lang}/learn`
+    : `/${lang}/learn`;
+
+  const selectedMod = LIVE_MODULES.find(m => m.id === selectedModId) ?? LIVE_MODULES[0];
+  const agentNames  = Object.values(period.agentNames ?? {});
+  const modTitle    = locale === 'th-TH' ? selectedMod.titleTh : selectedMod.title;
+
+  // Cleanup timer on unmount
   useEffect(() => {
-    // In a real app, fetch from API. For now, use the main ones.
-    setModules([
-      { id: 'product', title: 'What is Stock?', titleTh: 'หุ้นคืออะไร?' },
-      { id: 'kyc', title: 'Know Your Customer (KYC)', titleTh: 'รู้จักลูกค้า (KYC)' },
-      { id: 'website', title: 'BrainTrade Website', titleTh: 'เว็บไซต์ BrainTrade' },
-    ]);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
 
-  return (
-    <div className="space-y-6">
-      <div className="rounded-2xl p-6 bg-primary/5 border border-primary/10 flex flex-col md:flex-row items-center gap-6">
-        <div className="flex-1">
-          <h3 className="text-lg font-black text-primary mb-1">{t('livePresentation')}</h3>
-          <p className="text-sm text-muted-foreground">{t('syncDescription')}</p>
-        </div>
-        <Radio className="text-primary animate-pulse hidden md:block" size={48} />
-      </div>
+  function startSession() {
+    setElapsed(0);
+    setBroadcastText('');
+    setBroadcastSent(false);
+    setConfirmEnd(false);
+    timerRef.current = setInterval(() => setElapsed(s => s + 1), 1000);
+    setPhase('active');
+    window.open(`/${lang}/learn/${selectedModId}?sync=true`, '_blank');
+  }
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {modules.map(mod => (
-          <div key={mod.id} className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-4 group hover:border-primary/30 transition-all">
-            <div className="flex-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">{mod.id}</span>
-              <h4 className="text-sm font-bold text-foreground mt-1">{locale === 'th-TH' ? mod.titleTh : mod.title}</h4>
-            </div>
-            <button
-              onClick={() => window.open(`/${locale.split('-')[0]}/learn/${mod.id}?sync=true`, '_blank')}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold bg-primary text-white shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+  function endSession() {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    setSummary({ module: selectedMod, durationSecs: elapsed, agentCount: agentNames.length });
+    setPhase('summary');
+    setConfirmEnd(false);
+    setSessionNotes('');
+  }
+
+  function resetToSetup() {
+    setPhase('setup');
+    setSummary(null);
+    setElapsed(0);
+  }
+
+  function copyAgentLink() {
+    navigator.clipboard.writeText(agentLearnUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  function sendBroadcast() {
+    if (!broadcastText.trim()) return;
+    // TODO: write to Firestore syncSessions/{sessionId}/broadcastMessage for real-time delivery
+    navigator.clipboard.writeText(broadcastText);
+    setBroadcastSent(true);
+    setTimeout(() => setBroadcastSent(false), 3000);
+  }
+
+  return (
+    <AnimatePresence mode="wait">
+
+      {/* ── Phase: Summary ──────────────────────────────────────────────────── */}
+      {phase === 'summary' && summary ? (
+        <motion.div
+          key="summary"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.25 }}
+          className="space-y-5"
+        >
+          {/* Summary card */}
+          <div
+            className="rounded-2xl border p-8 flex flex-col items-center gap-4 text-center"
+            style={{ borderColor: 'rgba(34,197,94,0.20)', background: 'rgba(34,197,94,0.05)' }}
+          >
+            <div
+              className="w-14 h-14 rounded-full flex items-center justify-center"
+              style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)' }}
             >
-              <Zap size={14} />
-              {t('launchSync')}
-            </button>
+              <Check size={28} style={{ color: '#22c55e' }} />
+            </div>
+            <h3 className="text-xl font-black text-foreground">{t('sessionSummaryTitle')}</h3>
+            <div className="grid grid-cols-3 gap-3 w-full mt-1">
+              {[
+                { label: t('summaryDuration'), value: fmtElapsed(summary.durationSecs) },
+                { label: t('summaryModule'),   value: locale === 'th-TH' ? summary.module.titleTh : summary.module.title },
+                { label: t('summaryAgents'),   value: String(summary.agentCount) },
+              ].map(({ label, value }) => (
+                <div key={label} className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{label}</p>
+                  <p className="text-base font-black text-foreground leading-tight">{value}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </div>
-    </div>
+          <button
+            onClick={resetToSetup}
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-black bg-primary text-white shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
+          >
+            <RotateCcw size={15} />
+            {t('startNewSession')}
+          </button>
+        </motion.div>
+      ) : null}
+
+      {/* ── Phase: Active Session (Mission Control) ──────────────────────────── */}
+      {phase === 'active' ? (
+        <motion.div
+          key="active"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="space-y-4"
+        >
+          {/* Session Status Bar */}
+          <div
+            className="rounded-2xl p-3.5 flex items-center gap-3 border"
+            style={{ background: 'rgba(239,68,68,0.06)', borderColor: 'rgba(239,68,68,0.20)' }}
+          >
+            <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+            </span>
+            <span className="text-[11px] font-black tracking-widest text-red-400 uppercase">{t('sessionLive')}</span>
+            <span className="text-muted-foreground hidden sm:inline text-xs">·</span>
+            <span className="text-xs font-bold text-foreground hidden sm:inline truncate flex-1">{modTitle}</span>
+            <div className="ml-auto flex items-center gap-2 flex-shrink-0">
+              {/* Elapsed timer */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-background border border-border">
+                <Clock size={11} className="text-muted-foreground" />
+                <span className="text-xs font-mono font-bold text-foreground tabular-nums">{fmtElapsed(elapsed)}</span>
+              </div>
+              {/* End session — two-step confirm */}
+              {confirmEnd ? (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] text-muted-foreground hidden md:inline">{t('endSessionPrompt')}</span>
+                  <button
+                    onClick={endSession}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-colors"
+                    style={{ background: 'rgb(239,68,68)' }}
+                  >
+                    <Square size={11} />
+                    {t('endSessionYes')}
+                  </button>
+                  <button
+                    onClick={() => setConfirmEnd(false)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold border border-border text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
+                  >
+                    {t('keepGoing')}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmEnd(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors"
+                  style={{ borderColor: 'rgba(239,68,68,0.30)', color: 'rgb(248,113,113)' }}
+                >
+                  <Square size={11} />
+                  {t('endSession')}
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Two-column control area */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+            {/* ── Left col (3/5): module + notes ── */}
+            <div className="md:col-span-3 space-y-4">
+
+              {/* Current module card */}
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <p className="text-[10px] font-black uppercase tracking-widest text-primary/60 mb-1">{t('sessionModule')}</p>
+                <h4 className="text-base font-black text-foreground mb-0.5">{modTitle}</h4>
+                <p className="text-[11px] font-mono text-muted-foreground mb-4">{selectedMod.id}</p>
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => window.open(`/${lang}/learn/${selectedModId}?sync=true`, '_blank')}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold bg-primary text-white shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                  >
+                    <Zap size={13} />
+                    {t('reopenPresenter')}
+                  </button>
+                  <button
+                    onClick={() => window.open(`/${lang}/learn/${selectedModId}`, '_blank')}
+                    className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-semibold border border-border text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-primary/5 transition-all"
+                  >
+                    <Eye size={12} />
+                    {t('previewAsAgent')}
+                  </button>
+                </div>
+              </div>
+
+              {/* Session notes */}
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <p className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5">
+                  <BookOpen size={13} className="text-primary" />
+                  {t('sessionNotes')}
+                </p>
+                <textarea
+                  value={sessionNotes}
+                  onChange={e => setSessionNotes(e.target.value)}
+                  placeholder={t('sessionNotesPlaceholder')}
+                  rows={4}
+                  className="w-full text-xs bg-background border border-border rounded-xl px-3 py-2.5 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/40 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* ── Right col (2/5): agents + broadcast ── */}
+            <div className="md:col-span-2 space-y-4">
+
+              {/* Agents in batch */}
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
+                  <Users size={13} className="text-primary" />
+                  {t('agentsInBatch')}
+                  <span
+                    className="ml-auto text-[10px] font-black rounded-full px-2 py-0.5"
+                    style={{ color: 'hsl(var(--primary))', background: 'rgba(var(--primary-rgb,99,102,241),0.10)', border: '1px solid rgba(var(--primary-rgb,99,102,241),0.20)' }}
+                  >
+                    {agentNames.length}
+                  </span>
+                </p>
+                <div className="space-y-0.5 max-h-44 overflow-y-auto">
+                  {agentNames.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">{t('noAgentsInPeriod')}</p>
+                  ) : agentNames.map((name, i) => (
+                    <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                      <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 flex-shrink-0" />
+                      <span className="text-xs text-foreground">{name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Broadcast */}
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <p className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5">
+                  <Radio size={13} className="text-primary" />
+                  {t('broadcastMessage')}
+                </p>
+                <textarea
+                  value={broadcastText}
+                  onChange={e => setBroadcastText(e.target.value)}
+                  placeholder={t('broadcastPlaceholder')}
+                  rows={3}
+                  className="w-full text-xs bg-background border border-border rounded-xl px-3 py-2.5 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/40 transition-colors mb-2"
+                />
+                <button
+                  onClick={sendBroadcast}
+                  disabled={!broadcastText.trim()}
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold border transition-all"
+                  style={
+                    broadcastSent
+                      ? { color: '#22c55e', borderColor: 'rgba(34,197,94,0.4)', background: 'rgba(34,197,94,0.08)' }
+                      : broadcastText.trim()
+                      ? { color: 'hsl(var(--primary))', borderColor: 'rgba(var(--primary-rgb,99,102,241),0.4)', background: 'rgba(var(--primary-rgb,99,102,241),0.08)' }
+                      : { color: 'var(--muted-foreground)', borderColor: 'var(--border)', opacity: 0.45 }
+                  }
+                >
+                  {broadcastSent ? <Check size={12} /> : <Send size={12} />}
+                  {broadcastSent ? t('broadcastSent') : t('sendBroadcast')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      ) : null}
+
+      {/* ── Phase: Setup ─────────────────────────────────────────────────────── */}
+      {phase === 'setup' ? (
+        <motion.div
+          key="setup"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="space-y-5"
+        >
+          {/* Header */}
+          <div className="rounded-2xl p-5 bg-primary/5 border border-primary/10 flex items-center gap-4">
+            <div className="flex-1">
+              <h3 className="text-base font-black text-primary mb-0.5">{t('livePresentation')}</h3>
+              <p className="text-sm text-muted-foreground">{t('syncDescription')}</p>
+            </div>
+            <Radio className="text-primary animate-pulse hidden md:block flex-shrink-0" size={36} />
+          </div>
+
+          {/* Step 1 — Pick module */}
+          <div className="space-y-2">
+            <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground px-1">{t('pickModule')}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {LIVE_MODULES.map(mod => {
+                const isSelected = mod.id === selectedModId;
+                return (
+                  <button
+                    key={mod.id}
+                    onClick={() => setSelectedModId(mod.id)}
+                    className="rounded-2xl border p-4 text-left transition-all"
+                    style={
+                      isSelected
+                        ? { borderColor: 'hsl(var(--primary))', background: 'rgba(var(--primary-rgb,99,102,241),0.08)' }
+                        : { borderColor: 'var(--border)', background: 'transparent' }
+                    }
+                  >
+                    <span
+                      className="text-[10px] font-black uppercase tracking-widest"
+                      style={{ color: isSelected ? 'hsl(var(--primary))' : 'var(--muted-foreground)' }}
+                    >
+                      {mod.id}
+                    </span>
+                    <p className="text-sm font-bold text-foreground mt-0.5 leading-tight">
+                      {locale === 'th-TH' ? mod.titleTh : mod.title}
+                    </p>
+                    {isSelected && (
+                      <span
+                        className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold"
+                        style={{ color: 'hsl(var(--primary))' }}
+                      >
+                        <Check size={10} /> Selected
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Step 2 — Enrolled agents */}
+          <div className="space-y-2">
+            <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground px-1">
+              {t('enrolledAgents', { count: agentNames.length })}
+            </p>
+            <div className="rounded-2xl border border-border bg-card px-4 py-3">
+              {agentNames.length === 0 ? (
+                <p className="text-xs text-muted-foreground">{t('noAgentsInPeriod')}</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {agentNames.map((name, i) => (
+                    <span
+                      key={i}
+                      className="px-2.5 py-1 rounded-full text-xs font-bold border border-border bg-background text-foreground"
+                    >
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Step 3 — Agent join link */}
+          <div className="space-y-2">
+            <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground px-1">{t('agentJoinUrl')}</p>
+            <div className="rounded-2xl border border-border bg-card p-3 flex items-center gap-3">
+              <p className="flex-1 text-xs font-mono text-foreground truncate min-w-0">{agentLearnUrl}</p>
+              <button
+                onClick={copyAgentLink}
+                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-border bg-background hover:bg-primary/10 hover:border-primary/30 transition-all"
+                style={copied ? { color: '#22c55e', borderColor: 'rgba(34,197,94,0.4)' } : undefined}
+              >
+                {copied ? <Check size={12} /> : <Copy size={12} />}
+                {copied ? t('linkCopied') : t('copyAgentLink')}
+              </button>
+            </div>
+          </div>
+
+          {/* Start button */}
+          <button
+            onClick={startSession}
+            className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-black bg-primary text-white shadow-xl shadow-primary/25 hover:scale-[1.01] active:scale-[0.99] transition-all"
+          >
+            <Zap size={16} />
+            {t('sessionStart')}
+          </button>
+        </motion.div>
+      ) : null}
+
+    </AnimatePresence>
   );
 }
 

@@ -3,6 +3,7 @@ export type CourseLang = 'th' | 'en';
 export interface CoursePresentation {
   presentationId: string;
   totalSlides: number;
+  cacheKey?: string;
 }
 
 export interface CourseModule {

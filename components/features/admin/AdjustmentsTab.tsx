@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { Save, RotateCcw, Target, Zap, TrendingUp, Loader2, CheckCircle2, AlertCircle, Edit3, Plus, Trash2, BookOpen, Sparkles, FileUp, Download } from 'lucide-react';
+import { Save, RotateCcw, Target, Zap, TrendingUp, Loader2, CheckCircle2, AlertCircle, Edit3, Plus, Trash2, BookOpen, Sparkles, FileUp, Download, RefreshCw } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 type ConfigType = 'quizzes' | 'ai-eval' | 'learn';
@@ -837,11 +837,35 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
                     <span className="text-[10px] font-bold text-muted-foreground">EN Link or ID</span>
                     <input type="text" placeholder="https://docs.google.com/presentation/d/.../edit" value={modules[editingId].presentations.en.presentationId} onChange={e => handleUpdateModule(editingId, 'presentations.en.presentationId', e.target.value)} className="w-full bg-secondary/30 p-3 rounded-xl text-xs border-none focus:ring-2 focus:ring-primary/20" />
                     <input type="number" placeholder="Total Slides" value={modules[editingId].presentations.en.totalSlides} onChange={e => handleUpdateModule(editingId, 'presentations.en.totalSlides', parseInt(e.target.value) || 1)} className="w-full bg-secondary/30 p-3 rounded-xl text-xs border-none focus:ring-2 focus:ring-primary/20" />
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateModule(editingId, 'presentations.en.cacheKey', String(Date.now()))}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-600 transition-colors hover:bg-amber-500/20 dark:text-amber-400"
+                    >
+                      <RefreshCw size={12} /> Refresh EN Slide Cache
+                    </button>
+                    {modules[editingId].presentations.en.cacheKey && (
+                      <p className="text-[10px] text-amber-500/80 font-medium text-center">
+                        Cache key set — save to apply
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <span className="text-[10px] font-bold text-muted-foreground">TH Link or ID</span>
                     <input type="text" placeholder="https://docs.google.com/presentation/d/.../edit" value={modules[editingId].presentations.th.presentationId} onChange={e => handleUpdateModule(editingId, 'presentations.th.presentationId', e.target.value)} className="w-full bg-secondary/30 p-3 rounded-xl text-xs border-none focus:ring-2 focus:ring-primary/20" />
                     <input type="number" placeholder="Total Slides" value={modules[editingId].presentations.th.totalSlides} onChange={e => handleUpdateModule(editingId, 'presentations.th.totalSlides', parseInt(e.target.value) || 1)} className="w-full bg-secondary/30 p-3 rounded-xl text-xs border-none focus:ring-2 focus:ring-primary/20" />
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateModule(editingId, 'presentations.th.cacheKey', String(Date.now()))}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-600 transition-colors hover:bg-amber-500/20 dark:text-amber-400"
+                    >
+                      <RefreshCw size={12} /> Refresh TH Slide Cache
+                    </button>
+                    {modules[editingId].presentations.th.cacheKey && (
+                      <p className="text-[10px] text-amber-500/80 font-medium text-center">
+                        Cache key set — save to apply
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">

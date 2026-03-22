@@ -91,7 +91,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
   const isTrainer = user && ['admin', 'manager', 'trainer'].includes(user.role);
   const amInControl = syncActive && syncedById === (user?.uid || agentId);
 
-  const { presentationId, totalSlides: total } = module.presentations[lang];
+  const { presentationId, totalSlides: total, cacheKey } = module.presentations[lang];
 
   useEffect(() => { slideRef.current = slide; }, [slide]);
 
@@ -112,7 +112,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
     const preloadAll = async () => {
       setIsPreloading(true);
       setPreloadingProgress(0);
-      
+
       const count = total;
       let loadedCount = 0;
       const currentPreloaded = new Set<number>();
@@ -135,7 +135,8 @@ export default function PresentationViewer({ module, locale, initialLang, user }
         await Promise.all(batch.map(n => {
           return new Promise((resolve) => {
             const img = new Image();
-            img.src = `https://docs.google.com/presentation/d/${presentationId}/export/png?pageid=p${n}`;
+            const vParam = cacheKey ? `&v=${encodeURIComponent(cacheKey)}` : '';
+            img.src = `https://docs.google.com/presentation/d/${presentationId}/export/png?pageid=p${n}${vParam}`;
             img.onload = () => {
               if (!active) return resolve(null);
               loadedCount++;
@@ -161,7 +162,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
 
     preloadAll();
     return () => { active = false; };
-  }, [presentationId, total]);
+  }, [presentationId, total, cacheKey]);
 
   // ── Sync Listener ──────────────────────────────────────────────────────────
 
@@ -410,10 +411,10 @@ export default function PresentationViewer({ module, locale, initialLang, user }
     [slide, total]
   );
 
-  const slideImageUrl = useMemo(
-    () => `https://docs.google.com/presentation/d/${presentationId}/export/png?pageid=p${slide}`,
-    [presentationId, slide]
-  );
+  const slideImageUrl = useMemo(() => {
+    const vParam = cacheKey ? `&v=${encodeURIComponent(cacheKey)}` : '';
+    return `https://docs.google.com/presentation/d/${presentationId}/export/png?pageid=p${slide}${vParam}`;
+  }, [presentationId, slide, cacheKey]);
 
   return (
     <div
@@ -468,19 +469,6 @@ export default function PresentationViewer({ module, locale, initialLang, user }
               </div>
             )}
 
-            {isTrainer && (
-              <button
-                onClick={amInControl ? stopControl : takeControl}
-                className={`flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-bold transition-all active:scale-95 ${
-                  amInControl 
-                    ? 'bg-destructive text-white shadow-lg shadow-destructive/20' 
-                    : 'bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20'
-                }`}
-              >
-                {amInControl ? <Power size={14} /> : <ShieldCheck size={14} />}
-                <span className="hidden sm:inline">{amInControl ? t('stopControl') : t('takeControl')}</span>
-              </button>
-            )}
 
             {(user?.name || agentName) && (
               <div className="hidden items-center gap-1.5 rounded-xl border border-black/5 bg-black/5 px-2.5 py-1.5 dark:border-white/5 dark:bg-white/5 sm:flex">
@@ -510,15 +498,17 @@ export default function PresentationViewer({ module, locale, initialLang, user }
           </div>
         </div>
 
-        {/* ── Left nav arrow ────────────────────────────────── */}
-        <button
-          disabled={slide === 1 || (syncActive && !amInControl)}
-          onClick={() => goToSlide(slide - 1)}
-          className="relative z-10 hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border/50 bg-background/90 shadow-lg backdrop-blur-md transition-all active:scale-95 disabled:opacity-20 hover:bg-black/5 dark:hover:bg-white/5 sm:flex"
-          aria-label="Previous slide"
-        >
-          <ChevronLeft size={22} />
-        </button>
+        {/* ── Left nav arrow (agent only — trainer uses bottom bar) ── */}
+        {!isTrainer && (
+          <button
+            disabled={slide === 1 || (syncActive && !amInControl)}
+            onClick={() => goToSlide(slide - 1)}
+            className="relative z-10 hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border/50 bg-background/90 shadow-lg backdrop-blur-md transition-all active:scale-95 disabled:opacity-20 hover:bg-black/5 dark:hover:bg-white/5 sm:flex"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft size={22} />
+          </button>
+        )}
 
         {/* ── Center: slide + overlays ──────────────────────── */}
         <div className="flex-1 min-w-0 min-h-0 flex items-center justify-center sm:self-stretch">
@@ -588,9 +578,9 @@ export default function PresentationViewer({ module, locale, initialLang, user }
               ) : null}
             </AnimatePresence>
 
-            {/* Sync Overlay for agents */}
+            {/* Sync Overlay for agents (hidden for trainer — they have the bottom bar) */}
             <AnimatePresence>
-              {syncActive && !amInControl && (
+              {syncActive && !amInControl && !isTrainer && (
                 <motion.div
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -649,15 +639,17 @@ export default function PresentationViewer({ module, locale, initialLang, user }
           </motion.div>
         </div>
 
-        {/* ── Right nav arrow ───────────────────────────────── */}
-        <button
-          disabled={slide === total || (syncActive && !amInControl)}
-          onClick={() => goToSlide(slide + 1)}
-          className="relative z-10 hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-20 sm:flex"
-          aria-label="Next slide"
-        >
-          <ChevronRight size={22} />
-        </button>
+        {/* ── Right nav arrow (agent only — trainer uses bottom bar) ── */}
+        {!isTrainer && (
+          <button
+            disabled={slide === total || (syncActive && !amInControl)}
+            onClick={() => goToSlide(slide + 1)}
+            className="relative z-10 hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-20 sm:flex"
+            aria-label="Next slide"
+          >
+            <ChevronRight size={22} />
+          </button>
+        )}
       </main>
 
       {/* ── Bottom strip ─────────────────────────────────────── */}
@@ -672,36 +664,54 @@ export default function PresentationViewer({ module, locale, initialLang, user }
           />
         </div>
 
-        <div className="flex items-center justify-between border-t border-border/50 bg-background/80 px-4 py-2 backdrop-blur-xl sm:px-5">
-          {/* Slide counter */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="font-black tabular-nums text-sm">{slide} / {total}</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                {t('slide')}
-              </span>
+        {isTrainer ? (
+          /* ── Trainer Control Bar ──────────────────────────────────── */
+          <div className="flex items-center gap-2 border-t border-border/50 bg-background/80 px-4 py-2.5 backdrop-blur-xl sm:px-5 sm:gap-3">
+
+            {/* Navigation group: Prev · counter · Next — all together */}
+            <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-black/5 dark:bg-white/5 p-1 shrink-0">
+              <button
+                disabled={slide === 1 || (syncActive && !amInControl)}
+                onClick={() => goToSlide(slide - 1)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg transition-all active:scale-95 disabled:opacity-25 hover:bg-black/8 dark:hover:bg-white/8"
+                aria-label="Previous slide"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <div className="px-2.5 text-sm font-black tabular-nums select-none whitespace-nowrap">
+                {slide}
+                <span className="text-muted-foreground font-medium mx-1">/</span>
+                {total}
+              </div>
+              <button
+                disabled={slide === total || (syncActive && !amInControl)}
+                onClick={() => goToSlide(slide + 1)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white transition-all active:scale-95 disabled:opacity-25 hover:bg-primary/90"
+                aria-label="Next slide"
+              >
+                <ChevronRight size={18} />
+              </button>
             </div>
 
-            {/* Participant count (visible to all, more details for trainer) */}
-            <div className="relative group/participants">
-              <div className="flex items-center gap-1.5 rounded-lg bg-black/5 px-2.5 py-1 text-[10px] font-bold text-muted-foreground dark:bg-white/5 cursor-help">
-                <UsersIcon size={12} className="opacity-70" />
-                <span>{participants.length}</span>
-                <span className="hidden sm:inline opacity-70 font-medium uppercase tracking-tighter ml-0.5">
+            {/* Participant count with hover popover */}
+            <div className="relative group/tparticipants shrink-0">
+              <div className="flex items-center gap-1.5 rounded-xl border border-border/60 bg-black/5 dark:bg-white/5 px-3 py-1.5 cursor-help">
+                <UsersIcon size={14} />
+                <span className="text-sm font-black tabular-nums">{participants.length}</span>
+                <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-0.5">
                   {t('participants')}
                 </span>
               </div>
-              
-              {/* Participant List Popover */}
-              <div className="pointer-events-none absolute bottom-full left-0 mb-2 w-48 origin-bottom-left scale-95 opacity-0 transition-all group-hover/participants:pointer-events-auto group-hover/participants:scale-100 group-hover/participants:opacity-100 z-50">
+              {/* Popover — opens upward */}
+              <div className="pointer-events-none absolute bottom-full left-0 mb-2 w-52 origin-bottom-left scale-95 opacity-0 transition-all group-hover/tparticipants:pointer-events-auto group-hover/tparticipants:scale-100 group-hover/tparticipants:opacity-100 z-50">
                 <div className="rounded-xl border border-border bg-background/95 p-2 shadow-2xl backdrop-blur-xl">
-                  <p className="mb-2 px-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground border-b border-border pb-1">
+                  <p className="mb-1.5 px-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground border-b border-border pb-1.5">
                     {t('participants')} ({participants.length})
                   </p>
-                  <div className="max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+                  <div className="max-h-52 overflow-y-auto">
                     {participants.map(p => (
-                      <div key={p.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/50">
-                        <div className={`h-1.5 w-1.5 shrink-0 rounded-full ${p.inControl ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
+                      <div key={p.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors">
+                        <div className={`h-2 w-2 shrink-0 rounded-full ${p.inControl ? 'bg-primary' : 'bg-muted-foreground/25'}`} />
                         <span className="truncate text-[11px] font-bold">{p.name}</span>
                         {p.role !== 'agent' && (
                           <span className="ml-auto text-[8px] font-black uppercase tracking-tighter text-primary/60">{p.role}</span>
@@ -712,41 +722,103 @@ export default function PresentationViewer({ module, locale, initialLang, user }
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Sync Status / Participant List (Mobile-friendly popover or integrated) */}
-          {amInControl && (
-            <div className="hidden sm:flex items-center gap-2 overflow-x-auto max-w-md px-4 no-scrollbar">
-              {participants.map(p => (
-                <div key={p.id} 
-                  title={p.name}
-                  className={`shrink-0 w-2 h-2 rounded-full ring-2 ring-offset-1 ring-offset-background ${
-                    p.inControl ? 'bg-primary ring-primary/40' : 'bg-muted-foreground/30 ring-transparent'
-                  }`} 
-                />
-              ))}
-            </div>
-          )}
-
-          <div className="flex items-center gap-3">
-            {/* Keyboard hint */}
-            {!syncActive && (
-              <div className="hidden items-center gap-1.5 rounded-lg bg-black/5 px-3 py-1 text-[10px] font-bold text-muted-foreground opacity-50 sm:flex dark:bg-white/5">
-                <Keyboard size={11} />
-                <span>{t('arrowsNavigate')}</span>
+            {/* Presence dots when in control */}
+            {amInControl && participants.length > 0 && (
+              <div className="hidden sm:flex items-center gap-1.5 overflow-x-auto max-w-xs no-scrollbar">
+                {participants.map(p => (
+                  <div
+                    key={p.id}
+                    title={p.name}
+                    className={`shrink-0 h-2 w-2 rounded-full ring-1 ring-offset-1 ring-offset-background transition-colors ${
+                      p.inControl ? 'bg-primary ring-primary/40' : 'bg-muted-foreground/30 ring-transparent'
+                    }`}
+                  />
+                ))}
               </div>
             )}
+
+            {/* Take Control / Stop Control — primary CTA, right-aligned */}
+            <button
+              onClick={amInControl ? stopControl : takeControl}
+              className={`ml-auto flex shrink-0 items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all active:scale-95 ${
+                amInControl
+                  ? 'bg-destructive text-white shadow-lg shadow-destructive/20 hover:bg-destructive/90'
+                  : 'bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90'
+              }`}
+            >
+              {amInControl ? <Power size={15} /> : <ShieldCheck size={15} />}
+              {amInControl ? t('stopControl') : t('takeControl')}
+            </button>
 
             {/* Fullscreen */}
             <button
               onClick={toggleFullscreen}
-              className="flex h-8 w-8 items-center justify-center rounded-xl border border-border/50 transition-all active:scale-95 hover:bg-black/5 dark:hover:bg-white/5"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/50 transition-all active:scale-95 hover:bg-black/5 dark:hover:bg-white/5"
               aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
             >
               {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
             </button>
           </div>
-        </div>
+
+        ) : (
+          /* ── Agent Bottom Strip (unchanged) ──────────────────────── */
+          <div className="flex items-center justify-between border-t border-border/50 bg-background/80 px-4 py-2 backdrop-blur-xl sm:px-5">
+            {/* Slide counter + participant count */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="font-black tabular-nums text-sm">{slide} / {total}</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  {t('slide')}
+                </span>
+              </div>
+              {/* Participant count */}
+              <div className="relative group/participants">
+                <div className="flex items-center gap-1.5 rounded-lg bg-black/5 px-2.5 py-1 text-[10px] font-bold text-muted-foreground dark:bg-white/5 cursor-help">
+                  <UsersIcon size={12} className="opacity-70" />
+                  <span>{participants.length}</span>
+                  <span className="hidden sm:inline opacity-70 font-medium uppercase tracking-tighter ml-0.5">
+                    {t('participants')}
+                  </span>
+                </div>
+                <div className="pointer-events-none absolute bottom-full left-0 mb-2 w-48 origin-bottom-left scale-95 opacity-0 transition-all group-hover/participants:pointer-events-auto group-hover/participants:scale-100 group-hover/participants:opacity-100 z-50">
+                  <div className="rounded-xl border border-border bg-background/95 p-2 shadow-2xl backdrop-blur-xl">
+                    <p className="mb-2 px-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground border-b border-border pb-1">
+                      {t('participants')} ({participants.length})
+                    </p>
+                    <div className="max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+                      {participants.map(p => (
+                        <div key={p.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/50">
+                          <div className={`h-1.5 w-1.5 shrink-0 rounded-full ${p.inControl ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
+                          <span className="truncate text-[11px] font-bold">{p.name}</span>
+                          {p.role !== 'agent' && (
+                            <span className="ml-auto text-[8px] font-black uppercase tracking-tighter text-primary/60">{p.role}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {!syncActive && (
+                <div className="hidden items-center gap-1.5 rounded-lg bg-black/5 px-3 py-1 text-[10px] font-bold text-muted-foreground opacity-50 sm:flex dark:bg-white/5">
+                  <Keyboard size={11} />
+                  <span>{t('arrowsNavigate')}</span>
+                </div>
+              )}
+              <button
+                onClick={toggleFullscreen}
+                className="flex h-8 w-8 items-center justify-center rounded-xl border border-border/50 transition-all active:scale-95 hover:bg-black/5 dark:hover:bg-white/5"
+                aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+              >
+                {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
