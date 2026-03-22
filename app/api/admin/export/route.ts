@@ -16,14 +16,13 @@ function scoreFill(score: number | undefined) {
 }
 
 function buildOverviewSheet(agents: AgentStats[]) {
-  const headers = ['Agent Name','Product %','Process %','Payment %','AI Eval Avg','Pitch Level','Overall Score','Performance'];
+  const headers = ['Agent Name','Product %','Process %','Payment %','AI Eval Avg','Overall Score','Performance'];
   const rows = agents.map(a => [
     a.agent.name,
     a.quiz.product?.bestScore ?? 'N/A',
     a.quiz.process?.bestScore ?? 'N/A',
     a.quiz.payment?.bestScore ?? 'N/A',
     a.aiEval?.avgScore        ?? 'N/A',
-    a.pitch?.highestLevel     ?? 'N/A',
     a.overallScore,
     a.badge.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase()),
   ]);
@@ -37,7 +36,6 @@ function buildOverviewSheet(agents: AgentStats[]) {
       scoreFill(s.quiz.process?.bestScore),
       scoreFill(s.quiz.payment?.bestScore),
       scoreFill(s.aiEval?.avgScore),
-      s.pitch?.highestLevel === 3 ? GREEN : s.pitch?.highestLevel === 2 ? AMBER : RED,
       scoreFill(s.overallScore),
     ].forEach((fill, ci) => {
       const addr = XLSX.utils.encode_cell({ r: R, c: ci + 1 });
@@ -45,7 +43,7 @@ function buildOverviewSheet(agents: AgentStats[]) {
     });
   }
 
-  ws['!cols'] = [22,12,12,12,14,13,15,16].map(wch => ({ wch }));
+  ws['!cols'] = [22,12,12,12,14,15,16].map(wch => ({ wch }));
   return ws;
 }
 
@@ -93,18 +91,6 @@ function buildIndividualSheet(stat: AgentStats) {
       h.timestamp.slice(0, 10)
     ]),
     [],
-    ['PITCH SIMULATOR (Closing Skills)'],
-    ['Highest Level:', stat.pitch?.highestLevel ?? '0'],
-    ['Total Sessions:', stat.pitch?.sessionCount ?? 0],
-    ['Completed Levels:', (stat.pitch?.completedLevels ?? []).join(', ') || 'None'],
-    [],
-    ['PITCH SESSION LOGS'],
-    ['Level', 'Outcome', 'Date'],
-    ...(stat.pitch?.history || []).map(h => [
-      `Level ${h.level}`,
-      h.closedSale ? 'SALE CLOSED' : 'NO SALE',
-      h.timestamp.slice(0, 10)
-    ]),
     [],
     ['HUMAN EVALUATIONS (Quality Assurance)'],
     ['Evaluator', 'Score', 'Date', 'Comments'],

@@ -4,7 +4,7 @@ import { fsGetAll } from '@/lib/firestore-db';
 
 interface FeedItem {
   id: string;
-  type: 'quiz' | 'ai-eval' | 'pitch';
+  type: 'quiz' | 'ai-eval';
   agentId: string;
   agentName: string;
   timestamp: string;
@@ -24,10 +24,9 @@ export async function GET() {
   try {
     // We could optimize this by using a "limit" and "orderBy" in Firestore,
     // but fsGetAll doesn't support it yet.
-    const [quizDocs, evalDocs, pitchDocs] = await Promise.all([
+    const [quizDocs, evalDocs] = await Promise.all([
       fsGetAll<{ id: string; agentId: string; agentName: string; moduleId: string; score: number; totalQuestions: number; passed: boolean; timestamp: string }>('quiz_results'),
       fsGetAll<{ id: string; agentId: string; agentName: string; level: number; score: number; timestamp: string; passed: boolean }>('ai_eval_logs'),
-      fsGetAll<{ id: string; agentId: string; agentName: string; level: number; timestamp: string }>('pitch_sessions'),
     ]);
 
     const feed: FeedItem[] = [
@@ -52,15 +51,6 @@ export async function GET() {
         level: d.level,
         passed: d.passed
       })),
-      ...pitchDocs.map(d => ({
-        id: d.id,
-        type: 'pitch' as const,
-        agentId: d.agentId,
-        agentName: d.agentName || 'Unknown Agent',
-        timestamp: d.timestamp,
-        details: `Started Pitch Simulator Level ${d.level}`,
-        level: d.level
-      }))
     ];
 
     // Sort by timestamp descending and take the last 20

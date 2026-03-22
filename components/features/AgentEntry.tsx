@@ -30,14 +30,13 @@ interface AgentEntryProps {
 const STATS_CONFIG = [
   { Icon: Users,  target: 100, suffix: '+', labelKey: 'agents' },
   { Icon: Award,  target: 89,  suffix: '%', labelKey: 'passed' },
-  { Icon: Layers, target: 4,   suffix: '',  labelKey: 'modules' },
+  { Icon: Layers, target: 3,   suffix: '',  labelKey: 'modules' },
 ];
 
 const MODULES = [
   { Icon: BookOpen,   labelKey: 'product', color: '#818CF8', bg: 'rgba(129,140,248,0.12)' },
   { Icon: Settings,   labelKey: 'process', color: '#22D3EE', bg: 'rgba(34,211,238,0.12)'  },
   { Icon: Bot,        labelKey: 'aiEval',   color: '#A78BFA', bg: 'rgba(167,139,250,0.12)' },
-  { Icon: Target,     labelKey: 'pitch',     color: '#F472B6', bg: 'rgba(244,114,182,0.12)' },
 ];
 
 /**

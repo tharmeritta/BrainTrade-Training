@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { BookOpen, ClipboardList, PlayCircle, BarChart3, LucideIcon } from 'lucide-react';
+import { BookOpen, ClipboardList, BarChart3, LucideIcon } from 'lucide-react';
 import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
 
 import { useTranslations } from 'next-intl';
@@ -38,12 +38,6 @@ const MODULES: ModuleItem[] = [
     href: '/ai-eval', 
     icon: BarChart3, 
     color: 'bg-violet-500'
-  },
-  { 
-    key: 'pitch', 
-    href: '/pitch', 
-    icon: PlayCircle, 
-    color: 'bg-orange-500' 
   },
 ];
 

@@ -6,8 +6,8 @@ import { getAgentSession } from '@/lib/agent-session';
 
 /**
  * Client-side guard that redirects unauthenticated agents back to the
- * dashboard (AgentEntry) before they can access course, quiz, ai-eval,
- * or pitch pages. Renders nothing until the session check resolves.
+ * dashboard (AgentEntry) before they can access course, quiz, or ai-eval
+ * pages. Renders nothing until the session check resolves.
  */
 export default function AgentAuthGuard({ children }: { children: React.ReactNode }) {
   const router   = useRouter();

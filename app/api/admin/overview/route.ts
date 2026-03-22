@@ -11,7 +11,7 @@ const EMPTY: AdminOverviewData = {
     { moduleId: 'learn',   label: 'Learn',   avgScore: 0, passCount: 0, totalAttempts: 0 },
     { moduleId: 'quiz',    label: 'Quiz',    avgScore: 0, passCount: 0, totalAttempts: 0 },
     { moduleId: 'ai-eval', label: 'AI Eval', avgScore: 0, passCount: 0, totalAttempts: 0 },
-    { moduleId: 'pitch',   label: 'Pitch',   avgScore: 0, passCount: 0, totalAttempts: 0 },
+    { moduleId: 'ai-eval', label: 'AI Eval', avgScore: 0, passCount: 0, totalAttempts: 0 },
   ],
   leaderboard: [], passFail: { passed: 0, failed: 0 },
 };
@@ -27,12 +27,11 @@ export async function GET() {
 
   try {
     // Single fetch for all data to avoid redundant Firestore calls
-    const [agents, quizDocs, evalDocs, pitchDocs, progressDocs, humanEvals] = await Promise.all([
+    const [agents, quizDocs, evalDocs, progressDocs, humanEvals] = await Promise.all([
       fsGetAll<Agent & { id: string }>('agents'),
       fsGetAll<{ id: string; agentId: string; moduleId: string; score: number; totalQuestions: number; passed: boolean; timestamp: string }>('quiz_results'),
       fsGetAll<{ id: string; agentId: string; score: number; timestamp: string }>('ai_eval_logs'),
-      fsGetAll<{ id: string; agentId: string; level: number; timestamp: string }>('pitch_sessions'),
-      fsGetAll<{ agentId: string; pitchCompletedLevels: number[]; evalCompletedLevels: number[]; updatedAt: string }>('agent_progress'),
+      fsGetAll<{ agentId: string; evalCompletedLevels: number[]; updatedAt: string }>('agent_progress'),
       fsGetAll<AgentEvaluation>('agent_evaluations'),
     ]);
 
@@ -67,33 +66,17 @@ export async function GET() {
           }
         : null;
 
-      // Pitch
-      const progress       = progressDocs.find(p => p.agentId === agent.id);
-      const pitches        = pitchDocs.filter(p => p.agentId === agent.id);
-      const pitchCompleted = progress?.pitchCompletedLevels ?? [];
-      const highestPitch   = pitchCompleted.length > 0
-        ? Math.max(...pitchCompleted)
-        : pitches.length > 0 ? Math.max(...pitches.map(p => p.level)) : 0;
-      const pitch = (pitches.length > 0 || pitchCompleted.length > 0)
-        ? { 
-            highestLevel: highestPitch, 
-            sessionCount: pitches.length, 
-            completedLevels: pitchCompleted,
-            history: pitches.map(p => ({ level: p.level, closedSale: (p as any).closedSale || false, timestamp: p.timestamp })),
-          }
-        : null;
-
+      const progress      = progressDocs.find(p => p.agentId === agent.id);
       const evalCompleted = progress?.evalCompletedLevels ?? [];
       const myHumanEvals  = humanEvals.filter(h => h.agentId === agent.id).sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
 
       const allTimes = [
         ...quizDocs.filter(r => r.agentId === agent.id),
         ...evalDocs.filter(e => e.agentId === agent.id),
-        ...pitchDocs.filter(p => p.agentId === agent.id),
       ].map(r => r.timestamp).filter(Boolean).sort();
       const lastActive = allTimes.length > 0 ? allTimes[allTimes.length - 1] : null;
 
-      const partial      = { agent, quiz, aiEval, pitch, lastActive, evalCompletedLevels: evalCompleted, humanEvaluations: myHumanEvals };
+      const partial      = { agent, quiz, aiEval, lastActive, evalCompletedLevels: evalCompleted, humanEvaluations: myHumanEvals };
       const overallScore = computeOverallScore(partial);
       return { ...partial, overallScore, badge: computeBadge(overallScore) };
     });
@@ -116,11 +99,6 @@ export async function GET() {
         passCount: activeAgents.filter(a => evalDocs.some(e => e.agentId === a.id)).length,
         avgScore: 0, totalAttempts: totalAgents 
       },
-      { 
-        moduleId: 'pitch', label: 'Pitch', 
-        passCount: activeAgents.filter(a => (progressDocs.find(p => p.agentId === a.id)?.pitchCompletedLevels.length ?? 0) >= 3).length,
-        avgScore: 0, totalAttempts: totalAgents 
-      }
     ];
     moduleStats.forEach(m => m.avgScore = pct(m.passCount));
 
@@ -129,9 +107,9 @@ export async function GET() {
 
     const weekAgo    = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const isThisWeek = (d: { timestamp: string }) => d.timestamp > weekAgo;
-    const weekSessions = [...quizDocs, ...evalDocs, ...pitchDocs].filter(isThisWeek).length;
+    const weekSessions = [...quizDocs, ...evalDocs].filter(isThisWeek).length;
     const activeIds    = new Set(
-      [...quizDocs, ...evalDocs, ...pitchDocs].filter(isThisWeek).map(d => d.agentId)
+      [...quizDocs, ...evalDocs].filter(isThisWeek).map(d => d.agentId)
     );
 
     const data: AdminOverviewData = {

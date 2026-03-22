@@ -45,11 +45,6 @@ const NAV_ITEMS = [
     href: '/ai-eval',
     icon: BarChart3,
   },
-  {
-    key: 'pitch',
-    href: '/pitch',
-    icon: Mic,
-  },
 ] as const;
 
 /* ─── Component ──────────────────────────────────────────── */

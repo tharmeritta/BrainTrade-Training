@@ -2,11 +2,11 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { Activity, Zap, Target, TrendingUp, Clock, User } from 'lucide-react';
+import { Activity, Zap, Target, Clock, User } from 'lucide-react';
 
 interface FeedItem {
   id: string;
-  type: 'quiz' | 'ai-eval' | 'pitch';
+  type: 'quiz' | 'ai-eval';
   agentId: string;
   agentName: string;
   timestamp: string;
@@ -23,7 +23,6 @@ export default function LiveFeed({ feed }: { feed: FeedItem[] }) {
     switch (type) {
       case 'quiz': return <Target size={14} className="text-amber-400" />;
       case 'ai-eval': return <Zap size={14} className="text-purple-400" />;
-      case 'pitch': return <TrendingUp size={14} className="text-orange-400" />;
       default: return <Activity size={14} className="text-blue-400" />;
     }
   };

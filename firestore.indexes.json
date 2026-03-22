@@ -9,14 +9,6 @@
       ]
     },
     {
-      "collectionGroup": "pitch_sessions",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "agentId", "order": "ASCENDING" },
-        { "fieldPath": "timestamp", "order": "DESCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "ai_eval_logs",
       "queryScope": "COLLECTION",
       "fields": [

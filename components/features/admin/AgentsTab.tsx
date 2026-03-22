@@ -281,7 +281,6 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
                 <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px] bg-secondary/40">{t('agents.table.process')}</th>
                 <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px] bg-secondary/40">{t('agents.table.payment')}</th>
                 <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px] bg-secondary/40">{t('agents.table.aiEval')}</th>
-                <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px] bg-secondary/40">{t('agents.table.pitch')}</th>
                 <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px] bg-secondary/40">{t('agents.table.overall')}</th>
                 <th className="text-center px-4 py-3 font-bold uppercase tracking-wider text-[10px] bg-secondary/40">{t('agents.table.status')}</th>
                 <th className="px-4 py-3 bg-secondary/40 rounded-r-xl" />
@@ -335,18 +334,6 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
                         <span className={`font-black text-sm ${scoreColor(a.aiEval.avgScore)}`}>{a.aiEval.avgScore}/100</span>
                         <div className="w-10 h-1.5 rounded-full overflow-hidden bg-muted/50">
                           <div className={`h-full rounded-full ${scoreBg(a.aiEval.avgScore)}`} style={{ width: `${a.aiEval.avgScore}%` }} />
-                        </div>
-                      </div>
-                    ) : <span className="text-muted-foreground/25 text-lg leading-none">–</span>}
-                  </td>
-                  <td className="px-4 py-4 text-center border-y border-border/50 group-hover:border-y-primary/20">
-                    {a.pitch ? (
-                      <div className="flex flex-col items-center gap-1">
-                        <span className="font-black text-sm text-orange-400">L{a.pitch.highestLevel}</span>
-                        <div className="flex gap-0.5">
-                          {[1,2,3].map(l => (
-                            <div key={l} className={`w-2 h-1.5 rounded-full ${(a.pitch?.completedLevels ?? []).includes(l) ? 'bg-orange-400' : 'bg-muted/50'}`} />
-                          ))}
                         </div>
                       </div>
                     ) : <span className="text-muted-foreground/25 text-lg leading-none">–</span>}

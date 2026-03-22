@@ -161,14 +161,13 @@ export default function OverviewTab() {
                     <th className="text-center px-3 py-2.5">{t('overview.rosterTraining')}</th>
                     <th className="text-center px-3 py-2.5">Quiz</th>
                     <th className="text-center px-3 py-2.5">AI Eval</th>
-                    <th className="text-center px-3 py-2.5">Pitch</th>
                     <th className="text-center px-3 py-2.5">{t('overview.rosterEvalScore')}</th>
                     <th className="text-center px-3 py-2.5">{t('overview.rosterAction')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {rosterAgents.map(a => {
-                    const { status, quizComplete, pitchDone, latestEvalScore } = a.completion;
+                    const { status, quizComplete, latestEvalScore } = a.completion;
                     const statusCfg = {
                       cleared:       { pill: 'bg-emerald-500/15 text-emerald-400', label: t('overview.statusCleared') },
                       'needs-eval':  { pill: 'bg-amber-500/15 text-amber-400',     label: t('overview.statusNeedsEval') },
@@ -194,16 +193,6 @@ export default function OverviewTab() {
                         <td className="px-3 py-3 text-center">
                           {a.aiEval
                             ? <span className={`text-xs font-bold ${scoreColor(a.aiEval.avgScore)}`}>{a.aiEval.avgScore}%</span>
-                            : <span className="text-muted-foreground/40 text-xs">–</span>}
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          {a.pitch
-                            ? <span className={`text-xs font-bold ${pitchDone ? 'text-emerald-400' : 'text-amber-400'}`}>L{a.pitch.highestLevel}/3</span>
-                            : <span className="text-muted-foreground/40 text-xs">–</span>}
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          {latestEvalScore !== null
-                            ? <span className={`text-sm font-black ${scoreColor(latestEvalScore)}`}>{latestEvalScore}/100</span>
                             : <span className="text-muted-foreground/40 text-xs">–</span>}
                         </td>
                         <td className="px-3 py-3 text-center">
@@ -320,37 +309,6 @@ export default function OverviewTab() {
               </div>
             </div>
 
-            {/* Pitch — per level */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <TrendingUp size={15} className="text-orange-400" />
-                <span className="font-semibold text-sm text-foreground">{t('overview.pitchSim')}</span>
-                <span className="text-xs text-muted-foreground ml-auto">
-                  {t('overview.allLevels', { done: data.moduleStats.find(m => m.moduleId === 'pitch')?.passCount ?? 0, total: data.totalAgents })}
-                </span>
-              </div>
-              <div className="space-y-2.5 pl-5 border-l-2 border-orange-400/20">
-                {[1, 2, 3].map(level => {
-                  const count = data.leaderboard.filter(a => a.pitch?.completedLevels?.includes(level)).length;
-                  const pct   = data.totalAgents > 0 ? Math.round(count / data.totalAgents * 100) : 0;
-                  return (
-                    <div key={level} className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span className="text-muted-foreground">{t('overview.level', { level })}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground/60">{count}/{data.totalAgents}</span>
-                          <span className={`font-bold ${scoreColor(pct)}`}>{pct}%</span>
-                        </div>
-                      </div>
-                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                        <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: 'easeOut' }}
-                          className="h-full rounded-full bg-orange-400" />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
 
           </div>
         </div>

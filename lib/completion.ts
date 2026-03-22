@@ -10,8 +10,6 @@ export interface CompletionInfo {
   quizComplete: boolean;
   /** true if at least one AI eval session done */
   aiEvalDone: boolean;
-  /** true if pitch level 3 completed */
-  pitchDone: boolean;
   /** latest human eval score, or null */
   latestEvalScore: number | null;
 }
@@ -24,12 +22,7 @@ export function getCompletionStatus(stats: AgentStats): CompletionInfo {
 
   const aiEvalDone = (stats.aiEval?.count ?? 0) > 0;
 
-  const pitchDone = !!(
-    stats.pitch?.completedLevels?.includes(3) ||
-    stats.pitch?.highestLevel === 3
-  );
-
-  const trainingComplete = quizComplete && aiEvalDone && pitchDone;
+  const trainingComplete = quizComplete && aiEvalDone;
   const humanEvals = stats.humanEvaluations ?? [];
   const evaluated = humanEvals.length > 0;
   const latestEvalScore = evaluated ? humanEvals[0].totalScore : null;
@@ -40,5 +33,5 @@ export function getCompletionStatus(stats: AgentStats): CompletionInfo {
     !!stats.lastActive            ? 'in-progress' :
                                     'not-started';
 
-  return { trainingComplete, evaluated, status, quizComplete, aiEvalDone, pitchDone, latestEvalScore };
+  return { trainingComplete, evaluated, status, quizComplete, aiEvalDone, latestEvalScore };
 }

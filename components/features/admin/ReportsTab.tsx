@@ -163,7 +163,6 @@ export default function ReportsTab() {
                   <th className="px-4 py-3 text-center">Product</th>
                   <th className="px-4 py-3 text-center">Process</th>
                   <th className="px-4 py-3 text-center">AI Eval</th>
-                  <th className="px-4 py-3 text-center">Pitch Lvl</th>
                   <th className="px-4 py-3 text-center">Overall</th>
                   <th className="px-4 py-3">Badge</th>
                 </tr>
@@ -176,7 +175,6 @@ export default function ReportsTab() {
                     <td className={`px-4 py-3 text-center font-medium ${getScoreColor(s.quiz.product?.bestScore)}`}>{s.quiz.product?.bestScore ?? 'N/A'}{s.quiz.product?.bestScore ? '%' : ''}</td>
                     <td className={`px-4 py-3 text-center font-medium ${getScoreColor(s.quiz.process?.bestScore)}`}>{s.quiz.process?.bestScore ?? 'N/A'}{s.quiz.process?.bestScore ? '%' : ''}</td>
                     <td className={`px-4 py-3 text-center font-medium ${getScoreColor(s.aiEval?.avgScore)}`}>{s.aiEval?.avgScore ?? 'N/A'}{s.aiEval?.avgScore ? '%' : ''}</td>
-                    <td className={`px-4 py-3 text-center font-medium ${s.pitch?.highestLevel === 3 ? 'text-emerald-500' : s.pitch?.highestLevel === 2 ? 'text-amber-500' : 'text-red-500'}`}>{s.pitch?.highestLevel ?? 0}/3</td>
                     <td className={`px-4 py-3 text-center font-black ${getScoreColor(s.overallScore)}`}>{s.overallScore}%</td>
                     <td className="px-4 py-3">
                       <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md ${getBadgeStyles(s.badge)}`}>
@@ -277,19 +275,6 @@ export default function ReportsTab() {
                     <div className="text-right">
                       <p className="text-sm font-bold">{(selectedAgentStats.evalCompletedLevels ?? []).length}/4</p>
                       <p className="text-[10px] text-muted-foreground uppercase font-bold">Levels Done</p>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-3">Pitch Simulator</p>
-                  <div className="p-4 rounded-xl border border-border flex items-center justify-between">
-                    <div>
-                      <p className="text-2xl font-black text-orange-500">{selectedAgentStats.pitch?.highestLevel ?? 0}/3</p>
-                      <p className="text-xs text-muted-foreground">Highest Level</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold">{selectedAgentStats.pitch?.sessionCount ?? 0}</p>
-                      <p className="text-[10px] text-muted-foreground uppercase font-bold">Sessions</p>
                     </div>
                   </div>
                 </div>

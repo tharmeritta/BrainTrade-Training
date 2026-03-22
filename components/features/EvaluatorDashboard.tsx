@@ -149,7 +149,6 @@ const AgentPerformancePanel = ({
   const badge = BADGE_CONFIG[stats.badge] ?? BADGE_CONFIG['needs-work'];
   const quizTopics          = ['foundation', 'product', 'process', 'payment'] as const;
   const quizPassedCount     = quizTopics.filter(m => stats.quiz[m]?.passed).length;
-  const completedPitchLevels = stats.pitch?.completedLevels ?? [];
   const completedEvalLevels  = stats.evalCompletedLevels ?? [];
 
   return (
@@ -215,33 +214,6 @@ const AgentPerformancePanel = ({
                       }}
                     >
                       {done ? <Check size={6} /> : l}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* Pitch */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <TrendingUp size={13} className="text-orange-400" />
-              <span className="text-sm font-semibold text-foreground">{navT('pitch')}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground/60">{t('sessions', { count: stats.pitch?.sessionCount ?? 0 })}</span>
-              <div className="flex gap-0.5">
-                {[1, 2, 3].map(l => {
-                  const done = completedPitchLevels.includes(l);
-                  return (
-                    <div key={l} className="w-5 h-5 rounded flex items-center justify-center text-[9px] font-black"
-                      style={{
-                        background: done ? 'rgba(251,146,60,0.18)' : 'hsl(var(--secondary))',
-                        color: done ? '#FB923C' : 'hsl(var(--muted-foreground) / 0.3)',
-                        border: `1px solid ${done ? 'rgba(251,146,60,0.35)' : 'hsl(var(--border))'}`,
-                      }}
-                    >
-                      {done ? <Check size={7} /> : l}
                     </div>
                   );
                 })}

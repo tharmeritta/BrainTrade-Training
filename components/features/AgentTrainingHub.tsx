@@ -20,7 +20,6 @@ const STEPS = [
   { id: 'learn'   as const, step: 1, labelKey: 'learn',  sublabelKey: 'study',   descKey: 'productProcess', Icon: GraduationCap, color: '#818CF8', glow: 'rgba(129,140,248,0.18)' },
   { id: 'quiz'    as const, step: 2, labelKey: 'quiz',   sublabelKey: 'test',    descKey: 'quizDesc',  Icon: ClipboardList, color: '#60A5FA', glow: 'rgba(96,165,250,0.15)'  },
   { id: 'ai-eval' as const, step: 3, labelKey: 'aiEval', sublabelKey: 'analyse', descKey: 'aiEvalDesc',   Icon: Mic,           color: '#F472B6', glow: 'rgba(244,114,182,0.15)' },
-  { id: 'pitch'   as const, step: 4, labelKey: 'pitch',  sublabelKey: 'sell',    descKey: 'pitchDesc',    Icon: PlayCircle,    color: '#FB923C', glow: 'rgba(251,146,60,0.15)'  },
 ] as const;
 
 type StepId = typeof STEPS[number]['id'];
@@ -81,7 +80,6 @@ function deriveSteps(stats: AgentStats | null): Record<StepId, StepState> {
   const anyQ = !!(stats?.quiz?.foundation?.passed || stats?.quiz?.product?.passed || stats?.quiz?.process?.passed);
   const allQ = !!(stats?.quiz?.foundation?.passed && stats?.quiz?.product?.passed && stats?.quiz?.process?.passed);
   const aiOk = (stats?.aiEval?.count ?? 0) > 0;
-  const piOk = (stats?.pitch?.sessionCount ?? 0) > 0;
   
   const qs = [
     stats?.quiz?.foundation?.bestScore,
@@ -95,7 +93,6 @@ function deriveSteps(stats: AgentStats | null): Record<StepId, StepState> {
     learn:     { locked: false,  passed: anyQ, score: stats?.quiz?.product?.bestScore },
     quiz:      { locked: false,  passed: allQ, score: avgQ },
     'ai-eval': { locked: !anyQ, passed: aiOk, score: stats?.aiEval ? Math.round(stats.aiEval.avgScore) : undefined },
-    pitch:     { locked: !aiOk, passed: piOk, score: stats?.pitch ? (stats.pitch.highestLevel >= 3 ? 100 : stats.pitch.highestLevel * 33) : undefined },
   };
 }
 
@@ -472,7 +469,6 @@ export default function AgentTrainingHub({ agentName, agentStageName, stats, onL
     learn:     `/${locale}/learn`,
     quiz:      `/${locale}/quiz`,
     'ai-eval': `/${locale}/ai-eval`,
-    pitch:     `/${locale}/pitch`,
   }), [locale]);
 
   const doneCount   = useMemo(() => STEPS.filter(s => derived[s.id].passed).length, [derived]);

@@ -88,41 +88,6 @@ function DetailedAiEvalHistory({ stats }: { stats: AgentStats }) {
   );
 }
 
-function DetailedPitchHistory({ stats }: { stats: AgentStats }) {
-  const t = useTranslations('admin');
-  const history = stats.pitch?.history || [];
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-4">
-        <TrendingUp size={18} className="text-orange-500" />
-        <h4 className="font-bold text-base">{t('agentDetail.pitchHistory')}</h4>
-      </div>
-      <div className="grid grid-cols-1 gap-3">
-        {history.length === 0 ? (
-          <div className="text-center py-8 bg-secondary/20 rounded-2xl border border-dashed border-border text-muted-foreground text-xs">{t('agentDetail.noPitchSessions')}</div>
-        ) : history.map((h, i) => (
-          <div key={i} className="flex items-center gap-4 bg-secondary/20 p-4 rounded-2xl border border-border/50">
-            <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex flex-col items-center justify-center border border-orange-500/20">
-              <span className="text-[10px] font-bold text-orange-400 uppercase leading-none mb-0.5">{t('agentDetail.lvl')}</span>
-              <span className="text-lg font-black text-orange-400 leading-none">{h.level}</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-1">
-                <span className={`text-xs font-bold uppercase tracking-wider ${h.closedSale ? 'text-emerald-400' : 'text-muted-foreground'}`}>
-                  {h.closedSale ? `🏆 ${t('agentDetail.saleClosed')}` : t('agentDetail.noSale')}
-                </span>
-                <span className="text-[10px] text-muted-foreground/60">{new Date(h.timestamp).toLocaleDateString(t('tabs.overview') === 'ภาพรวม' ? 'th-TH' : 'en-GB', { day: 'numeric', month: 'short' })}</span>
-              </div>
-              <div className="h-1.5 w-full bg-card rounded-full overflow-hidden">
-                <div className={`h-full transition-all duration-500 ${h.closedSale ? 'bg-emerald-500' : 'bg-muted-foreground/20'}`} style={{ width: h.closedSale ? '100%' : '20%' }} />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function DetailedHumanEvaluations({ stats }: { stats: AgentStats }) {
   const t = useTranslations('admin');
@@ -167,7 +132,7 @@ function DetailedHumanEvaluations({ stats }: { stats: AgentStats }) {
 
 export default function AgentDetailModal({ stats, onClose }: { stats: AgentStats; onClose: () => void }) {
   const t = useTranslations('admin');
-  const [activeTab, setActiveTab] = useState<'quiz' | 'ai' | 'pitch' | 'qa'>('quiz');
+  const [activeTab, setActiveTab] = useState<'quiz' | 'ai' | 'qa'>('quiz');
 
   return (
     <motion.div
@@ -213,7 +178,6 @@ export default function AgentDetailModal({ stats, onClose }: { stats: AgentStats
             {[
               { id: 'quiz',  label: t('agentDetail.tabs.quiz'), icon: Target },
               { id: 'ai',    label: t('agentDetail.tabs.ai'),   icon: Zap },
-              { id: 'pitch', label: t('agentDetail.tabs.pitch'), icon: TrendingUp },
               { id: 'qa',    label: t('agentDetail.tabs.qa'), icon: ClipboardCheck },
             ].map(t => (
               <button
@@ -241,7 +205,6 @@ export default function AgentDetailModal({ stats, onClose }: { stats: AgentStats
             >
               {activeTab === 'quiz'  && <DetailedQuizHistory stats={stats} />}
               {activeTab === 'ai'    && <DetailedAiEvalHistory stats={stats} />}
-              {activeTab === 'pitch' && <DetailedPitchHistory stats={stats} />}
               {activeTab === 'qa'    && <DetailedHumanEvaluations stats={stats} />}
             </motion.div>
           </AnimatePresence>

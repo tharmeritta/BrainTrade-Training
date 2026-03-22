@@ -11,12 +11,6 @@ export interface StaffAccount {
   passwordChanged?: boolean;
 }
 
-export interface PitchMessage {
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
-
 // ── Agent tracking ─────────────────────────────────────────────────────────
 
 export interface Agent {
@@ -36,34 +30,37 @@ export interface ModuleQuizStat {
 
 export interface AgentStats {
   agent: Agent;
-  quiz: {
-    foundation?: ModuleQuizStat;
-    product?: ModuleQuizStat;
-    process?: ModuleQuizStat;
-    payment?: ModuleQuizStat;
-  };
-  aiEval: { 
-    avgScore: number; 
-    count: number;
-    history?: { score: number; level: number; passed: boolean; timestamp: string }[];
-  } | null;
-  pitch: { 
-    highestLevel: number; 
-    sessionCount: number; 
-    completedLevels?: number[];
-    history?: { level: number; closedSale: boolean; timestamp: string }[];
-  } | null;
-  evalCompletedLevels?: number[];
-  humanEvaluations?: AgentEvaluation[];
+  /** overall score [0-100] computed from components */
   overallScore: number;
+  /** badge based on overall score */
   badge: 'elite' | 'strong' | 'developing' | 'needs-work';
+  /** last activity timestamp (ISO string) */
   lastActive: string | null;
+  /** quiz results per module */
+  quiz: {
+    [moduleId: string]: {
+      bestScore: number;
+      passed: boolean;
+      attempts: number;
+      history: { score: number; total: number; passed: boolean; timestamp: string }[];
+    }
+  };
+  /** AI evaluation summary */
+  aiEval: {
+    avgScore: number;
+    count: number;
+    history: { score: number; level: number; passed: boolean; timestamp: string }[];
+  } | null;
+  /** human evaluations (v2) */
+  humanEvaluations: AgentEvaluation[];
+  /** for backward compat/tracking if needed */
+  evalCompletedLevels: number[];
 }
 
 // ── Admin API response shapes ───────────────────────────────────────────────
 
 export interface ModuleStat {
-  moduleId: string;          // 'learn' | 'quiz' | 'ai-eval' | 'pitch'
+  moduleId: string;          // 'learn' | 'quiz' | 'ai-eval'
   label: string;
   avgScore: number;          // completion rate 0–100
   passCount: number;         // agents who completed this module
@@ -127,7 +124,7 @@ export interface SalesCallCriteria {
 /** Backward-compat alias — keep existing import sites working */
 export type EvaluationCriteria = SalesCallCriteria;
 
-export type EvaluationSessionType = 'pitch' | 'ai-eval' | 'live' | 'roleplay';
+export type EvaluationSessionType = 'ai-eval' | 'live' | 'roleplay';
 
 export interface AgentEvaluation {
   id: string;
@@ -149,7 +146,7 @@ export interface AgentEvaluation {
 export type ModuleStatus = 'locked' | 'available' | 'completed';
 
 export interface TrainingModule {
-  id: 'product' | 'process' | 'payment' | 'ai-eval' | 'pitch';
+  id: 'product' | 'process' | 'payment' | 'ai-eval';
   titleTh: string;
   descriptionTh: string;
   href: string;

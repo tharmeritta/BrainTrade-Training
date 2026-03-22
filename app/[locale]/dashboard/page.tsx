@@ -56,9 +56,8 @@ export default function DashboardPage() {
           saveProgress(agentId, {
             agentId,
             agentName: agentName ?? '',
-            pitchCompletedLevels: serverStats.pitch?.completedLevels ?? [],
             evalCompletedLevels: serverStats.evalCompletedLevels ?? [],
-            evalSavedLevel: null,
+            updatedAt: new Date().toISOString(),
           });
         }
       })
@@ -70,9 +69,6 @@ export default function DashboardPage() {
             agent: { id: agentId, name: agentName ?? '', active: true, createdAt: new Date() },
             quiz: {},
             aiEval: null,
-            pitch: cached.pitchCompletedLevels.length > 0
-              ? { highestLevel: Math.max(...cached.pitchCompletedLevels), sessionCount: 0, completedLevels: cached.pitchCompletedLevels }
-              : null,
             lastActive: cached.updatedAt ?? null,
             evalCompletedLevels: cached.evalCompletedLevels,
             overallScore: 0,

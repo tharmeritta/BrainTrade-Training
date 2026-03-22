@@ -5,14 +5,13 @@ import { getAgentStats } from '@/lib/agents';
 export interface ProgressRecord {
   agentId: string;
   agentName: string;
-  pitchCompletedLevels: number[];
   evalCompletedLevels: number[];
   evalSavedLevel: number | null;
   updatedAt?: string;
 }
 
 function defaults(agentId: string, agentName = ''): ProgressRecord {
-  return { agentId, agentName, pitchCompletedLevels: [], evalCompletedLevels: [], evalSavedLevel: null };
+  return { agentId, agentName, evalCompletedLevels: [], evalSavedLevel: null };
 }
 
 // GET /api/agent/progress?agentId=xxx&agentName=xxx
@@ -42,10 +41,6 @@ export async function POST(req: NextRequest) {
     const merged: ProgressRecord = {
       agentId,
       agentName: agentName || existing.agentName,
-      // Completed levels only ever grow — union of server + incoming
-      pitchCompletedLevels: Array.from(
-        new Set([...existing.pitchCompletedLevels, ...(body.pitchCompletedLevels ?? [])])
-      ).sort((a, b) => a - b),
       evalCompletedLevels: Array.from(
         new Set([...existing.evalCompletedLevels, ...(body.evalCompletedLevels ?? [])])
       ).sort((a, b) => a - b),
@@ -55,15 +50,11 @@ export async function POST(req: NextRequest) {
 
     const saved = await fsSet('agent_progress', agentId, merged);
 
-    // All 4 modules complete (Pitch L1-3 + AI Eval L1-4) — purge active chat history
-    const pitchDone = merged.pitchCompletedLevels.length >= 3 &&
-      [1, 2, 3].every(l => merged.pitchCompletedLevels.includes(l));
     const evalDone  = merged.evalCompletedLevels.length >= 4 &&
       [1, 2, 3, 4].every(l => merged.evalCompletedLevels.includes(l));
 
-    if (pitchDone && evalDone) {
+    if (evalDone) {
       await Promise.allSettled([
-        fsDelete('pitch_active', agentId),
         fsDelete('aiev_active', agentId),
       ]);
     }

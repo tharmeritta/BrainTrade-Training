@@ -1,14 +1,5 @@
 /**
  * Browser-side localStorage cache for critical agent data.
- *
- * Purpose: if the Cloud Run server resets and is temporarily unreachable,
- * the browser still has the last-known progress and active session data
- * so the user can continue without losing their place.
- *
- * Usage pattern:
- *   1. After every successful API write, call the matching `save*` function.
- *   2. On load, call `get*` — use the cached value as a fallback when the
- *      server returns null or the fetch fails.
  */
 
 const PREFIX = 'bt_';
@@ -42,53 +33,28 @@ function remove(name: string): void {
 
 // ── Agent progress ─────────────────────────────────────────────────────────
 
-export interface CachedProgress {
+export interface LocalCache {
   agentId: string;
   agentName: string;
-  pitchCompletedLevels: number[];
   evalCompletedLevels: number[];
-  evalSavedLevel: number | null;
   updatedAt?: string;
 }
 
-export function saveProgress(agentId: string, data: CachedProgress): void {
+export function saveProgress(agentId: string, data: LocalCache): void {
   save(`progress_${agentId}`, data);
 }
 
-export function getProgress(agentId: string): CachedProgress | null {
-  return load<CachedProgress>(`progress_${agentId}`);
+export function getProgress(agentId: string): LocalCache | null {
+  return load<LocalCache>(`progress_${agentId}`);
 }
 
-// ── Active pitch session ───────────────────────────────────────────────────
-
-export interface CachedPitchSession {
-  agentId: string;
-  sessionId: string;
-  level: 1 | 2 | 3;
-  messages: { role: string; content: string }[];
-  savedAt: number;
-}
-
-export function savePitchSession(agentId: string, data: CachedPitchSession): void {
-  save(`pitch_active_${agentId}`, data);
-}
-
-export function getPitchSession(agentId: string): CachedPitchSession | null {
-  return load<CachedPitchSession>(`pitch_active_${agentId}`);
-}
-
-export function clearPitchSession(agentId: string): void {
-  remove(`pitch_active_${agentId}`);
-}
-
-// ── Active AI-eval session ─────────────────────────────────────────────────
+// ── Active evaluation session ──────────────────────────────────────────────
 
 export interface CachedEvalSession {
   agentId: string;
-  sessionId: string;
-  level: 1 | 2 | 3 | 4;
-  messages: { role: string; content: string }[];
-  savedAt: number;
+  level: number;
+  messages: any[];
+  timestamp: string;
 }
 
 export function saveEvalSession(agentId: string, data: CachedEvalSession): void {

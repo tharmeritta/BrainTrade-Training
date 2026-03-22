@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Save, RotateCcw, Target, Zap, TrendingUp, Loader2, CheckCircle2, AlertCircle, Edit3, Plus, Trash2, BookOpen, Sparkles, FileUp, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
-type ConfigType = 'quizzes' | 'pitch' | 'ai-eval' | 'learn';
+type ConfigType = 'quizzes' | 'ai-eval' | 'learn';
 
 export default function AdjustmentsTab() {
   const t = useTranslations('admin');
@@ -88,16 +88,12 @@ export default function AdjustmentsTab() {
         <button onClick={() => setActiveTab('ai-eval')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'ai-eval' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
           <Zap size={16} /> AI Eval Prompt
         </button>
-        <button onClick={() => setActiveTab('pitch')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'pitch' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-          <TrendingUp size={16} /> Pitch Scenarios
-        </button>
       </div>
 
       <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
         {activeTab === 'learn' && <LearnEditor data={configs.learn} onSave={(data) => handleSave('learn', data)} saving={saving} />}
         {activeTab === 'quizzes' && <QuizzesEditor data={configs.quizzes} onSave={(data) => handleSave('quizzes', data)} saving={saving} />}
         {activeTab === 'ai-eval' && <AiEvalEditor data={configs.ai_eval} onSave={(data) => handleSave('ai_eval', data)} saving={saving} />}
-        {activeTab === 'pitch' && <PitchEditor configs={configs} onSave={handleSave} saving={saving} />}
       </div>
     </div>
   );
@@ -604,35 +600,6 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
   );
 }
 
-function PitchEditor({ configs, onSave, saving }: { configs: any, onSave: (id: string, d: any) => void, saving: boolean }) {
-  const levels = [1, 2, 3];
-  return (
-    <div className="p-6 space-y-8">
-      {levels.map(l => {
-        const id = `pitch_l${l}`;
-        const config = configs[id] || { prompt: '' };
-        return (
-          <div key={l} className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold flex items-center gap-2"><TrendingUp size={16} className="text-orange-400" /> Level {l} Prompt</h3>
-              <button onClick={() => {
-                const prompt = (document.getElementById(`prompt-${id}`) as HTMLTextAreaElement).value;
-                onSave(id, { ...config, prompt });
-              }} disabled={saving} className="flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-50">
-                {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save Level {l}
-              </button>
-            </div>
-            <textarea 
-              id={`prompt-${id}`}
-              defaultValue={config.prompt}
-              className="w-full h-48 text-sm bg-secondary/20 p-4 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 function AiEvalEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => void, saving: boolean }) {
   const [prompt, setPrompt] = useState(data?.systemPrompt || '');
