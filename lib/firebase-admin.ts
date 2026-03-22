@@ -1,5 +1,6 @@
 import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
 
 /**
  * Clean surrounding quotes from an environment variable value.
@@ -140,6 +141,13 @@ function getAdminApp(): App {
     throw err;
   }
 }
+
+// Returns the Firebase Storage bucket (uses NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET env var)
+export const getAdminStorage = () => {
+  const bucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+  const storage = getStorage(getAdminApp());
+  return bucket ? storage.bucket(bucket) : storage.bucket();
+};
 
 // Module-level cache for the Firestore instance
 let cachedDb: Firestore | null = null;

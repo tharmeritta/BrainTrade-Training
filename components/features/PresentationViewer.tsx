@@ -91,7 +91,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
   const isTrainer = user && ['admin', 'manager', 'trainer'].includes(user.role);
   const amInControl = syncActive && syncedById === (user?.uid || agentId);
 
-  const { presentationId, totalSlides: total, cacheKey } = module.presentations[lang];
+  const { presentationId, totalSlides: total, cacheKey, slideUrls } = module.presentations[lang];
 
   useEffect(() => { slideRef.current = slide; }, [slide]);
 
@@ -135,8 +135,9 @@ export default function PresentationViewer({ module, locale, initialLang, user }
         await Promise.all(batch.map(n => {
           return new Promise((resolve) => {
             const img = new Image();
+            const storageUrl = slideUrls?.[n - 1];
             const vParam = cacheKey ? `&v=${encodeURIComponent(cacheKey)}` : '';
-            img.src = `https://docs.google.com/presentation/d/${presentationId}/export/png?pageid=p${n}${vParam}`;
+            img.src = storageUrl ?? `/api/slide?id=${presentationId}&page=${n}${vParam}`;
             img.onload = () => {
               if (!active) return resolve(null);
               loadedCount++;
@@ -162,7 +163,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
 
     preloadAll();
     return () => { active = false; };
-  }, [presentationId, total, cacheKey]);
+  }, [presentationId, total, cacheKey, slideUrls]);
 
   // ── Sync Listener ──────────────────────────────────────────────────────────
 
@@ -412,9 +413,11 @@ export default function PresentationViewer({ module, locale, initialLang, user }
   );
 
   const slideImageUrl = useMemo(() => {
+    const storageUrl = slideUrls?.[slide - 1];
+    if (storageUrl) return storageUrl;
     const vParam = cacheKey ? `&v=${encodeURIComponent(cacheKey)}` : '';
-    return `https://docs.google.com/presentation/d/${presentationId}/export/png?pageid=p${slide}${vParam}`;
-  }, [presentationId, slide, cacheKey]);
+    return `/api/slide?id=${presentationId}&page=${slide}${vParam}`;
+  }, [presentationId, slide, cacheKey, slideUrls]);
 
   return (
     <div

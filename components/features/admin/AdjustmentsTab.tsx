@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { Save, RotateCcw, Target, Zap, TrendingUp, Loader2, CheckCircle2, AlertCircle, Edit3, Plus, Trash2, BookOpen, Sparkles, FileUp, Download, RefreshCw } from 'lucide-react';
+import { Save, RotateCcw, Target, Zap, TrendingUp, Loader2, CheckCircle2, AlertCircle, Edit3, Plus, Trash2, BookOpen, Sparkles, FileUp, Download, RefreshCw, Upload, CloudOff, HelpCircle, ChevronDown, Globe, Database, RefreshCcw } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 type ConfigType = 'quizzes' | 'ai-eval' | 'learn';
@@ -703,6 +703,39 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
     : LEARN_DEFAULT_MODULES;
   const [modules, setModules] = useState<any>(initialModules);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showGuide, setShowGuide] = useState(false);
+  const [exportStatus, setExportStatus] = useState<Record<string, 'idle' | 'loading' | 'done' | 'error'>>({});
+
+  const handleExport = async (moduleId: string, lang: 'en' | 'th') => {
+    const key = `${moduleId}_${lang}`;
+    setExportStatus(prev => ({ ...prev, [key]: 'loading' }));
+    try {
+      const res = await fetch('/api/admin/export-slides', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ moduleId, lang }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Export failed');
+      // Update local module state with the returned slideUrls
+      if (json.slideUrls) {
+        setModules((prev: any) => ({
+          ...prev,
+          [moduleId]: {
+            ...prev[moduleId],
+            presentations: {
+              ...prev[moduleId].presentations,
+              [lang]: { ...prev[moduleId].presentations[lang], slideUrls: json.slideUrls },
+            },
+          },
+        }));
+      }
+      setExportStatus(prev => ({ ...prev, [key]: 'done' }));
+    } catch (err: any) {
+      alert(`Export failed: ${err.message}`);
+      setExportStatus(prev => ({ ...prev, [key]: 'error' }));
+    }
+  };
 
   const extractPresentationId = (input: string) => {
     try {
@@ -714,7 +747,6 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
   };
 
   const handleUpdateModule = (id: string, field: string, value: any) => {
-    const updated = { ...modules };
     let finalValue = value;
     if (field.endsWith('presentationId')) {
       finalValue = extractPresentationId(value);
@@ -723,10 +755,11 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
     if (field === 'id') {
       const newId = finalValue.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
       if (!newId || newId === id) return;
-      if (updated[newId]) {
+      if (modules[newId]) {
         alert('Module ID already exists!');
         return;
       }
+      const updated = { ...modules };
       updated[newId] = { ...updated[id], id: newId };
       delete updated[id];
       setModules(updated);
@@ -734,14 +767,30 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
       return;
     }
 
-    if (field.includes('.')) {
-      const [p1, p2, p3] = field.split('.');
-      if (p3) updated[id][p1][p2][p3] = finalValue;
-      else updated[id][p1][p2] = finalValue;
-    } else {
-      updated[id][field] = finalValue;
-    }
-    setModules(updated);
+    setModules(prev => {
+      const mod = prev[id];
+      let updatedMod: any;
+      if (field.includes('.')) {
+        const [p1, p2, p3] = field.split('.');
+        if (p3) {
+          updatedMod = {
+            ...mod,
+            [p1]: {
+              ...mod[p1],
+              [p2]: { ...mod[p1][p2], [p3]: finalValue },
+            },
+          };
+        } else {
+          updatedMod = {
+            ...mod,
+            [p1]: { ...mod[p1], [p2]: finalValue },
+          };
+        }
+      } else {
+        updatedMod = { ...mod, [field]: finalValue };
+      }
+      return { ...prev, [id]: updatedMod };
+    });
   };
 
   const handleAddModule = () => {
@@ -781,6 +830,125 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
         <button onClick={saveAll} disabled={saving} className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform disabled:opacity-50">
           {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save All Changes
         </button>
+      </div>
+
+      {/* ── How to Use Guide ─────────────────────────────────── */}
+      <div className="rounded-2xl border border-border overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setShowGuide(v => !v)}
+          className="flex w-full items-center justify-between px-5 py-3.5 bg-muted/40 hover:bg-muted/60 transition-colors"
+        >
+          <div className="flex items-center gap-2.5">
+            <HelpCircle size={16} className="text-primary shrink-0" />
+            <span className="text-sm font-black">How to manage & serve course slides</span>
+          </div>
+          <ChevronDown
+            size={16}
+            className={`text-muted-foreground transition-transform duration-200 ${showGuide ? 'rotate-180' : ''}`}
+          />
+        </button>
+
+        <AnimatePresence initial={false}>
+          {showGuide && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="px-5 py-5 space-y-5 border-t border-border">
+
+                {/* Two delivery modes */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Database size={14} className="text-emerald-500 shrink-0" />
+                      <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Mode A — Firebase Storage</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Slides are exported once and served from your own Firebase CDN. <strong className="text-foreground">Fastest load, no Google dependency at runtime.</strong> Recommended for production.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Globe size={14} className="text-amber-500 shrink-0" />
+                      <span className="text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider">Mode B — Google Slides Live</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Slides are proxied from Google Slides on every load. Requires presentation to be public. Use <strong className="text-foreground">Refresh Cache</strong> after editing a slide to bust the CDN cache.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Step-by-step */}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Step-by-step: Export to Firebase Storage (Mode A)</p>
+                  <ol className="space-y-2.5">
+                    {[
+                      {
+                        n: 1,
+                        icon: <Globe size={13} />,
+                        title: 'Make the Google Slides presentation public',
+                        body: 'Open your Google Slides → Share → Change to "Anyone with the link can view". This is required for the one-time export to succeed.',
+                      },
+                      {
+                        n: 2,
+                        icon: <Edit3 size={13} />,
+                        title: 'Open the module editor',
+                        body: 'Click the pencil icon on any module card below to expand its settings.',
+                      },
+                      {
+                        n: 3,
+                        icon: <Save size={13} />,
+                        title: 'Paste the Google Slides link and save',
+                        body: 'Paste the full presentation URL into the EN or TH field — the ID is extracted automatically. Set the correct slide count, then click Save All Changes.',
+                      },
+                      {
+                        n: 4,
+                        icon: <Upload size={13} />,
+                        title: 'Click "Export EN/TH to Storage"',
+                        body: 'Each slide is fetched from Google Slides and uploaded to Firebase Storage as a public PNG. This takes ~10–30 seconds depending on slide count.',
+                      },
+                      {
+                        n: 5,
+                        icon: <CheckCircle2 size={13} />,
+                        title: 'Done — slides now load from Firebase Storage',
+                        body: "The viewer will automatically use the stored URLs. Agents no longer depend on Google's servers at runtime.",
+                      },
+                    ].map(step => (
+                      <li key={step.n} className="flex gap-3">
+                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-white text-[10px] font-black mt-0.5">
+                          {step.n}
+                        </div>
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5 text-xs font-bold">
+                            <span className="text-primary">{step.icon}</span>
+                            {step.title}
+                          </div>
+                          <p className="text-[11px] text-muted-foreground leading-relaxed">{step.body}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+
+                {/* Refresh cache tip */}
+                <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3.5 flex gap-3">
+                  <RefreshCcw size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-black text-amber-600 dark:text-amber-400">When to use Refresh Slide Cache instead</p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      If you updated a slide in Google Slides and want agents to see the new version <em>without</em> re-exporting to Storage, click <strong className="text-foreground">Refresh EN/TH Slide Cache</strong> then <strong className="text-foreground">Save All Changes</strong>. This appends a version key to the proxy URL so the browser fetches a fresh copy from Google.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <div className="flex justify-end">
@@ -849,6 +1017,26 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
                         Cache key set — save to apply
                       </p>
                     )}
+                    <button
+                      type="button"
+                      disabled={exportStatus[`${editingId}_en`] === 'loading'}
+                      onClick={() => handleExport(editingId, 'en')}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-500/20 disabled:opacity-50 dark:text-emerald-400"
+                    >
+                      {exportStatus[`${editingId}_en`] === 'loading'
+                        ? <><Loader2 size={12} className="animate-spin" /> Exporting EN…</>
+                        : exportStatus[`${editingId}_en`] === 'done'
+                        ? <><CheckCircle2 size={12} /> EN Exported to Storage</>
+                        : exportStatus[`${editingId}_en`] === 'error'
+                        ? <><CloudOff size={12} /> Retry EN Export</>
+                        : <><Upload size={12} /> Export EN to Storage</>
+                      }
+                    </button>
+                    {modules[editingId].presentations.en.slideUrls?.length > 0 && (
+                      <p className="text-[10px] text-emerald-500/80 font-medium text-center">
+                        {modules[editingId].presentations.en.slideUrls.length} slides in storage
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <span className="text-[10px] font-bold text-muted-foreground">TH Link or ID</span>
@@ -864,6 +1052,26 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
                     {modules[editingId].presentations.th.cacheKey && (
                       <p className="text-[10px] text-amber-500/80 font-medium text-center">
                         Cache key set — save to apply
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      disabled={exportStatus[`${editingId}_th`] === 'loading'}
+                      onClick={() => handleExport(editingId, 'th')}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-500/20 disabled:opacity-50 dark:text-emerald-400"
+                    >
+                      {exportStatus[`${editingId}_th`] === 'loading'
+                        ? <><Loader2 size={12} className="animate-spin" /> Exporting TH…</>
+                        : exportStatus[`${editingId}_th`] === 'done'
+                        ? <><CheckCircle2 size={12} /> TH Exported to Storage</>
+                        : exportStatus[`${editingId}_th`] === 'error'
+                        ? <><CloudOff size={12} /> Retry TH Export</>
+                        : <><Upload size={12} /> Export TH to Storage</>
+                      }
+                    </button>
+                    {modules[editingId].presentations.th.slideUrls?.length > 0 && (
+                      <p className="text-[10px] text-emerald-500/80 font-medium text-center">
+                        {modules[editingId].presentations.th.slideUrls.length} slides in storage
                       </p>
                     )}
                   </div>
