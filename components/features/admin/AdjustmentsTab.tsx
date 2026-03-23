@@ -515,38 +515,12 @@ function LearnEditor({ data, onSave, onRefresh, saving }: { data: any, onSave: (
             {/* English Config */}
             <div className="space-y-4">
               <h5 className="text-xs font-black uppercase tracking-wider text-primary">English Presentation</h5>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase opacity-50 px-1">Google Slides ID (Optional)</label>
-                <input type="text" value={modules[editingId].presentations.en.presentationId || ''} onChange={e => handleUpdateModule(editingId, 'presentations.en.presentationId', e.target.value)} className="w-full bg-secondary/30 p-3 rounded-xl text-sm font-mono" placeholder="Presentation ID" />
-              </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase opacity-50 px-1">Storage Slides</label>
                 <input type="file" id="up-en" className="hidden" multiple accept="image/*" onChange={e => e.target.files && handleFileUpload(editingId, 'en', e.target.files)} />
                 <div className="flex gap-2">
                   <button onClick={() => document.getElementById('up-en')?.click()} className="flex-1 py-4 rounded-xl border border-primary/30 bg-primary/10 text-xs font-bold text-primary flex items-center justify-center gap-2">
                     {uploadStatus[`${editingId}_en`] === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} Upload PNGs
-                  </button>
-                  <button
-                    onClick={async () => {
-                      const key = `${editingId}_en_auto`;
-                      setUploadStatus(prev => ({ ...prev, [key]: 'loading' }));
-                      try {
-                        const res = await fetch('/api/admin/export-slides', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ moduleId: editingId, lang: 'en' })
-                        });
-                        const result = await res.json();
-                        if (res.ok) {
-                          alert(`Successfully exported ${result.count} slides.`);
-                          onRefresh();
-                        } else throw new Error(result.error);
-                      } catch (err: any) { alert(err.message); }
-                      finally { setUploadStatus(prev => ({ ...prev, [key]: 'idle' })); }
-                    }}
-                    className="flex-1 py-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs font-bold text-amber-600 flex items-center justify-center gap-2"
-                  >
-                    {uploadStatus[`${editingId}_en_auto`] === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />} Auto Export
                   </button>
                 </div>
                 {modules[editingId].presentations.en.slideUrls?.length > 0 && (
@@ -611,38 +585,12 @@ function LearnEditor({ data, onSave, onRefresh, saving }: { data: any, onSave: (
             {/* Thai Config */}
             <div className="space-y-4">
               <h5 className="text-xs font-black uppercase tracking-wider text-primary">Thai Presentation</h5>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase opacity-50 px-1">Google Slides ID (Optional)</label>
-                <input type="text" value={modules[editingId].presentations.th.presentationId || ''} onChange={e => handleUpdateModule(editingId, 'presentations.th.presentationId', e.target.value)} className="w-full bg-secondary/30 p-3 rounded-xl text-sm font-mono" placeholder="Presentation ID" />
-              </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase opacity-50 px-1">Storage Slides</label>
                 <input type="file" id="up-th" className="hidden" multiple accept="image/*" onChange={e => e.target.files && handleFileUpload(editingId, 'th', e.target.files)} />
                 <div className="flex gap-2">
                   <button onClick={() => document.getElementById('up-th')?.click()} className="flex-1 py-4 rounded-xl border border-primary/30 bg-primary/10 text-xs font-bold text-primary flex items-center justify-center gap-2">
                     {uploadStatus[`${editingId}_th`] === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} Upload PNGs
-                  </button>
-                  <button
-                    onClick={async () => {
-                      const key = `${editingId}_th_auto`;
-                      setUploadStatus(prev => ({ ...prev, [key]: 'loading' }));
-                      try {
-                        const res = await fetch('/api/admin/export-slides', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ moduleId: editingId, lang: 'th' })
-                        });
-                        const result = await res.json();
-                        if (res.ok) {
-                          alert(`Successfully exported ${result.count} slides.`);
-                          onRefresh();
-                        } else throw new Error(result.error);
-                      } catch (err: any) { alert(err.message); }
-                      finally { setUploadStatus(prev => ({ ...prev, [key]: 'idle' })); }
-                    }}
-                    className="flex-1 py-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs font-bold text-amber-600 flex items-center justify-center gap-2"
-                  >
-                    {uploadStatus[`${editingId}_th_auto`] === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />} Auto Export
                   </button>
                 </div>
                 {modules[editingId].presentations.th.slideUrls?.length > 0 && (
