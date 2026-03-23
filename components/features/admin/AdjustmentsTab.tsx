@@ -1,23 +1,133 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { Save, Target, Zap, Loader2, CheckCircle2, AlertCircle, Edit3, Plus, Trash2, BookOpen, FileUp, Download, Upload, HelpCircle, ChevronDown, Database, Sparkles } from 'lucide-react';
+import { 
+  Save, Target, Zap, Loader2, CheckCircle2, AlertCircle, Edit3, Plus, 
+  Trash2, BookOpen, FileUp, Download, Upload, HelpCircle, ChevronDown, 
+  Database, Sparkles, Copy, ExternalLink, Eye, Search, FileJson, 
+  ArrowUp, ArrowDown, MoveUp, MoveDown, Layers, FileText
+} from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { storage, auth } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { signInWithCustomToken } from 'firebase/auth';
 
+// --- Types & Interfaces ---
+
 type ConfigType = 'quizzes' | 'ai-eval' | 'learn';
+
+interface PresentationInfo {
+  presentationId: string;
+  slideUrls: string[];
+  totalSlides: number;
+}
+
+interface LearnModule {
+  id: string;
+  title: string;
+  titleTh: string;
+  description: string;
+  descriptionTh: string;
+  gradient: string;
+  presentations: {
+    th: PresentationInfo;
+    en: PresentationInfo;
+  };
+}
+
+interface LearnConfig {
+  modules: Record<string, LearnModule>;
+  order: string[];
+}
+
+interface QuizQuestion {
+  en: string;
+  th: string;
+  type: 'mcq' | 'matching' | 'true-false';
+  options: {
+    en: string[];
+    th: string[];
+  };
+  correctIdx: number;
+  explain: {
+    en: string;
+    th: string;
+  };
+}
+
+interface QuizDefinition {
+  title: { en: string; th: string };
+  passThreshold: number;
+  questions: QuizQuestion[];
+}
+
+interface QuizzesConfig {
+  definitions: Record<string, QuizDefinition>;
+}
+
+interface AiEvalConfig {
+  systemPrompt: string;
+  agentGuideline: string;
+  [key: string]: any;
+}
+
+interface ConfigData {
+  learn?: LearnConfig;
+  quizzes?: QuizzesConfig;
+  ai_eval?: AiEvalConfig;
+}
+
+const LEARN_DEFAULT_MODULES: Record<string, LearnModule> = {
+  product: {
+    id: 'product',
+    title: 'What is Stock?',
+    titleTh: 'หุ้นคืออะไร?',
+    description: 'Learn the fundamentals of stocks, equity, and how the stock market works.',
+    descriptionTh: 'เรียนรู้พื้นฐานของหุ้น ส่วนของผู้ถือหุ้น และวิธีการทำงานของตลาดหลักทรัพย์',
+    gradient: 'from-blue-600 to-indigo-700',
+    presentations: {
+      th: { presentationId: '1SNZxAJAZets0wMIGsLSoaVDtV2tTP21i', slideUrls: [], totalSlides: 16 },
+      en: { presentationId: '1U0Vbd0NgJIfKfiTl17Q4c67ytl1GMtY-', slideUrls: [], totalSlides: 16 },
+    },
+  },
+  kyc: {
+    id: 'kyc',
+    title: 'Know Your Customer (KYC)',
+    titleTh: 'รู้จักลูกค้า (KYC)',
+    description: 'Learn the KYC process, customer verification, and compliance requirements for financial services.',
+    descriptionTh: 'เรียนรู้กระบวนการ KYC การตรวจสอบตัวตนลูกค้า และข้อกำหนดด้านการปฏิบัติตามกฎระเบียบสำหรับบริการทางการเงิน',
+    gradient: 'from-emerald-600 to-teal-700',
+    presentations: {
+      th: { presentationId: '1DMs0-BZ1dI0KE6HYncMzeNjDUavdPOtA', slideUrls: [], totalSlides: 11 },
+      en: { presentationId: '1SeHjETc4hrYlo4QAQREk5yzjOMznfdxm', slideUrls: [], totalSlides: 11 },
+    },
+  },
+  website: {
+    id: 'website',
+    title: 'BrainTrade Website',
+    titleTh: 'เว็บไซต์ BrainTrade',
+    description: 'A walkthrough of the BrainTrade platform, its features, and how to navigate and use the website effectively.',
+    descriptionTh: 'แนะนำแพลตฟอร์ม BrainTrade ฟีเจอร์ต่างๆ และวิธีการใช้งานเว็บไซต์อย่างมีประสิทธิภาพ',
+    gradient: 'from-violet-600 to-purple-700',
+    presentations: {
+      th: { presentationId: '1DZvsOEv_0G4ZLm1hC6JQlxm2EpaLHqk6', slideUrls: [], totalSlides: 16 },
+      en: { presentationId: '1FW-wC8qqlvHyTo8mhliCqoOC0kL7mYXK', slideUrls: [], totalSlides: 16 },
+    },
+  },
+};
 
 export default function AdjustmentsTab() {
   const t = useTranslations('admin');
   const [activeTab, setActiveTab] = useState<ConfigType>('learn');
-  const [configs, setConfigs] = useState<any>({});
+  const [configs, setConfigs] = useState<ConfigData>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  const initialConfigsRef = useRef<ConfigData>({});
 
   const loadConfigs = useCallback(async () => {
     setLoading(true);
@@ -25,7 +135,10 @@ export default function AdjustmentsTab() {
       const res = await fetch('/api/admin/config');
       if (res.ok) {
         const data = await res.json();
-        setConfigs(data.configs || {});
+        const fetchedConfigs = data.configs || {};
+        setConfigs(fetchedConfigs);
+        initialConfigsRef.current = JSON.parse(JSON.stringify(fetchedConfigs));
+        setHasUnsavedChanges(false);
       }
     } catch (err) {
       console.error('Load config error:', err);
@@ -49,8 +162,12 @@ export default function AdjustmentsTab() {
       });
       if (res.ok) {
         setSaveStatus('success');
+        setHasUnsavedChanges(false);
         setTimeout(() => setSaveStatus('idle'), 3000);
-        loadConfigs();
+        // We don't necessarily need to reload everything, just update the local "initial" state
+        const updatedConfigs = { ...configs, [id]: data };
+        setConfigs(updatedConfigs);
+        initialConfigsRef.current = JSON.parse(JSON.stringify(updatedConfigs));
       } else {
         setSaveStatus('error');
       }
@@ -58,6 +175,18 @@ export default function AdjustmentsTab() {
       setSaveStatus('error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const confirmTabChange = (newTab: ConfigType) => {
+    if (hasUnsavedChanges) {
+      if (confirm('You have unsaved changes. Are you sure you want to switch tabs? Your changes will be lost.')) {
+        setActiveTab(newTab);
+        setHasUnsavedChanges(false);
+        // Reset to initial state for that tab if needed, but for now we just switch
+      }
+    } else {
+      setActiveTab(newTab);
     }
   };
 
@@ -70,44 +199,102 @@ export default function AdjustmentsTab() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black tracking-tight">Module Adjustments</h2>
+          <h2 className="text-2xl font-black tracking-tight flex items-center gap-2">
+            Module Adjustments
+            {hasUnsavedChanges && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" title="Unsaved changes" />}
+          </h2>
           <p className="text-sm text-muted-foreground">Modify training content, quiz questions, and AI behavior.</p>
         </div>
-        <div className="flex items-center gap-2">
-          {saveStatus === 'success' && <span className="text-xs font-bold text-emerald-500 flex items-center gap-1"><CheckCircle2 size={14} /> Saved successfully</span>}
-          {saveStatus === 'error' && <span className="text-xs font-bold text-red-500 flex items-center gap-1"><AlertCircle size={14} /> Failed to save</span>}
+        <div className="flex items-center gap-3">
+          <AnimatePresence mode="wait">
+            {saveStatus === 'success' && (
+              <motion.span 
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="text-xs font-bold text-emerald-500 flex items-center gap-1 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20"
+              >
+                <CheckCircle2 size={14} /> Saved successfully
+              </motion.span>
+            )}
+            {saveStatus === 'error' && (
+              <motion.span 
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="text-xs font-bold text-red-500 flex items-center gap-1 bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/20"
+              >
+                <AlertCircle size={14} /> Failed to save
+              </motion.span>
+            )}
+          </AnimatePresence>
+          {hasUnsavedChanges && (
+            <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 bg-amber-100 px-2 py-1 rounded">Unsaved Changes</span>
+          )}
         </div>
       </div>
 
       <div className="flex p-1 rounded-xl bg-secondary/30 border border-border w-fit overflow-x-auto scrollbar-hide">
-        <button onClick={() => setActiveTab('learn')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'learn' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+        <button 
+          onClick={() => confirmTabChange('learn')} 
+          className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'learn' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+        >
           <BookOpen size={16} /> Learn Courses
         </button>
-        <button onClick={() => setActiveTab('quizzes')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'quizzes' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+        <button 
+          onClick={() => confirmTabChange('quizzes')} 
+          className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'quizzes' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+        >
           <Target size={16} /> Quizzes
         </button>
-        <button onClick={() => setActiveTab('ai-eval')} className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'ai-eval' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+        <button 
+          onClick={() => confirmTabChange('ai-eval')} 
+          className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'ai-eval' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+        >
           <Zap size={16} /> AI Eval Prompt
         </button>
       </div>
 
       <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
-        {activeTab === 'learn' && <LearnEditor data={configs.learn} onSave={(data) => handleSave('learn', data)} onRefresh={loadConfigs} saving={saving} />}
-        {activeTab === 'quizzes' && <QuizzesEditor data={configs.quizzes} onSave={(data) => handleSave('quizzes', data)} saving={saving} />}
-        {activeTab === 'ai-eval' && <AiEvalEditor data={configs.ai_eval} onSave={(data) => handleSave('ai_eval', data)} saving={saving} />}
+        {activeTab === 'learn' && (
+          <LearnEditor 
+            data={configs.learn} 
+            onSave={(data) => handleSave('learn', data)} 
+            onChange={() => setHasUnsavedChanges(true)}
+            saving={saving} 
+          />
+        )}
+        {activeTab === 'quizzes' && (
+          <QuizzesEditor 
+            data={configs.quizzes} 
+            onSave={(data) => handleSave('quizzes', data)} 
+            onChange={() => setHasUnsavedChanges(true)}
+            saving={saving} 
+          />
+        )}
+        {activeTab === 'ai-eval' && (
+          <AiEvalEditor 
+            data={configs.ai_eval} 
+            onSave={(data) => handleSave('ai_eval', data)} 
+            onChange={() => setHasUnsavedChanges(true)}
+            saving={saving} 
+          />
+        )}
       </div>
     </div>
   );
 }
 
+
 // --- Editor Components ---
 
-function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => void, saving: boolean }) {
-  const [definitions, setDefinitions] = useState<any>(data?.definitions || {});
+function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig | undefined, onSave: (d: QuizzesConfig) => void, onChange: () => void, saving: boolean }) {
+  const [definitions, setDefinitions] = useState<Record<string, QuizDefinition>>(data?.definitions || {});
   const [selectedQuiz, setSelectedQuiz] = useState<string | null>(null);
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [importMode, setImportMode] = useState<'replace' | 'append'>('replace');
 
   const [importing, setImporting] = useState(false);
@@ -136,6 +323,16 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
     XLSX.writeFile(wb, "quiz_template.xlsx");
   };
 
+  const exportToJson = () => {
+    const blob = new Blob([JSON.stringify(definitions, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `quizzes_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !selectedQuiz) return;
@@ -148,10 +345,10 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
         const wb = XLSX.read(bstr, { type: 'binary' });
         const ws = wb.Sheets[wb.SheetNames[0]];
         const data = XLSX.utils.sheet_to_json(ws);
-        const parsed = data.map((row: any) => ({
+        const parsed: QuizQuestion[] = data.map((row: any) => ({
           en: row.question_en || row.en || '',
           th: row.question_th || row.th || '',
-          type: row.type || 'mcq',
+          type: (row.type as any) || 'mcq',
           options: { 
             en: [row.option_1_en, row.option_2_en, row.option_3_en, row.option_4_en].filter(v => v !== undefined && v !== null && v !== ''), 
             th: [row.option_1_th, row.option_2_th, row.option_3_th, row.option_4_th].filter(v => v !== undefined && v !== null && v !== '') 
@@ -165,7 +362,7 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
         const updated = { ...definitions };
         updated[selectedQuiz].questions = importMode === 'append' ? [...(updated[selectedQuiz].questions || []), ...parsed] : parsed;
         setDefinitions(updated);
-        // Reset file input
+        onChange();
         e.target.value = '';
       } catch (err: any) { 
         setImportError(err.message); 
@@ -183,10 +380,18 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
   const handleUpdateQuiz = (quizId: string, field: string, value: any) => {
     const updated = { ...definitions };
     if (field.includes('.')) {
-      const [p1, p2] = field.split('.');
-      updated[quizId][p1][p2] = value;
-    } else updated[quizId][field] = value;
+      const parts = field.split('.');
+      let curr: any = updated[quizId];
+      for (let i = 0; i < parts.length - 1; i++) {
+        curr[parts[i]] = { ...curr[parts[i]] };
+        curr = curr[parts[i]];
+      }
+      curr[parts[parts.length - 1]] = value;
+    } else {
+      (updated[quizId] as any)[field] = value;
+    }
     setDefinitions(updated);
+    onChange();
   };
 
   const handleUpdateQuizId = (oldId: string, newId: string) => {
@@ -197,76 +402,181 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
     delete updated[oldId];
     setDefinitions(updated);
     setSelectedQuiz(trimmed);
+    onChange();
   };
 
   const handleAddQuiz = () => {
     const newId = `new_quiz_${Date.now()}`;
     setDefinitions({ ...definitions, [newId]: { title: { en: 'New Quiz', th: 'ควิซใหม่' }, passThreshold: 0.7, questions: [] } });
     setSelectedQuiz(newId);
+    onChange();
+  };
+
+  const handleDuplicateQuiz = (id: string) => {
+    const newId = `${id}_copy_${Date.now()}`;
+    const copy = JSON.parse(JSON.stringify(definitions[id]));
+    copy.title.en += ' (Copy)';
+    copy.title.th += ' (สำเนา)';
+    setDefinitions({ ...definitions, [newId]: copy });
+    setSelectedQuiz(newId);
+    onChange();
   };
 
   const handleDeleteQuiz = (id: string) => {
-    if (confirm(`Delete quiz ${id}?`)) {
+    if (confirm(`Delete quiz "${definitions[id].title.en}" (${id})?`)) {
       const updated = { ...definitions };
       delete updated[id];
       setDefinitions(updated);
       if (selectedQuiz === id) setSelectedQuiz(null);
+      onChange();
     }
   };
 
   const toggleQuestionSelection = (idx: number) => setSelectedQuestions(prev => prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]);
-  const toggleAllQuestions = () => setSelectedQuestions(selectedQuestions.length === definitions[selectedQuiz].questions.length ? [] : definitions[selectedQuiz].questions.map((_: any, i: number) => i));
-  const deleteSelectedQuestions = () => {
-    if (confirm(`Delete ${selectedQuestions.length} questions?`)) {
-      const updated = { ...definitions };
-      updated[selectedQuiz].questions = updated[selectedQuiz].questions.filter((_: any, i: number) => !selectedQuestions.includes(i));
-      setDefinitions(updated);
+  const toggleAllQuestions = (filteredIndices: number[]) => {
+    if (selectedQuestions.length === filteredIndices.length) {
       setSelectedQuestions([]);
+    } else {
+      setSelectedQuestions(filteredIndices);
     }
   };
 
+  const deleteSelectedQuestions = () => {
+    if (!selectedQuiz) return;
+    if (confirm(`Delete ${selectedQuestions.length} questions?`)) {
+      const updated = { ...definitions };
+      updated[selectedQuiz].questions = updated[selectedQuiz].questions.filter((_, i) => !selectedQuestions.includes(i));
+      setDefinitions(updated);
+      setSelectedQuestions([]);
+      onChange();
+    }
+  };
+
+  const filteredQuestions = selectedQuiz ? definitions[selectedQuiz].questions.map((q, i) => ({ q, i })).filter(({ q }) => 
+    q.en.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    q.th.toLowerCase().includes(searchQuery.toLowerCase())
+  ) : [];
+
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h3 className="font-bold flex items-center gap-2 text-primary"><Target size={18} /> Quiz Management</h3>
-        <div className="flex items-center gap-2">
-          <button onClick={handleAddQuiz} className="bg-secondary px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2"><Plus size={16} /> Add Quiz</button>
-          <button onClick={() => onSave({ ...data, definitions })} className="bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold flex items-center gap-2"><Save size={16} /> Save Changes</button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={exportToJson} className="bg-secondary/50 hover:bg-secondary px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors" title="Export all as JSON">
+            <FileJson size={14} /> Export JSON
+          </button>
+          <button onClick={handleAddQuiz} className="bg-secondary px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors"><Plus size={14} /> Add Quiz</button>
+          <button 
+            onClick={() => onSave({ definitions })} 
+            disabled={saving}
+            className="bg-primary text-white px-5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
+          >
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save All Quizzes
+          </button>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         {Object.keys(definitions).map(id => (
-          <div key={id} className={`relative p-4 rounded-2xl border ${selectedQuiz === id ? 'border-primary bg-primary/5' : 'border-border bg-secondary/10'}`}>
-            <button onClick={() => { setSelectedQuiz(id); setSelectedQuestions([]); }} className="w-full text-left font-bold text-sm truncate">{definitions[id].title.en}</button>
-            <button onClick={() => handleDeleteQuiz(id)} className="absolute top-2 right-2 text-red-500"><Trash2 size={14} /></button>
+          <div key={id} className={`group relative p-4 rounded-xl border transition-all ${selectedQuiz === id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-secondary/10 hover:border-primary/30'}`}>
+            <button 
+              onClick={() => { setSelectedQuiz(id); setSelectedQuestions([]); setSearchQuery(''); }} 
+              className="w-full text-left font-bold text-sm truncate pr-12"
+            >
+              {definitions[id].title.en}
+              <span className="block text-[10px] font-medium opacity-50 mt-0.5">{id} · {definitions[id].questions.length} Qs</span>
+            </button>
+            <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={() => handleDuplicateQuiz(id)} className="p-1 text-primary hover:bg-primary/10 rounded" title="Duplicate"><Layers size={14} /></button>
+              <button onClick={() => handleDeleteQuiz(id)} className="p-1 text-red-500 hover:bg-red-500/10 rounded" title="Delete"><Trash2 size={14} /></button>
+            </div>
           </div>
         ))}
+        {Object.keys(definitions).length === 0 && (
+          <div className="col-span-full py-12 border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center text-muted-foreground gap-2">
+            <Database size={32} className="opacity-20" />
+            <p className="text-sm font-bold">No quizzes defined yet</p>
+            <button onClick={handleAddQuiz} className="text-xs text-primary font-bold hover:underline">Create your first quiz</button>
+          </div>
+        )}
       </div>
+
       {selectedQuiz && definitions[selectedQuiz] && (
-        <div className="p-6 rounded-2xl border border-primary/20 bg-card space-y-6">
-          <div className="grid grid-cols-2 gap-6">
-            <input type="text" defaultValue={selectedQuiz} onBlur={e => handleUpdateQuizId(selectedQuiz, e.target.value)} className="bg-secondary/30 p-3 rounded-xl text-sm" />
-            <input type="number" value={Math.round(definitions[selectedQuiz].passThreshold * 100)} onChange={e => handleUpdateQuiz(selectedQuiz, 'passThreshold', parseInt(e.target.value) / 100)} className="bg-secondary/30 p-3 rounded-xl text-sm" />
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-6 rounded-2xl border border-primary/20 bg-card space-y-6 shadow-sm"
+        >
+          <div className="flex items-center justify-between">
+            <h4 className="font-black text-sm uppercase tracking-wider text-primary flex items-center gap-2">
+              <Edit3 size={16} /> Editing: {definitions[selectedQuiz].title.en}
+            </h4>
+            <button onClick={() => setSelectedQuiz(null)} className="text-xs font-bold text-muted-foreground hover:text-foreground">Close Editor</button>
           </div>
-          <div className="flex gap-2">
-            <input type="text" value={definitions[selectedQuiz].title.en} onChange={e => handleUpdateQuiz(selectedQuiz, 'title.en', e.target.value)} className="flex-1 bg-secondary/30 p-3 rounded-xl text-sm" />
-            <input type="text" value={definitions[selectedQuiz].title.th} onChange={e => handleUpdateQuiz(selectedQuiz, 'title.th', e.target.value)} className="flex-1 bg-secondary/30 p-3 rounded-xl text-sm" />
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase opacity-50 px-1">Internal ID (No spaces)</label>
+              <input 
+                type="text" 
+                defaultValue={selectedQuiz} 
+                onBlur={e => handleUpdateQuizId(selectedQuiz, e.target.value)} 
+                className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm font-mono focus:ring-2 focus:ring-primary/20 outline-none transition-all" 
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase opacity-50 px-1">Pass Threshold (%)</label>
+              <input 
+                type="number" 
+                value={Math.round(definitions[selectedQuiz].passThreshold * 100)} 
+                onChange={e => handleUpdateQuiz(selectedQuiz, 'passThreshold', parseInt(e.target.value) / 100)} 
+                className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" 
+              />
+            </div>
+            <div className="space-y-1 sm:col-span-1">
+               <label className="text-[10px] font-black uppercase opacity-50 px-1 flex items-center gap-1"><Sparkles size={10} /> Quick Actions</label>
+               <div className="flex gap-2">
+                 <button onClick={downloadTemplate} className="flex-1 py-2.5 rounded-xl border border-border bg-secondary/20 text-[10px] font-black uppercase flex items-center justify-center gap-1.5 hover:bg-secondary/40 transition-all">
+                   <Download size={12} /> Template
+                 </button>
+                 <button onClick={() => document.getElementById('quiz-excel-import')?.click()} className="flex-1 py-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-600 text-[10px] font-black uppercase flex items-center justify-center gap-1.5 hover:bg-emerald-500/10 transition-all">
+                   <FileUp size={12} /> {importing ? '...' : 'Import'}
+                 </button>
+                 <input type="file" id="quiz-excel-import" className="hidden" accept=".xlsx, .xls, .csv" onChange={handleFileImport} />
+               </div>
+            </div>
           </div>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <label className="text-xs font-bold uppercase">Questions ({definitions[selectedQuiz].questions.length})</label>
-              <div className="flex gap-2">
-                <div className="flex p-0.5 rounded-lg bg-secondary/50 border border-border mr-2">
-                  <button onClick={() => setImportMode('replace')} className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all ${importMode === 'replace' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}>Replace</button>
-                  <button onClick={() => setImportMode('append')} className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all ${importMode === 'append' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}>Append</button>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase opacity-50 px-1">Display Title EN</label>
+              <input type="text" value={definitions[selectedQuiz].title.en} onChange={e => handleUpdateQuiz(selectedQuiz, 'title.en', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase opacity-50 px-1">Display Title TH</label>
+              <input type="text" value={definitions[selectedQuiz].title.th} onChange={e => handleUpdateQuiz(selectedQuiz, 'title.th', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+            </div>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
+              <div className="flex items-center gap-3">
+                <label className="text-xs font-black uppercase tracking-tighter">Questions ({definitions[selectedQuiz].questions.length})</label>
+                <div className="flex p-0.5 rounded-lg bg-secondary/50 border border-border">
+                  <button onClick={() => setImportMode('replace')} className={`px-2 py-1 text-[10px] font-black rounded-md transition-all ${importMode === 'replace' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}>Replace</button>
+                  <button onClick={() => setImportMode('append')} className={`px-2 py-1 text-[10px] font-black rounded-md transition-all ${importMode === 'append' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}>Append</button>
                 </div>
-                <button onClick={downloadTemplate} className="text-xs font-bold bg-secondary/80 text-foreground px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors hover:bg-secondary">
-                  <Download size={14} /> Template
-                </button>
-                <button onClick={() => document.getElementById('quiz-excel-import')?.click()} className="text-xs font-bold bg-emerald-500/10 text-emerald-600 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors hover:bg-emerald-500/20">
-                  <FileUp size={14} /> {importing ? 'Importing...' : 'Excel Import'}
-                </button>
-                <input type="file" id="quiz-excel-import" className="hidden" accept=".xlsx, .xls, .csv" onChange={handleFileImport} />
+              </div>
+              
+              <div className="relative flex-1 max-w-xs">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input 
+                  type="text" 
+                  placeholder="Search questions..." 
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full bg-secondary/30 pl-9 pr-4 py-1.5 rounded-lg text-xs outline-none focus:ring-1 focus:ring-primary/30 transition-all"
+                />
               </div>
             </div>
 
@@ -276,66 +586,108 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
               </p>
             )}
 
-            <div className="flex items-center justify-between py-1 border-b border-border/50">
+            <div className="flex items-center justify-between py-1">
               <div className="flex items-center gap-4">
-                <button onClick={toggleAllQuestions} className="text-[10px] font-bold text-primary hover:underline">
-                  {selectedQuestions.length === definitions[selectedQuiz].questions.length ? 'Deselect All' : 'Select All'}
+                <button 
+                  onClick={() => toggleAllQuestions(filteredQuestions.map(f => f.i))} 
+                  className="text-[10px] font-black text-primary hover:underline"
+                >
+                  {selectedQuestions.length === filteredQuestions.length && filteredQuestions.length > 0 ? 'Deselect All' : `Select All (${filteredQuestions.length})`}
                 </button>
                 {selectedQuestions.length > 0 && (
-                  <button onClick={deleteSelectedQuestions} className="text-[10px] font-bold text-red-500 hover:underline flex items-center gap-1">
+                  <button onClick={deleteSelectedQuestions} className="text-[10px] font-black text-red-500 hover:underline flex items-center gap-1">
                     <Trash2 size={12} /> Delete Selected ({selectedQuestions.length})
                   </button>
                 )}
               </div>
+              {searchQuery && (
+                <p className="text-[10px] font-medium text-muted-foreground">Found {filteredQuestions.length} matches</p>
+              )}
             </div>
 
-            <div className="space-y-2 max-h-96 overflow-y-auto pr-2 scrollbar-hide">
-              {definitions[selectedQuiz].questions.map((q: any, i: number) => (
-                <div key={i} className={`p-3 rounded-xl border transition-all flex items-start gap-3 ${selectedQuestions.includes(i) ? 'border-primary bg-primary/5' : 'border-border bg-secondary/10 hover:border-primary/30'}`}>
+            <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 scrollbar-hide">
+              {filteredQuestions.map(({ q, i }) => (
+                <div key={i} className={`p-4 rounded-xl border transition-all flex items-start gap-4 ${selectedQuestions.includes(i) ? 'border-primary bg-primary/5' : 'border-border bg-secondary/5 hover:border-primary/20'}`}>
                   <input 
                     type="checkbox" 
                     checked={selectedQuestions.includes(i)} 
                     onChange={() => toggleQuestionSelection(i)}
-                    className="mt-1 rounded border-primary text-primary focus:ring-primary"
+                    className="mt-1 rounded border-border text-primary focus:ring-primary bg-transparent"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start gap-2">
-                      <p className="text-xs font-bold truncate">Q{i+1}: {q.en}</p>
+                      <div>
+                        <span className="text-[9px] font-black text-primary uppercase bg-primary/10 px-1.5 py-0.5 rounded mr-2">Q{i+1}</span>
+                        <span className="text-sm font-bold text-foreground">{q.en}</span>
+                      </div>
                       <button 
                         onClick={() => {
                           if (confirm('Delete this question?')) {
                             const updated = { ...definitions };
-                            updated[selectedQuiz].questions = updated[selectedQuiz].questions.filter((_: any, idx: number) => idx !== i);
+                            updated[selectedQuiz].questions = updated[selectedQuiz].questions.filter((_, idx) => idx !== i);
                             setDefinitions(updated);
                             setSelectedQuestions(prev => prev.filter(idx => idx !== i).map(idx => idx > i ? idx - 1 : idx));
+                            onChange();
                           }
                         }}
-                        className="text-red-500 hover:text-red-600 transition-colors"
+                        className="text-muted-foreground hover:text-red-500 transition-colors p-1"
                       >
                         <Trash2 size={14} />
                       </button>
                     </div>
-                    <p className="text-[10px] text-muted-foreground truncate italic">{q.th}</p>
+                    <p className="text-xs text-muted-foreground mt-1 pl-11">{q.th}</p>
+                    
+                    <div className="mt-3 pl-11 grid grid-cols-2 gap-2">
+                      {q.options.en.map((opt, optIdx) => (
+                        <div key={optIdx} className={`text-[10px] p-2 rounded-lg border ${optIdx === q.correctIdx ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 font-bold' : 'bg-secondary/20 border-border text-muted-foreground'}`}>
+                          {opt}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {(q.explain.en || q.explain.th) && (
+                      <div className="mt-3 pl-11">
+                         <div className="bg-blue-500/5 border border-blue-500/10 p-2.5 rounded-lg">
+                           <p className="text-[9px] font-black text-blue-600 uppercase mb-1 flex items-center gap-1"><HelpCircle size={10} /> Explanation</p>
+                           <p className="text-[10px] text-blue-800/70 italic leading-relaxed">{q.explain.en}</p>
+                           {q.explain.th && <p className="text-[10px] text-blue-800/50 mt-1">{q.explain.th}</p>}
+                         </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
-              {definitions[selectedQuiz].questions.length === 0 && (
-                <div className="py-12 flex flex-col items-center justify-center gap-3 opacity-30">
-                  <Database size={32} />
-                  <p className="text-xs font-bold uppercase">No questions yet</p>
+              
+              {filteredQuestions.length === 0 && (
+                <div className="py-20 flex flex-col items-center justify-center gap-3 opacity-20 border-2 border-dashed border-border rounded-2xl">
+                  {searchQuery ? <Search size={40} /> : <Database size={40} />}
+                  <p className="text-xs font-black uppercase tracking-widest">{searchQuery ? 'No matching questions' : 'No questions yet'}</p>
                 </div>
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );
 }
 
-function AiEvalEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => void, saving: boolean }) {
+
+function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig | undefined, onSave: (d: AiEvalConfig) => void, onChange: () => void, saving: boolean }) {
   const [systemPrompt, setSystemPrompt] = useState(data?.systemPrompt || '');
   const [agentGuideline, setAgentGuideline] = useState(data?.agentGuideline || '');
+  const [previewMode, setPreviewMode] = useState(false);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    alert('Copied to clipboard');
+  };
+
+  const handleUpdate = (type: 'prompt' | 'guideline', val: string) => {
+    if (type === 'prompt') setSystemPrompt(val);
+    else setAgentGuideline(val);
+    onChange();
+  };
 
   return (
     <div className="p-6 space-y-8">
@@ -344,60 +696,90 @@ function AiEvalEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =>
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-bold flex items-center gap-2"><BookOpen size={16} /> Agent Guideline</h3>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Shown to agents on the intro screen before they start. Should be human-readable instructions.</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mt-1">Shown to agents on the intro screen before they start. Use line breaks for formatting.</p>
           </div>
-          <button
-            onClick={() => onSave({ ...data, systemPrompt, agentGuideline })}
-            className="bg-primary text-white px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50"
-            disabled={saving}
-          >
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setPreviewMode(!previewMode)} 
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${previewMode ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
+            >
+              {previewMode ? <Edit3 size={14} /> : <Eye size={14} />} {previewMode ? 'Edit' : 'Preview'}
+            </button>
+            <button
+              onClick={() => onSave({ ...data, systemPrompt, agentGuideline })}
+              className="bg-primary text-white px-5 py-1.5 rounded-lg text-xs font-bold disabled:opacity-50 flex items-center gap-2"
+              disabled={saving}
+            >
+              {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save Changes
+            </button>
+          </div>
         </div>
-        <textarea
-          value={agentGuideline}
-          onChange={e => setAgentGuideline(e.target.value)}
-          className="w-full h-48 bg-secondary/20 p-4 rounded-xl border text-sm focus:ring-2 focus:ring-primary/20 transition-all"
-          placeholder="Enter human-readable instructions for agents (what to do, how to pass, tips)..."
-        />
+
+        <div className="relative">
+          {previewMode ? (
+            <div className="w-full min-h-48 bg-secondary/10 p-6 rounded-xl border border-dashed border-border whitespace-pre-wrap text-sm leading-relaxed text-foreground font-medium">
+              {agentGuideline || <span className="opacity-30 italic">No guideline content yet...</span>}
+            </div>
+          ) : (
+            <>
+              <textarea
+                value={agentGuideline}
+                onChange={e => handleUpdate('guideline', e.target.value)}
+                className="w-full h-48 bg-secondary/20 p-4 rounded-xl border text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                placeholder="Enter human-readable instructions for agents (what to do, how to pass, tips)..."
+              />
+              <div className="absolute bottom-3 right-3 text-[10px] font-black text-muted-foreground bg-background/80 px-2 py-1 rounded border border-border backdrop-blur-sm">
+                {agentGuideline.length} characters
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* AI System Prompt */}
       <div className="space-y-4 border-t border-border pt-8">
-        <div>
-          <h3 className="font-bold flex items-center gap-2"><Zap size={16} /> AI System Prompt</h3>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Internal prompt sent to the AI. Defines the customer persona, JSON schema, and scoring rules. Never shown to agents.</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-bold flex items-center gap-2"><Zap size={16} /> AI System Prompt</h3>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mt-1">Internal prompt sent to the AI. Defines the customer persona and JSON schema.</p>
+          </div>
+          <button 
+            onClick={() => copyToClipboard(systemPrompt)}
+            className="text-xs font-bold text-primary hover:bg-primary/5 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors"
+          >
+            <Copy size={14} /> Copy Prompt
+          </button>
         </div>
-        <textarea
-          value={systemPrompt}
-          onChange={e => setSystemPrompt(e.target.value)}
-          className="w-full h-[500px] bg-secondary/20 p-4 rounded-xl border font-mono text-sm focus:ring-2 focus:ring-primary/20 transition-all"
-          placeholder="Enter AI system prompt..."
-        />
+        <div className="relative group">
+          <textarea
+            value={systemPrompt}
+            onChange={e => handleUpdate('prompt', e.target.value)}
+            className="w-full h-[600px] bg-slate-900 text-slate-300 p-6 rounded-xl border border-slate-800 font-mono text-xs leading-relaxed focus:ring-2 focus:ring-primary/20 transition-all outline-none scrollbar-hide"
+            placeholder="Enter AI system prompt..."
+          />
+          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="text-[10px] font-bold text-slate-500 bg-slate-800 px-2 py-1 rounded border border-slate-700">MONO EDITOR</span>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-const LEARN_DEFAULT_MODULES: Record<string, any> = {
-  product: { id: 'product', title: 'What is Stock?', titleTh: 'หุ้นคืออะไร?', description: 'Fundamentals of stocks.', descriptionTh: 'พื้นฐานของหุ้น', gradient: 'from-blue-600 to-indigo-700', presentations: { th: { presentationId: '', slideUrls: [], totalSlides: 0 }, en: { presentationId: '', slideUrls: [], totalSlides: 0 } } },
-  kyc: { id: 'kyc', title: 'KYC', titleTh: 'รู้จักลูกค้า', description: 'KYC process.', descriptionTh: 'กระบวนการ KYC', gradient: 'from-emerald-600 to-teal-700', presentations: { th: { presentationId: '', slideUrls: [], totalSlides: 0 }, en: { presentationId: '', slideUrls: [], totalSlides: 0 } } },
-  website: { id: 'website', title: 'Website', titleTh: 'เว็บไซต์', description: 'Platform walkthrough.', descriptionTh: 'แนะนำแพลตฟอร์ม', gradient: 'from-violet-600 to-purple-700', presentations: { th: { presentationId: '', slideUrls: [], totalSlides: 0 }, en: { presentationId: '', slideUrls: [], totalSlides: 0 } } },
-};
 
-function LearnEditor({ data, onSave, onRefresh, saving }: { data: any, onSave: (d: any) => void, onRefresh: () => void, saving: boolean }) {
-  const [modules, setModules] = useState<any>(data?.modules && Object.keys(data.modules).length > 0 ? data.modules : LEARN_DEFAULT_MODULES);
+function LearnEditor({ data, onSave, onChange, saving }: { data: LearnConfig | undefined, onSave: (d: LearnConfig) => void, onChange: () => void, saving: boolean }) {
+  const [modules, setModules] = useState<Record<string, LearnModule>>(data?.modules && Object.keys(data.modules).length > 0 ? data.modules : LEARN_DEFAULT_MODULES);
   const [order, setOrder] = useState<string[]>(data?.order || Object.keys(modules));
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<Record<string, 'idle' | 'loading' | 'done' | 'error'>>({});
 
-  // Synchronize order when modules change (e.g. if a new one is added but not in order yet)
+  // Synchronize order when modules change
   useEffect(() => {
     const moduleIds = Object.keys(modules);
-    const newOrder = [...order];
     let changed = false;
-
+    
     // Add missing IDs
+    const newOrder = [...order];
     moduleIds.forEach(id => {
       if (!newOrder.includes(id)) {
         newOrder.push(id);
@@ -409,7 +791,9 @@ function LearnEditor({ data, onSave, onRefresh, saving }: { data: any, onSave: (
     const filteredOrder = newOrder.filter(id => modules[id]);
     if (filteredOrder.length !== newOrder.length) changed = true;
 
-    if (changed) setOrder(filteredOrder);
+    if (changed) {
+      setOrder(filteredOrder);
+    }
   }, [modules, order]);
 
   const ensureFirebaseSession = async () => {
@@ -432,6 +816,7 @@ function LearnEditor({ data, onSave, onRefresh, saving }: { data: any, onSave: (
     
     [newOrder[idx], newOrder[targetIdx]] = [newOrder[targetIdx], newOrder[idx]];
     setOrder(newOrder);
+    onChange();
   };
 
   const handleFileUpload = async (moduleId: string, lang: 'en' | 'th', files: FileList) => {
@@ -447,41 +832,69 @@ function LearnEditor({ data, onSave, onRefresh, saving }: { data: any, onSave: (
         await uploadBytes(storageRef, sorted[i]);
         slideUrls.push(await getDownloadURL(storageRef));
       }
-      setModules((prev: any) => ({ ...prev, [moduleId]: { ...prev[moduleId], presentations: { ...prev[moduleId].presentations, [lang]: { ...prev[moduleId].presentations[lang], slideUrls, totalSlides: slideUrls.length } } } }));
+      
+      setModules((prev) => {
+        const updated = { ...prev };
+        updated[moduleId] = { 
+          ...updated[moduleId], 
+          presentations: { 
+            ...updated[moduleId].presentations, 
+            [lang]: { ...updated[moduleId].presentations[lang], slideUrls, totalSlides: slideUrls.length } 
+          } 
+        };
+        return updated;
+      });
+      
       setUploadStatus(prev => ({ ...prev, [key]: 'done' }));
-    } catch (err: any) { alert(err.message); setUploadStatus(prev => ({ ...prev, [key]: 'error' })); }
+      onChange();
+    } catch (err: any) { 
+      alert(err.message); 
+      setUploadStatus(prev => ({ ...prev, [key]: 'error' })); 
+    }
   };
 
   const handleUpdateModule = (id: string, field: string, value: any) => {
     if (field === 'id') {
       const trimmed = value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
       if (!trimmed || trimmed === id || modules[trimmed]) return;
-      const updated = { ...modules }; updated[trimmed] = { ...updated[id], id: trimmed }; delete updated[id];
       
-      // Update order as well
+      if (!confirm(`Warning: Changing the ID will not move existing slides in Storage. You should re-upload slides after changing the ID. Continue?`)) return;
+
+      const updated = { ...modules }; 
+      updated[trimmed] = { ...updated[id], id: trimmed }; 
+      delete updated[id];
+      
       const newOrder = order.map(o => o === id ? trimmed : o);
       setOrder(newOrder);
-      
-      setModules(updated); setEditingId(trimmed); return;
+      setModules(updated); 
+      setEditingId(trimmed); 
+      onChange();
+      return;
     }
-    setModules((prev: any) => {
-      const mod = { ...prev[id] };
+
+    setModules((prev) => {
+      const updated = { ...prev };
+      const mod = { ...updated[id] };
       if (field.includes('.')) {
         const parts = field.split('.');
-        let curr = mod;
+        let curr: any = mod;
         for (let i = 0; i < parts.length - 1; i++) {
           curr[parts[i]] = { ...curr[parts[i]] };
           curr = curr[parts[i]];
         }
         curr[parts[parts.length - 1]] = value;
-      } else mod[field] = value;
-      return { ...prev, [id]: mod };
+      } else {
+        (mod as any)[field] = value;
+      }
+      updated[id] = mod;
+      return updated;
     });
+    onChange();
   };
 
   const handleAddModule = () => {
     const id = `module_${Date.now()}`;
-    const newModule = { 
+    const newModule: LearnModule = { 
       id, 
       title: 'New Course', 
       titleTh: 'คอร์สใหม่', 
@@ -496,225 +909,210 @@ function LearnEditor({ data, onSave, onRefresh, saving }: { data: any, onSave: (
     setModules({ ...modules, [id]: newModule });
     setOrder([...order, id]);
     setEditingId(id);
+    onChange();
   };
 
   const handleDeleteModule = (id: string) => {
-    if (confirm(`Delete course ${id}?`)) {
+    if (confirm(`Delete course "${modules[id].title}" (${id})?`)) {
       const updated = { ...modules };
       delete updated[id];
       setModules(updated);
       setOrder(order.filter(o => o !== id));
       if (editingId === id) setEditingId(null);
+      onChange();
     }
   };
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <h3 className="font-bold flex items-center gap-2 text-blue-600"><BookOpen size={18} /> Learn Courses</h3>
           <button onClick={handleAddModule} className="bg-secondary/50 hover:bg-secondary px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors">
             <Plus size={14} /> Add Module
           </button>
         </div>
-        <button onClick={() => onSave({ ...data, modules, order })} className="bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold flex items-center gap-2"><Save size={16} /> Save Changes</button>
+        <button 
+          onClick={() => onSave({ modules, order })} 
+          disabled={saving}
+          className="bg-primary text-white px-5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
+        >
+          {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save Learn Config
+        </button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {order.map((id, idx) => {
           const mod = modules[id];
           if (!mod) return null;
           return (
-            <div key={id} className={`p-4 rounded-2xl border transition-all ${editingId === id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-secondary/10'}`}>
-              <div className="flex justify-between items-start mb-2">
+            <div key={id} className={`group p-4 rounded-xl border transition-all ${editingId === id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-secondary/10 hover:border-primary/30'}`}>
+              <div className="flex justify-between items-start mb-3">
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-bold uppercase opacity-50 tracking-tighter">{id}</span>
-                  <div className="flex items-center gap-1 mt-1">
+                  <span className="text-[10px] font-black uppercase opacity-40 tracking-tight">{id}</span>
+                  <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
                       disabled={idx === 0}
-                      onClick={(e) => { e.stopPropagation(); moveModule(idx, 'up'); }}
-                      className="p-1 rounded bg-black/5 hover:bg-black/10 disabled:opacity-20"
+                      onClick={() => moveModule(idx, 'up')}
+                      className="p-1 rounded bg-background/50 hover:bg-background border border-border disabled:opacity-20"
                     >
-                      <ChevronDown size={12} className="rotate-180" />
+                      <ArrowUp size={10} />
                     </button>
                     <button 
                       disabled={idx === order.length - 1}
-                      onClick={(e) => { e.stopPropagation(); moveModule(idx, 'down'); }}
-                      className="p-1 rounded bg-black/5 hover:bg-black/10 disabled:opacity-20"
+                      onClick={() => moveModule(idx, 'down')}
+                      className="p-1 rounded bg-background/50 hover:bg-background border border-border disabled:opacity-20"
                     >
-                      <ChevronDown size={12} />
+                      <ArrowDown size={10} />
                     </button>
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => setEditingId(editingId === id ? null : id)} className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors">
+                  <button onClick={() => setEditingId(editingId === id ? null : id)} className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors" title="Edit">
                     <Edit3 size={16} />
                   </button>
-                  <button onClick={() => handleDeleteModule(id)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-red-500 transition-colors">
+                  <button onClick={() => handleDeleteModule(id)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-red-500 transition-colors" title="Delete">
                     <Trash2 size={16} />
                   </button>
                 </div>
               </div>
-              <h4 className="font-bold truncate text-sm">{mod.title}</h4>
+              <h4 className="font-bold truncate text-sm mb-1">{mod.title}</h4>
+              <div className="flex items-center gap-3">
+                 <div className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
+                   <FileText size={10} /> {mod.presentations.en.slideUrls.length + mod.presentations.th.slideUrls.length} Slides
+                 </div>
+              </div>
             </div>
           );
         })}
       </div>
+
       {editingId && (
-        <div className="p-6 rounded-2xl border border-primary/20 bg-card space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase opacity-50 px-1">Title EN</label>
-              <input type="text" value={modules[editingId].title} onChange={e => handleUpdateModule(editingId, 'title', e.target.value)} className="w-full bg-secondary/30 p-3 rounded-xl text-sm" placeholder="Title EN" />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase opacity-50 px-1">Title TH</label>
-              <input type="text" value={modules[editingId].titleTh} onChange={e => handleUpdateModule(editingId, 'titleTh', e.target.value)} className="w-full bg-secondary/30 p-3 rounded-xl text-sm" placeholder="Title TH" />
-            </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-6 rounded-2xl border border-primary/20 bg-card space-y-6 shadow-sm"
+        >
+          <div className="flex items-center justify-between">
+            <h4 className="font-black text-sm uppercase tracking-wider text-primary flex items-center gap-2">
+              <Edit3 size={16} /> Editing Module: {editingId}
+            </h4>
+            <button onClick={() => setEditingId(null)} className="text-xs font-bold text-muted-foreground hover:text-foreground">Close Editor</button>
           </div>
 
-          <div className="grid grid-cols-2 gap-8">
-            {/* English Config */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h5 className="text-xs font-black uppercase tracking-wider text-primary">English Presentation</h5>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase opacity-50 px-1">Storage Slides</label>
-                <input type="file" id="up-en" className="hidden" multiple accept="image/*" onChange={e => e.target.files && handleFileUpload(editingId, 'en', e.target.files)} />
-                <div className="flex gap-2">
-                  <button onClick={() => document.getElementById('up-en')?.click()} className="flex-1 py-4 rounded-xl border border-primary/30 bg-primary/10 text-xs font-bold text-primary flex items-center justify-center gap-2">
-                    {uploadStatus[`${editingId}_en`] === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} Upload PNGs
-                  </button>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase opacity-50 px-1">Internal ID (Affects storage path)</label>
+                <input type="text" value={modules[editingId].id} onBlur={e => handleUpdateModule(editingId, 'id', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm font-mono focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase opacity-50 px-1">Title EN</label>
+                  <input type="text" value={modules[editingId].title} onChange={e => handleUpdateModule(editingId, 'title', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Title EN" />
                 </div>
-                {modules[editingId].presentations.en.slideUrls?.length > 0 && (
-                  <div className="space-y-2 px-1">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[10px] text-emerald-600 font-bold">{modules[editingId].presentations.en.slideUrls.length} Slides Uploaded</p>
-                      <button onClick={() => handleUpdateModule(editingId, 'presentations.en.slideUrls', [])} className="text-[10px] text-red-500 font-bold hover:underline">Clear All</button>
-                    </div>
-                    <div className="grid grid-cols-5 gap-1 max-h-40 overflow-y-auto p-1 bg-black/5 rounded-lg">
-                      {modules[editingId].presentations.en.slideUrls.map((url: string, sIdx: number) => (
-                        <div key={sIdx} className="relative group aspect-video bg-black/20 rounded border border-white/10 overflow-hidden">
-                          <img src={url} className="w-full h-full object-cover" alt="" />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-0.5">
-                            <button 
-                              disabled={sIdx === 0}
-                              onClick={() => {
-                                const urls = [...modules[editingId].presentations.en.slideUrls];
-                                [urls[sIdx], urls[sIdx-1]] = [urls[sIdx-1], urls[sIdx]];
-                                handleUpdateModule(editingId, 'presentations.en.slideUrls', urls);
-                              }}
-                              className="p-0.5 bg-white/20 hover:bg-white/40 rounded disabled:opacity-20"
-                            >
-                              <ChevronDown size={10} className="rotate-180 text-white" />
-                            </button>
-                            <button 
-                              onClick={() => {
-                                if (confirm('Delete this slide?')) {
-                                  const urls = modules[editingId].presentations.en.slideUrls.filter((_: any, i: number) => i !== sIdx);
-                                  setModules((prev: any) => {
-                                    const mod = { ...prev[editingId] };
-                                    mod.presentations = { ...mod.presentations };
-                                    mod.presentations.en = { ...mod.presentations.en, slideUrls: urls, totalSlides: urls.length };
-                                    return { ...prev, [editingId]: mod };
-                                  });
-                                }
-                              }}
-                              className="p-0.5 bg-red-500/40 hover:bg-red-500/60 rounded"
-                            >
-                              <Trash2 size={10} className="text-white" />
-                            </button>
-                            <button 
-                              disabled={sIdx === modules[editingId].presentations.en.slideUrls.length - 1}
-                              onClick={() => {
-                                const urls = [...modules[editingId].presentations.en.slideUrls];
-                                [urls[sIdx], urls[sIdx+1]] = [urls[sIdx+1], urls[sIdx]];
-                                handleUpdateModule(editingId, 'presentations.en.slideUrls', urls);
-                              }}
-                              className="p-0.5 bg-white/20 hover:bg-white/40 rounded disabled:opacity-20"
-                            >
-                              <ChevronDown size={10} className="text-white" />
-                            </button>
-                          </div>
-                          <span className="absolute bottom-0 right-0 bg-black/60 text-[8px] text-white px-0.5 font-bold">{sIdx + 1}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase opacity-50 px-1">Title TH</label>
+                  <input type="text" value={modules[editingId].titleTh} onChange={e => handleUpdateModule(editingId, 'titleTh', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Title TH" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase opacity-50 px-1">Description EN</label>
+                  <textarea value={modules[editingId].description} onChange={e => handleUpdateModule(editingId, 'description', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm h-20 focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none" placeholder="Description EN" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase opacity-50 px-1">Description TH</label>
+                  <textarea value={modules[editingId].descriptionTh} onChange={e => handleUpdateModule(editingId, 'descriptionTh', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm h-20 focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none" placeholder="Description TH" />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase opacity-50 px-1">Visual Gradient (Tailwind classes)</label>
+                <input type="text" value={modules[editingId].gradient} onChange={e => handleUpdateModule(editingId, 'gradient', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm font-mono focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="e.g. from-blue-600 to-indigo-700" />
+                <div className={`mt-2 h-4 w-full rounded-full bg-gradient-to-r ${modules[editingId].gradient}`} />
               </div>
             </div>
 
-            {/* Thai Config */}
-            <div className="space-y-4">
-              <h5 className="text-xs font-black uppercase tracking-wider text-primary">Thai Presentation</h5>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase opacity-50 px-1">Storage Slides</label>
-                <input type="file" id="up-th" className="hidden" multiple accept="image/*" onChange={e => e.target.files && handleFileUpload(editingId, 'th', e.target.files)} />
-                <div className="flex gap-2">
-                  <button onClick={() => document.getElementById('up-th')?.click()} className="flex-1 py-4 rounded-xl border border-primary/30 bg-primary/10 text-xs font-bold text-primary flex items-center justify-center gap-2">
-                    {uploadStatus[`${editingId}_th`] === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} Upload PNGs
-                  </button>
-                </div>
-                {modules[editingId].presentations.th.slideUrls?.length > 0 && (
-                  <div className="space-y-2 px-1">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[10px] text-emerald-600 font-bold">{modules[editingId].presentations.th.slideUrls.length} Slides Uploaded</p>
-                      <button onClick={() => handleUpdateModule(editingId, 'presentations.th.slideUrls', [])} className="text-[10px] text-red-500 font-bold hover:underline">Clear All</button>
-                    </div>
-                    <div className="grid grid-cols-5 gap-1 max-h-40 overflow-y-auto p-1 bg-black/5 rounded-lg">
-                      {modules[editingId].presentations.th.slideUrls.map((url: string, sIdx: number) => (
-                        <div key={sIdx} className="relative group aspect-video bg-black/20 rounded border border-white/10 overflow-hidden">
-                          <img src={url} className="w-full h-full object-cover" alt="" />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-0.5">
-                            <button 
-                              disabled={sIdx === 0}
-                              onClick={() => {
-                                const urls = [...modules[editingId].presentations.th.slideUrls];
-                                [urls[sIdx], urls[sIdx-1]] = [urls[sIdx-1], urls[sIdx]];
-                                handleUpdateModule(editingId, 'presentations.th.slideUrls', urls);
-                              }}
-                              className="p-0.5 bg-white/20 hover:bg-white/40 rounded disabled:opacity-20"
-                            >
-                              <ChevronDown size={10} className="rotate-180 text-white" />
-                            </button>
-                            <button 
-                              onClick={() => {
-                                if (confirm('Delete this slide?')) {
-                                  const urls = modules[editingId].presentations.th.slideUrls.filter((_: any, i: number) => i !== sIdx);
-                                  setModules((prev: any) => {
-                                    const mod = { ...prev[editingId] };
-                                    mod.presentations = { ...mod.presentations };
-                                    mod.presentations.th = { ...mod.presentations.th, slideUrls: urls, totalSlides: urls.length };
-                                    return { ...prev, [editingId]: mod };
-                                  });
-                                }
-                              }}
-                              className="p-0.5 bg-red-500/40 hover:bg-red-500/60 rounded"
-                            >
-                              <Trash2 size={10} className="text-white" />
-                            </button>
-                            <button 
-                              disabled={sIdx === modules[editingId].presentations.th.slideUrls.length - 1}
-                              onClick={() => {
-                                const urls = [...modules[editingId].presentations.th.slideUrls];
-                                [urls[sIdx], urls[sIdx+1]] = [urls[sIdx+1], urls[sIdx]];
-                                handleUpdateModule(editingId, 'presentations.th.slideUrls', urls);
-                              }}
-                              className="p-0.5 bg-white/20 hover:bg-white/40 rounded disabled:opacity-20"
-                            >
-                              <ChevronDown size={10} className="text-white" />
-                            </button>
-                          </div>
-                          <span className="absolute bottom-0 right-0 bg-black/60 text-[8px] text-white px-0.5 font-bold">{sIdx + 1}</span>
-                        </div>
-                      ))}
-                    </div>
+            <div className="space-y-6">
+              {['en', 'th'].map((lang) => (
+                <div key={lang} className="space-y-3 p-4 rounded-2xl bg-secondary/10 border border-border">
+                  <div className="flex items-center justify-between">
+                    <h5 className="text-xs font-black uppercase tracking-widest text-primary">{lang === 'en' ? 'English' : 'Thai'} Presentation</h5>
+                    {uploadStatus[`${editingId}_${lang}`] === 'loading' && <Loader2 size={14} className="animate-spin text-primary" />}
                   </div>
-                )}
-              </div>
+                  
+                  <div className="flex gap-2">
+                    <input type="file" id={`up-${lang}`} className="hidden" multiple accept="image/*" onChange={e => e.target.files && handleFileUpload(editingId, lang as any, e.target.files)} />
+                    <button onClick={() => document.getElementById(`up-${lang}`)?.click()} className="flex-1 py-3 rounded-xl border border-primary/20 bg-primary/5 text-[10px] font-black uppercase text-primary flex items-center justify-center gap-2 hover:bg-primary/10 transition-all">
+                      <Upload size={14} /> Upload PNG Slides
+                    </button>
+                  </div>
+
+                  {modules[editingId].presentations[lang as 'en' | 'th'].slideUrls?.length > 0 ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-tighter">
+                          {modules[editingId].presentations[lang as 'en' | 'th'].slideUrls.length} Slides Synced
+                        </p>
+                        <button 
+                          onClick={() => {
+                             if (confirm('Clear all slides? Files will remain in storage but won\'t be linked to this module.')) {
+                               handleUpdateModule(editingId, `presentations.${lang}.slideUrls`, []);
+                               handleUpdateModule(editingId, `presentations.${lang}.totalSlides`, 0);
+                             }
+                          }} 
+                          className="text-[10px] text-red-500 font-bold hover:underline"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5 max-h-48 overflow-y-auto p-2 bg-black/5 rounded-xl scrollbar-hide">
+                        {modules[editingId].presentations[lang as 'en' | 'th'].slideUrls.map((url: string, sIdx: number) => (
+                          <div key={sIdx} className="relative group aspect-video bg-black/20 rounded-lg border border-white/10 overflow-hidden shadow-sm">
+                            <img src={url} className="w-full h-full object-cover" alt="" />
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                              <button 
+                                disabled={sIdx === 0}
+                                onClick={() => {
+                                  const urls = [...modules[editingId].presentations[lang as 'en' | 'th'].slideUrls];
+                                  [urls[sIdx], urls[sIdx-1]] = [urls[sIdx-1], urls[sIdx]];
+                                  handleUpdateModule(editingId, `presentations.${lang}.slideUrls`, urls);
+                                }}
+                                className="p-1 bg-white/20 hover:bg-white/40 rounded-md disabled:opacity-20"
+                              >
+                                <ArrowUp size={10} className="text-white -rotate-90" />
+                              </button>
+                              <button 
+                                onClick={() => {
+                                  if (confirm('Delete this slide?')) {
+                                    const urls = modules[editingId].presentations[lang as 'en' | 'th'].slideUrls.filter((_: any, i: number) => i !== sIdx);
+                                    handleUpdateModule(editingId, `presentations.${lang}.slideUrls`, urls);
+                                    handleUpdateModule(editingId, `presentations.${lang}.totalSlides`, urls.length);
+                                  }
+                                }}
+                                className="p-1 bg-red-500/40 hover:bg-red-500/60 rounded-md"
+                              >
+                                <Trash2 size={10} className="text-white" />
+                              </button>
+                            </div>
+                            <span className="absolute bottom-0.5 right-1 bg-black/60 text-[8px] text-white px-1 rounded-sm font-black">{sIdx + 1}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="py-8 border border-dashed border-border rounded-xl flex flex-col items-center justify-center opacity-30 gap-1">
+                      <Layers size={20} />
+                      <p className="text-[9px] font-black uppercase">No slides uploaded</p>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );
 }
+

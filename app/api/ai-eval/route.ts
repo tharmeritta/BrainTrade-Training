@@ -1,8 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAI } from '@/lib/openai';
-import { fsAdd } from '@/lib/firestore-db';
+import { fsAdd, fsGet, fsSet, fsDelete } from '@/lib/firestore-db';
 import { getAdminDb } from '@/lib/firebase-admin';
 import type { PitchMessage } from '@/types';
+
+/* ─── Progress helpers ──────────────────────────────────────────────────────── */
+
+interface ProgressRecord {
+  agentId: string;
+  agentName: string;
+  evalCompletedLevels: number[];
+  evalSavedLevel: number | null;
+  updatedAt?: string;
+}
+
+async function markEvalPassed(agentId: string, agentName: string): Promise<void> {
+  const existing = await fsGet<ProgressRecord>('agent_progress', agentId) ?? {
+    agentId, agentName, evalCompletedLevels: [], evalSavedLevel: null,
+  };
+  const levels = Array.from(new Set([...existing.evalCompletedLevels, 1])).sort((a, b) => a - b);
+  await fsSet('agent_progress', agentId, {
+    ...existing,
+    agentId,
+    agentName: agentName || existing.agentName,
+    evalCompletedLevels: levels,
+    evalSavedLevel: null,
+    updatedAt: new Date().toISOString(),
+  });
+  // Clean up the active session
+  await fsDelete('aiev_active', agentId).catch(() => {});
+}
 
 /* ─── Coaching shape ────────────────────────────────────────────────────────── */
 
@@ -258,6 +285,15 @@ export async function POST(req: NextRequest) {
         });
       } catch (logErr) {
         console.error('AI eval logging failed (non-blocking):', logErr);
+      }
+
+      // Write pass directly from the server — do not rely on the client to report it
+      if (passed) {
+        try {
+          await markEvalPassed(agentId, agentName);
+        } catch (progressErr) {
+          console.error('AI eval progress update failed (non-blocking):', progressErr);
+        }
       }
     }
 
