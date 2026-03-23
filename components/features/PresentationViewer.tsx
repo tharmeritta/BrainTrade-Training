@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Image from 'next/image';
+import NextImage from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
@@ -657,13 +657,13 @@ export default function PresentationViewer({ module, locale, initialLang, user }
                   transition={{ duration: 0.2 }}
                   className="relative h-full w-full"
                 >
-                  <Image
+                  <NextImage
                     src={slideImageUrl}
                     fill
                     className="object-contain"
-                    onLoad={() => { 
-                      setIsLoaded(true); 
-                      setLoadError(false); 
+                    onLoad={() => {
+                      setIsLoaded(true);
+                      setLoadError(false);
                       // Ensure current slide is marked as preloaded once viewed
                       setPreloadedSlides(prev => new Set(prev).add(slide));
                     }}
@@ -671,8 +671,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
                     alt={`Slide ${slide}`}
                     unoptimized
                     priority
-                  />
-                </motion.div>
+                  />                </motion.div>
               </AnimatePresence>
             )}
           </motion.div>

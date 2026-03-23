@@ -76,7 +76,7 @@ interface ChatViewProps {
   onClearError: () => void;
   onUseScript: (text: string) => void;
   bottomRef: React.RefObject<HTMLDivElement>;
-  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+  textareaRef: React.RefObject<HTMLTextAreaElement>;
 }
 
 /* ─── Step Progress Indicator ──────────────────────────────────────────────── */
