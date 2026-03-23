@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import NavigationProgress from '@/components/ui/NavigationProgress';
 
 export const metadata: Metadata = {
   title: 'BrainTrade Training',
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="bg-background min-h-screen antialiased" style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+        <NavigationProgress />
         {children}
       </body>
     </html>

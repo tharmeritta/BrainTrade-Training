@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import {
   ArrowRight, Loader2, AlertCircle, Users, Award, Layers, User,
-  BookOpen, Settings, CreditCard, Bot, Target, Zap, CheckCircle2,
+  BookOpen, Settings, CreditCard, Bot, Target, Zap, CheckCircle2, Lock,
 } from 'lucide-react';
 import { StatCounter } from '@/components/ui/StatCounter';
 import { EASE, TRANSITION, FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
@@ -253,17 +253,32 @@ const ReturningUserBanner = ({ user, onContinue, onClear }: { user: { id: string
 
 export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
   const t = useTranslations('agentEntry');
-  const [agents, setAgents]             = useState<AgentOption[]>([]);
-  const [name, setName]                 = useState('');
-  const [loading, setLoading]           = useState(true);
-  const [submitting, setSubmitting]     = useState(false);
-  const [error, setError]               = useState('');
-  const [returning, setReturning]       = useState<{ id: string; name: string; stageName: string } | null>(null);
-  const [inputFocused, setInputFocused] = useState(false);
-  
-  const inputRef = useRef<HTMLInputElement>(null);
-  const pathname = usePathname();
-  const locale   = pathname?.split('/')[1] || 'th';
+  const [agents, setAgents]               = useState<AgentOption[]>([]);
+  const [name, setName]                   = useState('');
+  const [loading, setLoading]             = useState(true);
+  const [submitting, setSubmitting]       = useState(false);
+  const [error, setError]                 = useState('');
+  const [returning, setReturning]         = useState<{ id: string; name: string; stageName: string } | null>(null);
+  const [inputFocused, setInputFocused]   = useState(false);
+  const [loginPrompt, setLoginPrompt]     = useState(false);
+  const [shakeKey, setShakeKey]           = useState(0);
+
+  const inputRef   = useRef<HTMLInputElement>(null);
+  const pathname   = usePathname();
+  const searchParams = useSearchParams();
+  const router     = useRouter();
+  const locale     = pathname?.split('/')[1] || 'th';
+
+  // Detect redirect from guarded nav
+  useEffect(() => {
+    if (searchParams.get('loginRequired') === '1') {
+      setLoginPrompt(true);
+      setShakeKey(k => k + 1);
+      // Clean the query param from the URL without a full navigation
+      router.replace(`/${locale}/dashboard`, { scroll: false });
+      setTimeout(() => inputRef.current?.focus(), 400);
+    }
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const session = getAgentSession();
@@ -345,11 +360,50 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
             />
           </div>
 
-          <div style={{ background: `linear-gradient(135deg, rgba(0,180,216,0.35), rgba(124,58,237,0.28), rgba(0,180,216,0.18))`, borderRadius: 25, padding: 1, boxShadow: '0 24px 64px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.03)' }}>
+          <motion.div
+            key={shakeKey}
+            animate={shakeKey > 0 ? { x: [0, -10, 10, -8, 8, -4, 4, 0] } : {}}
+            transition={{ duration: 0.45, ease: 'easeInOut' }}
+            style={{ background: `linear-gradient(135deg, rgba(0,180,216,0.35), rgba(124,58,237,0.28), rgba(0,180,216,0.18))`, borderRadius: 25, padding: 1, boxShadow: '0 24px 64px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.03)' }}
+          >
             <div style={{ background: 'var(--entry-card-bg)', borderRadius: 24, backdropFilter: 'blur(24px)', overflow: 'hidden' }}>
               <div style={{ height: 3, background: `linear-gradient(90deg, ${CYAN} 0%, ${PURPLE} 50%, ${CYAN} 100%)` }} />
 
               <div style={{ padding: '28px' }}>
+                {/* Login-required prompt */}
+                <AnimatePresence>
+                  {loginPrompt && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                      animate={{ opacity: 1, height: 'auto', marginBottom: 16 }}
+                      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                      transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                      style={{ overflow: 'hidden' }}
+                    >
+                      <div className="flex items-start gap-3 px-4 py-3 rounded-2xl" style={{ background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.3)' }}>
+                        <div className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: 'rgba(124,58,237,0.15)' }}>
+                          <Lock size={13} style={{ color: '#A78BFA' }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold mb-0.5" style={{ color: '#C4B5FD' }}>
+                            {t('loginRequiredTitle')}
+                          </p>
+                          <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(196,181,253,0.7)' }}>
+                            {t('loginRequiredDesc')}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setLoginPrompt(false)}
+                          className="text-[10px] shrink-0 mt-0.5 transition-opacity hover:opacity-70"
+                          style={{ color: 'rgba(196,181,253,0.5)' }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <AnimatePresence>
                   {returning && (
                     <ReturningUserBanner
@@ -463,7 +517,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Mobile module chips */}
           <motion.div 

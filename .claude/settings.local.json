@@ -36,7 +36,8 @@
       "Bash(mkdir scripts:*)",
       "Bash(npm install:*)",
       "Bash(firebase deploy:*)",
-      "Bash(npx firebase-tools:*)"
+      "Bash(npx firebase-tools:*)",
+      "Bash(npm:*)"
     ]
   }
 }

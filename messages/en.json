@@ -105,6 +105,8 @@
     "changeBtn": "Change",
     "orLoginNew": "Or login as new",
     "welcome": "Welcome",
+    "loginRequiredTitle": "Login required",
+    "loginRequiredDesc": "Please sign in with your name before accessing that section.",
     "loginDesc": "Enter your name to access training",
     "nameLabel": "Full Name (English)",
     "loginBtn": "Sign In",
