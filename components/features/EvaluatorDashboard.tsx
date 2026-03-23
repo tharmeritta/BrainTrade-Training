@@ -21,7 +21,6 @@ import LangToggle from '@/components/ui/LangToggle';
 import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM, EASE } from '@/lib/animations';
 import { getCompletionStatus, type CompletionStatus } from '@/lib/completion';
 import { BADGE_CONFIG } from '@/components/features/admin/AdminHelpers';
-import AgentDetailModal from '@/components/features/admin/AgentDetailModal';
 import ChangePasswordModal from '@/components/features/admin/ChangePasswordModal';
 import { StatusPipeline } from '@/components/features/admin/AdminComponents';
 
@@ -125,15 +124,15 @@ const ScoreRing = ({ score, size = 'md' }: { score: number; size?: 'sm' | 'md' }
 // --- AgentPerformancePanel ---
 
 const AgentPerformancePanel = ({
-  stats, loading, onViewFullHistory,
+  stats, loading,
 }: {
   stats: AgentStats | null;
   loading: boolean;
-  onViewFullHistory: () => void;
 }) => {
   const t      = useTranslations('evaluator');
   const navT   = useTranslations('nav');
   const adminT = useTranslations('admin');
+  const [activeTab, setActiveTab] = useState<'overview' | 'quiz' | 'ai' | 'qa'>('overview');
 
   if (loading) return (
     <div className="flex items-center justify-center h-48">
@@ -147,164 +146,321 @@ const AgentPerformancePanel = ({
     </div>
   );
 
-  const badge = BADGE_CONFIG[stats.badge] ?? BADGE_CONFIG['needs-work'];
+  const badge               = BADGE_CONFIG[stats.badge] ?? BADGE_CONFIG['needs-work'];
   const quizTopics          = ['foundation', 'product', 'process', 'payment'] as const;
   const quizPassedCount     = quizTopics.filter(m => stats.quiz[m]?.passed).length;
-  const completedEvalLevels  = stats.evalCompletedLevels ?? [];
+  const completedEvalLevels = stats.evalCompletedLevels ?? [];
+  const aiHistory           = stats.aiEval?.history ?? [];
+  const qaHistory           = stats.humanEvaluations ?? [];
+
+  const tabs = [
+    { id: 'overview' as const, label: t('tabOverview'), icon: BarChart3 },
+    { id: 'quiz'     as const, label: t('tabQuiz'),     icon: Target },
+    { id: 'ai'       as const, label: t('tabAiEval'),   icon: Zap },
+    { id: 'qa'       as const, label: t('tabQa'),       icon: ClipboardCheck },
+  ];
 
   return (
     <motion.div variants={FADE_IN} initial="initial" animate="animate" className="space-y-3">
 
-      {/* Overall score card */}
-      <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-4">
+      {/* Score header */}
+      <div className="bg-card border border-border rounded-2xl p-3 flex items-center gap-3">
         <ScoreRing score={stats.overallScore} />
         <div className="flex-1 min-w-0">
-          <div className="text-xs text-muted-foreground mb-1.5">{t('trainingScore')}</div>
+          <div className="text-xs text-muted-foreground mb-1">{t('trainingScore')}</div>
           <span className={`text-xs font-bold px-2.5 py-1 rounded-full inline-block ${badge.bg} ${badge.text}`}>
             {adminT(`badges.${stats.badge}`)}
           </span>
           {stats.lastActive && (
-            <div className="flex items-center gap-1 mt-2">
+            <div className="flex items-center gap-1 mt-1.5">
               <Clock size={10} className="text-muted-foreground/40" />
               <span className="text-xs text-muted-foreground/50">{timeAgo(stats.lastActive, t)}</span>
             </div>
           )}
         </div>
-      </div>
-
-      {/* Module progress summary */}
-      <div className="bg-card border border-border rounded-2xl overflow-hidden">
-        <div className="px-4 py-2.5 border-b border-border bg-secondary/20">
-          <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">{t('trainingProgress')}</span>
-        </div>
-        <div className="p-3 space-y-3">
-          {/* Quiz */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Target size={13} className="text-amber-400" />
-              <span className="text-sm font-semibold text-foreground">{navT('quiz')}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-foreground">{quizPassedCount}/4</span>
-              <div className="w-14 h-1.5 bg-secondary rounded-full overflow-hidden">
-                <div className="h-full rounded-full bg-amber-400 transition-all" style={{ width: `${quizPassedCount / 4 * 100}%` }} />
-              </div>
-            </div>
+        {/* Quick module status chips */}
+        <div className="flex flex-col gap-1.5 shrink-0 items-end">
+          <div className="flex items-center gap-1">
+            <Target size={10} className="text-amber-400" />
+            <span className="text-[10px] font-bold text-foreground">{quizPassedCount}/4</span>
           </div>
-
-          {/* AI Eval */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Zap size={13} className="text-purple-400" />
-              <span className="text-sm font-semibold text-foreground">{navT('aiEval')}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {stats.aiEval
-                ? <span className="text-sm font-bold" style={{ color: scoreHex(stats.aiEval.avgScore) }}>{stats.aiEval.avgScore}/100</span>
-                : <span className="text-xs text-muted-foreground/40">—</span>
-              }
-              <div className="flex gap-0.5">
-                {[1, 2, 3, 4].map(l => {
-                  const done = completedEvalLevels.includes(l);
-                  return (
-                    <div key={l} className="w-4 h-4 rounded flex items-center justify-center text-[9px] font-black"
-                      style={{
-                        background: done ? 'rgba(167,139,250,0.18)' : 'hsl(var(--secondary))',
-                        color: done ? '#A78BFA' : 'hsl(var(--muted-foreground) / 0.3)',
-                        border: `1px solid ${done ? 'rgba(167,139,250,0.35)' : 'hsl(var(--border))'}`,
-                      }}
-                    >
-                      {done ? <Check size={6} /> : l}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Quiz per-topic scores */}
-      <div className="bg-card border border-border rounded-2xl overflow-hidden">
-        <div className="px-4 py-2.5 border-b border-border bg-secondary/20">
-          <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">{t('quizScores')}</span>
-        </div>
-        <div className="p-3 space-y-2.5">
-          {quizTopics.map(m => {
-            const qs = stats.quiz[m];
-            return (
-              <div key={m} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {qs?.passed
-                    ? <CheckCircle2 size={12} className="text-blue-500" />
-                    : qs ? <AlertTriangle size={12} className="text-amber-400" />
-                         : <Circle size={12} className="text-muted-foreground/25" />
-                  }
-                  <span className="text-sm capitalize text-foreground">{adminT(`modules.${m}`)}</span>
-                </div>
-                {qs ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold" style={{ color: qs.passed ? '#60A5FA' : '#F87171' }}>{qs.bestScore}%</span>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
-                      style={{ background: qs.passed ? 'rgba(96,165,250,0.1)' : 'rgba(248,113,113,0.1)', color: qs.passed ? '#60A5FA' : '#F87171' }}>
-                      {qs.passed ? t('passedLabel') : t('failedLabel')}
-                    </span>
-                  </div>
-                ) : <span className="text-sm text-muted-foreground/30">—</span>}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Previous Human Evaluations */}
-      {stats.humanEvaluations && stats.humanEvaluations.length > 0 && (
-        <div className="bg-card border border-border rounded-2xl overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-border bg-secondary/20 flex items-center justify-between">
-            <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">{t('qaEvaluations')}</span>
-            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-              {stats.humanEvaluations.length}
-            </span>
-          </div>
-          <div className="p-3 space-y-2">
-            {stats.humanEvaluations.slice(0, 3).map((ev, i) => {
-              const c = ev.criteria as SalesCallCriteria;
-              const flags = c?.redFlags ? Object.values(c.redFlags).filter(Boolean).length : 0;
+          <div className="flex gap-0.5">
+            {[1, 2, 3, 4].map(l => {
+              const done = completedEvalLevels.includes(l);
               return (
-                <div key={ev.id ?? i} className="flex items-center gap-3">
-                  <ScoreRing score={ev.totalScore} size="sm" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-semibold text-foreground truncate">{ev.evaluatorName}</div>
-                    <div className="flex items-center gap-1">
-                      <Clock size={9} className="text-muted-foreground/40" />
-                      <span className="text-[10px] text-muted-foreground/40">{timeAgo(ev.evaluatedAt, t)}</span>
-                    </div>
-                  </div>
-                  {flags > 0 && (
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-400 flex items-center gap-0.5 shrink-0">
-                      <Flag size={7} /> {flags}
-                    </span>
-                  )}
+                <div key={l} className="w-3.5 h-3.5 rounded flex items-center justify-center"
+                  style={{
+                    background: done ? 'rgba(167,139,250,0.18)' : 'hsl(var(--secondary))',
+                    color: done ? '#A78BFA' : 'hsl(var(--muted-foreground) / 0.3)',
+                    border: `1px solid ${done ? 'rgba(167,139,250,0.35)' : 'hsl(var(--border))'}`,
+                  }}
+                >
+                  {done && <Check size={6} />}
                 </div>
               );
             })}
-            {stats.humanEvaluations.length > 3 && (
-              <div className="text-[10px] text-muted-foreground/40 text-center pt-1">
-                +{stats.humanEvaluations.length - 3} {t('moreLabel')}
-              </div>
-            )}
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Full history CTA */}
-      <button
-        onClick={onViewFullHistory}
-        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all"
-      >
-        <BarChart3 size={14} />
-        {t('fullHistory')}
-      </button>
+      {/* Tab bar */}
+      <div className="flex gap-0.5 p-1 bg-secondary/30 border border-border rounded-xl">
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+              activeTab === tab.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <tab.icon size={10} />
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      <AnimatePresence mode="wait">
+        <motion.div key={activeTab} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="space-y-2">
+
+          {/* ── Overview ── */}
+          {activeTab === 'overview' && (
+            <>
+              <div className="bg-card border border-border rounded-2xl overflow-hidden">
+                <div className="px-3 py-2 border-b border-border bg-secondary/20">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{t('trainingProgress')}</span>
+                </div>
+                <div className="p-3 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Target size={12} className="text-amber-400" />
+                      <span className="text-xs font-semibold text-foreground">{navT('quiz')}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-foreground">{quizPassedCount}/4</span>
+                      <div className="w-12 h-1.5 bg-secondary rounded-full overflow-hidden">
+                        <div className="h-full rounded-full bg-amber-400 transition-all" style={{ width: `${quizPassedCount / 4 * 100}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Zap size={12} className="text-purple-400" />
+                      <span className="text-xs font-semibold text-foreground">{navT('aiEval')}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {stats.aiEval
+                        ? <span className="text-xs font-bold" style={{ color: scoreHex(stats.aiEval.avgScore) }}>{stats.aiEval.avgScore}/100</span>
+                        : <span className="text-xs text-muted-foreground/40">—</span>
+                      }
+                      <div className="flex gap-0.5">
+                        {[1, 2, 3, 4].map(l => {
+                          const done = completedEvalLevels.includes(l);
+                          return (
+                            <div key={l} className="w-4 h-4 rounded flex items-center justify-center text-[9px] font-black"
+                              style={{
+                                background: done ? 'rgba(167,139,250,0.18)' : 'hsl(var(--secondary))',
+                                color: done ? '#A78BFA' : 'hsl(var(--muted-foreground) / 0.3)',
+                                border: `1px solid ${done ? 'rgba(167,139,250,0.35)' : 'hsl(var(--border))'}`,
+                              }}
+                            >
+                              {done ? <Check size={6} /> : l}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Quiz summary */}
+              <div className="bg-card border border-border rounded-2xl overflow-hidden">
+                <div className="px-3 py-2 border-b border-border bg-secondary/20">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">{t('quizScores')}</span>
+                </div>
+                <div className="p-3 space-y-2">
+                  {quizTopics.map(m => {
+                    const qs = stats.quiz[m];
+                    return (
+                      <div key={m} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {qs?.passed
+                            ? <CheckCircle2 size={11} className="text-blue-500" />
+                            : qs ? <AlertTriangle size={11} className="text-amber-400" />
+                                 : <Circle size={11} className="text-muted-foreground/25" />
+                          }
+                          <span className="text-xs capitalize text-foreground">{adminT(`modules.${m}`)}</span>
+                        </div>
+                        {qs ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-bold" style={{ color: qs.passed ? '#60A5FA' : '#F87171' }}>{qs.bestScore}%</span>
+                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded"
+                              style={{ background: qs.passed ? 'rgba(96,165,250,0.1)' : 'rgba(248,113,113,0.1)', color: qs.passed ? '#60A5FA' : '#F87171' }}>
+                              {qs.passed ? t('passedLabel') : t('failedLabel')}
+                            </span>
+                          </div>
+                        ) : <span className="text-xs text-muted-foreground/30">—</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ── Quiz Detail ── */}
+          {activeTab === 'quiz' && (
+            <div className="space-y-2">
+              {quizTopics.map(m => {
+                const qs      = stats.quiz[m];
+                const history = qs?.history ?? [];
+                return (
+                  <div key={m} className="bg-card border border-border rounded-xl overflow-hidden">
+                    <div className="flex items-center justify-between px-3 py-2 bg-secondary/20 border-b border-border/50">
+                      <div className="flex items-center gap-2">
+                        {qs?.passed
+                          ? <CheckCircle2 size={11} className="text-blue-500" />
+                          : qs ? <AlertTriangle size={11} className="text-amber-400" />
+                               : <Circle size={11} className="text-muted-foreground/25" />
+                        }
+                        <span className="text-xs font-bold capitalize text-foreground">{adminT(`modules.${m}`)}</span>
+                      </div>
+                      {qs ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold" style={{ color: qs.passed ? '#60A5FA' : '#F87171' }}>{qs.bestScore}%</span>
+                          <span className="text-[9px] text-muted-foreground/50">{qs.attempts} att.</span>
+                        </div>
+                      ) : <span className="text-[10px] text-muted-foreground/30">—</span>}
+                    </div>
+                    {history.length > 0 ? (
+                      <div className="p-2 space-y-1">
+                        {history.map((h, i) => (
+                          <div key={i} className="flex items-center justify-between px-2 py-1 rounded-lg bg-secondary/30 text-[10px]">
+                            <div className="flex items-center gap-1.5">
+                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${h.passed ? 'bg-blue-500' : 'bg-red-500'}`} />
+                              <span className="font-semibold text-foreground">{h.score}/{h.total}</span>
+                              <span className="text-muted-foreground">({Math.round(h.score / h.total * 100)}%)</span>
+                            </div>
+                            <span className="text-muted-foreground/60">{new Date(h.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="px-3 py-2 text-[10px] text-muted-foreground/40 italic">{adminT('agentDetail.noAttempts')}</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* ── AI Eval Detail — per-level breakdown ── */}
+          {activeTab === 'ai' && (
+            <div className="space-y-2">
+              {aiHistory.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground/40 text-xs rounded-xl border border-dashed border-border">
+                  {adminT('agentDetail.noAiSessions')}
+                </div>
+              ) : (
+                <>
+                  {/* Level cards */}
+                  {([1, 2, 3, 4] as const).map(lv => {
+                    const lvData = stats.aiEval?.levels?.[lv];
+                    if (!lvData) return (
+                      <div key={lv} className="flex items-center gap-3 bg-card/40 border border-dashed border-border/40 p-3 rounded-xl opacity-40">
+                        <div className="w-9 h-9 rounded-xl bg-secondary flex flex-col items-center justify-center shrink-0">
+                          <span className="text-[8px] font-bold text-muted-foreground uppercase leading-none">{adminT('agentDetail.lvl')}</span>
+                          <span className="text-sm font-black text-muted-foreground leading-none">{lv}</span>
+                        </div>
+                        <span className="text-[11px] text-muted-foreground/50">{adminT('agentDetail.noAttempts')}</span>
+                      </div>
+                    );
+                    const avgPct = lvData.avgScore;
+                    return (
+                      <div key={lv} className="bg-card border border-border p-3 rounded-xl space-y-2">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-9 h-9 rounded-xl flex flex-col items-center justify-center border shrink-0 ${lvData.passed ? 'bg-purple-500/10 border-purple-500/25' : 'bg-amber-500/10 border-amber-500/25'}`}>
+                            <span className={`text-[8px] font-bold uppercase leading-none ${lvData.passed ? 'text-purple-400' : 'text-amber-400'}`}>{adminT('agentDetail.lvl')}</span>
+                            <span className={`text-sm font-black leading-none ${lvData.passed ? 'text-purple-400' : 'text-amber-400'}`}>{lv}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[11px] font-black" style={{ color: scoreHex(avgPct) }}>{avgPct}/100</span>
+                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${lvData.passed ? 'bg-purple-500/10 text-purple-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                                {lvData.passed ? t('passedLabel') : adminT('agentDetail.inProgress')}
+                              </span>
+                            </div>
+                            <div className="h-1 bg-secondary rounded-full overflow-hidden">
+                              <div className="h-full rounded-full transition-all" style={{ width: `${avgPct}%`, background: scoreHex(avgPct) }} />
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="text-[9px] text-muted-foreground/60">{lvData.attempts} {adminT('agentDetail.attemptsShort')}</span>
+                          </div>
+                        </div>
+                        {/* Individual attempt rows */}
+                        <div className="pl-12 space-y-1">
+                          {aiHistory.filter(h => h.level === lv).map((h, i) => (
+                            <div key={i} className="flex items-center justify-between text-[10px] px-2 py-1 rounded-lg bg-secondary/30">
+                              <div className="flex items-center gap-1.5">
+                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${h.passed ? 'bg-purple-400' : 'bg-amber-400'}`} />
+                                <span className="font-semibold" style={{ color: scoreHex(h.score) }}>{h.score}/100</span>
+                              </div>
+                              <span className="text-muted-foreground/60">{new Date(h.timestamp).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ── QA / Human Eval Detail ── */}
+          {activeTab === 'qa' && (
+            <div className="space-y-2">
+              {qaHistory.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground/40 text-xs rounded-xl border border-dashed border-border">
+                  {adminT('agentDetail.noHumanEvals')}
+                </div>
+              ) : qaHistory.map((ev, i) => {
+                const c     = ev.criteria as SalesCallCriteria;
+                const flags = c?.redFlags ? Object.values(c.redFlags).filter(Boolean).length : 0;
+                return (
+                  <div key={ev.id ?? i} className="bg-card border border-border rounded-xl p-3 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <ScoreRing score={ev.totalScore} size="sm" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs font-bold text-foreground">{ev.evaluatorName}</span>
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${c?.finalResult === 'failed' ? 'bg-red-500/15 text-red-500' : 'bg-emerald-500/15 text-emerald-500'}`}>
+                            {c?.finalResult === 'failed' ? t('failedCaps') : t('passedCaps')}
+                          </span>
+                          {flags > 0 && (
+                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-400 flex items-center gap-0.5 shrink-0">
+                              <Flag size={7} /> {flags}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Clock size={9} className="text-muted-foreground/40" />
+                          <span className="text-[10px] text-muted-foreground/40">{timeAgo(ev.evaluatedAt, t)}</span>
+                        </div>
+                      </div>
+                    </div>
+                    {c?.generalRemark && (
+                      <p className="text-[10px] text-muted-foreground/70 leading-snug pl-2 border-l-2 border-border">{c.generalRemark}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+        </motion.div>
+      </AnimatePresence>
     </motion.div>
   );
 };
@@ -344,47 +500,46 @@ const EvalForm = ({
             );
           })()}
         </div>
-        <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="p-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2">
           {PERFORMANCE_KEYS.map((key) => {
             const perf = criteria.performance[key];
             const isUnhandled = key === 'unhandledQuestions';
             const isActive = perf.agentInvolve;
-            
-            // Base colors for active state: red for unhandled questions, blue for others
-            const activeBorder = isUnhandled ? 'border-red-500/30' : 'border-blue-500/30';
-            const activeBg = isUnhandled ? 'bg-red-500/[0.04]' : 'bg-blue-500/[0.04]';
-            const activeText = isUnhandled ? 'text-red-400' : 'text-blue-400';
-            const activeToggleBg = isUnhandled ? 'bg-red-500' : 'bg-blue-500';
+
+            const activeBorder    = isUnhandled ? 'border-red-500/30' : 'border-blue-500/30';
+            const activeBg        = isUnhandled ? 'bg-red-500/[0.04]' : 'bg-blue-500/[0.04]';
+            const activeText      = isUnhandled ? 'text-red-400' : 'text-blue-400';
+            const activeToggleBg  = isUnhandled ? 'bg-red-500' : 'bg-blue-500';
 
             return (
               <div key={key}
-                className={`rounded-xl border p-4 space-y-3 transition-colors ${isActive ? `${activeBorder} ${activeBg}` : 'border-border bg-card'}`}
+                className={`rounded-xl border p-3 space-y-2 transition-colors ${isActive ? `${activeBorder} ${activeBg}` : 'border-border bg-card'}`}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <span className={`text-sm font-semibold leading-snug ${isActive ? activeText : 'text-foreground'}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`text-xs font-semibold leading-snug ${isActive ? activeText : 'text-foreground'}`}>
                     {t(`performanceItems.${key}`)}
                   </span>
-                  <div className="flex flex-col items-center gap-1 shrink-0">
-                    <button
-                      onClick={() => setPerf(key, 'agentInvolve', !perf.agentInvolve)}
-                      className={`w-11 h-6 rounded-full relative transition-all shadow-inner ${isActive ? activeToggleBg : 'bg-secondary border border-border'}`}
-                    >
-                      <motion.div
-                        animate={{ x: isActive ? 22 : 2 }}
-                        className="absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm flex items-center justify-center"
-                      >
-                        {isActive ? <Check size={8} className={isUnhandled ? 'text-red-500' : 'text-blue-500'} /> : <X size={8} className="text-muted-foreground" />}
-                      </motion.div>
-                    </button>
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <span className={`text-[10px] font-black ${isActive ? activeText : 'text-muted-foreground/50'}`}>
                       {isActive ? t('yLabel') : t('nLabel')}
                     </span>
+                    <button
+                      onClick={() => setPerf(key, 'agentInvolve', !perf.agentInvolve)}
+                      className={`w-9 h-5 rounded-full relative transition-all shadow-inner ${isActive ? activeToggleBg : 'bg-secondary border border-border'}`}
+                    >
+                      <motion.div
+                        animate={{ x: isActive ? 17 : 2 }}
+                        className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm flex items-center justify-center"
+                      >
+                        {isActive ? <Check size={7} className={isUnhandled ? 'text-red-500' : 'text-blue-500'} /> : <X size={7} className="text-muted-foreground" />}
+                      </motion.div>
+                    </button>
                   </div>
                 </div>
                 <textarea
                   value={perf.comment} onChange={e => setPerf(key, 'comment', e.target.value)}
-                  placeholder={t('commentPlaceholder')} rows={2}
-                  className={`w-full px-3 py-2 rounded-lg text-xs text-foreground outline-none resize-none transition-colors placeholder:text-muted-foreground/40 bg-secondary/40 border border-border focus:border-blue-500/40 ${isActive && isUnhandled ? 'focus:border-red-500/40' : 'focus:border-blue-500/40'}`}
+                  placeholder={t('commentPlaceholder')} rows={1}
+                  className={`w-full px-2.5 py-1.5 rounded-lg text-xs text-foreground outline-none resize-none transition-colors placeholder:text-muted-foreground/40 bg-secondary/40 border border-border ${isActive && isUnhandled ? 'focus:border-red-500/40' : 'focus:border-blue-500/40'}`}
                 />
               </div>
             );
@@ -398,38 +553,34 @@ const EvalForm = ({
           <span className="text-xs font-black text-foreground uppercase tracking-wider">{t('qaHeader')}</span>
           {criteria.qaThoughts.trim() && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />}
         </div>
-        <div className="p-4 space-y-4">
+        <div className="p-3 space-y-3">
           <div>
-            <label className="block text-xs text-muted-foreground mb-2">{t('qaLabel')}</label>
+            <label className="block text-xs text-muted-foreground mb-1.5">{t('qaLabel')}</label>
             <textarea
               value={criteria.qaThoughts} onChange={e => onChange({ ...criteria, qaThoughts: e.target.value })}
-              placeholder={t('qaPlaceholder')} rows={4}
-              className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none resize-none transition-colors placeholder:text-muted-foreground/40 bg-secondary/40 border border-border focus:border-blue-500/40"
+              placeholder={t('qaPlaceholder')} rows={3}
+              className="w-full px-3 py-2 rounded-xl text-sm text-foreground outline-none resize-none transition-colors placeholder:text-muted-foreground/40 bg-secondary/40 border border-border focus:border-blue-500/40"
             />
           </div>
 
-          <div className="pt-2 border-t border-border/50">
-            <label className="block text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">{t('qaImpactLabel')}</label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="pt-1.5 border-t border-border/50">
+            <label className="block text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">{t('qaImpactLabel')}</label>
+            <div className="grid grid-cols-3 gap-1.5">
               {(['none', 'notify_improve', 'immediate_fail'] as const).map(impact => {
                 const isActive = criteria.qaImpact === impact;
                 let activeClass = 'bg-primary/10 border-primary text-primary shadow-sm';
-                
-                if (impact === 'immediate_fail') {
-                  activeClass = 'bg-red-500/10 border-red-500 text-red-500 shadow-sm';
-                } else if (impact === 'notify_improve') {
-                  activeClass = 'bg-amber-500/10 border-amber-500 text-amber-500 shadow-sm';
-                }
+                if (impact === 'immediate_fail') activeClass = 'bg-red-500/10 border-red-500 text-red-500 shadow-sm';
+                else if (impact === 'notify_improve') activeClass = 'bg-amber-500/10 border-amber-500 text-amber-500 shadow-sm';
 
                 return (
                   <button
                     key={impact}
                     onClick={() => onChange({ ...criteria, qaImpact: impact })}
-                    className={`px-3 py-2.5 rounded-xl text-[11px] font-bold border transition-all flex items-center justify-center gap-2 ${isActive ? activeClass : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/60'}`}
+                    className={`px-2 py-1.5 rounded-lg text-[10px] font-bold border transition-all flex items-center justify-center gap-1 ${isActive ? activeClass : 'bg-secondary/40 border-border text-muted-foreground hover:bg-secondary/60'}`}
                   >
-                    {impact === 'none' && <Activity size={12} />}
-                    {impact === 'notify_improve' && <Zap size={12} />}
-                    {impact === 'immediate_fail' && <AlertTriangle size={12} />}
+                    {impact === 'none' && <Activity size={10} />}
+                    {impact === 'notify_improve' && <Zap size={10} />}
+                    {impact === 'immediate_fail' && <AlertTriangle size={10} />}
                     {t(impact === 'none' ? 'qaImpactNone' : impact === 'notify_improve' ? 'qaImpactNotifyImprove' : 'qaImpactImmediateFail')}
                   </button>
                 );
@@ -492,20 +643,20 @@ const EvalForm = ({
         <div className="px-4 py-3 bg-primary/5 border-b border-border flex items-center justify-between">
           <span className="text-xs font-black text-foreground uppercase tracking-wider">{t('finalResultHeader')}</span>
         </div>
-        <div className="p-4 space-y-4">
-          <div className="flex gap-3">
+        <div className="p-3 space-y-3">
+          <div className="flex gap-2">
             <button
               onClick={() => onChange({ ...criteria, finalResult: 'passed' })}
-              className={`flex-1 py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${criteria.finalResult === 'passed' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-lg shadow-emerald-500/10' : 'border-border bg-secondary/20 text-muted-foreground opacity-60 hover:opacity-100'}`}
+              className={`flex-1 py-2.5 rounded-xl border-2 transition-all flex items-center justify-center gap-2 ${criteria.finalResult === 'passed' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600 shadow-lg shadow-emerald-500/10' : 'border-border bg-secondary/20 text-muted-foreground opacity-60 hover:opacity-100'}`}
             >
-              <CheckCircle2 size={24} />
+              <CheckCircle2 size={16} />
               <span className="text-sm font-black">{t('finalResultPassed')}</span>
             </button>
             <button
               onClick={() => onChange({ ...criteria, finalResult: 'failed' })}
-              className={`flex-1 py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${criteria.finalResult === 'failed' ? 'border-red-500 bg-red-500/10 text-red-600 shadow-lg shadow-red-500/10' : 'border-border bg-secondary/20 text-muted-foreground opacity-60 hover:opacity-100'}`}
+              className={`flex-1 py-2.5 rounded-xl border-2 transition-all flex items-center justify-center gap-2 ${criteria.finalResult === 'failed' ? 'border-red-500 bg-red-500/10 text-red-600 shadow-lg shadow-red-500/10' : 'border-border bg-secondary/20 text-muted-foreground opacity-60 hover:opacity-100'}`}
             >
-              <AlertCircle size={24} />
+              <AlertCircle size={16} />
               <span className="text-sm font-black">{t('finalResultFailed')}</span>
             </button>
           </div>
@@ -527,14 +678,14 @@ const EvalForm = ({
 
       {/* General Remark */}
       <motion.div variants={STAGGER_ITEM}>
-        <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">
+        <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground mb-1.5 uppercase tracking-wider">
           {t('generalRemarkLabel')}
           {criteria.generalRemark.trim() && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />}
         </label>
         <textarea
           value={criteria.generalRemark} onChange={e => onChange({ ...criteria, generalRemark: e.target.value })}
-          placeholder={t('generalRemarkPlaceholder')} rows={3}
-          className="w-full px-4 py-3 rounded-xl text-sm text-foreground outline-none resize-none bg-secondary/40 border border-border focus:border-blue-500/40"
+          placeholder={t('generalRemarkPlaceholder')} rows={2}
+          className="w-full px-3 py-2 rounded-xl text-sm text-foreground outline-none resize-none bg-secondary/40 border border-border focus:border-blue-500/40"
         />
       </motion.div>
     </motion.div>
@@ -853,7 +1004,6 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
   const [saveSuccess, setSaveSuccess]       = useState(false);
   const [saveError, setSaveError]           = useState(false);
   const [editingEval, setEditingEval]       = useState<AgentEvaluation | null>(null);
-  const [detailStats, setDetailStats]       = useState<AgentStats | null>(null);
 
   const [isLive, setIsLive]     = useState(false);
   const pollTimer               = useRef<NodeJS.Timeout | null>(null);
@@ -974,11 +1124,6 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
   return (
     <div className="min-h-screen bg-background relative selection:bg-primary/20" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <ChangePasswordModal isOpen={isPwModalOpen} onClose={() => setIsPwModalOpen(false)} />
-      <AnimatePresence>
-        {detailStats && (
-          <AgentDetailModal stats={detailStats} onClose={() => setDetailStats(null)} />
-        )}
-      </AnimatePresence>
 
       {/* Ambient background glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
@@ -1055,7 +1200,7 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
                         onClick={() => { setIsPwModalOpen(true); setProfileOpen(false); }}
                         className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all"
                       >
-                        <Zap size={14} className="shrink-0" /> Change Password
+                        <Zap size={14} className="shrink-0" /> {t('changePw')}
                       </button>
                     </div>
                   </motion.div>
@@ -1237,17 +1382,18 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
                 </motion.div>
               ) : tab === 'new' ? (
                 <motion.div key="eval-new" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="p-6">
-                  <div className="max-w-5xl mx-auto flex flex-col lg:flex-row gap-8">
-                    {/* Left: performance panel */}
-                    <div className="w-full lg:w-72 shrink-0">
-                      <AgentPerformancePanel
-                        stats={agentStats}
-                        loading={loadingStats}
-                        onViewFullHistory={() => agentStats && setDetailStats(agentStats)}
-                      />
+                  <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
+                    {/* Left: full training progress panel */}
+                    <div className="w-full lg:w-[400px] shrink-0">
+                      <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pb-4 pr-1 space-y-0">
+                        <AgentPerformancePanel
+                          stats={agentStats}
+                          loading={loadingStats}
+                        />
+                      </div>
                     </div>
                     {/* Right: eval form */}
-                    <div className="flex-1 space-y-5">
+                    <div className="flex-1 space-y-4">
                       <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-primary/5 border border-primary/10">
                         <Activity size={18} className="text-primary" />
                         <span className="text-sm font-bold text-primary">{t('salesSimBadge')}</span>

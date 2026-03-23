@@ -56,13 +56,27 @@ export async function GET() {
         }
       }
 
-      // AI Eval
+      // AI Eval — per-level breakdown computed inline for leaderboard entry
       const evals  = evalDocs.filter(e => e.agentId === agent.id);
+      const levels: Record<number, { attempts: number; avgScore: number; bestScore: number; passed: boolean; lastTimestamp: string }> = {};
+      for (const lv of [1, 2, 3, 4]) {
+        const lvEvals = evals.filter(e => ((e as any).level || 1) === lv);
+        if (lvEvals.length === 0) continue;
+        const sorted = [...lvEvals].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+        levels[lv] = {
+          attempts:      lvEvals.length,
+          avgScore:      Math.round(lvEvals.reduce((s, e) => s + e.score, 0) / lvEvals.length),
+          bestScore:     Math.max(...lvEvals.map(e => e.score)),
+          passed:        lvEvals.some((e: any) => e.passed),
+          lastTimestamp: sorted[sorted.length - 1].timestamp,
+        };
+      }
       const aiEval = evals.length > 0
-        ? { 
-            avgScore: Math.round(evals.reduce((s, e) => s + e.score, 0) / evals.length), 
-            count: evals.length,
-            history: evals.map(e => ({ score: e.score, level: (e as any).level || 1, passed: (e as any).passed || false, timestamp: e.timestamp })),
+        ? {
+            avgScore: Math.round(evals.reduce((s, e) => s + e.score, 0) / evals.length),
+            count:    evals.length,
+            history:  evals.map(e => ({ score: e.score, level: (e as any).level || 1, passed: (e as any).passed || false, timestamp: e.timestamp })),
+            levels,
           }
         : null;
 

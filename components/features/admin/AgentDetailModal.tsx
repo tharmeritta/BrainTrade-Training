@@ -57,33 +57,81 @@ function DetailedQuizHistory({ stats }: { stats: AgentStats }) {
 function DetailedAiEvalHistory({ stats }: { stats: AgentStats }) {
   const t = useTranslations('admin');
   const history = stats.aiEval?.history || [];
+  const locale  = t('tabs.overview') === 'ภาพรวม' ? 'th-TH' : 'en-GB';
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
         <Zap size={18} className="text-purple-500" />
         <h4 className="font-bold text-base">{t('agentDetail.aiEvalLogs')}</h4>
       </div>
-      <div className="grid grid-cols-1 gap-3">
-        {history.length === 0 ? (
-          <div className="text-center py-8 bg-secondary/20 rounded-2xl border border-dashed border-border text-muted-foreground text-xs">{t('agentDetail.noAiSessions')}</div>
-        ) : history.map((h, i) => (
-          <div key={i} className="flex items-center gap-4 bg-secondary/20 p-4 rounded-2xl border border-border/50">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex flex-col items-center justify-center border border-purple-500/20">
-              <span className="text-[10px] font-bold text-purple-400 uppercase leading-none mb-0.5">{t('agentDetail.lvl')}</span>
-              <span className="text-lg font-black text-purple-400 leading-none">{h.level}</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-1">
-                <span className={`text-sm font-black ${scoreColor(h.score)}`}>{h.score}/100</span>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${h.passed ? 'bg-blue-500/10 text-blue-400' : 'bg-red-500/10 text-red-400'}`}>
-                  {h.passed ? t('agentDetail.passed') : t('agentDetail.notPassed')}
-                </span>
+      {history.length === 0 ? (
+        <div className="text-center py-8 bg-secondary/20 rounded-2xl border border-dashed border-border text-muted-foreground text-xs">{t('agentDetail.noAiSessions')}</div>
+      ) : (
+        <div className="space-y-3">
+          {([1, 2, 3, 4] as const).map(lv => {
+            const lvData = stats.aiEval?.levels?.[lv];
+            const lvHistory = history.filter(h => h.level === lv);
+            if (!lvData) return (
+              <div key={lv} className="flex items-center gap-4 bg-secondary/10 p-4 rounded-2xl border border-dashed border-border/40 opacity-40">
+                <div className="w-12 h-12 rounded-xl bg-secondary flex flex-col items-center justify-center border border-border">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase leading-none mb-0.5">{t('agentDetail.lvl')}</span>
+                  <span className="text-lg font-black text-muted-foreground leading-none">{lv}</span>
+                </div>
+                <span className="text-xs text-muted-foreground/50">{t('agentDetail.noAttempts')}</span>
               </div>
-              <div className="text-[10px] text-muted-foreground">{new Date(h.timestamp).toLocaleString(t('tabs.overview') === 'ภาพรวม' ? 'th-TH' : 'en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
-            </div>
-          </div>
-        ))}
-      </div>
+            );
+            return (
+              <div key={lv} className="bg-secondary/20 rounded-2xl border border-border/50 overflow-hidden">
+                {/* Level header */}
+                <div className="flex items-center gap-4 p-4">
+                  <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center border shrink-0 ${lvData.passed ? 'bg-purple-500/10 border-purple-500/20' : 'bg-amber-500/10 border-amber-500/20'}`}>
+                    <span className={`text-[10px] font-bold uppercase leading-none mb-0.5 ${lvData.passed ? 'text-purple-400' : 'text-amber-400'}`}>{t('agentDetail.lvl')}</span>
+                    <span className={`text-lg font-black leading-none ${lvData.passed ? 'text-purple-400' : 'text-amber-400'}`}>{lv}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-black ${scoreColor(lvData.avgScore)}`}>{lvData.avgScore}/100</span>
+                        <span className="text-[10px] text-muted-foreground">avg · best {lvData.bestScore}/100</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-muted-foreground">{t('agentDetail.attempts', { count: lvData.attempts })}</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${lvData.passed ? 'bg-purple-500/10 text-purple-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                          {lvData.passed ? t('agentDetail.passed') : t('agentDetail.inProgress')}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${scoreColor(lvData.avgScore).replace('text-', 'bg-').replace('-400', '-400').replace('-500', '-500')}`}
+                        style={{ width: `${lvData.avgScore}%`, background: lvData.avgScore >= 70 ? '#60A5FA' : lvData.avgScore >= 50 ? '#FBBF24' : '#F87171' }} />
+                    </div>
+                  </div>
+                </div>
+                {/* Per-attempt rows */}
+                {lvHistory.length > 0 && (
+                  <div className="border-t border-border/30 px-4 pb-3 pt-2 space-y-1.5">
+                    {lvHistory.map((h, i) => (
+                      <div key={i} className="flex items-center justify-between bg-card/40 px-3 py-2 rounded-xl text-[11px] border border-border/30">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-1.5 h-1.5 rounded-full ${h.passed ? 'bg-purple-400' : 'bg-amber-400'}`} />
+                          <span className={`font-bold ${scoreColor(h.score)}`}>{h.score}/100</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`font-bold uppercase text-[9px] ${h.passed ? 'text-purple-400' : 'text-amber-400'}`}>
+                            {h.passed ? t('agentDetail.pass') : t('agentDetail.fail')}
+                          </span>
+                          <span className="text-muted-foreground/60">{new Date(h.timestamp).toLocaleString(locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

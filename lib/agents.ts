@@ -51,13 +51,7 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
 
   // AI Eval
   const evals  = evalDocs.filter(e => e.agentId === agentId);
-  const aiEval = evals.length > 0
-    ? { 
-        avgScore: Math.round(evals.reduce((s, e) => s + e.score, 0) / evals.length), 
-        count: evals.length,
-        history: evals.map(e => ({ score: e.score, level: (e as any).level || 1, passed: (e as any).passed || false, timestamp: e.timestamp })),
-      }
-    : null;
+  const aiEval = buildAiEval(evals);
 
   const evalCompleted = progressDoc?.evalCompletedLevels ?? [];
   const myHumanEvals  = humanEvals.filter(h => h.agentId === agentId).sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
@@ -76,8 +70,36 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
 // ── Data types matching GCS records ───────────────────────────────────────
 
 interface QuizRecord     { id: string; agentId: string; moduleId: string; score: number; totalQuestions: number; passed: boolean; timestamp: string; }
-interface EvalRecord     { id: string; agentId: string; score: number; timestamp: string; }
+interface EvalRecord     { id: string; agentId: string; score: number; level: number; passed: boolean; timestamp: string; }
 interface ProgressRecord { agentId: string; evalCompletedLevels: number[]; evalSavedLevel: number | null; updatedAt: string; }
+
+type LevelData = { attempts: number; avgScore: number; bestScore: number; passed: boolean; lastTimestamp: string };
+
+function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
+  if (evals.length === 0) return null;
+
+  // Per-level breakdown
+  const levels: Record<number, LevelData> = {};
+  for (const lv of [1, 2, 3, 4]) {
+    const lvEvals = evals.filter(e => (e.level || 1) === lv);
+    if (lvEvals.length === 0) continue;
+    const sorted = [...lvEvals].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+    levels[lv] = {
+      attempts:      lvEvals.length,
+      avgScore:      Math.round(lvEvals.reduce((s, e) => s + e.score, 0) / lvEvals.length),
+      bestScore:     Math.max(...lvEvals.map(e => e.score)),
+      passed:        lvEvals.some(e => e.passed),
+      lastTimestamp: sorted[sorted.length - 1].timestamp,
+    };
+  }
+
+  return {
+    avgScore: Math.round(evals.reduce((s, e) => s + e.score, 0) / evals.length),
+    count:    evals.length,
+    history:  evals.map(e => ({ score: e.score, level: e.level || 1, passed: e.passed || false, timestamp: e.timestamp })),
+    levels,
+  };
+}
 
 // ── Analytics ─────────────────────────────────────────────────────────────
 
@@ -109,13 +131,7 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
 
     // AI Eval
     const evals  = evalDocs.filter(e => e.agentId === agent.id);
-    const aiEval = evals.length > 0
-      ? { 
-          avgScore: Math.round(evals.reduce((s, e) => s + e.score, 0) / evals.length), 
-          count: evals.length,
-          history: evals.map(e => ({ score: e.score, level: (e as any).level || 1, passed: (e as any).passed || false, timestamp: e.timestamp })),
-        }
-      : null;
+    const aiEval = buildAiEval(evals);
 
     // AI Eval completed levels (from agent_progress)
     const progress       = progressDocs.find(p => p.agentId === agent.id);

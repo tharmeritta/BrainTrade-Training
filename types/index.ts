@@ -11,6 +11,14 @@ export interface StaffAccount {
   passwordChanged?: boolean;
 }
 
+// ── AI Evaluation ──────────────────────────────────────────────────────────
+
+export interface PitchMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp?: Date | string;
+}
+
 // ── Agent tracking ─────────────────────────────────────────────────────────
 
 export interface Agent {
@@ -50,6 +58,16 @@ export interface AgentStats {
     avgScore: number;
     count: number;
     history: { score: number; level: number; passed: boolean; timestamp: string }[];
+    /** per-level breakdown so staff can see where agents struggle */
+    levels: {
+      [level: number]: {
+        attempts: number;
+        avgScore: number;
+        bestScore: number;
+        passed: boolean;
+        lastTimestamp: string;
+      };
+    };
   } | null;
   /** human evaluations (v2) */
   humanEvaluations: AgentEvaluation[];

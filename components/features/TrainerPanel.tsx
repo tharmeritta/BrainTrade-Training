@@ -888,6 +888,7 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
 interface LiveSubTabProps {
   period: TrainingPeriod;
   locale: string;
+  role: 'admin' | 'manager' | 'trainer';
 }
 
 type LivePhase = 'setup' | 'active' | 'summary';
@@ -904,11 +905,12 @@ const LIVE_MODULES = [
   { id: 'website', title: 'BrainTrade Website',       titleTh: 'เว็บไซต์ BrainTrade' },
 ];
 
-function LiveSubTab({ period, locale }: LiveSubTabProps) {
+function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
   const t   = useTranslations('trainer');
   const lang = locale.split('-')[0];
 
   const [phase,          setPhase]          = useState<LivePhase>('setup');
+  // ... rest of state ...
   const [selectedModId,  setSelectedModId]  = useState(LIVE_MODULES[0].id);
   const [copied,         setCopied]         = useState(false);
   const [elapsed,        setElapsed]        = useState(0);
@@ -927,12 +929,15 @@ function LiveSubTab({ period, locale }: LiveSubTabProps) {
   const agentNames  = Object.values(period.agentNames ?? {});
   const modTitle    = locale === 'th-TH' ? selectedMod.titleTh : selectedMod.title;
 
+  const isManager = role === 'manager';
+
   // Cleanup timer on unmount
   useEffect(() => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
 
   function startSession() {
+    if (isManager) return;
     setElapsed(0);
     setBroadcastText('');
     setBroadcastSent(false);
@@ -1284,13 +1289,22 @@ function LiveSubTab({ period, locale }: LiveSubTabProps) {
           </div>
 
           {/* Start button */}
-          <button
-            onClick={startSession}
-            className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-black bg-primary text-white shadow-xl shadow-primary/25 hover:scale-[1.01] active:scale-[0.99] transition-all"
-          >
-            <Zap size={16} />
-            {t('sessionStart')}
-          </button>
+          {isManager ? (
+            <div className="rounded-2xl p-4 bg-muted/20 border border-border text-center">
+              <p className="text-sm font-semibold text-muted-foreground flex items-center justify-center gap-2">
+                <AlertTriangle size={16} className="text-amber-500" />
+                {t('managerNoStartSession')}
+              </p>
+            </div>
+          ) : (
+            <button
+              onClick={startSession}
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-sm font-black bg-primary text-white shadow-xl shadow-primary/25 hover:scale-[1.01] active:scale-[0.99] transition-all"
+            >
+              <Zap size={16} />
+              {t('sessionStart')}
+            </button>
+          )}
         </motion.div>
       ) : null}
 
@@ -1319,7 +1333,8 @@ function PeriodDetail({ period, agents, role, onPeriodUpdated, onPeriodDeleted }
   const [selectedToAdd, setSelectedToAdd] = useState('');
   const [deleting, setDeleting] = useState(false);
 
-  const canEdit = role === 'trainer' || role === 'admin' || role === 'manager';
+  const canEdit = role === 'trainer' || role === 'admin';
+  const canManage = role === 'trainer' || role === 'admin' || role === 'manager';
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -1482,7 +1497,7 @@ function PeriodDetail({ period, agents, role, onPeriodUpdated, onPeriodDeleted }
         </div>
 
         {/* ── Row 3: controls toolbar ── */}
-        {canEdit && (
+        {canManage && (
           <div className="flex items-center gap-2 flex-wrap p-2 rounded-xl mb-4"
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
 
@@ -1592,6 +1607,7 @@ function PeriodDetail({ period, agents, role, onPeriodUpdated, onPeriodDeleted }
           <LiveSubTab
             period={period}
             locale={locale}
+            role={role}
           />
         )}
       </div>

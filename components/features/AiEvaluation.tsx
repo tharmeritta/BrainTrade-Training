@@ -66,9 +66,11 @@ interface ChatViewProps {
   setInput: (v: string) => void;
   loading: boolean;
   passed: boolean;
+  error: string | null;
   onSend: () => void;
   onReset: (clearHistory: boolean) => void;
   onNextLevel: (next: EvalLevel) => void;
+  onClearError: () => void;
   bottomRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -530,8 +532,8 @@ MessageBubble.displayName = 'MessageBubble';
  * ChatView: Step 3 - AI Evaluation simulation
  */
 const ChatView = memo(({
-  level, messages, coaching, input, setInput, loading, passed,
-  onSend, onReset, onNextLevel, bottomRef
+  level, messages, coaching, input, setInput, loading, passed, error,
+  onSend, onReset, onNextLevel, onClearError, bottomRef
 }: ChatViewProps) => {
   const t = useTranslations('aiEval');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -676,6 +678,21 @@ const ChatView = memo(({
             )}
           </AnimatePresence>
 
+          {/* Inline error banner */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                className="flex items-center justify-between gap-3 mt-3 px-4 py-3 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-2xl text-xs font-medium text-rose-700 dark:text-rose-400"
+              >
+                <span className="leading-relaxed">{error}</span>
+                <button onClick={onClearError} className="shrink-0 text-rose-400 hover:text-rose-600 transition-colors font-black px-1">✕</button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* 3-dot typing indicator */}
           {loading && (
             <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="flex items-end gap-2 mt-1">
@@ -745,7 +762,15 @@ export default function AiEvaluation() {
   const [passed,          setPassed]          = useState(false);
   const [completedLevels, setCompletedLevels] = useState<Set<number>>(new Set());
   const [savedLevel,      setSavedLevel]      = useState<number | null>(null);
+  const [error,           setError]           = useState<string | null>(null);
+  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  const showError = useCallback((msg: string) => {
+    setError(msg);
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+    errorTimerRef.current = setTimeout(() => setError(null), 7000);
+  }, []);
 
   // Derived state
   const inProgressLevel = useMemo(() => 
@@ -876,33 +901,72 @@ export default function AiEvaluation() {
     const activeLevel = overrideLevel ?? level;
     if (overrideLevel) setLevel(overrideLevel);
     setLoading(true);
+    setError(null);
     try {
+      // 1. Create session record
       const res = await fetch('/api/ai-eval/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ level: activeLevel, agentId, agentName }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Start failed (${res.status})`);
+      }
       const data = await res.json();
-      setSessionId(data.sessionId);
+      const sid = data.sessionId;
+      setSessionId(sid);
       setMessages([]);
       setCoaching(new Map());
       setPassed(false);
-      
+
       localStorage.setItem('brainstrade_eval_saved_level', String(activeLevel));
       setSavedLevel(activeLevel);
       syncToServer({ evalSavedLevel: activeLevel });
+
+      // 2. Fetch the customer's opening line (picks up the call)
+      try {
+        const initRes = await fetch('/api/ai-eval', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: sid, level: activeLevel, messages: [], agentId, agentName, isStart: true }),
+        });
+        if (initRes.ok) {
+          const initData = await initRes.json();
+          if (initData.reply) {
+            const openingMsg: PitchMessage = { role: 'assistant', content: initData.reply, timestamp: new Date() };
+            setMessages([openingMsg]);
+            // Save to server so it's restored on page refresh
+            if (agentId) {
+              fetch('/api/ai-eval/active', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ agentId, sessionId: sid, level: activeLevel, messages: [openingMsg] }),
+              }).catch(() => {});
+            }
+          }
+        }
+      } catch {
+        // Opening line is non-critical — user can still start typing
+      }
+
       setStep('chat');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to start AI session', err);
+      showError(err.message || 'Could not connect to AI. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, [level, agentId, agentName, syncToServer]);
+  }, [level, agentId, agentName, syncToServer, showError]);
 
   const sendMessage = useCallback(async () => {
     if (!input.trim() || !sessionId || loading || passed) return;
     const userMsg: PitchMessage = { role: 'user', content: input, timestamp: new Date() };
-    const newMessages = [...messages, userMsg];
+    
+    // Sanitize existing messages before sending to backend to avoid "content: null" errors
+    const sanitizedHistory = messages.filter(m => m && typeof m.content === 'string' && m.content.length > 0);
+    const newMessages = [...sanitizedHistory, userMsg];
+    
     setMessages(newMessages);
     setInput('');
     setLoading(true);
@@ -913,8 +977,18 @@ export default function AiEvaluation() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, level, messages: newMessages, agentId, agentName }),
       });
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        const detailedMsg = errorData.details || errorData.error || 'Connection failure';
+        throw new Error(detailedMsg);
+      }
+      
       const data = await res.json();
-      const aiMsg: PitchMessage = { role: 'assistant', content: data.reply, timestamp: new Date() };
+      const reply = (data.reply || '').trim();
+      if (!reply) throw new Error('AI returned an empty response. Please try again.');
+
+      const aiMsg: PitchMessage = { role: 'assistant', content: reply, timestamp: new Date() };
       const finalMessages = [...newMessages, aiMsg];
       setMessages(finalMessages);
 
@@ -942,12 +1016,15 @@ export default function AiEvaluation() {
           body: JSON.stringify({ agentId, sessionId, level, messages: finalMessages }),
         }).catch(() => {});
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to send message', err);
+      // Rollback to before the user message so they can retry
+      setMessages(messages);
+      showError(err.message || 'Failed to get AI response. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, [input, sessionId, loading, passed, messages, level, agentId, agentName, markLevelCompleted]);
+  }, [input, sessionId, loading, passed, messages, level, agentId, agentName, markLevelCompleted, showError]);
 
   const resetToSelect = useCallback((clearHistory = false) => {
     if (clearHistory) {
@@ -1001,12 +1078,14 @@ export default function AiEvaluation() {
             setInput={setInput}
             loading={loading}
             passed={passed}
+            error={error}
             onSend={sendMessage}
             onReset={resetToSelect}
             onNextLevel={(next) => {
               setLevel(next);
               resetToSelect(true);
             }}
+            onClearError={() => setError(null)}
             bottomRef={bottomRef}
           />
         </motion.div>

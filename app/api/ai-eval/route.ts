@@ -51,8 +51,9 @@ score >= 7 → passed = true
 score < 7  → passed = false
 
 กติกาการเขียน customerLine:
-- ถ้า passed = true → customerLine = "🎉 ผ่าน Level [ระบุเลข] แล้ว!"
-- ถ้า passed = false → พูดเป็นลูกค้าต่อ เพิ่มความกดดันขึ้นเล็กน้อยจากรอบที่แล้ว
+- ภาษาที่ใช้: ภาษาไทยที่เป็นกันเอง สมจริง ไม่เป็นทางการเกินไป
+- ถ้า passed = true → customerLine = "[ประโยคสรุปจบจากลูกค้าแบบยอมรับข้อเสนอ] 🎉 ผ่าน Level [ระบุเลข] แล้ว!"
+- ถ้า passed = false → พูดเป็นลูกค้าต่อ เพิ่มความกดดันหรือข้อสงสัยขึ้นเล็กน้อยจากรอบที่แล้ว
 
 กติกา coachingScript และ coachingTip:
 - ถ้า score <= 4: coachingScript ต้องเป็นประโยคเต็มที่ใช้ได้จริงทันที อย่างน้อย 1 ประโยค
@@ -93,7 +94,7 @@ export interface CoachingData {
 
 export async function POST(req: NextRequest) {
   try {
-    const { level, messages, agentId, agentName } = await req.json();
+    const { level, messages, agentId, agentName, isStart } = await req.json();
 
     if (![1, 2, 3, 4].includes(level)) {
       return NextResponse.json({ error: 'Invalid level' }, { status: 400 });
@@ -105,18 +106,46 @@ export async function POST(req: NextRequest) {
     const levelPrompt  = config[`level${level}Prompt`] || `\n\nระดับที่ต้องฝึกในครั้งนี้คือ Level ${level} — ให้บุคลิกลูกค้าตรงตามระดับนี้ทันที`;
 
     // Sliding window — cap token usage
-    const windowedMessages = (messages as PitchMessage[]).slice(-10);
+    // Sanitize: ensure role is valid and content is a string to prevent 400 errors
+    const sanitizedMessages = (messages as PitchMessage[])
+      .slice(-10)
+      .filter(m => m && typeof m.content === 'string' && m.content.trim().length > 0);
+
+    // For session start: inject a phone-pickup trigger so the AI generates the
+    // customer's opening line before the agent has said anything.
+    const windowedMessages = (isStart && sanitizedMessages.length === 0)
+      ? [{ role: 'user' as const, content: '[ลูกค้ารับสาย — เริ่มต้นบทสนทนา]' }]
+      : sanitizedMessages;
+
+    const agentNameContext = agentName ? `\nคุณกำลังคุยกับพนักงานชื่อ: ${agentName}` : '';
+
+    // For the opening line, instruct the AI to just say a greeting — no scoring.
+    const startHint = isStart && sanitizedMessages.length === 0
+      ? '\n\nหมายเหตุ: นี่คือจุดเริ่มต้น ลูกค้าเพิ่งรับสาย ให้ customerLine เป็นประโยครับสายสั้นๆ เป็นธรรมชาติ (เช่น "ฮัลโหล?" หรือ "สวัสดีค่ะ มีอะไรไหม?") ให้ score = 5, passed = false, strengths/improvements/coachingScript/coachingTip = ""'
+      : '';
+
+    // OpenAI's json_object format MANDATES that the word "json" appears in the prompt.
+    // We append a safety instruction to ensure this requirement is always met.
+    const jsonSafety = '\n\nIMPORTANT: You must respond with a valid JSON object.';
+
+    // OpenAI requires the first non-system message to be from 'user'.
+    // If the conversation starts with the AI's opening greeting (assistant role),
+    // prepend a silent trigger so the role ordering is valid.
+    const messagesForOpenAI = windowedMessages.map((m: PitchMessage) => ({
+      role: m.role as 'user' | 'assistant',
+      content: m.content,
+    }));
+    if (messagesForOpenAI.length > 0 && messagesForOpenAI[0].role === 'assistant') {
+      messagesForOpenAI.unshift({ role: 'user', content: '[สาย]' });
+    }
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: systemPrompt + levelPrompt },
-        ...windowedMessages.map((m: PitchMessage) => ({
-          role: m.role as 'user' | 'assistant',
-          content: m.content,
-        })),
+        { role: 'system', content: (systemPrompt + levelPrompt + agentNameContext + startHint + jsonSafety) as string },
+        ...messagesForOpenAI,
       ],
-      max_tokens: 1000,
+      max_tokens: isStart ? 300 : 1000,
       temperature: 0.8,
       response_format: { type: 'json_object' },
     });
@@ -132,9 +161,9 @@ export async function POST(req: NextRequest) {
       const parsed = JSON.parse(raw);
 
       customerLine = parsed.customerLine ?? '';
-      passed       = parsed.passed === true;
+      passed       = isStart ? false : parsed.passed === true;
 
-      if (parsed.score != null) {
+      if (!isStart && parsed.score != null) {
         coaching = {
           score:          Math.max(1, Math.min(10, Number(parsed.score) || 5)),
           strengths:      parsed.strengths      ?? '',
@@ -146,16 +175,34 @@ export async function POST(req: NextRequest) {
     } catch {
       // JSON parse failed — fall back to raw text, no coaching
       customerLine = raw;
-      passed       = raw.includes('ผ่าน Level') || raw.includes('🎉');
+      passed       = !isStart && (raw.includes('ผ่าน Level') || raw.includes('🎉'));
     }
 
-    if (passed && agentId && agentName) {
-      await fsAdd('ai_eval_logs', { agentId, agentName, level, passed: true });
+    // Log every scored turn (not the opening greeting) so staff can track history
+    if (!isStart && agentId && agentName && coaching) {
+      await fsAdd('ai_eval_logs', {
+        agentId,
+        agentName,
+        level,
+        passed,
+        score: coaching.score * 10,          // convert AI 1-10 → 0-100 for display
+        timestamp: new Date().toISOString(),
+      });
     }
 
     return NextResponse.json({ reply: customerLine, coaching, passed });
-  } catch (err) {
+  } catch (err: any) {
     console.error('AI eval chat error:', err);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    
+    // Provide more specific error feedback if possible
+    const status = err?.status || 500;
+    const message = err?.message || 'Server error';
+    const errorDetail = err?.response?.data?.error || null;
+
+    return NextResponse.json({ 
+      error: 'Failed to generate AI response', 
+      details: message,
+      errorDetail
+    }, { status });
   }
 }
