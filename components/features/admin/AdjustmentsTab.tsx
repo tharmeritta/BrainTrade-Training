@@ -108,71 +108,28 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
   const [definitions, setDefinitions] = useState<any>(data?.definitions || {});
   const [selectedQuiz, setSelectedQuiz] = useState<string | null>(null);
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
-  const [showMagicImport, setShowMagicImport] = useState(false);
-  const [showStructuredImport, setShowStructuredImport] = useState(false);
-  const [magicMode, setMagicMode] = useState<'replace' | 'append'>('replace');
-  const [magicText, setMagicText] = useState('');
-  const [magicParsing, setMagicParsing] = useState(false);
-  const [magicError, setMagicError] = useState('');
+  const [importMode, setImportMode] = useState<'replace' | 'append'>('replace');
 
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState('');
 
-  const handleMagicImport = async () => {
-    if (!magicText.trim() || !selectedQuiz) return;
-    setMagicParsing(true);
-    setMagicError('');
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000);
-    try {
-      const res = await fetch('/api/admin/parse-quiz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rawText: magicText }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || 'Parse failed');
-      
-      if (result.questions && Array.isArray(result.questions)) {
-        const updated = { ...definitions };
-        const currentQuiz = updated[selectedQuiz];
-
-        if (magicMode === 'append') {
-          currentQuiz.questions = [...(currentQuiz.questions || []), ...result.questions];
-        } else {
-          currentQuiz.questions = result.questions;
-          if (result.title) currentQuiz.title = result.title;
-          if (result.id) {
-            const suggestedId = result.id.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
-            if (suggestedId && suggestedId !== selectedQuiz && !updated[suggestedId]) {
-              updated[suggestedId] = { ...currentQuiz };
-              delete updated[selectedQuiz];
-              setDefinitions(updated);
-              setSelectedQuiz(suggestedId);
-              setMagicText('');
-              setShowMagicImport(false);
-              setSelectedQuestions([]);
-              return;
-            }
-          }
-        }
-        setDefinitions(updated);
-        setMagicText('');
-        setShowMagicImport(false);
-        setSelectedQuestions([]);
-      }
-    } catch (err: any) {
-      clearTimeout(timeoutId);
-      setMagicError(err.name === 'AbortError' ? 'Timeout' : err.message);
-    } finally {
-      setMagicParsing(false);
-    }
-  };
-
   const downloadTemplate = () => {
-    const template = [{ question_en: "What is Forex?", question_th: "Forex คืออะไร?", type: "mcq", option_1_en: "Foreign Exchange", option_1_th: "การแลกเปลี่ยนเงินตรา", correct_index: 0 }];
+    const template = [{
+      question_en: "What is Forex?",
+      question_th: "Forex คืออะไร?",
+      type: "mcq",
+      option_1_en: "Foreign Exchange",
+      option_1_th: "การแลกเปลี่ยนเงินตรา",
+      option_2_en: "International Bank",
+      option_2_th: "ธนาคารระหว่างประเทศ",
+      option_3_en: "Stock Market",
+      option_3_th: "ตลาดหุ้น",
+      option_4_en: "Global Trade",
+      option_4_th: "การค้าโลก",
+      correct_index: 0,
+      explanation_en: "Forex stands for Foreign Exchange.",
+      explanation_th: "Forex ย่อมาจาก Foreign Exchange"
+    }];
     const ws = XLSX.utils.json_to_sheet(template);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Quiz Template");
@@ -183,6 +140,7 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
     const file = e.target.files?.[0];
     if (!file || !selectedQuiz) return;
     setImporting(true);
+    setImportError('');
     const reader = new FileReader();
     reader.onload = (evt) => {
       try {
@@ -194,15 +152,30 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
           en: row.question_en || row.en || '',
           th: row.question_th || row.th || '',
           type: row.type || 'mcq',
-          options: { en: [row.option_1_en, row.option_2_en].filter(Boolean), th: [row.option_1_th, row.option_2_th].filter(Boolean) },
-          correctIdx: parseInt(row.correct_index || 0),
-          explain: { en: row.explanation_en || '', th: row.explanation_th || '' }
+          options: { 
+            en: [row.option_1_en, row.option_2_en, row.option_3_en, row.option_4_en].filter(v => v !== undefined && v !== null && v !== ''), 
+            th: [row.option_1_th, row.option_2_th, row.option_3_th, row.option_4_th].filter(v => v !== undefined && v !== null && v !== '') 
+          },
+          correctIdx: parseInt(row.correct_index ?? 0),
+          explain: { en: row.explanation_en || row.explain_en || '', th: row.explanation_th || row.explain_th || '' }
         }));
+        
+        if (parsed.length === 0) throw new Error("No data found in file");
+
         const updated = { ...definitions };
-        updated[selectedQuiz].questions = magicMode === 'append' ? [...(updated[selectedQuiz].questions || []), ...parsed] : parsed;
+        updated[selectedQuiz].questions = importMode === 'append' ? [...(updated[selectedQuiz].questions || []), ...parsed] : parsed;
         setDefinitions(updated);
-        setShowStructuredImport(false);
-      } catch (err: any) { setImportError(err.message); } finally { setImporting(false); }
+        // Reset file input
+        e.target.value = '';
+      } catch (err: any) { 
+        setImportError(err.message); 
+      } finally { 
+        setImporting(false); 
+      }
+    };
+    reader.onerror = () => {
+      setImportError("Failed to read file");
+      setImporting(false);
     };
     reader.readAsBinaryString(file);
   };
@@ -280,15 +253,78 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
             <input type="text" value={definitions[selectedQuiz].title.th} onChange={e => handleUpdateQuiz(selectedQuiz, 'title.th', e.target.value)} className="flex-1 bg-secondary/30 p-3 rounded-xl text-sm" />
           </div>
           <div className="space-y-2">
-            <div className="flex justify-between items-center"><label className="text-xs font-bold uppercase">Questions</label><div className="flex gap-2"><button onClick={() => setShowMagicImport(!showMagicImport)} className="text-xs font-bold bg-primary/10 text-primary px-3 py-1.5 rounded-lg">Magic Import</button></div></div>
-            {showMagicImport && <div className="p-4 bg-primary/5 rounded-xl space-y-3"><textarea value={magicText} onChange={e => setMagicText(e.target.value)} className="w-full h-32 bg-background p-3 rounded-lg border" /><button onClick={handleMagicImport} className="bg-primary text-white px-4 py-2 rounded-lg text-xs font-bold">Parse</button></div>}
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="flex justify-between items-center">
+              <label className="text-xs font-bold uppercase">Questions ({definitions[selectedQuiz].questions.length})</label>
+              <div className="flex gap-2">
+                <div className="flex p-0.5 rounded-lg bg-secondary/50 border border-border mr-2">
+                  <button onClick={() => setImportMode('replace')} className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all ${importMode === 'replace' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}>Replace</button>
+                  <button onClick={() => setImportMode('append')} className={`px-2 py-1 text-[10px] font-bold rounded-md transition-all ${importMode === 'append' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}>Append</button>
+                </div>
+                <button onClick={downloadTemplate} className="text-xs font-bold bg-secondary/80 text-foreground px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors hover:bg-secondary">
+                  <Download size={14} /> Template
+                </button>
+                <button onClick={() => document.getElementById('quiz-excel-import')?.click()} className="text-xs font-bold bg-emerald-500/10 text-emerald-600 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors hover:bg-emerald-500/20">
+                  <FileUp size={14} /> {importing ? 'Importing...' : 'Excel Import'}
+                </button>
+                <input type="file" id="quiz-excel-import" className="hidden" accept=".xlsx, .xls, .csv" onChange={handleFileImport} />
+              </div>
+            </div>
+
+            {importError && (
+              <p className="text-[10px] font-bold text-red-500 bg-red-500/5 p-2 rounded-lg border border-red-500/20 flex items-center gap-1.5">
+                <AlertCircle size={12} /> {importError}
+              </p>
+            )}
+
+            <div className="flex items-center justify-between py-1 border-b border-border/50">
+              <div className="flex items-center gap-4">
+                <button onClick={toggleAllQuestions} className="text-[10px] font-bold text-primary hover:underline">
+                  {selectedQuestions.length === definitions[selectedQuiz].questions.length ? 'Deselect All' : 'Select All'}
+                </button>
+                {selectedQuestions.length > 0 && (
+                  <button onClick={deleteSelectedQuestions} className="text-[10px] font-bold text-red-500 hover:underline flex items-center gap-1">
+                    <Trash2 size={12} /> Delete Selected ({selectedQuestions.length})
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2 max-h-96 overflow-y-auto pr-2 scrollbar-hide">
               {definitions[selectedQuiz].questions.map((q: any, i: number) => (
-                <div key={i} className="p-3 rounded-xl border border-border bg-secondary/10 flex items-start gap-3">
-                  <input type="checkbox" checked={selectedQuestions.includes(i)} onChange={() => toggleQuestionSelection(i)} />
-                  <p className="text-xs font-bold truncate">Q{i+1}: {q.en}</p>
+                <div key={i} className={`p-3 rounded-xl border transition-all flex items-start gap-3 ${selectedQuestions.includes(i) ? 'border-primary bg-primary/5' : 'border-border bg-secondary/10 hover:border-primary/30'}`}>
+                  <input 
+                    type="checkbox" 
+                    checked={selectedQuestions.includes(i)} 
+                    onChange={() => toggleQuestionSelection(i)}
+                    className="mt-1 rounded border-primary text-primary focus:ring-primary"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start gap-2">
+                      <p className="text-xs font-bold truncate">Q{i+1}: {q.en}</p>
+                      <button 
+                        onClick={() => {
+                          if (confirm('Delete this question?')) {
+                            const updated = { ...definitions };
+                            updated[selectedQuiz].questions = updated[selectedQuiz].questions.filter((_: any, idx: number) => idx !== i);
+                            setDefinitions(updated);
+                            setSelectedQuestions(prev => prev.filter(idx => idx !== i).map(idx => idx > i ? idx - 1 : idx));
+                          }
+                        }}
+                        className="text-red-500 hover:text-red-600 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground truncate italic">{q.th}</p>
+                  </div>
                 </div>
               ))}
+              {definitions[selectedQuiz].questions.length === 0 && (
+                <div className="py-12 flex flex-col items-center justify-center gap-3 opacity-30">
+                  <Database size={32} />
+                  <p className="text-xs font-bold uppercase">No questions yet</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
