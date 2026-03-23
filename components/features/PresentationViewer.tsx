@@ -93,7 +93,14 @@ export default function PresentationViewer({ module, locale, initialLang, user }
 
   const { presentationId, totalSlides: total, cacheKey, slideUrls } = module.presentations[lang];
 
+  const hasContent = (slideUrls && slideUrls.length > 0) || presentationId;
+
   useEffect(() => { slideRef.current = slide; }, [slide]);
+
+  useEffect(() => {
+    setIsLoaded(false);
+    setLoadError(false);
+  }, [slideUrls, presentationId, lang]);
 
   useEffect(() => {
     const session = getAgentSession();
@@ -106,6 +113,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
   // ── Preloading Logic ──────────────────────────────────────────────────────
 
   useEffect(() => {
+    if (!hasContent) return;
     let active = true;
     setPreloadedSlides(new Set()); // Reset on presentation change
 
@@ -113,7 +121,12 @@ export default function PresentationViewer({ module, locale, initialLang, user }
       setIsPreloading(true);
       setPreloadingProgress(0);
 
-      const count = total;
+      const count = total || (slideUrls?.length ?? 0);
+      if (count === 0) {
+        setIsPreloading(false);
+        return;
+      }
+
       let loadedCount = 0;
       const currentPreloaded = new Set<number>();
 
@@ -163,7 +176,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
 
     preloadAll();
     return () => { active = false; };
-  }, [presentationId, total, cacheKey, slideUrls]);
+  }, [presentationId, total, cacheKey, slideUrls, hasContent]);
 
   // ── Sync Listener ──────────────────────────────────────────────────────────
 
@@ -504,7 +517,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
         {/* ── Left nav arrow (agent only — trainer uses bottom bar) ── */}
         {!isTrainer && (
           <button
-            disabled={slide === 1 || (syncActive && !amInControl)}
+            disabled={!hasContent || slide === 1 || (syncActive && !amInControl)}
             onClick={() => goToSlide(slide - 1)}
             className="relative z-10 hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border/50 bg-background/90 shadow-lg backdrop-blur-md transition-all active:scale-95 disabled:opacity-20 hover:bg-black/5 dark:hover:bg-white/5 sm:flex"
             aria-label="Previous slide"
@@ -523,9 +536,22 @@ export default function PresentationViewer({ module, locale, initialLang, user }
             animate={{ scale: 1, opacity: 1, y: 0 }}
             transition={TRANSITION.base}
           >
+            {/* Empty State Overlay */}
+            {!hasContent && (
+              <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-muted/20 backdrop-blur-sm">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-black/5 dark:bg-white/5">
+                  <BookOpen className="opacity-20" size={32} />
+                </div>
+                <div className="text-center px-6">
+                  <p className="text-sm font-bold opacity-80">No Slides Available</p>
+                  <p className="text-[10px] font-medium opacity-50 mt-1 max-w-[200px]">The presentation content is currently being updated or has not been uploaded yet.</p>
+                </div>
+              </div>
+            )}
+
             {/* Loading / Error overlay — scoped inside the frame */}
             <AnimatePresence mode="wait">
-              {loadError ? (
+              {hasContent && loadError ? (
                 <motion.div
                   key="error"
                   initial={{ opacity: 0 }}
@@ -543,7 +569,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
                     {t('retry')}
                   </button>
                 </motion.div>
-              ) : !isLoaded ? (
+              ) : hasContent && !isLoaded ? (
                 <motion.div
                   key="loader"
                   initial={{ opacity: 0 }}
@@ -583,7 +609,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
 
             {/* Sync Overlay for agents (hidden for trainer — they have the bottom bar) */}
             <AnimatePresence>
-              {syncActive && !amInControl && !isTrainer && (
+              {hasContent && syncActive && !amInControl && !isTrainer && (
                 <motion.div
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -602,7 +628,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
 
             {/* Module complete badge */}
             <AnimatePresence>
-              {isComplete && isLoaded && (
+              {hasContent && isComplete && isLoaded && (
                 <motion.div
                   key="complete"
                   initial={{ opacity: 0, y: 12 }}
@@ -620,32 +646,34 @@ export default function PresentationViewer({ module, locale, initialLang, user }
               )}
             </AnimatePresence>
 
-            <AnimatePresence>
-              <motion.img
-                key={slideImageUrl}
-                src={slideImageUrl}
-                className="h-full w-full object-contain"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                onLoad={() => { 
-                  setIsLoaded(true); 
-                  setLoadError(false); 
-                  // Ensure current slide is marked as preloaded once viewed
-                  setPreloadedSlides(prev => new Set(prev).add(slide));
-                }}
-                onError={() => setLoadError(true)}
-                alt={`Slide ${slide}`}
-              />
-            </AnimatePresence>
+            {hasContent && (
+              <AnimatePresence>
+                <motion.img
+                  key={slideImageUrl}
+                  src={slideImageUrl}
+                  className="h-full w-full object-contain"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  onLoad={() => { 
+                    setIsLoaded(true); 
+                    setLoadError(false); 
+                    // Ensure current slide is marked as preloaded once viewed
+                    setPreloadedSlides(prev => new Set(prev).add(slide));
+                  }}
+                  onError={() => setLoadError(true)}
+                  alt={`Slide ${slide}`}
+                />
+              </AnimatePresence>
+            )}
           </motion.div>
         </div>
 
         {/* ── Right nav arrow (agent only — trainer uses bottom bar) ── */}
         {!isTrainer && (
           <button
-            disabled={slide === total || (syncActive && !amInControl)}
+            disabled={!hasContent || slide === total || (syncActive && !amInControl)}
             onClick={() => goToSlide(slide + 1)}
             className="relative z-10 hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-20 sm:flex"
             aria-label="Next slide"
@@ -674,7 +702,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
             {/* Navigation group: Prev · counter · Next — all together */}
             <div className="flex items-center gap-1 rounded-xl border border-border/60 bg-black/5 dark:bg-white/5 p-1 shrink-0">
               <button
-                disabled={slide === 1 || (syncActive && !amInControl)}
+                disabled={!hasContent || slide === 1 || (syncActive && !amInControl)}
                 onClick={() => goToSlide(slide - 1)}
                 className="flex h-8 w-8 items-center justify-center rounded-lg transition-all active:scale-95 disabled:opacity-25 hover:bg-black/8 dark:hover:bg-white/8"
                 aria-label="Previous slide"
@@ -682,12 +710,12 @@ export default function PresentationViewer({ module, locale, initialLang, user }
                 <ChevronLeft size={18} />
               </button>
               <div className="px-2.5 text-sm font-black tabular-nums select-none whitespace-nowrap">
-                {slide}
+                {hasContent ? slide : 0}
                 <span className="text-muted-foreground font-medium mx-1">/</span>
-                {total}
+                {hasContent ? total : 0}
               </div>
               <button
-                disabled={slide === total || (syncActive && !amInControl)}
+                disabled={!hasContent || slide === total || (syncActive && !amInControl)}
                 onClick={() => goToSlide(slide + 1)}
                 className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white transition-all active:scale-95 disabled:opacity-25 hover:bg-primary/90"
                 aria-label="Next slide"
@@ -743,12 +771,13 @@ export default function PresentationViewer({ module, locale, initialLang, user }
 
             {/* Take Control / Stop Control — primary CTA, right-aligned */}
             <button
+              disabled={!hasContent}
               onClick={amInControl ? stopControl : takeControl}
               className={`ml-auto flex shrink-0 items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all active:scale-95 ${
                 amInControl
                   ? 'bg-destructive text-white shadow-lg shadow-destructive/20 hover:bg-destructive/90'
                   : 'bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90'
-              }`}
+              } disabled:opacity-50`}
             >
               {amInControl ? <Power size={15} /> : <ShieldCheck size={15} />}
               {amInControl ? t('stopControl') : t('takeControl')}
@@ -770,7 +799,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
             {/* Slide counter + participant count */}
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="font-black tabular-nums text-sm">{slide} / {total}</span>
+                <span className="font-black tabular-nums text-sm">{hasContent ? slide : 0} / {hasContent ? total : 0}</span>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                   {t('slide')}
                 </span>

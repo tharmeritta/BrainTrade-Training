@@ -7,6 +7,7 @@ import { Save, Target, Zap, Loader2, CheckCircle2, AlertCircle, Edit3, Plus, Tra
 import * as XLSX from 'xlsx';
 import { storage, auth } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { signInWithCustomToken } from 'firebase/auth';
 
 type ConfigType = 'quizzes' | 'ai-eval' | 'learn';
 
@@ -318,9 +319,9 @@ function AiEvalEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =>
 }
 
 const LEARN_DEFAULT_MODULES: Record<string, any> = {
-  product: { id: 'product', title: 'What is Stock?', titleTh: 'หุ้นคืออะไร?', description: 'Fundamentals of stocks.', descriptionTh: 'พื้นฐานของหุ้น', gradient: 'from-blue-600 to-indigo-700', presentations: { th: { slideUrls: [], totalSlides: 0 }, en: { slideUrls: [], totalSlides: 0 } } },
-  kyc: { id: 'kyc', title: 'KYC', titleTh: 'รู้จักลูกค้า', description: 'KYC process.', descriptionTh: 'กระบวนการ KYC', gradient: 'from-emerald-600 to-teal-700', presentations: { th: { slideUrls: [], totalSlides: 0 }, en: { slideUrls: [], totalSlides: 0 } } },
-  website: { id: 'website', title: 'Website', titleTh: 'เว็บไซต์', description: 'Platform walkthrough.', descriptionTh: 'แนะนำแพลตฟอร์ม', gradient: 'from-violet-600 to-purple-700', presentations: { th: { slideUrls: [], totalSlides: 0 }, en: { slideUrls: [], totalSlides: 0 } } },
+  product: { id: 'product', title: 'What is Stock?', titleTh: 'หุ้นคืออะไร?', description: 'Fundamentals of stocks.', descriptionTh: 'พื้นฐานของหุ้น', gradient: 'from-blue-600 to-indigo-700', presentations: { th: { presentationId: '', slideUrls: [], totalSlides: 0 }, en: { presentationId: '', slideUrls: [], totalSlides: 0 } } },
+  kyc: { id: 'kyc', title: 'KYC', titleTh: 'รู้จักลูกค้า', description: 'KYC process.', descriptionTh: 'กระบวนการ KYC', gradient: 'from-emerald-600 to-teal-700', presentations: { th: { presentationId: '', slideUrls: [], totalSlides: 0 }, en: { presentationId: '', slideUrls: [], totalSlides: 0 } } },
+  website: { id: 'website', title: 'Website', titleTh: 'เว็บไซต์', description: 'Platform walkthrough.', descriptionTh: 'แนะนำแพลตฟอร์ม', gradient: 'from-violet-600 to-purple-700', presentations: { th: { presentationId: '', slideUrls: [], totalSlides: 0 }, en: { presentationId: '', slideUrls: [], totalSlides: 0 } } },
 };
 
 function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => void, saving: boolean }) {
@@ -328,10 +329,24 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<Record<string, 'idle' | 'loading' | 'done' | 'error'>>({});
 
+  const ensureFirebaseSession = async () => {
+    if (auth.currentUser) return;
+    try {
+      const res = await fetch('/api/auth/firebase-token');
+      const { firebaseToken } = await res.json();
+      if (firebaseToken) {
+        await signInWithCustomToken(auth, firebaseToken);
+      }
+    } catch (err) {
+      console.error('Failed to re-sync Firebase session:', err);
+    }
+  };
+
   const handleFileUpload = async (moduleId: string, lang: 'en' | 'th', files: FileList) => {
     const key = `${moduleId}_${lang}`;
     setUploadStatus(prev => ({ ...prev, [key]: 'loading' }));
     try {
+      await ensureFirebaseSession();
       const sorted = Array.from(files).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
       const slideUrls: string[] = [];
       for (let i = 0; i < sorted.length; i++) {
@@ -340,7 +355,7 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
         await uploadBytes(storageRef, sorted[i]);
         slideUrls.push(await getDownloadURL(storageRef));
       }
-      setModules((prev: any) => ({ ...prev, [moduleId]: { ...prev[moduleId], presentations: { ...prev[moduleId].presentations, [lang]: { slideUrls, totalSlides: slideUrls.length } } } }));
+      setModules((prev: any) => ({ ...prev, [moduleId]: { ...prev[moduleId], presentations: { ...prev[moduleId].presentations, [lang]: { ...prev[moduleId].presentations[lang], slideUrls, totalSlides: slideUrls.length } } } }));
       setUploadStatus(prev => ({ ...prev, [key]: 'done' }));
     } catch (err: any) { alert(err.message); setUploadStatus(prev => ({ ...prev, [key]: 'error' })); }
   };
@@ -355,8 +370,13 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
     setModules((prev: any) => {
       const mod = { ...prev[id] };
       if (field.includes('.')) {
-        const [p1, p2] = field.split('.');
-        mod[p1] = { ...mod[p1], [p2]: value };
+        const parts = field.split('.');
+        let curr = mod;
+        for (let i = 0; i < parts.length - 1; i++) {
+          curr[parts[i]] = { ...curr[parts[i]] };
+          curr = curr[parts[i]];
+        }
+        curr[parts[parts.length - 1]] = value;
       } else mod[field] = value;
       return { ...prev, [id]: mod };
     });
@@ -376,25 +396,59 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
       {editingId && (
         <div className="p-6 rounded-2xl border border-primary/20 bg-card space-y-6">
           <div className="grid grid-cols-2 gap-4">
-            <input type="text" value={modules[editingId].title} onChange={e => handleUpdateModule(editingId, 'title', e.target.value)} className="bg-secondary/30 p-3 rounded-xl text-sm" placeholder="Title EN" />
-            <input type="text" value={modules[editingId].titleTh} onChange={e => handleUpdateModule(editingId, 'titleTh', e.target.value)} className="bg-secondary/30 p-3 rounded-xl text-sm" placeholder="Title TH" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase">English Slides</label>
-              <input type="file" id="up-en" className="hidden" multiple accept="image/*" onChange={e => e.target.files && handleFileUpload(editingId, 'en', e.target.files)} />
-              <button onClick={() => document.getElementById('up-en')?.click()} className="w-full py-4 rounded-xl border border-primary/30 bg-primary/10 text-xs font-bold text-primary flex items-center justify-center gap-2">
-                {uploadStatus[`${editingId}_en`] === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} Import PPTX/PDF Slides (EN)
-              </button>
-              {modules[editingId].presentations.en.slideUrls?.length > 0 && <p className="text-[10px] text-center text-emerald-600 font-bold">{modules[editingId].presentations.en.slideUrls.length} Slides</p>}
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase opacity-50 px-1">Title EN</label>
+              <input type="text" value={modules[editingId].title} onChange={e => handleUpdateModule(editingId, 'title', e.target.value)} className="w-full bg-secondary/30 p-3 rounded-xl text-sm" placeholder="Title EN" />
             </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase">Thai Slides</label>
-              <input type="file" id="up-th" className="hidden" multiple accept="image/*" onChange={e => e.target.files && handleFileUpload(editingId, 'th', e.target.files)} />
-              <button onClick={() => document.getElementById('up-th')?.click()} className="w-full py-4 rounded-xl border border-primary/30 bg-primary/10 text-xs font-bold text-primary flex items-center justify-center gap-2">
-                {uploadStatus[`${editingId}_th`] === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} Import PPTX/PDF Slides (TH)
-              </button>
-              {modules[editingId].presentations.th.slideUrls?.length > 0 && <p className="text-[10px] text-center text-emerald-600 font-bold">{modules[editingId].presentations.th.slideUrls.length} Slides</p>}
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase opacity-50 px-1">Title TH</label>
+              <input type="text" value={modules[editingId].titleTh} onChange={e => handleUpdateModule(editingId, 'titleTh', e.target.value)} className="w-full bg-secondary/30 p-3 rounded-xl text-sm" placeholder="Title TH" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-8">
+            {/* English Config */}
+            <div className="space-y-4">
+              <h5 className="text-xs font-black uppercase tracking-wider text-primary">English Presentation</h5>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase opacity-50 px-1">Google Slides ID (Optional)</label>
+                <input type="text" value={modules[editingId].presentations.en.presentationId || ''} onChange={e => handleUpdateModule(editingId, 'presentations.en.presentationId', e.target.value)} className="w-full bg-secondary/30 p-3 rounded-xl text-sm font-mono" placeholder="Presentation ID" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase opacity-50 px-1">Storage Slides</label>
+                <input type="file" id="up-en" className="hidden" multiple accept="image/*" onChange={e => e.target.files && handleFileUpload(editingId, 'en', e.target.files)} />
+                <button onClick={() => document.getElementById('up-en')?.click()} className="w-full py-4 rounded-xl border border-primary/30 bg-primary/10 text-xs font-bold text-primary flex items-center justify-center gap-2">
+                  {uploadStatus[`${editingId}_en`] === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} Upload Slide PNGs (EN)
+                </button>
+                {modules[editingId].presentations.en.slideUrls?.length > 0 && (
+                  <div className="flex items-center justify-between px-1">
+                    <p className="text-[10px] text-emerald-600 font-bold">{modules[editingId].presentations.en.slideUrls.length} Slides Uploaded</p>
+                    <button onClick={() => handleUpdateModule(editingId, 'presentations.en.slideUrls', [])} className="text-[10px] text-red-500 font-bold hover:underline">Clear</button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Thai Config */}
+            <div className="space-y-4">
+              <h5 className="text-xs font-black uppercase tracking-wider text-primary">Thai Presentation</h5>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase opacity-50 px-1">Google Slides ID (Optional)</label>
+                <input type="text" value={modules[editingId].presentations.th.presentationId || ''} onChange={e => handleUpdateModule(editingId, 'presentations.th.presentationId', e.target.value)} className="w-full bg-secondary/30 p-3 rounded-xl text-sm font-mono" placeholder="Presentation ID" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase opacity-50 px-1">Storage Slides</label>
+                <input type="file" id="up-th" className="hidden" multiple accept="image/*" onChange={e => e.target.files && handleFileUpload(editingId, 'th', e.target.files)} />
+                <button onClick={() => document.getElementById('up-th')?.click()} className="w-full py-4 rounded-xl border border-primary/30 bg-primary/10 text-xs font-bold text-primary flex items-center justify-center gap-2">
+                  {uploadStatus[`${editingId}_th`] === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} Upload Slide PNGs (TH)
+                </button>
+                {modules[editingId].presentations.th.slideUrls?.length > 0 && (
+                  <div className="flex items-center justify-between px-1">
+                    <p className="text-[10px] text-emerald-600 font-bold">{modules[editingId].presentations.th.slideUrls.length} Slides Uploaded</p>
+                    <button onClick={() => handleUpdateModule(editingId, 'presentations.th.slideUrls', [])} className="text-[10px] text-red-500 font-bold hover:underline">Clear</button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
