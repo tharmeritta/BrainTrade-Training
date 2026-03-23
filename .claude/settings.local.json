@@ -34,7 +34,9 @@
       "Bash(grep:*)",
       "WebFetch(domain:drive.google.com)",
       "Bash(mkdir scripts:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(firebase deploy:*)",
+      "Bash(npx firebase-tools:*)"
     ]
   }
 }

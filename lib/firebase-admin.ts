@@ -1,6 +1,7 @@
 import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
 import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
+import { getAuth, Auth } from 'firebase-admin/auth';
 
 /**
  * Clean surrounding quotes from an environment variable value.
@@ -168,4 +169,8 @@ export const getAdminDb = (): Firestore => {
     console.error('[Firebase Admin] getAdminDb fatal error:', e.message);
     throw e;
   }
+};
+
+export const getAdminAuth = (): Auth => {
+  return getAuth(getAdminApp());
 };

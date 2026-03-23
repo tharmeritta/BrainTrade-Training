@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { Lock, ClipboardCheck, GraduationCap, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import { signInWithEmailAndPassword, signInWithCustomToken } from 'firebase/auth';
 
 type Tab = 'admin' | 'trainer' | 'evaluator';
 
@@ -79,7 +81,23 @@ export default function LoginPage() {
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      // manager, admin, and trainer all use the admin panel
+
+      // Sign in to Firebase Client SDK
+      if (data.firebaseToken) {
+        try {
+          await signInWithCustomToken(auth, data.firebaseToken);
+        } catch (fbErr) {
+          console.warn('Firebase Custom Token Sign-in failed:', fbErr);
+        }
+      } else if (username.includes('@')) {
+        // Fallback for direct email login if token not generated
+        try {
+          await signInWithEmailAndPassword(auth, username, password);
+        } catch (fbErr) {
+          console.warn('Firebase Email Sign-in failed:', fbErr);
+        }
+      }
+
       const redirect = (['manager', 'admin', 'trainer'].includes(data.role)) ? `/${locale}/admin` : cfg.redirect;
       router.push(redirect);
     } catch {
@@ -94,7 +112,6 @@ export default function LoginPage() {
       className="h-screen w-screen overflow-hidden flex items-center justify-center relative"
       style={{ background: T.bg, fontFamily: "'DM Sans', system-ui, sans-serif" }}
     >
-      {/* Background orb */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div style={{
           position: 'absolute', width: 480, height: 480,
@@ -111,7 +128,6 @@ export default function LoginPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-sm px-4">
-        {/* Back link */}
         <Link href={`/${locale}/dashboard`}
           className="flex items-center gap-1.5 text-xs mb-6 transition-colors"
           style={{ color: T.sub }}
@@ -120,14 +136,12 @@ export default function LoginPage() {
           <ArrowLeft size={12} /> {t('backToMain')}
         </Link>
 
-        {/* Logo */}
         <div className="flex items-center gap-2 mb-7">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-white text-sm"
             style={{ background: 'linear-gradient(135deg, #00B4D8, #0050E0)' }}>B</div>
           <span className="font-black text-base" style={{ color: T.text }}>BrainTrade Training</span>
         </div>
 
-        {/* Card */}
         <div className="rounded-3xl overflow-hidden" style={{
           background: T.card,
           border: `1px solid ${cfg.accent}20`,
@@ -136,7 +150,6 @@ export default function LoginPage() {
           transition: 'border-color 0.4s',
           padding: '28px',
         }}>
-          {/* Tab switcher */}
           <div className="flex gap-1 p-1 rounded-xl mb-6"
             style={{ background: 'rgba(255,255,255,0.04)' }}>
             {(['admin', 'trainer', 'evaluator'] as Tab[]).map(r => {
@@ -158,7 +171,6 @@ export default function LoginPage() {
             })}
           </div>
 
-          {/* Heading */}
           <AnimatePresence mode="wait">
             <motion.div key={role}
               initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
@@ -171,7 +183,6 @@ export default function LoginPage() {
             </motion.div>
           </AnimatePresence>
 
-          {/* Form */}
           <form onSubmit={handleLogin} className="space-y-3">
             <div>
               <label className="block text-[10px] font-medium uppercase tracking-wider mb-1.5"

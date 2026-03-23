@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { makeSessionToken } from '@/lib/session';
 import { fsGetAll } from '@/lib/firestore-db';
+import { getAdminAuth } from '@/lib/firebase-admin';
 import type { StaffAccount } from '@/types';
 
 const FIVE_DAYS = 60 * 60 * 24 * 5;
@@ -25,37 +26,32 @@ export async function POST(req: NextRequest) {
   const cleanUser = username?.trim();
   const cleanPass = password?.trim();
 
-  console.log('Login Attempt:', { 
-    username: cleanUser, 
-    envUser: envUser,
-    hasEnvPass: !!envPass,
-    envUserMatch: cleanUser === envUser,
-    envPassMatch: cleanPass === envPass
-  });
-
   if (envUser && envPass && cleanUser === envUser && cleanPass === envPass) {
-    console.log('Login Success: Environment Fallback');
-    const res = NextResponse.json({ status: 'ok', role: 'admin' });
-    // Set passwordChanged to false to prompt for a password change in the UI
-    // Use the actual username so that change-password API knows what username to save in Firestore
-    setSession(res, makeSessionToken('admin', 'env-admin', envUser, false));
+    const role = 'admin';
+    const id = 'env-admin';
+    let firebaseToken: string | undefined;
+    try {
+      firebaseToken = await getAdminAuth().createCustomToken(id, { role });
+    } catch (err) {
+      console.warn('Failed to create custom token for env admin:', err);
+    }
+
+    const res = NextResponse.json({ status: 'ok', role, firebaseToken });
+    setSession(res, makeSessionToken(role, id, envUser, false));
     return res;
   }
 
   try {
-    console.log('Attempting Firestore Login...');
     let staff = await fsGetAll<StaffAccount>('staff_accounts');
     let account = staff.find(
       s => s.username === username && s.password === password && s.active,
     );
 
-    // 2. Fallback to 'users' collection (for credentials from seed-admin.mjs)
     if (!account) {
       const users = await fsGetAll<any>('users');
-      // seed-admin.mjs uses email as the identifier, but we check both username and email
       const userMatch = users.find(
         u => (u.username === username || u.email === username) && 
-             (u.password === password || u.password === undefined) && // users might use Firebase Auth
+             (u.password === password || u.password === undefined) &&
              u.active
       );
       if (userMatch) {
@@ -73,17 +69,19 @@ export async function POST(req: NextRequest) {
     }
 
     if (account) {
-      const res = NextResponse.json({ status: 'ok', role: account.role });
+      let firebaseToken: string | undefined;
+      try {
+        firebaseToken = await getAdminAuth().createCustomToken(account.id, { role: account.role });
+      } catch (err) {
+        console.warn('Failed to create custom token:', err);
+      }
+
+      const res = NextResponse.json({ status: 'ok', role: account.role, firebaseToken });
       setSession(res, makeSessionToken(account.role, account.id, account.name, !!account.passwordChanged));
       return res;
     }
   } catch (err: any) {
-    console.error('Login Database Error:', err);
-    return NextResponse.json({ 
-      error: 'Database error', 
-      details: err.message,
-      code: err.code 
-    }, { status: 503 });
+    return NextResponse.json({ error: 'Database error' }, { status: 503 });
   }
 
   return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
