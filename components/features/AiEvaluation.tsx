@@ -76,6 +76,7 @@ interface ChatViewProps {
   onClearError: () => void;
   onUseScript: (text: string) => void;
   bottomRef: React.RefObject<HTMLDivElement>;
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
 }
 
 /* ─── Step Progress Indicator ──────────────────────────────────────────────── */
@@ -453,10 +454,9 @@ MessageBubble.displayName = 'MessageBubble';
  */
 const ChatView = memo(({
   messages, coaching, customerProfile, input, setInput, loading, passed, error,
-  onSend, onReset, onClearError, onUseScript, bottomRef
+  onSend, onReset, onClearError, onUseScript, bottomRef, textareaRef
 }: ChatViewProps) => {
   const t = useTranslations('aiEval');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-grow textarea up to ~5 lines
   useEffect(() => {
@@ -464,7 +464,7 @@ const ChatView = memo(({
     if (!el) return;
     el.style.height = 'auto';
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
-  }, [input]);
+  }, [input, textareaRef]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -715,6 +715,7 @@ export default function AiEvaluation() {
   const [error,           setError]           = useState<string | null>(null);
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const showError = useCallback((msg: string) => {
     setError(msg);
@@ -997,6 +998,7 @@ export default function AiEvaluation() {
             onClearError={() => setError(null)}
             onUseScript={handleUseScript}
             bottomRef={bottomRef}
+            textareaRef={textareaRef}
           />
         </motion.div>
       )}

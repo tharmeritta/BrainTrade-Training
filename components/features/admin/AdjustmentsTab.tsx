@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { 
@@ -1068,9 +1069,10 @@ function LearnEditor({ data, onSave, onChange, saving }: { data: LearnConfig | u
                       </div>
                       <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5 max-h-48 overflow-y-auto p-2 bg-black/5 rounded-xl scrollbar-hide">
                         {modules[editingId].presentations[lang as 'en' | 'th'].slideUrls.map((url: string, sIdx: number) => (
-                          <div key={sIdx} className="relative group aspect-video bg-black/20 rounded-lg border border-white/10 overflow-hidden shadow-sm">
-                            <img src={url} className="w-full h-full object-cover" alt="" />
-                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                          <div className="relative group aspect-video bg-black/20 rounded-lg border border-white/10 overflow-hidden shadow-sm">
+                            <Image src={url} fill className="object-cover" alt="" unoptimized />
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 z-10">
+
                               <button 
                                 disabled={sIdx === 0}
                                 onClick={() => {

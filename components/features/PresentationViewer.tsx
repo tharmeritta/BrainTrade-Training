@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
@@ -647,24 +648,31 @@ export default function PresentationViewer({ module, locale, initialLang, user }
             </AnimatePresence>
 
             {hasContent && (
-              <AnimatePresence>
-                <motion.img
+              <AnimatePresence mode="wait">
+                <motion.div
                   key={slideImageUrl}
-                  src={slideImageUrl}
-                  className="h-full w-full object-contain"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  onLoad={() => { 
-                    setIsLoaded(true); 
-                    setLoadError(false); 
-                    // Ensure current slide is marked as preloaded once viewed
-                    setPreloadedSlides(prev => new Set(prev).add(slide));
-                  }}
-                  onError={() => setLoadError(true)}
-                  alt={`Slide ${slide}`}
-                />
+                  className="relative h-full w-full"
+                >
+                  <Image
+                    src={slideImageUrl}
+                    fill
+                    className="object-contain"
+                    onLoad={() => { 
+                      setIsLoaded(true); 
+                      setLoadError(false); 
+                      // Ensure current slide is marked as preloaded once viewed
+                      setPreloadedSlides(prev => new Set(prev).add(slide));
+                    }}
+                    onError={() => setLoadError(true)}
+                    alt={`Slide ${slide}`}
+                    unoptimized
+                    priority
+                  />
+                </motion.div>
               </AnimatePresence>
             )}
           </motion.div>
