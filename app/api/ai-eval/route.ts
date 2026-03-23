@@ -160,7 +160,7 @@ export async function POST(req: NextRequest) {
     try {
       const parsed = JSON.parse(raw);
 
-      customerLine = parsed.customerLine ?? '';
+      customerLine = parsed.customerLine || parsed.reply || '';
       passed       = isStart ? false : parsed.passed === true;
 
       if (!isStart && parsed.score != null) {
@@ -176,6 +176,16 @@ export async function POST(req: NextRequest) {
       // JSON parse failed — fall back to raw text, no coaching
       customerLine = raw;
       passed       = !isStart && (raw.includes('ผ่าน Level') || raw.includes('🎉'));
+    }
+
+    // Final fallback: if customerLine is still empty but raw has content, use raw.
+    // (OpenAI with json_object mode usually returns a JSON, but let's be safe)
+    if (!customerLine && raw && raw !== '{}') {
+      customerLine = raw;
+    }
+
+    if (!customerLine && !isStart) {
+      customerLine = '... (ไม่สามารถดึงคำตอบจาก AI ได้ กรุณาลองใหม่อีกครั้ง)';
     }
 
     // Log every scored turn (not the opening greeting) so staff can track history

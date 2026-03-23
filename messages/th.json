@@ -115,9 +115,11 @@
     "matchError": "ไม่พบชื่อนี้ในระบบ กรุณาตรวจสอบและลองใหม่อีกครั้ง"
   },
   "trainingHub": {
-    "study": "Study",
-    "test": "Test",
-    "analyse": "Analyze",
+    "study": "ศึกษา",
+    "test": "ทดสอบ",
+    "analyse": "วิเคราะห์",
+    "productProcess": "สินค้า · กระบวนการขาย",
+    "quizDesc": "ทดสอบความเข้าใจใน 4 หัวข้อ",
     "aiEvalDesc": "วิเคราะห์สคริปต์ด้วย AI",
     "passed": "ผ่าน",
     "failed": "ล้มเหลว",
