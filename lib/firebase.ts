@@ -16,6 +16,15 @@ const firebaseConfig = {
   measurementId:     process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
+if (typeof window !== 'undefined') {
+  console.log('[Firebase Client] Config loaded for project:', firebaseConfig.projectId);
+  if (!firebaseConfig.apiKey) {
+    console.error('[Firebase Client] CRITICAL: apiKey is missing!');
+  } else {
+    console.log('[Firebase Client] apiKey exists:', firebaseConfig.apiKey.substring(0, 8) + '...');
+  }
+}
+
 export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const db  = getFirestore(app);
 export const rtdb = getDatabase(app);
