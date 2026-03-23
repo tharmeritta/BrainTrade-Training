@@ -23,3 +23,5 @@ env:
   # Client-side Firebase Config (Public)
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
     value: "bt-training-firebase"
+  - variable: NEXT_PUBLIC_FIREBASE_DATABASE_URL
+    value: "https://bt-training-firebase-default-rtdb.asia-southeast1.firebasedatabase.app/"
