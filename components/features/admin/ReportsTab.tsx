@@ -230,7 +230,7 @@ export default function ReportsTab() {
                           <span>{h.evaluatorName}</span>
                           <span className="text-primary">{h.totalScore}/100</span>
                         </div>
-                        <p className="text-muted-foreground italic line-clamp-2">"{h.comments}"</p>
+                        <p className="text-muted-foreground italic line-clamp-2">&quot;{h.comments}&quot;</p>
                       </div>
                     ))}
                   </div>

@@ -32,6 +32,7 @@ export const QuizBriefing = memo(({
   quiz, lang, agentName, onBack, onStart,
 }: QuizBriefingProps) => {
   const t = useTranslations('quiz');
+  const tSelection = useTranslations('quizSelection');
   const phases        = quiz.phases ?? [];
   const total         = quiz.questions.length;
   const thresholdPct  = Math.round((quiz.passThreshold ?? PASS_THRESHOLD) * 100);
@@ -245,7 +246,7 @@ export const QuizBriefing = memo(({
                       {ph.name[lang]}
                     </p>
                     <p style={{ fontSize: 11, color: C.hint }}>
-                      {useTranslations('quizSelection')('questions', { count })}
+                      {tSelection('questions', { count })}
                       {' · '}
                       {t('practiceModeTag')}
                     </p>

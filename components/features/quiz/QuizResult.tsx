@@ -97,7 +97,7 @@ const ResultView = memo(({
   // Each phase section in the answer key can be independently expanded
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set());
 
-  const phases     = quiz.phases ?? [];
+  const phases     = useMemo(() => quiz.phases ?? [], [quiz.phases]);
   const total      = questions.length;
   const isPractice = sessionMode.type !== 'full';
 

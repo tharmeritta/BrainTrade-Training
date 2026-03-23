@@ -284,23 +284,23 @@ export default function PresentationViewer({ module, locale, initialLang, user }
     });
   };
 
-  const updateSyncSlide = async (n: number) => {
+  const updateSyncSlide = useCallback(async (n: number) => {
     if (!amInControl) return;
     const syncRef = ref(rtdb, `presentation_sync/${module.id}/state`);
     await update(syncRef, {
       currentSlide: n,
       updatedAt: rtdbTimestamp(),
     });
-  };
+  }, [amInControl, module.id]);
 
-  const updateSyncLang = async (next: CourseLang) => {
+  const updateSyncLang = useCallback(async (next: CourseLang) => {
     if (!amInControl) return;
     const syncRef = ref(rtdb, `presentation_sync/${module.id}/state`);
     await update(syncRef, {
       currentLang: next,
       updatedAt: rtdbTimestamp(),
     });
-  };
+  }, [amInControl, module.id]);
 
   // ─── Standard Handlers ─────────────────────────────────────────────────────
 
@@ -353,7 +353,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
     url.searchParams.set('lang', next);
     url.searchParams.set('slide', String(restoredSlide));
     window.history.replaceState(null, '', url.toString());
-  }, [lang, module.id, module.presentations, syncActive, amInControl]);
+  }, [lang, module.id, module.presentations, syncActive, amInControl, updateSyncLang, updateSyncSlide]);
 
   const goToSlide = useCallback((n: number) => {
     if (n < 1 || n > total) return;
@@ -370,7 +370,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
     if (amInControl) {
       updateSyncSlide(n);
     }
-  }, [total, syncActive, amInControl, preloadedSlides]);
+  }, [total, syncActive, amInControl, preloadedSlides, updateSyncSlide]);
 
   // Keyboard navigation
   useEffect(() => {

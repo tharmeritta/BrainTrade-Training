@@ -78,7 +78,7 @@ export default function DashboardPage() {
           setStats(null);
         }
       });
-  }, [agentId]);
+  }, [agentId, agentName]);
 
   function handleAgentSelected(id: string, name: string, stageName: string) {
     setAgentId(id);
