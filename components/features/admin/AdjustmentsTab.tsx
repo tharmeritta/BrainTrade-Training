@@ -334,21 +334,46 @@ function QuizzesEditor({ data, onSave, saving }: { data: any, onSave: (d: any) =
 }
 
 function AiEvalEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => void, saving: boolean }) {
-  const [prompt, setPrompt] = useState(data?.systemPrompt || '');
-  const levels = [1, 2, 3, 4];
+  const [systemPrompt, setSystemPrompt] = useState(data?.systemPrompt || '');
+  const [agentGuideline, setAgentGuideline] = useState(data?.agentGuideline || '');
+
   return (
     <div className="p-6 space-y-8">
+      {/* Agent-facing Guideline */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between"><h3 className="font-bold flex items-center gap-2"><Zap size={16} /> AI System Prompt</h3><button onClick={() => onSave({ ...data, systemPrompt: prompt })} className="bg-primary text-white px-4 py-2 rounded-xl text-sm font-bold">Save</button></div>
-        <textarea value={prompt} onChange={e => setPrompt(e.target.value)} className="w-full h-96 bg-secondary/20 p-4 rounded-xl border font-mono text-sm" />
-      </div>
-      <div className="grid grid-cols-2 gap-6">
-        {levels.map(l => (
-          <div key={l} className="space-y-3">
-            <h4 className="font-bold text-xs uppercase">Level {l} Context</h4>
-            <textarea id={`ai-eval-l${l}`} defaultValue={data?.[`level${l}Prompt`] || ''} onBlur={e => onSave({ ...data, [`level${l}Prompt`]: e.target.value })} className="w-full h-40 bg-secondary/10 p-3 rounded-xl border text-sm" />
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-bold flex items-center gap-2"><BookOpen size={16} /> Agent Guideline</h3>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Shown to agents on the intro screen before they start. Should be human-readable instructions.</p>
           </div>
-        ))}
+          <button
+            onClick={() => onSave({ ...data, systemPrompt, agentGuideline })}
+            className="bg-primary text-white px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50"
+            disabled={saving}
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+        <textarea
+          value={agentGuideline}
+          onChange={e => setAgentGuideline(e.target.value)}
+          className="w-full h-48 bg-secondary/20 p-4 rounded-xl border text-sm focus:ring-2 focus:ring-primary/20 transition-all"
+          placeholder="Enter human-readable instructions for agents (what to do, how to pass, tips)..."
+        />
+      </div>
+
+      {/* AI System Prompt */}
+      <div className="space-y-4 border-t border-border pt-8">
+        <div>
+          <h3 className="font-bold flex items-center gap-2"><Zap size={16} /> AI System Prompt</h3>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-1">Internal prompt sent to the AI. Defines the customer persona, JSON schema, and scoring rules. Never shown to agents.</p>
+        </div>
+        <textarea
+          value={systemPrompt}
+          onChange={e => setSystemPrompt(e.target.value)}
+          className="w-full h-[500px] bg-secondary/20 p-4 rounded-xl border font-mono text-sm focus:ring-2 focus:ring-primary/20 transition-all"
+          placeholder="Enter AI system prompt..."
+        />
       </div>
     </div>
   );

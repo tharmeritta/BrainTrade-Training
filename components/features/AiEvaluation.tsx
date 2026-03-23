@@ -6,7 +6,7 @@ import {
   Send, User as UserIcon, Bot, ChevronLeft, Play,
   CheckCircle2, Trophy, RotateCcw, ArrowRight,
   Lock, BookOpen, AlertTriangle, ChevronRight, History,
-  ChevronDown, Smile, Frown, Meh, Zap
+  ChevronDown, Smile, Frown, Meh, Zap, Loader2
 } from 'lucide-react';
 
 import type { PitchMessage } from '@/types';
@@ -18,7 +18,6 @@ import { ActiveAgentUI } from '@/components/ui/ActiveAgentUI';
 
 /* ─── Constants & Types ────────────────────────────────────────────────────── */
 
-const AIEV_SESSION_KEY = 'brainstrade_aiev_active';
 
 const CRITERIA_KEYS = [
   'rapport',
@@ -28,8 +27,7 @@ const CRITERIA_KEYS = [
   'naturalness',
 ];
 
-type EvalLevel = 1 | 2 | 3 | 4;
-type Step = 'intro' | 'select' | 'chat';
+type Step = 'intro' | 'chat';
 
 /* ─── Interfaces ───────────────────────────────────────────────────────────── */
 
@@ -50,18 +48,8 @@ interface CoachingData {
 }
 
 interface IntroViewProps {
-  onContinue: (level?: EvalLevel) => void;
-  inProgressLevel: EvalLevel | null;
-}
-
-interface SelectionViewProps {
-  level: EvalLevel;
-  setLevel: (l: EvalLevel) => void;
-  onStart: (overrideLevel?: EvalLevel) => void;
-  onShowIntro: () => void;
-  isLocked: (l: EvalLevel) => boolean;
-  completedLevels: Set<number>;
-  inProgressLevel: EvalLevel | null;
+  onContinue: () => void;
+  guideline: string | null;
   agentName: string | null;
   loading: boolean;
 }
@@ -75,7 +63,6 @@ interface CustomerProfile {
 }
 
 interface ChatViewProps {
-  level: EvalLevel;
   messages: PitchMessage[];
   coaching: Map<number, CoachingData>;
   customerProfile: CustomerProfile | null;
@@ -86,7 +73,6 @@ interface ChatViewProps {
   error: string | null;
   onSend: () => void;
   onReset: (clearHistory: boolean) => void;
-  onNextLevel: (next: EvalLevel) => void;
   onClearError: () => void;
   onUseScript: (text: string) => void;
   bottomRef: React.RefObject<HTMLDivElement>;
@@ -94,9 +80,9 @@ interface ChatViewProps {
 
 /* ─── Step Progress Indicator ──────────────────────────────────────────────── */
 
-const StepProgress = ({ current }: { current: 1 | 2 | 3 }) => (
+const StepProgress = ({ current }: { current: 1 | 2 }) => (
   <div className="flex items-center gap-1.5">
-    {([1, 2, 3] as const).map(s => (
+    {([1, 2] as const).map(s => (
       <div
         key={s}
         className={`rounded-full transition-all duration-300 ${
@@ -317,7 +303,7 @@ ScoreTrend.displayName = 'ScoreTrend';
 /**
  * IntroView: Step 1 - Instructions and overview
  */
-const IntroView = memo(({ onContinue, inProgressLevel }: IntroViewProps) => {
+const IntroView = memo(({ onContinue, guideline, agentName, loading }: IntroViewProps) => {
   const t = useTranslations('aiEval');
 
   return (
@@ -335,7 +321,7 @@ const IntroView = memo(({ onContinue, inProgressLevel }: IntroViewProps) => {
             <div>
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-2 bg-white/20 backdrop-blur-md rounded-xl">
-                  <BookOpen size={20} className="text-white" />
+                  <Zap size={20} className="text-white" />
                 </div>
                 <h1 className="text-2xl font-black tracking-tight">{t('title')}</h1>
               </div>
@@ -344,36 +330,22 @@ const IntroView = memo(({ onContinue, inProgressLevel }: IntroViewProps) => {
                 dangerouslySetInnerHTML={{ __html: t.raw('introDesc') }}
               />
             </div>
-            <div className="shrink-0 pt-1">
+            <div className="shrink-0 pt-1 flex flex-col items-end gap-3">
               <StepProgress current={1} />
+              <ActiveAgentUI agentName={agentName} />
             </div>
           </div>
         </div>
 
         <div className="p-8 space-y-8">
-          {/* Section 1 — Levels */}
+          {/* Section 1 — Guidelines (Loaded from Admin) */}
           <div>
             <div className="flex items-center gap-3 mb-4">
               <span className="w-7 h-7 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-xs font-black">1</span>
-              <h3 className="font-black text-foreground text-base tracking-tight">{t('levelsTitle')}</h3>
+              <h3 className="font-black text-foreground text-base tracking-tight">Guideline Instruction</h3>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {([1, 2, 3, 4] as const).map(l => (
-                <div key={l} className="bg-secondary/20 rounded-2xl p-4 border border-black/5 dark:border-white/5 hover:bg-secondary/30 transition-colors">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-black bg-primary text-white px-2 py-0.5 rounded-md uppercase tracking-wider">{t('levelLabel')} {l}</span>
-                    <span className="font-bold text-sm text-foreground">{t(`levels.${l}.th`)}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3 font-medium leading-relaxed">{t(`levels.${l}.desc`)}</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[0, 1].map((i) => (
-                      <span key={i} className="text-[11px] bg-white dark:bg-black/20 border border-black/5 dark:border-white/10 text-muted-foreground px-2.5 py-0.5 rounded-md font-medium italic">
-                        &quot;{t(`levels.${l}.examples.${i}`)}&quot;
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
+            <div className="bg-secondary/20 rounded-2xl p-6 border border-black/5 dark:border-white/5 whitespace-pre-wrap text-sm leading-relaxed text-foreground font-medium">
+              {guideline || "Please wait for guidelines to load..."}
             </div>
           </div>
 
@@ -414,42 +386,13 @@ const IntroView = memo(({ onContinue, inProgressLevel }: IntroViewProps) => {
             </div>
           </div>
 
-          {/* In-progress resume banner */}
-          {inProgressLevel && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-amber-50 dark:bg-amber-950/20 border border-amber-300/50 dark:border-amber-700/50 rounded-2xl p-4 flex items-center justify-between gap-4"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/40 text-amber-600 rounded-xl flex items-center justify-center shrink-0">
-                  <History size={20} />
-                </div>
-                <div>
-                  <p className="font-black text-amber-800 dark:text-amber-300 text-sm leading-tight">
-                    {t('continueAt', { level: inProgressLevel })}
-                  </p>
-                  <p className="text-xs text-amber-700/70 dark:text-amber-400/70 mt-0.5 font-medium">
-                    {t(`levels.${inProgressLevel}.th`)} — {t('continueSaved')}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => onContinue(inProgressLevel)}
-                className="shrink-0 flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-xl font-black text-sm transition-all shadow-md active:scale-95"
-              >
-                {t('continueBtn')}
-                <ArrowRight size={16} />
-              </button>
-            </motion.div>
-          )}
-
           {/* Primary CTA */}
           <button
-            onClick={() => onContinue()}
-            className="w-full flex items-center justify-center gap-2.5 bg-foreground text-background hover:bg-primary hover:text-white transition-all duration-500 py-4 rounded-2xl font-black text-base shadow-xl active:scale-[0.99] group"
+            onClick={onContinue}
+            disabled={loading || !guideline}
+            className="w-full flex items-center justify-center gap-2.5 bg-foreground text-background hover:bg-primary hover:text-white transition-all duration-500 py-4 rounded-2xl font-black text-base shadow-xl active:scale-[0.99] group disabled:opacity-50"
           >
-            {inProgressLevel ? t('overviewBtn') : t('startBtn')}
+            {loading ? t('connecting') : t('startSimBtn')}
             <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
@@ -459,153 +402,6 @@ const IntroView = memo(({ onContinue, inProgressLevel }: IntroViewProps) => {
 });
 
 IntroView.displayName = 'IntroView';
-
-/**
- * SelectionView: Step 2 - Level selection
- */
-const SelectionView = memo(({
-  level, setLevel, onStart, onShowIntro, isLocked,
-  completedLevels, inProgressLevel, agentName, loading
-}: SelectionViewProps) => {
-  const t = useTranslations('aiEval');
-
-  return (
-    <div className="max-w-4xl mx-auto py-8">
-
-      {/* Page header */}
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-foreground">{t('title')}</h1>
-          <p className="text-muted-foreground text-sm font-medium mt-0.5 opacity-70">{t('subtitle')}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <StepProgress current={2} />
-          <ActiveAgentUI agentName={agentName} />
-          <button
-            onClick={onShowIntro}
-            className="text-xs font-bold text-muted-foreground hover:text-foreground flex items-center gap-1.5 px-3 py-2 rounded-xl hover:bg-secondary/50 transition-all"
-          >
-            <BookOpen size={14} />
-            {t('instructionsBtn')}
-          </button>
-        </div>
-      </div>
-
-      {/* Resume in-progress banner */}
-      {inProgressLevel && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-5 bg-amber-50 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-700/50 rounded-2xl px-5 py-4 flex items-center justify-between gap-4"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-amber-100 dark:bg-amber-900/40 rounded-xl">
-              <History size={18} className="text-amber-600" />
-            </div>
-            <p className="text-sm font-bold text-amber-800 dark:text-amber-300">
-              {t('resumeDesc', { level: inProgressLevel, label: t(`levels.${inProgressLevel}.th`) })}
-            </p>
-          </div>
-          <button
-            onClick={() => onStart(inProgressLevel)}
-            disabled={loading}
-            className="shrink-0 flex items-center gap-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white px-4 py-2 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95"
-          >
-            <Play size={14} className="fill-current" />
-            {t('continueBtn')}
-          </button>
-        </motion.div>
-      )}
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={TRANSITION.base}
-        className="bg-card rounded-3xl shadow-2xl border border-black/5 dark:border-white/5 p-8 relative overflow-hidden"
-      >
-        <div className="relative z-10">
-          <h2 className="text-xl font-black mb-1 tracking-tight">{t('selectTitle')}</h2>
-          <p className="text-sm text-muted-foreground font-medium mb-8 opacity-80">{t('selectDesc')}</p>
-
-          {/* Level selector grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-            {([1, 2, 3, 4] as const).map(l => {
-              const locked    = isLocked(l);
-              const completed = completedLevels.has(l);
-              const selected  = level === l;
-              return (
-                <button
-                  key={l}
-                  onClick={() => !locked && setLevel(l)}
-                  disabled={locked}
-                  className={`group relative px-4 py-4 rounded-2xl font-black transition-all duration-300 border-2 text-left ${
-                    locked
-                      ? 'bg-secondary/20 text-muted-foreground/30 border-transparent cursor-not-allowed opacity-60'
-                      : selected
-                      ? 'bg-primary text-primary-foreground border-primary shadow-xl shadow-primary/20'
-                      : 'bg-white dark:bg-white/5 text-muted-foreground border-black/5 dark:border-white/10 hover:border-primary/30 hover:shadow-md'
-                  }`}
-                >
-                  {/* Status badge */}
-                  {locked ? (
-                    <div className="absolute top-2.5 right-2.5 w-5 h-5 bg-muted-foreground/20 rounded-full flex items-center justify-center">
-                      <Lock size={10} className="text-muted-foreground/60" />
-                    </div>
-                  ) : completed ? (
-                    <div className="absolute top-2.5 right-2.5 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center border border-white">
-                      <CheckCircle2 size={11} className="text-white" />
-                    </div>
-                  ) : null}
-
-                  <span className="block text-xs font-black uppercase tracking-wider opacity-60 mb-1">{t('levelLabel')} {l}</span>
-                  <span className="block text-sm font-extrabold leading-tight">{t(`levels.${l}.th`)}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Static description area — replaces the fragile floating tooltip */}
-          <div className="min-h-[48px] mb-8 px-1">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={level}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.15 }}
-              >
-                {isLocked(level) ? (
-                  <p className="text-xs text-muted-foreground/50 italic font-medium">
-                    {t('lockedDesc', { level: level - 1 })}
-                  </p>
-                ) : (
-                  <p className="text-sm text-muted-foreground font-medium leading-relaxed">
-                    {t(`levels.${level}.desc`)}
-                  </p>
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Start button */}
-          <button
-            onClick={() => onStart()}
-            disabled={loading || isLocked(level)}
-            className="group w-full flex items-center justify-center gap-2.5 bg-foreground text-background px-8 py-4 rounded-2xl font-black text-base hover:bg-primary hover:text-white transition-all duration-300 shadow-xl disabled:opacity-50 active:scale-[0.99]"
-          >
-            <Play size={18} className="fill-current group-hover:scale-110 transition-transform" />
-            {loading ? t('connecting') : t('startSimBtn')}
-          </button>
-        </div>
-
-        <div className="absolute top-0 left-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 right-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full translate-x-1/2 translate-y-1/2" />
-      </motion.div>
-    </div>
-  );
-});
-
-SelectionView.displayName = 'SelectionView';
 
 /**
  * MessageBubble sub-component
@@ -653,11 +449,11 @@ const MessageBubble = memo(({ m, i }: { m: PitchMessage; i: number }) => {
 MessageBubble.displayName = 'MessageBubble';
 
 /**
- * ChatView: Step 3 - AI Evaluation simulation
+ * ChatView: Step 2 - AI Evaluation simulation
  */
 const ChatView = memo(({
-  level, messages, coaching, customerProfile, input, setInput, loading, passed, error,
-  onSend, onReset, onNextLevel, onClearError, onUseScript, bottomRef
+  messages, coaching, customerProfile, input, setInput, loading, passed, error,
+  onSend, onReset, onClearError, onUseScript, bottomRef
 }: ChatViewProps) => {
   const t = useTranslations('aiEval');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -690,13 +486,11 @@ const ChatView = memo(({
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm ${
               passed ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary/10 text-primary'
             }`}>
-              {passed ? <Trophy size={18} /> : `L${level}`}
+              {passed ? <Trophy size={18} /> : <Zap size={18} />}
             </div>
             <div>
               <span className="font-bold text-foreground text-sm">
                 {t('systemTitle')}
-                <span className="text-muted-foreground font-normal opacity-40 mx-1">/</span>
-                {t(`levels.${level}.th`)}
               </span>
               <p className={`text-[10px] font-bold flex items-center gap-1.5 uppercase tracking-widest ${
                 passed ? 'text-emerald-500' : 'text-primary'
@@ -708,7 +502,7 @@ const ChatView = memo(({
           </div>
           <div className="flex items-center gap-3">
             <ScoreTrend coaching={coaching} />
-            <StepProgress current={3} />
+            <StepProgress current={2} />
             <button
               onClick={() => onReset(passed)}
               className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground hover:text-rose-50 transition-all py-2 px-3 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10"
@@ -754,7 +548,7 @@ const ChatView = memo(({
             <div className="h-6 w-px bg-black/5 dark:bg-white/5 hidden sm:block" />
             <div className="flex-1 min-w-[200px]">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight leading-none mb-0.5">{t('objectiveLabel')}</p>
-              <p className="text-xs font-bold text-primary italic truncate">"{customerProfile.objective || t('general')}"</p>
+              <p className="text-xs font-bold text-primary italic truncate">&ldquo;{customerProfile.objective || t('general')}&rdquo;</p>
             </div>
           </div>
         )}
@@ -768,7 +562,7 @@ const ChatView = memo(({
               <CheckCircle2 size={13} />
             </div>
             <div className="max-w-[80%] rounded-2xl rounded-tl-sm px-4 py-3 text-xs leading-relaxed bg-primary/5 border border-primary/20 text-primary">
-              <p className="text-sm font-bold mb-0.5">{t('readyMsg', { level: level, label: t(`levels.${level}.th`) })}</p>
+              <p className="text-sm font-bold mb-0.5">{t('readyMsg', { level: '', label: '' }).replace(' —  ()', '')}</p>
               <p className="opacity-70 font-medium">{t('readySub')}</p>
             </div>
           </motion.div>
@@ -804,7 +598,7 @@ const ChatView = memo(({
                   <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 blur-2xl rounded-full translate-x-1/2 -translate-y-1/2" />
                   <Trophy size={36} className="drop-shadow-lg" />
                   <div className="relative z-10">
-                    <p className="font-black text-xl tracking-tight leading-none mb-1">{t('congrats', { level: level })}</p>
+                    <p className="font-black text-xl tracking-tight leading-none mb-1">{t('congrats', { level: '' }).replace(' Level ', '')}</p>
                     <p className="text-sm font-bold opacity-90">{t('congratsSub')}</p>
                   </div>
                 </div>
@@ -824,22 +618,12 @@ const ChatView = memo(({
                   className="flex-1 flex items-center justify-center gap-2.5 bg-white dark:bg-white/5 text-foreground hover:bg-secondary transition-all duration-300 px-6 py-3.5 rounded-xl font-bold text-sm border border-black/5 shadow-md active:scale-95"
                 >
                   <RotateCcw size={15} />
-                  {t('retryBtn', { level: level })}
+                  {t('retryBtn', { level: '' }).replace(' Level ', '')}
                 </button>
-                {level < 4 ? (
-                  <button
-                    onClick={() => onNextLevel((level + 1) as EvalLevel)}
-                    className="flex-1 flex items-center justify-center gap-2.5 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 px-6 py-3.5 rounded-xl font-bold text-sm shadow-xl shadow-primary/30 active:scale-95"
-                  >
-                    {t('nextLevelBtn', { level: level + 1 })}
-                    <ArrowRight size={15} />
-                  </button>
-                ) : (
-                  <div className="flex-1 flex items-center justify-center gap-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-3.5 rounded-xl font-bold text-sm shadow-xl shadow-emerald-500/20">
-                    <Trophy size={15} />
-                    {t('allCompleted')}
-                  </div>
-                )}
+                <div className="flex-1 flex items-center justify-center gap-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-3.5 rounded-xl font-bold text-sm shadow-xl shadow-emerald-500/20">
+                  <Trophy size={15} />
+                  {t('allCompleted')}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -917,7 +701,6 @@ ChatView.displayName = 'ChatView';
 
 export default function AiEvaluation() {
   const [step,           setStep]           = useState<Step>('intro');
-  const [level,          setLevel]          = useState<EvalLevel>(1);
   const [sessionId,      setSessionId]      = useState<string | null>(null);
   const [messages,       setMessages]       = useState<PitchMessage[]>([]);
   const [coaching,       setCoaching]       = useState<Map<number, CoachingData>>(new Map());
@@ -928,7 +711,7 @@ export default function AiEvaluation() {
   const [agentName,      setAgentName]      = useState<string | null>(null);
   const [passed,          setPassed]          = useState(false);
   const [completedLevels, setCompletedLevels] = useState<Set<number>>(new Set());
-  const [savedLevel,      setSavedLevel]      = useState<number | null>(null);
+  const [guideline,       setGuideline]       = useState<string | null>(null);
   const [error,           setError]           = useState<string | null>(null);
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -939,94 +722,63 @@ export default function AiEvaluation() {
     errorTimerRef.current = setTimeout(() => setError(null), 7000);
   }, []);
 
-  // Derived state
-  const inProgressLevel = useMemo(() => 
-    savedLevel && !completedLevels.has(savedLevel) ? savedLevel as EvalLevel : null, 
-  [savedLevel, completedLevels]);
-
   useEffect(() => {
+    // Fetch Guidelines from Admin Config — always runs regardless of session
+    fetch('/api/ai-eval/config', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.guideline) {
+          setGuideline(data.guideline);
+        } else {
+          setGuideline('AI customer will act as a Thai client. Handle objections professionally and try to close the sale.');
+        }
+      })
+      .catch(() => {
+        setGuideline('AI customer will act as a Thai client. Handle objections professionally and try to close the sale.');
+      });
+
     const session = getAgentSession();
     if (!session) return;
-    
+
     const id   = session.id;
     const name = session.name;
     setAgentId(id);
     setAgentName(name);
 
-    // UX initialization from localStorage
+    // UX initialization from localStorage (completed levels flag only)
     const localComp  = localStorage.getItem('brainstrade_eval_completed_levels');
-    const localSaved = localStorage.getItem('brainstrade_eval_saved_level');
     const localSet: Set<number> = localComp ? new Set(JSON.parse(localComp)) : new Set();
     if (localSet.size > 0) setCompletedLevels(localSet);
-    if (localSaved) {
-      const n = parseInt(localSaved, 10);
-      if (!localSet.has(n)) setSavedLevel(n);
-    }
-
-    let hasLocalSession = false;
-    try {
-      const raw = localStorage.getItem(AIEV_SESSION_KEY);
-      if (raw && id) {
-        const saved = JSON.parse(raw);
-        const age = Date.now() - (saved.savedAt ?? 0);
-        // Session valid for 24h
-        if (saved.agentId === id && saved.messages?.length > 0 && age < 24 * 60 * 60 * 1000) {
-          setSessionId(saved.sessionId);
-          setLevel(saved.level);
-          setMessages(saved.messages);
-          if (saved.customerProfile) setCustomerProfile(saved.customerProfile);
-          setStep('chat');
-          hasLocalSession = true;
-        } else {
-          localStorage.removeItem(AIEV_SESSION_KEY);
-        }
-      }
-    } catch {
-      localStorage.removeItem(AIEV_SESSION_KEY);
-    }
 
     if (id) {
-      // Sync from server (source of truth)
+      // Sync completed levels from server (source of truth)
       fetch(`/api/agent/progress?agentId=${id}`)
         .then(r => r.ok ? r.json() : null)
         .then(data => {
           if (!data) return;
-          const serverComp: number[] = data.evalCompletedLevels ?? [];
+          const serverComp: number[] = data.stats?.evalCompletedLevels ?? [];
           const merged = new Set([...localSet, ...serverComp]);
           setCompletedLevels(merged);
           localStorage.setItem('brainstrade_eval_completed_levels', JSON.stringify([...merged]));
-
-          const serverSaved: number | null = data.evalSavedLevel ?? null;
-          if (serverSaved && !merged.has(serverSaved)) {
-            setSavedLevel(serverSaved);
-            localStorage.setItem('brainstrade_eval_saved_level', String(serverSaved));
-          }
         })
         .catch(() => {});
 
-      if (!hasLocalSession) {
-        fetch(`/api/ai-eval/active?agentId=${id}`)
-          .then(r => r.ok ? r.json() : null)
-          .then(data => {
-            const s = data?.session;
-            if (s && s.messages?.length > 0) {
-              const age = Date.now() - (s.savedAt ?? 0);
-              if (age < 24 * 60 * 60 * 1000) {
-                setSessionId(s.sessionId);
-                setLevel(s.level);
-                setMessages(s.messages);
-                if (s.customerProfile) setCustomerProfile(s.customerProfile);
-                setStep('chat');
-                localStorage.setItem(AIEV_SESSION_KEY, JSON.stringify({
-                  agentId: id, sessionId: s.sessionId, level: s.level,
-                  messages: s.messages, savedAt: s.savedAt ?? Date.now(),
-                  customerProfile: s.customerProfile
-                }));
-              }
+      // Restore active session from server only
+      fetch(`/api/ai-eval/active?agentId=${id}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          const s = data?.session;
+          if (s && s.messages?.length > 0) {
+            const age = Date.now() - (s.savedAt ?? 0);
+            if (age < 24 * 60 * 60 * 1000) {
+              setSessionId(s.sessionId);
+              setMessages(s.messages);
+              if (s.customerProfile) setCustomerProfile(s.customerProfile);
+              setStep('chat');
             }
-          })
-          .catch(() => {});
-      }
+          }
+        })
+        .catch(() => {});
     }
   }, []);
 
@@ -1058,18 +810,9 @@ export default function AiEvaluation() {
       syncToServer({ evalCompletedLevels: [...next], evalSavedLevel: null });
       return next;
     });
-    localStorage.removeItem('brainstrade_eval_saved_level');
-    setSavedLevel(null);
   }, [syncToServer]);
 
-  const isLocked = useCallback((l: number) => {
-    if (l === 1) return false;
-    return !completedLevels.has(l - 1);
-  }, [completedLevels]);
-
-  const startSession = useCallback(async (overrideLevel?: EvalLevel) => {
-    const activeLevel = overrideLevel ?? level;
-    if (overrideLevel) setLevel(overrideLevel);
+  const startSession = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -1077,7 +820,7 @@ export default function AiEvaluation() {
       const res = await fetch('/api/ai-eval/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ level: activeLevel, agentId, agentName }),
+        body: JSON.stringify({ level: 1, agentId, agentName }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -1090,16 +833,14 @@ export default function AiEvaluation() {
       setCoaching(new Map());
       setPassed(false);
 
-      localStorage.setItem('brainstrade_eval_saved_level', String(activeLevel));
-      setSavedLevel(activeLevel);
-      syncToServer({ evalSavedLevel: activeLevel });
+      syncToServer({ evalSavedLevel: 1 });
 
-      // 2. Fetch the customer's opening line (picks up the call)
+      // 2. Fetch the customer's opening line
       try {
         const initRes = await fetch('/api/ai-eval', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId: sid, level: activeLevel, messages: [], agentId, agentName, isStart: true }),
+          body: JSON.stringify({ sessionId: sid, level: 1, messages: [], agentId, agentName, isStart: true }),
         });
         if (initRes.ok) {
           const initData = await initRes.json();
@@ -1109,7 +850,7 @@ export default function AiEvaluation() {
           if (initData.reply) {
             const openingMsg: PitchMessage = { role: 'assistant', content: initData.reply, timestamp: new Date() };
             setMessages([openingMsg]);
-            // Save to server so it's restored on page refresh
+            // Save to server
             if (agentId) {
               fetch('/api/ai-eval/active', {
                 method: 'POST',
@@ -1117,7 +858,7 @@ export default function AiEvaluation() {
                 body: JSON.stringify({ 
                   agentId, 
                   sessionId: sid, 
-                  level: activeLevel, 
+                  level: 1, 
                   messages: [openingMsg],
                   customerProfile: initData.customerProfile
                 }),
@@ -1126,7 +867,6 @@ export default function AiEvaluation() {
           }
         }
       } catch {
-        // Opening line is non-critical — user can still start typing
       }
 
       setStep('chat');
@@ -1136,13 +876,13 @@ export default function AiEvaluation() {
     } finally {
       setLoading(false);
     }
-  }, [level, agentId, agentName, syncToServer, showError]);
+  }, [agentId, agentName, syncToServer, showError]);
 
   const sendMessage = useCallback(async () => {
     if (!input.trim() || !sessionId || loading || passed) return;
     const userMsg: PitchMessage = { role: 'user', content: input, timestamp: new Date() };
     
-    // Sanitize existing messages before sending to backend to avoid "content: null" errors
+    // Sanitize existing messages
     const sanitizedHistory = messages.filter(m => m && typeof m.content === 'string' && m.content.length > 0);
     const newMessages = [...sanitizedHistory, userMsg];
     
@@ -1154,7 +894,7 @@ export default function AiEvaluation() {
       const res = await fetch('/api/ai-eval', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, level, messages: newMessages, agentId, agentName }),
+        body: JSON.stringify({ sessionId, level: 1, messages: newMessages, agentId, agentName }),
       });
       
       if (!res.ok) {
@@ -1175,7 +915,7 @@ export default function AiEvaluation() {
         setCustomerProfile(data.customerProfile);
       }
 
-      // Store coaching keyed by the assistant message index
+      // Store coaching
       if (data.coaching) {
         const assistantIndex = finalMessages.length - 1;
         setCoaching(prev => {
@@ -1187,26 +927,16 @@ export default function AiEvaluation() {
 
       if (data.passed) {
         setPassed(true);
-        markLevelCompleted(level);
-        localStorage.removeItem(AIEV_SESSION_KEY);
+        markLevelCompleted(1);
         if (agentId) fetch(`/api/ai-eval/active?agentId=${agentId}`, { method: 'DELETE' }).catch(() => {});
       } else if (sessionId && agentId) {
-        const snap = { 
-          agentId, 
-          sessionId, 
-          level, 
-          messages: finalMessages, 
-          savedAt: Date.now(),
-          customerProfile: data.customerProfile || customerProfile 
-        };
-        localStorage.setItem(AIEV_SESSION_KEY, JSON.stringify(snap));
         fetch('/api/ai-eval/active', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            agentId, 
-            sessionId, 
-            level, 
+          body: JSON.stringify({
+            agentId,
+            sessionId,
+            level: 1,
             messages: finalMessages,
             customerProfile: data.customerProfile || customerProfile
           }),
@@ -1214,17 +944,15 @@ export default function AiEvaluation() {
       }
     } catch (err: any) {
       console.error('Failed to send message', err);
-      // Rollback to before the user message so they can retry
       setMessages(messages);
       showError(err.message || 'Failed to get AI response. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, [input, sessionId, loading, passed, messages, level, agentId, agentName, markLevelCompleted, showError]);
+  }, [input, sessionId, loading, passed, messages, agentId, agentName, markLevelCompleted, showError, customerProfile]);
 
   const resetToSelect = useCallback((clearHistory = false) => {
     if (clearHistory) {
-      localStorage.removeItem(AIEV_SESSION_KEY);
       if (agentId) fetch(`/api/ai-eval/active?agentId=${agentId}`, { method: 'DELETE' }).catch(() => {});
     }
     setSessionId(null);
@@ -1232,13 +960,8 @@ export default function AiEvaluation() {
     setCoaching(new Map());
     setCustomerProfile(null);
     setPassed(false);
-    setStep('select');
+    setStep('intro');
   }, [agentId]);
-
-  const handleContinueIntro = useCallback((l?: EvalLevel) => { 
-    if (l) setLevel(l); 
-    setStep('select'); 
-  }, []);
 
   const handleUseScript = useCallback((text: string) => {
     setInput(text);
@@ -1252,20 +975,8 @@ export default function AiEvaluation() {
       {step === 'intro' ? (
         <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={TRANSITION.base}>
           <IntroView 
-            onContinue={handleContinueIntro} 
-            inProgressLevel={inProgressLevel} 
-          />
-        </motion.div>
-      ) : step === 'select' ? (
-        <motion.div key="select" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={TRANSITION.base}>
-          <SelectionView
-            level={level}
-            setLevel={setLevel}
-            onStart={startSession}
-            onShowIntro={() => setStep('intro')}
-            isLocked={isLocked}
-            completedLevels={completedLevels}
-            inProgressLevel={inProgressLevel}
+            onContinue={startSession} 
+            guideline={guideline}
             agentName={agentName}
             loading={loading}
           />
@@ -1273,7 +984,6 @@ export default function AiEvaluation() {
       ) : (
         <motion.div key="chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={TRANSITION.base}>
           <ChatView
-            level={level}
             messages={messages}
             coaching={coaching}
             customerProfile={customerProfile}
@@ -1284,10 +994,6 @@ export default function AiEvaluation() {
             error={error}
             onSend={sendMessage}
             onReset={resetToSelect}
-            onNextLevel={(next) => {
-              setLevel(next);
-              resetToSelect(true);
-            }}
             onClearError={() => setError(null)}
             onUseScript={handleUseScript}
             bottomRef={bottomRef}

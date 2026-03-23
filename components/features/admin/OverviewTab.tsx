@@ -261,7 +261,7 @@ export default function OverviewTab() {
               </div>
             </div>
 
-            {/* AI Eval — per-level breakdown */}
+            {/* AI Eval — unified status */}
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Zap size={15} className="text-purple-400" />
@@ -272,28 +272,14 @@ export default function OverviewTab() {
                 </span>
               </div>
               <div className="space-y-2.5 pl-5 border-l-2 border-purple-400/20">
-                {([1, 2, 3, 4] as const).map(lv => {
-                  const agents        = data.leaderboard.filter(a => a.aiEval?.levels?.[lv]);
-                  const passedAgents  = agents.filter(a => a.aiEval?.levels?.[lv]?.passed);
-                  const stuckAgents   = agents.filter(a => !a.aiEval?.levels?.[lv]?.passed);
-                  const avgScore      = agents.length > 0
-                    ? Math.round(agents.reduce((s, a) => s + (a.aiEval?.levels?.[lv]?.avgScore ?? 0), 0) / agents.length)
-                    : 0;
-                  const passRate      = data.totalAgents > 0 ? Math.round(passedAgents.length / data.totalAgents * 100) : 0;
+                {(() => {
+                  const passedAgents = data.leaderboard.filter(a => (a.evalCompletedLevels ?? []).length > 0);
+                  const passRate     = data.totalAgents > 0 ? Math.round(passedAgents.length / data.totalAgents * 100) : 0;
                   return (
-                    <div key={lv} className="space-y-1">
+                    <div className="space-y-1">
                       <div className="flex justify-between text-xs">
-                        <div className="flex items-center gap-2">
-                          <span className={`w-5 h-5 rounded text-[10px] font-black flex items-center justify-center shrink-0 ${passedAgents.length > 0 ? 'bg-purple-500/15 text-purple-400' : 'bg-secondary text-muted-foreground/50'}`}>
-                            {lv}
-                          </span>
-                          <span className="text-muted-foreground">{t('overview.aiEvalLevel', { lv })}</span>
-                        </div>
+                        <span className="text-muted-foreground">Evaluation Status</span>
                         <div className="flex items-center gap-3">
-                          {stuckAgents.length > 0 && (
-                            <span className="text-amber-400 text-[10px]">{t('overview.aiEvalStuck', { count: stuckAgents.length })}</span>
-                          )}
-                          {avgScore > 0 && <span className={scoreColor(avgScore)}>{t('overview.avgScore', { score: avgScore })}</span>}
                           <span className={`font-bold ${scoreColor(passRate)}`}>{t('overview.passCount', { count: passedAgents.length, total: data.totalAgents })}</span>
                         </div>
                       </div>
@@ -303,7 +289,7 @@ export default function OverviewTab() {
                       </div>
                     </div>
                   );
-                })}
+                })()}
               </div>
             </div>
 

@@ -50,8 +50,7 @@ export async function POST(req: NextRequest) {
 
     const saved = await fsSet('agent_progress', agentId, merged);
 
-    const evalDone  = merged.evalCompletedLevels.length >= 4 &&
-      [1, 2, 3, 4].every(l => merged.evalCompletedLevels.includes(l));
+    const evalDone = merged.evalCompletedLevels.length > 0;
 
     if (evalDone) {
       await Promise.allSettled([

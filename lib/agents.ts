@@ -17,9 +17,10 @@ export function computeOverallScore(stats: Omit<AgentStats, 'overallScore' | 'ba
   const avgQuiz       = quizScores.reduce((a, b) => a + b, 0) / MODULES.length;
   const aiEval        = stats.aiEval?.avgScore ?? 0;
   
-  // Eval: completed levels out of 4 (Human Eval)
+  // Eval: completed levels (Legacy 4-level or New 1-level)
   const evalLevels    = stats.evalCompletedLevels ?? [];
-  const evalScore     = evalLevels.length > 0 ? (evalLevels.length / 4) * 100 : aiEval;
+  // If they passed at least one level, we consider the evaluation as done (100%)
+  const evalScore     = evalLevels.length > 0 ? 100 : aiEval;
   
   // New Weighting: Quiz 40%, Human Eval 30%, AI Eval 30%
   return Math.round(avgQuiz * 0.4 + evalScore * 0.3 + aiEval * 0.3);
@@ -78,26 +79,21 @@ type LevelData = { attempts: number; avgScore: number; bestScore: number; passed
 function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
   if (evals.length === 0) return null;
 
-  // Per-level breakdown
-  const levels: Record<number, LevelData> = {};
-  for (const lv of [1, 2, 3, 4]) {
-    const lvEvals = evals.filter(e => (e.level || 1) === lv);
-    if (lvEvals.length === 0) continue;
-    const sorted = [...lvEvals].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
-    levels[lv] = {
-      attempts:      lvEvals.length,
-      avgScore:      Math.round(lvEvals.reduce((s, e) => s + e.score, 0) / lvEvals.length),
-      bestScore:     Math.max(...lvEvals.map(e => e.score)),
-      passed:        lvEvals.some(e => e.passed),
-      lastTimestamp: sorted[sorted.length - 1].timestamp,
-    };
-  }
+  const sorted = [...evals].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
 
   return {
     avgScore: Math.round(evals.reduce((s, e) => s + e.score, 0) / evals.length),
     count:    evals.length,
     history:  evals.map(e => ({ score: e.score, level: e.level || 1, passed: e.passed || false, timestamp: e.timestamp })),
-    levels,
+    levels: {
+      1: {
+        attempts:      evals.length,
+        avgScore:      Math.round(evals.reduce((s, e) => s + e.score, 0) / evals.length),
+        bestScore:     Math.max(...evals.map(e => e.score)),
+        passed:        evals.some(e => e.passed),
+        lastTimestamp: sorted[sorted.length - 1].timestamp,
+      }
+    },
   };
 }
 
