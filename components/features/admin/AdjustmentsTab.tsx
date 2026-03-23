@@ -94,7 +94,7 @@ export default function AdjustmentsTab() {
       </div>
 
       <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
-        {activeTab === 'learn' && <LearnEditor data={configs.learn} onSave={(data) => handleSave('learn', data)} saving={saving} />}
+        {activeTab === 'learn' && <LearnEditor data={configs.learn} onSave={(data) => handleSave('learn', data)} onRefresh={loadConfigs} saving={saving} />}
         {activeTab === 'quizzes' && <QuizzesEditor data={configs.quizzes} onSave={(data) => handleSave('quizzes', data)} saving={saving} />}
         {activeTab === 'ai-eval' && <AiEvalEditor data={configs.ai_eval} onSave={(data) => handleSave('ai_eval', data)} saving={saving} />}
       </div>
@@ -324,10 +324,32 @@ const LEARN_DEFAULT_MODULES: Record<string, any> = {
   website: { id: 'website', title: 'Website', titleTh: 'เว็บไซต์', description: 'Platform walkthrough.', descriptionTh: 'แนะนำแพลตฟอร์ม', gradient: 'from-violet-600 to-purple-700', presentations: { th: { presentationId: '', slideUrls: [], totalSlides: 0 }, en: { presentationId: '', slideUrls: [], totalSlides: 0 } } },
 };
 
-function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => void, saving: boolean }) {
+function LearnEditor({ data, onSave, onRefresh, saving }: { data: any, onSave: (d: any) => void, onRefresh: () => void, saving: boolean }) {
   const [modules, setModules] = useState<any>(data?.modules && Object.keys(data.modules).length > 0 ? data.modules : LEARN_DEFAULT_MODULES);
+  const [order, setOrder] = useState<string[]>(data?.order || Object.keys(modules));
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<Record<string, 'idle' | 'loading' | 'done' | 'error'>>({});
+
+  // Synchronize order when modules change (e.g. if a new one is added but not in order yet)
+  useEffect(() => {
+    const moduleIds = Object.keys(modules);
+    const newOrder = [...order];
+    let changed = false;
+
+    // Add missing IDs
+    moduleIds.forEach(id => {
+      if (!newOrder.includes(id)) {
+        newOrder.push(id);
+        changed = true;
+      }
+    });
+
+    // Remove deleted IDs
+    const filteredOrder = newOrder.filter(id => modules[id]);
+    if (filteredOrder.length !== newOrder.length) changed = true;
+
+    if (changed) setOrder(filteredOrder);
+  }, [modules, order]);
 
   const ensureFirebaseSession = async () => {
     if (auth.currentUser) return;
@@ -340,6 +362,15 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
     } catch (err) {
       console.error('Failed to re-sync Firebase session:', err);
     }
+  };
+
+  const moveModule = (idx: number, direction: 'up' | 'down') => {
+    const newOrder = [...order];
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= newOrder.length) return;
+    
+    [newOrder[idx], newOrder[targetIdx]] = [newOrder[targetIdx], newOrder[idx]];
+    setOrder(newOrder);
   };
 
   const handleFileUpload = async (moduleId: string, lang: 'en' | 'th', files: FileList) => {
@@ -365,6 +396,11 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
       const trimmed = value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
       if (!trimmed || trimmed === id || modules[trimmed]) return;
       const updated = { ...modules }; updated[trimmed] = { ...updated[id], id: trimmed }; delete updated[id];
+      
+      // Update order as well
+      const newOrder = order.map(o => o === id ? trimmed : o);
+      setOrder(newOrder);
+      
       setModules(updated); setEditingId(trimmed); return;
     }
     setModules((prev: any) => {
@@ -382,16 +418,85 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
     });
   };
 
+  const handleAddModule = () => {
+    const id = `module_${Date.now()}`;
+    const newModule = { 
+      id, 
+      title: 'New Course', 
+      titleTh: 'คอร์สใหม่', 
+      description: 'Course description.', 
+      descriptionTh: 'คำอธิบายคอร์ส', 
+      gradient: 'from-gray-600 to-slate-700', 
+      presentations: { 
+        th: { presentationId: '', slideUrls: [], totalSlides: 0 }, 
+        en: { presentationId: '', slideUrls: [], totalSlides: 0 } 
+      } 
+    };
+    setModules({ ...modules, [id]: newModule });
+    setOrder([...order, id]);
+    setEditingId(id);
+  };
+
+  const handleDeleteModule = (id: string) => {
+    if (confirm(`Delete course ${id}?`)) {
+      const updated = { ...modules };
+      delete updated[id];
+      setModules(updated);
+      setOrder(order.filter(o => o !== id));
+      if (editingId === id) setEditingId(null);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center"><h3 className="font-bold flex items-center gap-2 text-blue-600"><BookOpen size={18} /> Learn Courses</h3><button onClick={() => onSave({ ...data, modules })} className="bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold flex items-center gap-2"><Save size={16} /> Save Changes</button></div>
-      <div className="grid grid-cols-3 gap-4">
-        {Object.entries(modules).map(([id, mod]: [string, any]) => (
-          <div key={id} className={`p-4 rounded-2xl border ${editingId === id ? 'border-primary bg-primary/5' : 'border-border bg-secondary/10'}`}>
-            <div className="flex justify-between items-center mb-2"><span className="text-[10px] font-bold uppercase opacity-50">{id}</span><button onClick={() => setEditingId(editingId === id ? null : id)} className="text-primary"><Edit3 size={16} /></button></div>
-            <h4 className="font-bold truncate">{mod.title}</h4>
-          </div>
-        ))}
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-4">
+          <h3 className="font-bold flex items-center gap-2 text-blue-600"><BookOpen size={18} /> Learn Courses</h3>
+          <button onClick={handleAddModule} className="bg-secondary/50 hover:bg-secondary px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors">
+            <Plus size={14} /> Add Module
+          </button>
+        </div>
+        <button onClick={() => onSave({ ...data, modules, order })} className="bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold flex items-center gap-2"><Save size={16} /> Save Changes</button>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {order.map((id, idx) => {
+          const mod = modules[id];
+          if (!mod) return null;
+          return (
+            <div key={id} className={`p-4 rounded-2xl border transition-all ${editingId === id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-secondary/10'}`}>
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold uppercase opacity-50 tracking-tighter">{id}</span>
+                  <div className="flex items-center gap-1 mt-1">
+                    <button 
+                      disabled={idx === 0}
+                      onClick={(e) => { e.stopPropagation(); moveModule(idx, 'up'); }}
+                      className="p-1 rounded bg-black/5 hover:bg-black/10 disabled:opacity-20"
+                    >
+                      <ChevronDown size={12} className="rotate-180" />
+                    </button>
+                    <button 
+                      disabled={idx === order.length - 1}
+                      onClick={(e) => { e.stopPropagation(); moveModule(idx, 'down'); }}
+                      className="p-1 rounded bg-black/5 hover:bg-black/10 disabled:opacity-20"
+                    >
+                      <ChevronDown size={12} />
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button onClick={() => setEditingId(editingId === id ? null : id)} className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors">
+                    <Edit3 size={16} />
+                  </button>
+                  <button onClick={() => handleDeleteModule(id)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-red-500 transition-colors">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+              <h4 className="font-bold truncate text-sm">{mod.title}</h4>
+            </div>
+          );
+        })}
       </div>
       {editingId && (
         <div className="p-6 rounded-2xl border border-primary/20 bg-card space-y-6">
@@ -417,13 +522,87 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase opacity-50 px-1">Storage Slides</label>
                 <input type="file" id="up-en" className="hidden" multiple accept="image/*" onChange={e => e.target.files && handleFileUpload(editingId, 'en', e.target.files)} />
-                <button onClick={() => document.getElementById('up-en')?.click()} className="w-full py-4 rounded-xl border border-primary/30 bg-primary/10 text-xs font-bold text-primary flex items-center justify-center gap-2">
-                  {uploadStatus[`${editingId}_en`] === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} Upload Slide PNGs (EN)
-                </button>
+                <div className="flex gap-2">
+                  <button onClick={() => document.getElementById('up-en')?.click()} className="flex-1 py-4 rounded-xl border border-primary/30 bg-primary/10 text-xs font-bold text-primary flex items-center justify-center gap-2">
+                    {uploadStatus[`${editingId}_en`] === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} Upload PNGs
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const key = `${editingId}_en_auto`;
+                      setUploadStatus(prev => ({ ...prev, [key]: 'loading' }));
+                      try {
+                        const res = await fetch('/api/admin/export-slides', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ moduleId: editingId, lang: 'en' })
+                        });
+                        const result = await res.json();
+                        if (res.ok) {
+                          alert(`Successfully exported ${result.count} slides.`);
+                          onRefresh();
+                        } else throw new Error(result.error);
+                      } catch (err: any) { alert(err.message); }
+                      finally { setUploadStatus(prev => ({ ...prev, [key]: 'idle' })); }
+                    }}
+                    className="flex-1 py-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs font-bold text-amber-600 flex items-center justify-center gap-2"
+                  >
+                    {uploadStatus[`${editingId}_en_auto`] === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />} Auto Export
+                  </button>
+                </div>
                 {modules[editingId].presentations.en.slideUrls?.length > 0 && (
-                  <div className="flex items-center justify-between px-1">
-                    <p className="text-[10px] text-emerald-600 font-bold">{modules[editingId].presentations.en.slideUrls.length} Slides Uploaded</p>
-                    <button onClick={() => handleUpdateModule(editingId, 'presentations.en.slideUrls', [])} className="text-[10px] text-red-500 font-bold hover:underline">Clear</button>
+                  <div className="space-y-2 px-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] text-emerald-600 font-bold">{modules[editingId].presentations.en.slideUrls.length} Slides Uploaded</p>
+                      <button onClick={() => handleUpdateModule(editingId, 'presentations.en.slideUrls', [])} className="text-[10px] text-red-500 font-bold hover:underline">Clear All</button>
+                    </div>
+                    <div className="grid grid-cols-5 gap-1 max-h-40 overflow-y-auto p-1 bg-black/5 rounded-lg">
+                      {modules[editingId].presentations.en.slideUrls.map((url: string, sIdx: number) => (
+                        <div key={sIdx} className="relative group aspect-video bg-black/20 rounded border border-white/10 overflow-hidden">
+                          <img src={url} className="w-full h-full object-cover" alt="" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-0.5">
+                            <button 
+                              disabled={sIdx === 0}
+                              onClick={() => {
+                                const urls = [...modules[editingId].presentations.en.slideUrls];
+                                [urls[sIdx], urls[sIdx-1]] = [urls[sIdx-1], urls[sIdx]];
+                                handleUpdateModule(editingId, 'presentations.en.slideUrls', urls);
+                              }}
+                              className="p-0.5 bg-white/20 hover:bg-white/40 rounded disabled:opacity-20"
+                            >
+                              <ChevronDown size={10} className="rotate-180 text-white" />
+                            </button>
+                            <button 
+                              onClick={() => {
+                                if (confirm('Delete this slide?')) {
+                                  const urls = modules[editingId].presentations.en.slideUrls.filter((_: any, i: number) => i !== sIdx);
+                                  setModules((prev: any) => {
+                                    const mod = { ...prev[editingId] };
+                                    mod.presentations = { ...mod.presentations };
+                                    mod.presentations.en = { ...mod.presentations.en, slideUrls: urls, totalSlides: urls.length };
+                                    return { ...prev, [editingId]: mod };
+                                  });
+                                }
+                              }}
+                              className="p-0.5 bg-red-500/40 hover:bg-red-500/60 rounded"
+                            >
+                              <Trash2 size={10} className="text-white" />
+                            </button>
+                            <button 
+                              disabled={sIdx === modules[editingId].presentations.en.slideUrls.length - 1}
+                              onClick={() => {
+                                const urls = [...modules[editingId].presentations.en.slideUrls];
+                                [urls[sIdx], urls[sIdx+1]] = [urls[sIdx+1], urls[sIdx]];
+                                handleUpdateModule(editingId, 'presentations.en.slideUrls', urls);
+                              }}
+                              className="p-0.5 bg-white/20 hover:bg-white/40 rounded disabled:opacity-20"
+                            >
+                              <ChevronDown size={10} className="text-white" />
+                            </button>
+                          </div>
+                          <span className="absolute bottom-0 right-0 bg-black/60 text-[8px] text-white px-0.5 font-bold">{sIdx + 1}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -439,13 +618,87 @@ function LearnEditor({ data, onSave, saving }: { data: any, onSave: (d: any) => 
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase opacity-50 px-1">Storage Slides</label>
                 <input type="file" id="up-th" className="hidden" multiple accept="image/*" onChange={e => e.target.files && handleFileUpload(editingId, 'th', e.target.files)} />
-                <button onClick={() => document.getElementById('up-th')?.click()} className="w-full py-4 rounded-xl border border-primary/30 bg-primary/10 text-xs font-bold text-primary flex items-center justify-center gap-2">
-                  {uploadStatus[`${editingId}_th`] === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} Upload Slide PNGs (TH)
-                </button>
+                <div className="flex gap-2">
+                  <button onClick={() => document.getElementById('up-th')?.click()} className="flex-1 py-4 rounded-xl border border-primary/30 bg-primary/10 text-xs font-bold text-primary flex items-center justify-center gap-2">
+                    {uploadStatus[`${editingId}_th`] === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />} Upload PNGs
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const key = `${editingId}_th_auto`;
+                      setUploadStatus(prev => ({ ...prev, [key]: 'loading' }));
+                      try {
+                        const res = await fetch('/api/admin/export-slides', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ moduleId: editingId, lang: 'th' })
+                        });
+                        const result = await res.json();
+                        if (res.ok) {
+                          alert(`Successfully exported ${result.count} slides.`);
+                          onRefresh();
+                        } else throw new Error(result.error);
+                      } catch (err: any) { alert(err.message); }
+                      finally { setUploadStatus(prev => ({ ...prev, [key]: 'idle' })); }
+                    }}
+                    className="flex-1 py-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs font-bold text-amber-600 flex items-center justify-center gap-2"
+                  >
+                    {uploadStatus[`${editingId}_th_auto`] === 'loading' ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />} Auto Export
+                  </button>
+                </div>
                 {modules[editingId].presentations.th.slideUrls?.length > 0 && (
-                  <div className="flex items-center justify-between px-1">
-                    <p className="text-[10px] text-emerald-600 font-bold">{modules[editingId].presentations.th.slideUrls.length} Slides Uploaded</p>
-                    <button onClick={() => handleUpdateModule(editingId, 'presentations.th.slideUrls', [])} className="text-[10px] text-red-500 font-bold hover:underline">Clear</button>
+                  <div className="space-y-2 px-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] text-emerald-600 font-bold">{modules[editingId].presentations.th.slideUrls.length} Slides Uploaded</p>
+                      <button onClick={() => handleUpdateModule(editingId, 'presentations.th.slideUrls', [])} className="text-[10px] text-red-500 font-bold hover:underline">Clear All</button>
+                    </div>
+                    <div className="grid grid-cols-5 gap-1 max-h-40 overflow-y-auto p-1 bg-black/5 rounded-lg">
+                      {modules[editingId].presentations.th.slideUrls.map((url: string, sIdx: number) => (
+                        <div key={sIdx} className="relative group aspect-video bg-black/20 rounded border border-white/10 overflow-hidden">
+                          <img src={url} className="w-full h-full object-cover" alt="" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-0.5">
+                            <button 
+                              disabled={sIdx === 0}
+                              onClick={() => {
+                                const urls = [...modules[editingId].presentations.th.slideUrls];
+                                [urls[sIdx], urls[sIdx-1]] = [urls[sIdx-1], urls[sIdx]];
+                                handleUpdateModule(editingId, 'presentations.th.slideUrls', urls);
+                              }}
+                              className="p-0.5 bg-white/20 hover:bg-white/40 rounded disabled:opacity-20"
+                            >
+                              <ChevronDown size={10} className="rotate-180 text-white" />
+                            </button>
+                            <button 
+                              onClick={() => {
+                                if (confirm('Delete this slide?')) {
+                                  const urls = modules[editingId].presentations.th.slideUrls.filter((_: any, i: number) => i !== sIdx);
+                                  setModules((prev: any) => {
+                                    const mod = { ...prev[editingId] };
+                                    mod.presentations = { ...mod.presentations };
+                                    mod.presentations.th = { ...mod.presentations.th, slideUrls: urls, totalSlides: urls.length };
+                                    return { ...prev, [editingId]: mod };
+                                  });
+                                }
+                              }}
+                              className="p-0.5 bg-red-500/40 hover:bg-red-500/60 rounded"
+                            >
+                              <Trash2 size={10} className="text-white" />
+                            </button>
+                            <button 
+                              disabled={sIdx === modules[editingId].presentations.th.slideUrls.length - 1}
+                              onClick={() => {
+                                const urls = [...modules[editingId].presentations.th.slideUrls];
+                                [urls[sIdx], urls[sIdx+1]] = [urls[sIdx+1], urls[sIdx]];
+                                handleUpdateModule(editingId, 'presentations.th.slideUrls', urls);
+                              }}
+                              className="p-0.5 bg-white/20 hover:bg-white/40 rounded disabled:opacity-20"
+                            >
+                              <ChevronDown size={10} className="text-white" />
+                            </button>
+                          </div>
+                          <span className="absolute bottom-0 right-0 bg-black/60 text-[8px] text-white px-0.5 font-bold">{sIdx + 1}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
