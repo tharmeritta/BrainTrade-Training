@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "presentation_sync": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}
