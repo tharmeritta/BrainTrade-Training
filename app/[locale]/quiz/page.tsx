@@ -24,6 +24,15 @@ const SECTION_2: ModuleDef[] = [
   { id: 'payment',  icon: CreditCard,  color: '#60A5FA', glow: 'rgba(96,165,250,0.12)'  },
 ];
 
+// Framer Motion has trouble animating CSS variables like hsl(var(--border)).
+// Using literal colors ensures smooth transitions.
+const C = {
+  border: 'rgba(0,0,0,0.1)',
+  card:   'rgba(255,255,255,0.8)',
+  muted:  'rgba(0,0,0,0.05)',
+  mutedFg: 'rgba(0,0,0,0.4)',
+};
+
 function isModuleLocked(m: ModuleDef, i: number, section: ModuleDef[], passed: Set<string>): boolean {
   // Cross-section prerequisite (e.g. product requires foundation)
   if (m.prereq && !passed.has(m.prereq)) return true;
@@ -58,9 +67,9 @@ function PrereqConnector({ prereqTitle, unlocked }: { prereqTitle: string; unloc
       <div
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-semibold transition-colors duration-300"
         style={{
-          borderColor: unlocked ? 'rgba(34,197,94,0.4)' : 'var(--border)',
-          background:   unlocked ? 'rgba(34,197,94,0.07)' : 'var(--muted)',
-          color:        unlocked ? '#16a34a' : 'var(--muted-foreground)',
+          borderColor: unlocked ? 'rgba(34,197,94,0.4)' : C.border,
+          background:   unlocked ? 'rgba(34,197,94,0.07)' : C.muted,
+          color:        unlocked ? '#16a34a' : C.mutedFg,
         }}
       >
         {unlocked ? <CheckCircle2 size={11} /> : <Lock size={11} />}
@@ -102,8 +111,8 @@ function ModuleCard({
       disabled={locked}
       className="w-full flex items-center gap-4 p-5 rounded-2xl border-2 text-left transition-all group relative overflow-hidden"
       style={{
-        borderColor: passed ? m.color + '50' : 'var(--border)',
-        background:  passed ? m.glow        : locked ? 'transparent' : 'var(--card)',
+        borderColor: passed ? m.color + '50' : C.border,
+        background:  passed ? m.glow        : locked ? 'transparent' : C.card,
         opacity:     locked ? 0.55          : 1,
         cursor:      locked ? 'not-allowed' : 'pointer',
       }}
@@ -118,7 +127,7 @@ function ModuleCard({
         className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
         style={{
           background: locked ? 'transparent' : m.glow,
-          border: `1px solid ${locked ? 'var(--border)' : m.color + '30'}`,
+          border: `1px solid ${locked ? C.border : m.color + '30'}`,
         }}
       >
         {locked

@@ -7,6 +7,7 @@
  */
 
 import { getAdminDb } from '@/lib/firebase-admin';
+import crypto from 'crypto';
 
 // ── Add (auto-id) ──────────────────────────────────────────────────────────
 

@@ -4,6 +4,24 @@ import { fsAdd } from '@/lib/firestore-db';
 import { getAdminDb } from '@/lib/firebase-admin';
 import type { PitchMessage } from '@/types';
 
+/* ─── Coaching shape ────────────────────────────────────────────────────────── */
+
+interface CoachingData {
+  score: number;
+  criteria?: {
+    rapport: number;
+    objectionHandling: number;
+    credibility: number;
+    closing: number;
+    naturalness: number;
+  };
+  strengths: string;
+  improvements: string;
+  coachingScript: string;
+  coachingTip: string;
+  metadata?: Record<string, any>; // For dynamic/extra fields
+}
+
 /* ─── System Prompt ─────────────────────────────────────────────────────────── */
 // IMPORTANT: This prompt uses response_format: json_object.
 // Any custom prompt stored in Firestore must also follow the JSON schema below.
@@ -34,35 +52,44 @@ Level 4 – ลูกค้ากดดัน/ทดสอบ
 ตอบกลับทุกครั้งในรูปแบบ JSON object เท่านั้น ใช้ schema นี้เสมอ:
 
 {
-  "customerLine": "บทพูดของลูกค้า สั้น กระชับ เป็นธรรมชาติแบบคนไทย",
-  "score": คะแนนรวม 1-10,
-  "strengths": "จุดดีของเซลล์ในรอบนี้ อธิบายกระชับ",
-  "improvements": "สิ่งที่เซลล์ต้องปรับปรุงทันที อธิบายกระชับ",
-  "coachingScript": "ตัวอย่างประโยคที่เซลล์ควรพูดในสถานการณ์นี้ เขียนเป็นประโยคเต็มที่ใช้ได้จริง",
-  "coachingTip": "ชื่อเทคนิคและวิธีประยุกต์ใช้กับลูกค้าแบบนี้โดยเฉพาะ",
+  "Customer": {
+    "Name": "ชื่อเล่นลูกค้า",
+    "Occupation": "อาชีพ",
+    "Age": อายุ (ตัวเลข),
+    "Mood": "อารมณ์ปัจจุบัน (เช่น หงุดหงิด, สนใจ, ลังเล, พอใจ)"
+  },
+  "Objective": "วัตถุประสงค์สั้นๆ ของลูกค้าในรอบนี้",
+  "Dialogue": "บทพูดของลูกค้า สั้น กระชับ เป็นธรรมชาติแบบคนไทย",
+  "Score": คะแนนรวม 1-10,
+  "Criteria": {
+    "rapport": 1-10,
+    "objectionHandling": 1-10,
+    "credibility": 1-10,
+    "closing": 1-10,
+    "naturalness": 1-10
+  },
+  "Strengths": "จุดเด่นของเซลล์ในรอบนี้",
+  "Improvements": "สิ่งที่เซลล์ต้องปรับปรุงทันที",
+  "CoachingScript": "ตัวอย่างประโยคที่เซลล์ควรพูดในสถานการณ์นี้",
+  "CoachingTip": "ชื่อเทคนิคและวิธีประยุกต์ใช้",
+  "BuyingSignal": "สัญญาณการซื้อที่พบ (ถ้ามี) หรือประเมินว่าใกล้ปิดการขายได้กี่ %",
   "passed": true หรือ false
 }
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-กติกาการให้คะแนน (score):
-ประเมิน 5 ด้านรวมกัน ได้แก่ การสร้างความสัมพันธ์ / การรับมือข้อโต้แย้ง / ความน่าเชื่อถือ / การนำไปสู่การปิดการขาย / ความเป็นธรรมชาติแบบภาษาไทย
-score >= 7 → passed = true
-score < 7  → passed = false
+กติกาการให้คะแนน:
+ประเมิน 5 ด้านใน Criteria (Rapport, Objection Handling, Credibility, Closing, Naturalness)
+- score >= 7 → passed = true
+- score < 7  → passed = false
 
-กติกาการเขียน customerLine:
+กติกาการเขียน Dialogue:
 - ภาษาที่ใช้: ภาษาไทยที่เป็นกันเอง สมจริง ไม่เป็นทางการเกินไป
-- ถ้า passed = true → customerLine = "[ประโยคสรุปจบจากลูกค้าแบบยอมรับข้อเสนอ] 🎉 ผ่าน Level [ระบุเลข] แล้ว!"
+- ถ้า passed = true → Dialogue = "[ประโยคสรุปจบจากลูกค้าแบบยอมรับข้อเสนอ] 🎉 ผ่าน Level [ระบุเลข] แล้ว!"
 - ถ้า passed = false → พูดเป็นลูกค้าต่อ เพิ่มความกดดันหรือข้อสงสัยขึ้นเล็กน้อยจากรอบที่แล้ว
 
-กติกา coachingScript และ coachingTip:
-- ถ้า score <= 4: coachingScript ต้องเป็นประโยคเต็มที่ใช้ได้จริงทันที อย่างน้อย 1 ประโยค
-- ถ้า score >= 8: coachingTip ให้เป็นเทคนิคขั้นสูงที่ช่วยพัฒนาเพิ่มเติม
-- coachingTip ควรอ้างชื่อเทคนิคจริง เช่น WIIFM, Mirror & Bridge, Feel-Felt-Found, Assumptive Close ฯลฯ
-
 ข้อห้ามเด็ดขาด:
-- ห้ามพูดในฐานะครูฝึก เทรนเนอร์ หรือ AI ใน customerLine
-- ห้ามให้คะแนน 0 หรือ null
+- ห้ามพูดในฐานะครูฝึก เทรนเนอร์ หรือ AI ใน Dialogue
 - ห้ามตอบนอก JSON schema`;
 
 /* ─── Prompt loader ─────────────────────────────────────────────────────────── */
@@ -78,16 +105,6 @@ async function loadFullConfig(): Promise<any> {
     console.error('Firestore AI eval config load error:', err);
   }
   return { systemPrompt: FALLBACK_SYSTEM_PROMPT };
-}
-
-/* ─── Coaching shape ────────────────────────────────────────────────────────── */
-
-export interface CoachingData {
-  score: number;
-  strengths: string;
-  improvements: string;
-  coachingScript: string;
-  coachingTip: string;
 }
 
 /* ─── POST handler ──────────────────────────────────────────────────────────── */
@@ -117,32 +134,20 @@ export async function POST(req: NextRequest) {
       ? [{ role: 'user' as const, content: '[ลูกค้ารับสาย — เริ่มต้นบทสนทนา]' }]
       : sanitizedMessages;
 
-    const agentNameContext = agentName ? `\nคุณกำลังคุยกับพนักงานชื่อ: ${agentName}` : '';
+    const agentNameContext = agentName ? `\n\n[Context]\nชื่อพนักงานขายที่โทรมาคือ: ${agentName}\n**ห้าม** คุณแอบอ้างว่าชื่อนี้เด็ดขาด คุณคือลูกค้า!` : '';
 
-    // For the opening line, instruct the AI to just say a greeting — no scoring.
-    const startHint = isStart && sanitizedMessages.length === 0
-      ? '\n\nหมายเหตุ: นี่คือจุดเริ่มต้น ลูกค้าเพิ่งรับสาย ให้ customerLine เป็นประโยครับสายสั้นๆ เป็นธรรมชาติ (เช่น "ฮัลโหล?" หรือ "สวัสดีค่ะ มีอะไรไหม?") ให้ score = 5, passed = false, strengths/improvements/coachingScript/coachingTip = ""'
-      : '';
-
-    // OpenAI's json_object format MANDATES that the word "json" appears in the prompt.
-    // We append a safety instruction to ensure this requirement is always met.
-    const jsonSafety = '\n\nIMPORTANT: You must respond with a valid JSON object.';
-
-    // OpenAI requires the first non-system message to be from 'user'.
-    // If the conversation starts with the AI's opening greeting (assistant role),
-    // prepend a silent trigger so the role ordering is valid.
-    const messagesForOpenAI = windowedMessages.map((m: PitchMessage) => ({
-      role: m.role as 'user' | 'assistant',
-      content: m.content,
-    }));
-    if (messagesForOpenAI.length > 0 && messagesForOpenAI[0].role === 'assistant') {
-      messagesForOpenAI.unshift({ role: 'user', content: '[สาย]' });
-    }
+    // Final Role Enforcement Safety
+    const roleEnforcement = `\n\n[Strict Rules]
+1. You are the CUSTOMER (ลูกค้า).
+2. You are NOT the Agent (เอเจนต์/พนักงานขาย).
+3. Do NOT use the name "${agentName}" for yourself.
+4. Your response must be what a CUSTOMER would say when receiving a call.
+5. Use the JSON format provided below.`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: (systemPrompt + levelPrompt + agentNameContext + startHint + jsonSafety) as string },
+        { role: 'system', content: (systemPrompt + levelPrompt + agentNameContext + startHint + jsonSafety + roleEnforcement) as string },
         ...messagesForOpenAI,
       ],
       max_tokens: isStart ? 300 : 1000,
@@ -156,21 +161,68 @@ export async function POST(req: NextRequest) {
     let customerLine = '';
     let coaching: CoachingData | null = null;
     let passed = false;
+    let customerProfile: any = null;
 
     try {
       const parsed = JSON.parse(raw);
 
-      customerLine = parsed.customerLine || parsed.reply || '';
-      passed       = isStart ? false : parsed.passed === true;
+      // Highly flexible key detection
+      customerLine = parsed.Dialogue || parsed.dialogue || 
+                     parsed.customerLine || parsed.customer_line || 
+                     parsed.response || parsed.Reply || parsed.reply || '';
+      
+      // If customerLine contains "ลูกค้า: ", strip it for a cleaner UI
+      if (customerLine.startsWith('ลูกค้า: ')) {
+        customerLine = customerLine.replace('ลูกค้า: ', '');
+      }
 
-      if (!isStart && parsed.score != null) {
-        coaching = {
-          score:          Math.max(1, Math.min(10, Number(parsed.score) || 5)),
-          strengths:      parsed.strengths      ?? '',
-          improvements:   parsed.improvements   ?? '',
-          coachingScript: parsed.coachingScript ?? '',
-          coachingTip:    parsed.coachingTip    ?? '',
+      passed = isStart ? false : (parsed.passed === true || (typeof parsed.passed === 'string' && parsed.passed.toLowerCase() === 'true'));
+
+      // Extract Customer Profile if present
+      if (parsed.Customer) {
+        customerProfile = {
+          name: parsed.Customer.Name || parsed.Customer.name || '',
+          occupation: parsed.Customer.Occupation || parsed.Customer.occupation || '',
+          age: parsed.Customer.Age || parsed.Customer.age || 0,
+          mood: parsed.Customer.Mood || parsed.Customer.mood || '',
+          objective: parsed.Objective || parsed.objective || ''
         };
+      }
+
+      if (!isStart && (parsed.score != null || parsed.Score != null)) {
+        const scoreVal = parsed.score ?? parsed.Score;
+        const crit = parsed.Criteria || parsed.criteria;
+        
+        coaching = {
+          score:          Math.max(1, Math.min(10, Number(scoreVal) || 5)),
+          strengths:      parsed.Strengths      ?? parsed.strengths      ?? '',
+          improvements:   parsed.Improvements   ?? parsed.improvements   ?? '',
+          coachingScript: parsed.CoachingScript ?? parsed.coachingScript ?? '',
+          coachingTip:    parsed.CoachingTip    ?? parsed.coachingTip    ?? '',
+          metadata:       {}
+        };
+
+        if (parsed.BuyingSignal || parsed.buying_signal) {
+          coaching.metadata!.buyingSignal = parsed.BuyingSignal || parsed.buying_signal;
+        }
+
+        // Catch-all for any other new fields that might be added to the prompt later
+        const knownKeys = ['Customer', 'Objective', 'Dialogue', 'Score', 'Criteria', 'Strengths', 'Improvements', 'CoachingScript', 'CoachingTip', 'passed', 'BuyingSignal', 'customerLine', 'score', 'strengths', 'improvements', 'coachingScript', 'coachingTip'];
+        Object.keys(parsed).forEach(k => {
+          if (!knownKeys.includes(k) && !knownKeys.map(kk => kk.toLowerCase()).includes(k.toLowerCase())) {
+            coaching!.metadata![k] = parsed[k];
+          }
+        });
+
+        if (crit) {
+          coaching.criteria = {
+            rapport:           Number(crit.rapport) || 5,
+            objectionHandling: Number(crit.objectionHandling || crit.objection_handling) || 5,
+            credibility:       Number(crit.credibility) || 5,
+            closing:           Number(crit.closing) || 5,
+            naturalness:       Number(crit.naturalness) || 5
+          };
+        }
       }
     } catch {
       // JSON parse failed — fall back to raw text, no coaching
@@ -179,7 +231,6 @@ export async function POST(req: NextRequest) {
     }
 
     // Final fallback: if customerLine is still empty but raw has content, use raw.
-    // (OpenAI with json_object mode usually returns a JSON, but let's be safe)
     if (!customerLine && raw && raw !== '{}') {
       customerLine = raw;
     }
@@ -200,7 +251,12 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    return NextResponse.json({ reply: customerLine, coaching, passed });
+    return NextResponse.json({ 
+      reply: customerLine, 
+      coaching, 
+      passed,
+      customerProfile 
+    });
   } catch (err: any) {
     console.error('AI eval chat error:', err);
     

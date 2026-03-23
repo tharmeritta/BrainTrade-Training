@@ -1178,8 +1178,9 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
                       ? { color: '#22c55e', borderColor: 'rgba(34,197,94,0.4)', background: 'rgba(34,197,94,0.08)' }
                       : broadcastText.trim()
                       ? { color: 'hsl(var(--primary))', borderColor: 'rgba(var(--primary-rgb,99,102,241),0.4)', background: 'rgba(var(--primary-rgb,99,102,241),0.08)' }
-                      : { color: 'var(--muted-foreground)', borderColor: 'var(--border)', opacity: 0.45 }
+                      : { color: 'hsl(var(--muted-foreground))', borderColor: 'hsl(var(--border))', opacity: 0.45 }
                   }
+
                 >
                   {broadcastSent ? <Check size={12} /> : <Send size={12} />}
                   {broadcastSent ? t('broadcastSent') : t('sendBroadcast')}
@@ -1223,12 +1224,12 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
                     style={
                       isSelected
                         ? { borderColor: 'hsl(var(--primary))', background: 'rgba(var(--primary-rgb,99,102,241),0.08)' }
-                        : { borderColor: 'var(--border)', background: 'transparent' }
+                        : { borderColor: 'hsl(var(--border))', background: 'transparent' }
                     }
                   >
                     <span
                       className="text-[10px] font-black uppercase tracking-widest"
-                      style={{ color: isSelected ? 'hsl(var(--primary))' : 'var(--muted-foreground)' }}
+                      style={{ color: isSelected ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))' }}
                     >
                       {mod.id}
                     </span>

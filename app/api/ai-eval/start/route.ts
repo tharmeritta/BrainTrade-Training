@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fsAdd } from '@/lib/firestore-db';
+import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,7 +12,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ sessionId: crypto.randomUUID(), level });
-  } catch {
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  } catch (err: any) {
+    console.error('AI session start error:', err);
+    return NextResponse.json({ error: 'Server error', details: err.message }, { status: 500 });
   }
 }

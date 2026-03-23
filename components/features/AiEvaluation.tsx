@@ -6,7 +6,7 @@ import {
   Send, User as UserIcon, Bot, ChevronLeft, Play,
   CheckCircle2, Trophy, RotateCcw, ArrowRight,
   Lock, BookOpen, AlertTriangle, ChevronRight, History,
-  ChevronDown,
+  ChevronDown, Smile, Frown, Meh, Zap
 } from 'lucide-react';
 
 import type { PitchMessage } from '@/types';
@@ -35,10 +35,18 @@ type Step = 'intro' | 'select' | 'chat';
 
 interface CoachingData {
   score: number;
+  criteria?: {
+    rapport: number;
+    objectionHandling: number;
+    credibility: number;
+    closing: number;
+    naturalness: number;
+  };
   strengths: string;
   improvements: string;
   coachingScript: string;
   coachingTip: string;
+  metadata?: Record<string, any>;
 }
 
 interface IntroViewProps {
@@ -58,10 +66,19 @@ interface SelectionViewProps {
   loading: boolean;
 }
 
+interface CustomerProfile {
+  name: string;
+  occupation: string;
+  age: number;
+  mood?: string;
+  objective: string;
+}
+
 interface ChatViewProps {
   level: EvalLevel;
   messages: PitchMessage[];
   coaching: Map<number, CoachingData>;
+  customerProfile: CustomerProfile | null;
   input: string;
   setInput: (v: string) => void;
   loading: boolean;
@@ -71,6 +88,7 @@ interface ChatViewProps {
   onReset: (clearHistory: boolean) => void;
   onNextLevel: (next: EvalLevel) => void;
   onClearError: () => void;
+  onUseScript: (text: string) => void;
   bottomRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -102,9 +120,13 @@ const SCORE_STYLE = (score: number) =>
     ? { badge: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800', dot: 'bg-amber-400' }
     : { badge: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800', dot: 'bg-rose-500' };
 
-const CoachingCard = memo(({ coaching, autoExpand }: { coaching: CoachingData; autoExpand: boolean }) => {
+const CoachingCard = memo(({ coaching, autoExpand, onUseScript }: { 
+  coaching: CoachingData; 
+  autoExpand: boolean;
+  onUseScript?: (text: string) => void;
+}) => {
   const [open, setOpen] = useState(autoExpand);
-  const { score, strengths, improvements, coachingScript, coachingTip } = coaching;
+  const { score, criteria, strengths, improvements, coachingScript, coachingTip, metadata } = coaching;
   const style = SCORE_STYLE(score);
   const t = useTranslations('aiEval');
 
@@ -132,8 +154,36 @@ const CoachingCard = memo(({ coaching, autoExpand }: { coaching: CoachingData; a
             transition={{ duration: 0.2, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="mt-2 bg-white dark:bg-card border border-black/5 dark:border-white/10 rounded-2xl overflow-hidden">
+            <div className="mt-2 bg-white dark:bg-card border border-black/5 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
               <div className="divide-y divide-black/5 dark:divide-white/5">
+
+                {/* Criteria Score Breakdown (Bars) */}
+                {criteria && (
+                  <div className="px-4 py-3 bg-secondary/10">
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-2.5">{t('performanceBreakdown')}</p>
+                    <div className="space-y-2">
+                      {CRITERIA_KEYS.map((key) => {
+                        const val = (criteria as any)[key] || 0;
+                        return (
+                          <div key={key}>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[10px] font-bold text-foreground/70">{t(`criteria.${key}`)}</span>
+                              <span className="text-[10px] font-black text-primary">{val}/10</span>
+                            </div>
+                            <div className="h-1 w-full bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
+                              <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${val * 10}%` }}
+                                transition={{ duration: 1, ease: "easeOut" }}
+                                className={`h-full rounded-full ${val >= 7 ? 'bg-emerald-500' : val >= 5 ? 'bg-amber-400' : 'bg-rose-500'}`}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Strengths */}
                 {strengths && (
@@ -168,12 +218,39 @@ const CoachingCard = memo(({ coaching, autoExpand }: { coaching: CoachingData; a
                 {/* Coaching script — the most actionable piece */}
                 {coachingScript && (
                   <div className="px-4 py-3 bg-primary/5 dark:bg-primary/10">
-                    <p className="text-[10px] font-black text-primary uppercase tracking-wider mb-1.5">
-                      💬 {t('scriptLabel')}
-                    </p>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-[10px] font-black text-primary uppercase tracking-wider">
+                        💬 {t('scriptLabel')}
+                      </p>
+                      {onUseScript && (
+                        <button
+                          onClick={() => onUseScript(coachingScript)}
+                          className="text-[10px] font-black bg-primary text-white px-2 py-0.5 rounded-md hover:bg-primary/80 transition-all active:scale-95"
+                        >
+                          {t('useScriptBtn')}
+                        </button>
+                      )}
+                    </div>
                     <p className="text-xs text-primary/80 dark:text-primary/70 leading-relaxed font-medium">
                       &ldquo;{coachingScript}&rdquo;
                     </p>
+                  </div>
+                )}
+
+                {/* Dynamic Metadata / Extra AI Insights */}
+                {metadata && Object.keys(metadata).length > 0 && (
+                  <div className="px-4 py-3 border-t border-black/5 dark:border-white/5 bg-secondary/5">
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-2">
+                      ✨ {t('extraInsights')}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(metadata).map(([key, val]) => (
+                        <div key={key} className="bg-white dark:bg-black/20 px-2 py-1 rounded-lg border border-black/5 dark:border-white/5">
+                          <span className="text-[9px] font-black text-muted-foreground uppercase mr-1">{key}:</span>
+                          <span className="text-[10px] font-bold text-foreground">{String(val)}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
@@ -187,6 +264,53 @@ const CoachingCard = memo(({ coaching, autoExpand }: { coaching: CoachingData; a
 });
 
 CoachingCard.displayName = 'CoachingCard';
+
+/* ─── Score Trend Component ────────────────────────────────────────────────── */
+
+const ScoreTrend = memo(({ coaching }: { coaching: Map<number, CoachingData> }) => {
+  const scores = useMemo(() => {
+    return Array.from(coaching.values()).map(c => c.score);
+  }, [coaching]);
+
+  if (scores.length < 2) return null;
+
+  const max = 10;
+  const min = 0;
+  const height = 16;
+  const width = 100;
+  const points = scores.map((s, i) => {
+    const x = (i / (scores.length - 1)) * width;
+    const y = height - ((s - min) / (max - min)) * height;
+    return `${x},${y}`;
+  }).join(' ');
+
+  return (
+    <div className="flex items-center gap-2 px-3 py-1 bg-secondary/20 rounded-lg border border-black/5 dark:border-white/5 animate-in fade-in zoom-in duration-500 shrink-0">
+      <div className="flex flex-col">
+        <span className="text-[8px] font-black text-muted-foreground uppercase leading-none mb-0.5">Progress</span>
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-16 h-4 overflow-visible">
+          <polyline
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            className="text-primary"
+            points={points}
+          />
+          <circle 
+            cx={width} 
+            cy={height - ((scores[scores.length - 1] - min) / (max - min)) * height} 
+            r="2" 
+            className="fill-primary"
+          />
+        </svg>
+      </div>
+    </div>
+  );
+});
+
+ScoreTrend.displayName = 'ScoreTrend';
 
 /* ─── Sub-components ────────────────────────────────────────────────────────── */
 
@@ -532,8 +656,8 @@ MessageBubble.displayName = 'MessageBubble';
  * ChatView: Step 3 - AI Evaluation simulation
  */
 const ChatView = memo(({
-  level, messages, coaching, input, setInput, loading, passed, error,
-  onSend, onReset, onNextLevel, onClearError, bottomRef
+  level, messages, coaching, customerProfile, input, setInput, loading, passed, error,
+  onSend, onReset, onNextLevel, onClearError, onUseScript, bottomRef
 }: ChatViewProps) => {
   const t = useTranslations('aiEval');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -583,16 +707,57 @@ const ChatView = memo(({
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <ScoreTrend coaching={coaching} />
             <StepProgress current={3} />
             <button
               onClick={() => onReset(passed)}
-              className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground hover:text-rose-500 transition-all py-2 px-3 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10"
+              className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground hover:text-rose-50 transition-all py-2 px-3 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10"
             >
               <ChevronLeft size={14} />
               {passed ? t('backToSelection') : t('endTraining')}
             </button>
           </div>
         </div>
+
+        {/* Customer Profile Card */}
+        {customerProfile && (
+          <div className="px-5 py-3 bg-white dark:bg-card/50 border-b border-black/5 dark:border-white/5 flex flex-wrap items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center">
+                {customerProfile.mood?.includes('หงุดหงิด') ? (
+                  <Frown size={14} className="text-rose-500" />
+                ) : customerProfile.mood?.includes('พอใจ') || customerProfile.mood?.includes('สนใจ') ? (
+                  <Smile size={14} className="text-emerald-500" />
+                ) : (
+                  <UserIcon size={14} className="text-muted-foreground" />
+                )}
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight leading-none mb-0.5">{t('customerLabel')}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-black text-foreground">{customerProfile.name || t('unknown')}</p>
+                  {customerProfile.mood && (
+                    <span className="text-[10px] bg-secondary/80 text-foreground px-1.5 py-0.5 rounded-md font-bold">
+                      {customerProfile.mood}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="h-6 w-px bg-black/5 dark:bg-white/5 hidden sm:block" />
+            <div>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight leading-none mb-0.5">{t('occupationAgeLabel')}</p>
+              <p className="text-xs font-bold text-foreground">
+                {customerProfile.occupation || t('general')} {customerProfile.age ? `(${customerProfile.age} ${t('yearsOld')})` : ''}
+              </p>
+            </div>
+            <div className="h-6 w-px bg-black/5 dark:bg-white/5 hidden sm:block" />
+            <div className="flex-1 min-w-[200px]">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight leading-none mb-0.5">{t('objectiveLabel')}</p>
+              <p className="text-xs font-bold text-primary italic truncate">"{customerProfile.objective || t('general')}"</p>
+            </div>
+          </div>
+        )}
 
         {/* Message List */}
         <div className={`overflow-y-auto px-5 py-5 bg-slate-50/50 dark:bg-black/10 selection:bg-primary/10 ${passed ? '' : 'flex-1'}`}>
@@ -619,6 +784,7 @@ const ChatView = memo(({
                     <CoachingCard
                       coaching={card}
                       autoExpand={card.score < 6}
+                      onUseScript={onUseScript}
                     />
                   )}
                 </React.Fragment>
@@ -755,6 +921,7 @@ export default function AiEvaluation() {
   const [sessionId,      setSessionId]      = useState<string | null>(null);
   const [messages,       setMessages]       = useState<PitchMessage[]>([]);
   const [coaching,       setCoaching]       = useState<Map<number, CoachingData>>(new Map());
+  const [customerProfile, setCustomerProfile] = useState<CustomerProfile | null>(null);
   const [input,          setInput]          = useState('');
   const [loading,        setLoading]        = useState(false);
   const [agentId,        setAgentId]        = useState<string | null>(null);
@@ -807,6 +974,7 @@ export default function AiEvaluation() {
           setSessionId(saved.sessionId);
           setLevel(saved.level);
           setMessages(saved.messages);
+          if (saved.customerProfile) setCustomerProfile(saved.customerProfile);
           setStep('chat');
           hasLocalSession = true;
         } else {
@@ -847,10 +1015,12 @@ export default function AiEvaluation() {
                 setSessionId(s.sessionId);
                 setLevel(s.level);
                 setMessages(s.messages);
+                if (s.customerProfile) setCustomerProfile(s.customerProfile);
                 setStep('chat');
                 localStorage.setItem(AIEV_SESSION_KEY, JSON.stringify({
                   agentId: id, sessionId: s.sessionId, level: s.level,
                   messages: s.messages, savedAt: s.savedAt ?? Date.now(),
+                  customerProfile: s.customerProfile
                 }));
               }
             }
@@ -933,6 +1103,9 @@ export default function AiEvaluation() {
         });
         if (initRes.ok) {
           const initData = await initRes.json();
+          if (initData.customerProfile) {
+            setCustomerProfile(initData.customerProfile);
+          }
           if (initData.reply) {
             const openingMsg: PitchMessage = { role: 'assistant', content: initData.reply, timestamp: new Date() };
             setMessages([openingMsg]);
@@ -941,7 +1114,13 @@ export default function AiEvaluation() {
               fetch('/api/ai-eval/active', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ agentId, sessionId: sid, level: activeLevel, messages: [openingMsg] }),
+                body: JSON.stringify({ 
+                  agentId, 
+                  sessionId: sid, 
+                  level: activeLevel, 
+                  messages: [openingMsg],
+                  customerProfile: initData.customerProfile
+                }),
               }).catch(() => {});
             }
           }
@@ -992,6 +1171,10 @@ export default function AiEvaluation() {
       const finalMessages = [...newMessages, aiMsg];
       setMessages(finalMessages);
 
+      if (data.customerProfile) {
+        setCustomerProfile(data.customerProfile);
+      }
+
       // Store coaching keyed by the assistant message index
       if (data.coaching) {
         const assistantIndex = finalMessages.length - 1;
@@ -1008,12 +1191,25 @@ export default function AiEvaluation() {
         localStorage.removeItem(AIEV_SESSION_KEY);
         if (agentId) fetch(`/api/ai-eval/active?agentId=${agentId}`, { method: 'DELETE' }).catch(() => {});
       } else if (sessionId && agentId) {
-        const snap = { agentId, sessionId, level, messages: finalMessages, savedAt: Date.now() };
+        const snap = { 
+          agentId, 
+          sessionId, 
+          level, 
+          messages: finalMessages, 
+          savedAt: Date.now(),
+          customerProfile: data.customerProfile || customerProfile 
+        };
         localStorage.setItem(AIEV_SESSION_KEY, JSON.stringify(snap));
         fetch('/api/ai-eval/active', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ agentId, sessionId, level, messages: finalMessages }),
+          body: JSON.stringify({ 
+            agentId, 
+            sessionId, 
+            level, 
+            messages: finalMessages,
+            customerProfile: data.customerProfile || customerProfile
+          }),
         }).catch(() => {});
       }
     } catch (err: any) {
@@ -1034,6 +1230,7 @@ export default function AiEvaluation() {
     setSessionId(null);
     setMessages([]);
     setCoaching(new Map());
+    setCustomerProfile(null);
     setPassed(false);
     setStep('select');
   }, [agentId]);
@@ -1041,6 +1238,11 @@ export default function AiEvaluation() {
   const handleContinueIntro = useCallback((l?: EvalLevel) => { 
     if (l) setLevel(l); 
     setStep('select'); 
+  }, []);
+
+  const handleUseScript = useCallback((text: string) => {
+    setInput(text);
+    textareaRef.current?.focus();
   }, []);
 
   /* ─── Render Logic ─────────────────────────────────────────────────────────── */
@@ -1074,6 +1276,7 @@ export default function AiEvaluation() {
             level={level}
             messages={messages}
             coaching={coaching}
+            customerProfile={customerProfile}
             input={input}
             setInput={setInput}
             loading={loading}
@@ -1086,6 +1289,7 @@ export default function AiEvaluation() {
               resetToSelect(true);
             }}
             onClearError={() => setError(null)}
+            onUseScript={handleUseScript}
             bottomRef={bottomRef}
           />
         </motion.div>
