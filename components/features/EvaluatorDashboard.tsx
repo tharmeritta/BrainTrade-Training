@@ -969,11 +969,10 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
   const [editingEval, setEditingEval]       = useState<AgentEvaluation | null>(null);
 
   const [isLive, setIsLive]     = useState(false);
-  const pollTimer               = useRef<NodeJS.Timeout | null>(null);
 
   // Load overview data
-  const loadData = useCallback(async (isSilent = false) => {
-    if (!isSilent) setIsLive(true);
+  const loadData = useCallback(async () => {
+    setIsLive(true);
     try {
       const [agentsRes, evalsRes, statsRes] = await Promise.all([
         fetch('/api/agents'),
@@ -984,14 +983,12 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
       if (evalsRes.ok)   { const d = await evalsRes.json();   setMyEvals(d.evaluations ?? []); }
       if (statsRes.ok)   { const d = await statsRes.json();   setAllAgentStats(d.stats ?? []); }
     } catch { /* silent */ } finally {
-      if (!isSilent) setTimeout(() => setIsLive(false), 2000);
+      setIsLive(false);
     }
   }, [evaluatorId]);
 
   useEffect(() => {
     loadData();
-    pollTimer.current = setInterval(() => loadData(true), 5000);
-    return () => { if (pollTimer.current) clearInterval(pollTimer.current); };
   }, [loadData]);
 
   // Force password change on first login

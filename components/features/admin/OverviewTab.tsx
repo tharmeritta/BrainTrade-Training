@@ -15,13 +15,9 @@ export default function OverviewTab() {
   const [data,    setData]    = useState<AdminOverviewData | null>(null);
   const [feed,    setFeed]    = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isLive,  setIsLive]  = useState(false);
-  
-  const pollTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const load = useCallback(async (isSilent = false) => {
-    if (!isSilent) setLoading(true);
-    setIsLive(true);
+  const load = useCallback(async () => {
+    setLoading(true);
     try {
       console.log('[Overview] Starting fetch...');
       const [ovRes, feedRes] = await Promise.all([
@@ -51,20 +47,14 @@ export default function OverviewTab() {
         console.warn('[Overview] /api/admin/live-feed returned non-ok status:', feedRes.status);
       }
     } catch (err) {
-      console.error('Overview polling error details:', err);
+      console.error('Overview fetching error details:', err);
     } finally {
-      if (!isSilent) setLoading(false);
-      setTimeout(() => setIsLive(false), 2000); // Pulse effect
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     load();
-    // Start polling every 5 seconds
-    pollTimer.current = setInterval(() => load(true), 5000);
-    return () => {
-      if (pollTimer.current) clearInterval(pollTimer.current);
-    };
   }, [load]);
 
   if (loading && !data) return (
@@ -191,7 +181,6 @@ export default function OverviewTab() {
         <div className="lg:col-span-2 bg-card rounded-2xl border border-border p-6 shadow-sm">
           <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
             <TrendingUp size={20} className="text-primary" /> {t('overview.trainingCompletion')}
-            {isLive && <Loader2 size={14} className="animate-spin text-primary/40 ml-auto" />}
           </h3>
           <div className="space-y-7">
 

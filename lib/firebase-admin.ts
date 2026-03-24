@@ -123,9 +123,12 @@ function getAdminApp(): App {
       private_key:   privateKey,
     };
 
+    const databaseURL = cleanValue(process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL);
+    
     return initializeApp({
       projectId,
       credential: cert(serviceAccount as any),
+      databaseURL,
     });
   } catch (err: any) {
     console.error('[Firebase Admin] initializeApp fatal error:', err.message);
