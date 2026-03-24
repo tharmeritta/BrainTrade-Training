@@ -13,8 +13,7 @@ function cleanValue(val: string | undefined): string {
   while ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
     s = s.substring(1, s.length - 1).trim();
   }
-  // Strip hidden newlines/carriage returns that break API keys
-  return s.replace(/[\r\n]/g, '').trim();
+  return s;
 }
 
 /**
@@ -28,8 +27,8 @@ function getAdminApp(): App {
 
   // 1. Gather all possible sources (Standard and GCS aliases)
   let saJson        = cleanValue(process.env.FIREBASE_SERVICE_ACCOUNT || process.env.GCS_SERVICE_ACCOUNT);
-  let projectId     = cleanValue(process.env.FIREBASE_PROJECT_ID      || process.env.GCS_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
-  let clientEmail   = cleanValue(process.env.FIREBASE_CLIENT_EMAIL    || process.env.GCS_CLIENT_EMAIL);
+  let projectId     = cleanValue(process.env.FIREBASE_PROJECT_ID      || process.env.GCS_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID).replace(/[\r\n]/g, '').trim();
+  let clientEmail   = cleanValue(process.env.FIREBASE_CLIENT_EMAIL    || process.env.GCS_CLIENT_EMAIL).replace(/[\r\n]/g, '').trim();
   let rawPrivateKey = cleanValue(process.env.FIREBASE_PRIVATE_KEY     || process.env.GCS_PRIVATE_KEY);
   let source = 'individual-vars';
 
@@ -51,8 +50,8 @@ function getAdminApp(): App {
       const parsed = JSON.parse(saJson);
       source = 'service-account-json';
       // Prefer values from the JSON as it's the definitive source
-      if (parsed.project_id)   projectId   = parsed.project_id;
-      if (parsed.client_email) clientEmail = parsed.client_email;
+      if (parsed.project_id)   projectId   = parsed.project_id.replace(/[\r\n]/g, '').trim();
+      if (parsed.client_email) clientEmail = parsed.client_email.replace(/[\r\n]/g, '').trim();
       if (parsed.private_key)  rawPrivateKey = parsed.private_key;
     } catch (e) {
       console.warn('[Firebase Admin] Failed to parse FIREBASE_SERVICE_ACCOUNT JSON:', (e as Error).message);
@@ -76,8 +75,8 @@ function getAdminApp(): App {
     try {
       const parsed = JSON.parse(rawPrivateKey);
       rawPrivateKey = parsed.private_key || '';
-      if (!projectId)   projectId   = parsed.project_id   || '';
-      if (!clientEmail) clientEmail = parsed.client_email || '';
+      if (!projectId)   projectId   = (parsed.project_id   || '').replace(/[\r\n]/g, '').trim();
+      if (!clientEmail) clientEmail = (parsed.client_email || '').replace(/[\r\n]/g, '').trim();
     } catch (e) {
       // Not valid JSON, continue with original
     }
