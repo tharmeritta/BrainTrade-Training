@@ -32,8 +32,10 @@ export async function POST(req: NextRequest) {
     let firebaseToken: string | undefined;
     try {
       firebaseToken = await getAdminAuth().createCustomToken(id, { role });
-    } catch (err) {
-      console.warn('Failed to create custom token for env admin:', err);
+      console.log(`[Auth] Created custom token for id: ${id}, role: ${role}`);
+    } catch (err: any) {
+      console.error('[Auth] Custom Token Creation Failed:', err.message);
+      if (err.code === 'auth/invalid-argument') console.error('[Auth] Check if Project ID matches Service Account.');
     }
 
     const res = NextResponse.json({ status: 'ok', role, firebaseToken });
@@ -72,8 +74,9 @@ export async function POST(req: NextRequest) {
       let firebaseToken: string | undefined;
       try {
         firebaseToken = await getAdminAuth().createCustomToken(account.id, { role: account.role });
-      } catch (err) {
-        console.warn('Failed to create custom token:', err);
+        console.log(`[Auth] Created custom token for account: ${account.id}, role: ${account.role}`);
+      } catch (err: any) {
+        console.error('[Auth] Custom Token Creation Failed for account:', err.message);
       }
 
       const res = NextResponse.json({ status: 'ok', role: account.role, firebaseToken });

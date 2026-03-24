@@ -102,6 +102,9 @@ function getAdminApp(): App {
       credential: cert({ projectId, clientEmail, privateKey }),
     };
     
+    console.log('[Firebase Admin] Initializing with Project ID:', projectId);
+    console.log('[Firebase Admin] Service Account Email:', clientEmail);
+    
     return initializeApp(config);
   } catch (err: any) {
     console.error('Firebase Admin initializeApp fatal error:', err.message);

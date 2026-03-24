@@ -5,13 +5,25 @@ import type { StaffAccount } from '@/types';
 
 // GET /api/admin/staff — list all managers + evaluators (passwords included for admin editing)
 export async function GET() {
-  try { await requireAdmin(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { 
+    await requireAdmin(); 
+  } catch (err: any) { 
+    console.warn('[GET /api/admin/staff] Auth failed:', err.message);
+    return NextResponse.json({ error: 'Unauthorized', message: err.message }, { status: 401 }); 
+  }
+
   try {
+    console.log('[GET /api/admin/staff] Fetching staff_accounts...');
     const staff = await fsGetAll<StaffAccount>('staff_accounts');
+    console.log(`[GET /api/admin/staff] Success: found ${staff.length} accounts`);
     return NextResponse.json({ staff });
   } catch (err: any) {
-    console.error('[GET /api/admin/staff] Firestore error:', err);
-    return NextResponse.json({ error: 'Database error', details: err.message }, { status: 500 });
+    console.error('[GET /api/admin/staff] CRITICAL ERROR:', err);
+    return NextResponse.json({ 
+      error: 'Database error', 
+      message: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined 
+    }, { status: 500 });
   }
 }
 
