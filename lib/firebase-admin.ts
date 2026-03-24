@@ -16,45 +16,41 @@ function cleanValue(val: string | undefined): string {
   return s;
 }
 
+const cleanId = (s: string) => s.replace(/[^a-zA-Z0-9-]/g, '').trim();
+const cleanEmail = (s: string) => s.replace(/[^a-zA-Z0-9@._-]/g, '').trim();
+
 /**
  * Robustly initializes the Firebase Admin SDK.
- * Handles single JSON string (FIREBASE_SERVICE_ACCOUNT), base64 encoded strings, 
- * and multiple individual environment variables.
  */
 function getAdminApp(): App {
   const apps = getApps();
   if (apps.length > 0) return apps[0];
 
-  // 1. Gather all possible sources (Standard and GCS aliases)
+  // 1. Gather all possible sources
   let saJson        = cleanValue(process.env.FIREBASE_SERVICE_ACCOUNT || process.env.GCS_SERVICE_ACCOUNT);
-  let projectId     = cleanValue(process.env.FIREBASE_PROJECT_ID      || process.env.GCS_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID).replace(/[\r\n]/g, '').trim();
-  let clientEmail   = cleanValue(process.env.FIREBASE_CLIENT_EMAIL    || process.env.GCS_CLIENT_EMAIL).replace(/[\r\n]/g, '').trim();
-  let rawPrivateKey = cleanValue(process.env.FIREBASE_PRIVATE_KEY     || process.env.GCS_PRIVATE_KEY);
+  let projectId     = cleanId(cleanValue(process.env.FIREBASE_PROJECT_ID || process.env.GCS_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID));
+  let clientEmail   = cleanEmail(cleanValue(process.env.FIREBASE_CLIENT_EMAIL || process.env.GCS_CLIENT_EMAIL));
+  let rawPrivateKey = cleanValue(process.env.FIREBASE_PRIVATE_KEY || process.env.GCS_PRIVATE_KEY);
   let source = 'individual-vars';
 
   // 1b. If saJson looks like base64, decode it first
   if (saJson && !saJson.startsWith('{') && (saJson.length > 100)) {
     try {
       const decoded = Buffer.from(saJson, 'base64').toString('utf8');
-      if (decoded.trim().startsWith('{')) {
-        saJson = decoded.trim();
-      }
-    } catch (e) {
-      // Not base64, continue
-    }
+      if (decoded.trim().startsWith('{')) saJson = decoded.trim();
+    } catch (e) {}
   }
 
-  // 2. If saJson is provided, extract its values for anything missing
+  // 2. Extract from JSON if provided
   if (saJson && saJson.startsWith('{')) {
     try {
       const parsed = JSON.parse(saJson);
       source = 'service-account-json';
-      // Prefer values from the JSON as it's the definitive source
-      if (parsed.project_id)   projectId   = parsed.project_id.replace(/[\r\n]/g, '').trim();
-      if (parsed.client_email) clientEmail = parsed.client_email.replace(/[\r\n]/g, '').trim();
+      if (parsed.project_id)   projectId   = cleanId(parsed.project_id);
+      if (parsed.client_email) clientEmail = cleanEmail(parsed.client_email);
       if (parsed.private_key)  rawPrivateKey = parsed.private_key;
     } catch (e) {
-      console.warn('[Firebase Admin] Failed to parse FIREBASE_SERVICE_ACCOUNT JSON:', (e as Error).message);
+      console.warn('[Firebase Admin] Failed to parse JSON:', (e as Error).message);
     }
   }
 
@@ -65,36 +61,30 @@ function getAdminApp(): App {
       if (decoded.includes('-----BEGIN') || decoded.trim().startsWith('{')) {
         rawPrivateKey = decoded.trim();
       }
-    } catch (e) {
-      // Not base64, continue with original
-    }
+    } catch (e) {}
   }
 
-  // 4. If the private key variable itself contains the full JSON string
+  // 4. Handle JSON-in-PrivateKey
   if (rawPrivateKey.startsWith('{')) {
     try {
       const parsed = JSON.parse(rawPrivateKey);
       rawPrivateKey = parsed.private_key || '';
-      if (!projectId)   projectId   = (parsed.project_id   || '').replace(/[\r\n]/g, '').trim();
-      if (!clientEmail) clientEmail = (parsed.client_email || '').replace(/[\r\n]/g, '').trim();
-    } catch (e) {
-      // Not valid JSON, continue with original
-    }
+      if (!projectId)   projectId   = cleanId(parsed.project_id || '');
+      if (!clientEmail) clientEmail = cleanEmail(parsed.client_email || '');
+    } catch (e) {}
   }
 
-  // 5. Final sanitization of the private key (PEM formatting)
-  let privateKey = rawPrivateKey.replace(/\\n/g, '\n').replace(/\r/g, '').trim();
+  // 5. Aggressive PEM Key Sanitization
+  let privateKey = rawPrivateKey
+    .replace(/\\n/g, '\n')
+    .replace(/\r/g, '')
+    .split('\n')
+    .map(line => line.trim()) // Remove any spaces at start/end of EACH line
+    .join('\n')
+    .trim();
   
-  // Ensure PEM headers/footers if missing but it looks like a key
   if (privateKey && !privateKey.includes('-----BEGIN PRIVATE KEY-----') && privateKey.length > 100) {
-    console.warn('[Firebase Admin] Private key missing PEM header, attempting to wrap it.');
     privateKey = `-----BEGIN PRIVATE KEY-----\n${privateKey}\n-----END PRIVATE KEY-----`;
-  }
-
-  // If it has headers but no newlines, it's definitely broken for Google
-  if (privateKey && privateKey.includes('-----BEGIN PRIVATE KEY-----') && !privateKey.includes('\n', privateKey.indexOf('-----BEGIN PRIVATE KEY-----') + 26)) {
-     console.warn('[Firebase Admin] Private key has headers but no internal newlines. This will likely fail.');
-     // We could try to fix it here, but it's risky. Let's at least log it.
   }
 
   // 6. Mandatory field check
@@ -103,40 +93,16 @@ function getAdminApp(): App {
     if (!projectId)   missing.push('PROJECT_ID');
     if (!clientEmail) missing.push('CLIENT_EMAIL');
     if (!privateKey)  missing.push('PRIVATE_KEY');
-    
-    console.error('Firebase Admin Init Failed. Missing required environment variables:', missing.join(', '));
-    throw new Error(`Firebase Admin credentials incomplete. Please check your .env.local or env.yaml for: ${missing.join(', ')}`);
-  }
-
-  // 7. Safe Diagnostics (Logged once per initialization)
-  try {
-    console.log('[Firebase Admin Diagnostics]', {
-      source,
-      projectId: (projectId || '').toString().substring(0, 10) + '...',
-      clientEmail: (clientEmail || '').toString().substring(0, 15) + '...',
-      keyLength: (privateKey || '').length,
-      hasNewlines: (privateKey || '').includes('\n'),
-      isPem: (privateKey || '').includes('-----BEGIN PRIVATE KEY-----')
-    });
-  } catch (diagErr) {
-    console.warn('[Firebase Admin] Diagnostics failed:', diagErr);
+    throw new Error(`Firebase Admin credentials incomplete: ${missing.join(', ')}`);
   }
 
   try {
     const config = {
-      projectId: (projectId || '').trim(),
-      credential: cert({
-        projectId: (projectId || '').trim(),
-        clientEmail: (clientEmail || '').trim(),
-        privateKey: (privateKey || '').trim(),
-      }),
+      projectId,
+      credential: cert({ projectId, clientEmail, privateKey }),
     };
     
-    console.log('[Firebase Admin] Attempting initializeApp with projectId:', config.projectId);
-    
-    const app = initializeApp(config);
-    console.log('[Firebase Admin] initializeApp success');
-    return app;
+    return initializeApp(config);
   } catch (err: any) {
     console.error('Firebase Admin initializeApp fatal error:', err.message);
     throw err;

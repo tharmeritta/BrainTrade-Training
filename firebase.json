@@ -17,14 +17,14 @@
       {
         "source": "/",
         "run": {
-          "serviceId": "braintrade-training",
+          "serviceId": "bt-training-firebase",
           "region": "asia-southeast1"
         }
       },
       {
         "source": "**",
         "run": {
-          "serviceId": "braintrade-training",
+          "serviceId": "bt-training-firebase",
           "region": "asia-southeast1"
         }
       }
