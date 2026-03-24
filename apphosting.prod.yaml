@@ -22,7 +22,7 @@ env:
 
   # Client-side Firebase Config (Public)
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: "AIzaSyCFcOBpUmDe3Zz0vGHeS44xdBR3GQtCMtw"
+    secret: firebase-api-key
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
     value: "bt-training-firebase.firebaseapp.com"
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
