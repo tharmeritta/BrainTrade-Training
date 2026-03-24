@@ -2,18 +2,9 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    match /slides/{allPaths=**} {
-      // Allow public read for agents to see the slides
-      allow read: if true;
-      
-      // Allow authenticated users with admin/trainer roles to upload slides
-      allow write: if request.auth != null && 
-        (request.auth.token.role == 'admin' || request.auth.token.role == 'trainer' || request.auth.token.role == 'manager');
-    }
-    
-    // Default deny for everything else
+    // Standard rule: allow all read/write for authenticated users
     match /{allPaths=**} {
-      allow read, write: if false;
+      allow read, write: if request.auth != null;
     }
   }
 }
