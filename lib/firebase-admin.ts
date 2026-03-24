@@ -13,7 +13,8 @@ function cleanValue(val: string | undefined): string {
   while ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
     s = s.substring(1, s.length - 1).trim();
   }
-  return s;
+  // Strip hidden newlines/carriage returns that break API keys
+  return s.replace(/[\r\n]/g, '').trim();
 }
 
 /**

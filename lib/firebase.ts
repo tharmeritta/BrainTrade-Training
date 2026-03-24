@@ -5,15 +5,29 @@ import { getDatabase } from 'firebase/database';
 import { getStorage } from 'firebase/storage';
 import { getAuth } from 'firebase/auth';
 
+/**
+ * Clean environment variables that may have quotes or hidden newlines (CRLF).
+ */
+function clean(val: string | undefined): string {
+  if (!val) return '';
+  let s = val.trim();
+  // Remove wrapping quotes
+  while ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+    s = s.substring(1, s.length - 1).trim();
+  }
+  // Remove any remaining control characters or newlines
+  return s.replace(/[\r\n]/g, '').trim();
+}
+
 const firebaseConfig = {
-  apiKey:            process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-  authDomain:        process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-  projectId:         process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-  databaseURL:       process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL!,
-  storageBucket:     process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
-  appId:             process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
-  measurementId:     process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  apiKey:            clean(process.env.NEXT_PUBLIC_FIREBASE_API_KEY),
+  authDomain:        clean(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN),
+  projectId:         clean(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID),
+  databaseURL:       clean(process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL),
+  storageBucket:     clean(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET),
+  messagingSenderId: clean(process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID),
+  appId:             clean(process.env.NEXT_PUBLIC_FIREBASE_APP_ID),
+  measurementId:     clean(process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID),
 };
 
 if (typeof window !== 'undefined') {
