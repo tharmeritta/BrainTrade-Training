@@ -15,13 +15,6 @@
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
-        "source": "/",
-        "run": {
-          "serviceId": "bt-training-backend",
-          "region": "asia-southeast1"
-        }
-      },
-      {
         "source": "**",
         "run": {
           "serviceId": "bt-training-backend",
