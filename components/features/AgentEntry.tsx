@@ -286,9 +286,14 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
 
     fetch('/api/agents')
       .then(r => r.json())
-      .then(d => setAgents(d.agents ?? []))
-      .catch(() => {
-        // Silently handle fetch errors, match will fail in handleSubmit
+      .then(d => {
+        if (d.error) {
+          setError(d.error);
+        }
+        setAgents(d.agents ?? []);
+      })
+      .catch((err) => {
+        setError(err.message || 'Fetch failed');
       })
       .finally(() => setLoading(false));
 
@@ -307,7 +312,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
     await new Promise(r => setTimeout(r, 450));
     
     if (agents.length === 0 && !loading) {
-      setError(t('fetchError'));
+      if (!error) setError(t('fetchError'));
       setSubmitting(false);
       return;
     }

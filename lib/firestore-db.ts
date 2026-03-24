@@ -27,8 +27,13 @@ export async function fsAdd<T extends object>(
 
 export async function fsGetAll<T>(collection: string): Promise<T[]> {
   const db      = getAdminDb();
+  console.log(`[Firestore Admin] Fetching all from collection: ${collection}`);
   const snap    = await db.collection(collection).get();
-  return snap.docs.map(d => d.data() as T);
+  console.log(`[Firestore Admin] Found ${snap.docs.length} documents in ${collection}`);
+  return snap.docs.map(d => {
+    const data = d.data();
+    return { id: d.id, ...data } as T;
+  });
 }
 
 // ── Get a single doc by key ────────────────────────────────────────────────

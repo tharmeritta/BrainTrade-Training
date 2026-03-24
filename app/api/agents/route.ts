@@ -10,7 +10,8 @@ export async function GET() {
       .map(a => ({ id: a.id, name: a.name, stageName: a.stageName ?? '' }))
       .sort((a, b) => a.name.localeCompare(b.name));
     return NextResponse.json({ agents: active });
-  } catch {
-    return NextResponse.json({ agents: [] });
+  } catch (err: any) {
+    console.error('[API Agents] GET error:', err.message);
+    return NextResponse.json({ agents: [], error: err.message });
   }
 }
