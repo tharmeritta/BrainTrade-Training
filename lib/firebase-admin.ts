@@ -27,87 +27,108 @@ function getAdminApp(): App {
   if (apps.length > 0) return apps[0];
 
   // 1. Gather all possible sources
-  let saJson        = cleanValue(process.env.FIREBASE_SERVICE_ACCOUNT || process.env.GCS_SERVICE_ACCOUNT);
-  let projectId     = cleanId(cleanValue(process.env.FIREBASE_PROJECT_ID || process.env.GCS_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID));
-  let clientEmail   = cleanEmail(cleanValue(process.env.FIREBASE_CLIENT_EMAIL || process.env.GCS_CLIENT_EMAIL));
-  let rawPrivateKey = cleanValue(process.env.FIREBASE_PRIVATE_KEY || process.env.GCS_PRIVATE_KEY);
-  let source = 'individual-vars';
+  const saJson        = cleanValue(process.env.FIREBASE_SERVICE_ACCOUNT || process.env.GCS_SERVICE_ACCOUNT);
+  const envProjectId  = cleanId(cleanValue(process.env.FIREBASE_PROJECT_ID || process.env.GCS_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID));
+  const envEmail      = cleanEmail(cleanValue(process.env.FIREBASE_CLIENT_EMAIL || process.env.GCS_CLIENT_EMAIL));
+  const envPrivateKey = cleanValue(process.env.FIREBASE_PRIVATE_KEY || process.env.GCS_PRIVATE_KEY);
 
-  // 1b. If saJson looks like base64, decode it first
-  if (saJson && !saJson.startsWith('{') && (saJson.length > 100)) {
-    try {
-      const decoded = Buffer.from(saJson, 'base64').toString('utf8');
-      if (decoded.trim().startsWith('{')) saJson = decoded.trim();
-    } catch (e) {}
-  }
+  let projectId   = envProjectId;
+  let clientEmail = envEmail;
+  let rawKey      = envPrivateKey;
 
-  // 2. Extract from JSON if provided
+  // 2. Extract from JSON if provided (overrides env vars)
   if (saJson && saJson.startsWith('{')) {
     try {
       const parsed = JSON.parse(saJson);
-      source = 'service-account-json';
       if (parsed.project_id)   projectId   = cleanId(parsed.project_id);
       if (parsed.client_email) clientEmail = cleanEmail(parsed.client_email);
-      if (parsed.private_key)  rawPrivateKey = parsed.private_key;
+      if (parsed.private_key)  rawKey      = parsed.private_key;
     } catch (e) {
-      console.warn('[Firebase Admin] Failed to parse JSON:', (e as Error).message);
+      console.warn('[Firebase Admin] Failed to parse Service Account JSON:', (e as Error).message);
     }
   }
 
-  // 3. Base64 check for the private key
-  if (rawPrivateKey && !rawPrivateKey.includes('\n') && !rawPrivateKey.includes(' ') && !rawPrivateKey.includes('-----BEGIN')) {
+  // 3. Handle JSON-in-PrivateKey (sometimes people put the whole JSON in the Private Key var)
+  if (rawKey && rawKey.startsWith('{')) {
     try {
-      const decoded = Buffer.from(rawPrivateKey, 'base64').toString('utf8');
-      if (decoded.includes('-----BEGIN') || decoded.trim().startsWith('{')) {
-        rawPrivateKey = decoded.trim();
-      }
+      const parsed = JSON.parse(rawKey);
+      rawKey = parsed.private_key || '';
+      if (!projectId && parsed.project_id)   projectId   = cleanId(parsed.project_id);
+      if (!clientEmail && parsed.client_email) clientEmail = cleanEmail(parsed.client_email);
     } catch (e) {}
   }
 
-  // 4. Handle JSON-in-PrivateKey
-  if (rawPrivateKey.startsWith('{')) {
-    try {
-      const parsed = JSON.parse(rawPrivateKey);
-      rawPrivateKey = parsed.private_key || '';
-      if (!projectId)   projectId   = cleanId(parsed.project_id || '');
-      if (!clientEmail) clientEmail = cleanEmail(parsed.client_email || '');
-    } catch (e) {}
+  // 4. Base64 check for the private key
+  if (rawKey && !rawKey.includes('-----BEGIN')) {
+    const stripped = rawKey.replace(/\s/g, '');
+    // If it looks like base64 (no spaces/newlines, long enough)
+    if (stripped.length > 100 && /^[a-zA-Z0-9+/=]+$/.test(stripped)) {
+      try {
+        const decoded = Buffer.from(stripped, 'base64').toString('utf8');
+        if (decoded.includes('-----BEGIN') || decoded.trim().startsWith('{')) {
+          rawKey = decoded.trim();
+          // If it was a base64-encoded JSON, re-check
+          if (rawKey.startsWith('{')) {
+            const parsed = JSON.parse(rawKey);
+            rawKey = parsed.private_key || '';
+            if (!projectId && parsed.project_id)   projectId   = cleanId(parsed.project_id);
+            if (!clientEmail && parsed.client_email) clientEmail = cleanEmail(parsed.client_email);
+          }
+        }
+      } catch (e) {}
+    }
   }
 
-  // 5. Aggressive PEM Key Sanitization
-  let privateKey = rawPrivateKey
-    .replace(/\\n/g, '\n')
-    .replace(/\r/g, '')
+  // 5. Robust PEM Key Sanitization
+  let privateKey = rawKey
+    .replace(/\\n/g, '\n') // Handle escaped newlines
+    .replace(/\r/g, '')    // Remove CR
     .split('\n')
-    .map(line => line.trim()) // Remove any spaces at start/end of EACH line
+    .map(line => line.trim()) // Trim each line
+    .filter(line => line.length > 0)
     .join('\n')
     .trim();
   
-  if (privateKey && !privateKey.includes('-----BEGIN PRIVATE KEY-----') && privateKey.length > 100) {
-    privateKey = `-----BEGIN PRIVATE KEY-----\n${privateKey}\n-----END PRIVATE KEY-----`;
+  // Ensure headers exist
+  if (privateKey && !privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+    // If it's just the base64 blob, wrap it
+    if (privateKey.length > 100) {
+      privateKey = `-----BEGIN PRIVATE KEY-----\n${privateKey}\n-----END PRIVATE KEY-----`;
+    }
   }
 
-  // 6. Mandatory field check
+  // Final check for mandatory fields
   if (!projectId || !clientEmail || !privateKey) {
     const missing = [];
     if (!projectId)   missing.push('PROJECT_ID');
     if (!clientEmail) missing.push('CLIENT_EMAIL');
     if (!privateKey)  missing.push('PRIVATE_KEY');
+    console.error('[Firebase Admin] Initialization failed - missing:', missing.join(', '));
     throw new Error(`Firebase Admin credentials incomplete: ${missing.join(', ')}`);
   }
 
   try {
-    const config = {
-      projectId,
-      credential: cert({ projectId, clientEmail, privateKey }),
+    console.log('[Firebase Admin] Initializing for project:', projectId);
+    console.log('[Firebase Admin] Service Account:', clientEmail);
+    
+    // Some versions of firebase-admin use snake_case, some camelCase. 
+    // We provide both as an object that satisfies the ServiceAccount interface.
+    const serviceAccount = {
+      projectId:    projectId,
+      clientEmail:  clientEmail,
+      privateKey:   privateKey,
+      // @ts-ignore
+      project_id:    projectId,
+      client_email:  clientEmail,
+      private_key:   privateKey,
     };
-    
-    console.log('[Firebase Admin] Initializing with Project ID:', projectId);
-    console.log('[Firebase Admin] Service Account Email:', clientEmail);
-    
-    return initializeApp(config);
+
+    return initializeApp({
+      projectId,
+      credential: cert(serviceAccount as any),
+    });
   } catch (err: any) {
-    console.error('Firebase Admin initializeApp fatal error:', err.message);
+    console.error('[Firebase Admin] initializeApp fatal error:', err.message);
     throw err;
   }
 }
