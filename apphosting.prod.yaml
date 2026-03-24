@@ -21,7 +21,19 @@ env:
     secret: firebase-private-key
 
   # Client-side Firebase Config (Public)
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: "AIzaSyCFcOBpUmDe3Zz0vGHeS44xdBR3GQtCMtw"
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: "bt-training-firebase.firebaseapp.com"
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
     value: "bt-training-firebase"
   - variable: NEXT_PUBLIC_FIREBASE_DATABASE_URL
     value: "https://bt-training-firebase-default-rtdb.asia-southeast1.firebasedatabase.app/"
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: "bt-training-firebase.firebasestorage.app"
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "723552528953"
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:723552528953:web:c033c03310682e3ce2bbe8"
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: "G-V82RGZ1M3C"
