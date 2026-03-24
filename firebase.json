@@ -17,14 +17,14 @@
       {
         "source": "/",
         "run": {
-          "serviceId": "bt-training-firebase",
+          "serviceId": "bt-training-backend",
           "region": "asia-southeast1"
         }
       },
       {
         "source": "**",
         "run": {
-          "serviceId": "bt-training-firebase",
+          "serviceId": "bt-training-backend",
           "region": "asia-southeast1"
         }
       }

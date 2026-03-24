@@ -3,7 +3,7 @@ set -e
 
 PROJECT_ID="bt-training-firebase"
 REGION="asia-southeast1"
-SERVICE="bt-training-firebase"
+SERVICE="bt-training-backend"
 IMAGE="gcr.io/$PROJECT_ID/$SERVICE"
 
 echo "🚀 Deploying $SERVICE to Cloud Run..."
