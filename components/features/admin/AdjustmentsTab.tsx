@@ -416,15 +416,20 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
   const handleDuplicateQuiz = (id: string) => {
     const newId = `${id}_copy_${Date.now()}`;
     const copy = JSON.parse(JSON.stringify(definitions[id]));
-    copy.title.en += ' (Copy)';
-    copy.title.th += ' (สำเนา)';
+    if (copy.title) {
+      copy.title.en = (copy.title.en || '') + ' (Copy)';
+      copy.title.th = (copy.title.th || '') + ' (สำเนา)';
+    } else {
+      copy.title = { en: 'New Quiz (Copy)', th: 'ควิซใหม่ (สำเนา)' };
+    }
     setDefinitions({ ...definitions, [newId]: copy });
     setSelectedQuiz(newId);
     onChange();
   };
 
   const handleDeleteQuiz = (id: string) => {
-    if (confirm(`Delete quiz "${definitions[id].title.en}" (${id})?`)) {
+    const title = definitions[id]?.title?.en || id;
+    if (confirm(`Delete quiz "${title}" (${id})?`)) {
       const updated = { ...definitions };
       delete updated[id];
       setDefinitions(updated);
@@ -446,16 +451,16 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
     if (!selectedQuiz) return;
     if (confirm(`Delete ${selectedQuestions.length} questions?`)) {
       const updated = { ...definitions };
-      updated[selectedQuiz].questions = updated[selectedQuiz].questions.filter((_, i) => !selectedQuestions.includes(i));
+      updated[selectedQuiz].questions = (updated[selectedQuiz].questions || []).filter((_, i) => !selectedQuestions.includes(i));
       setDefinitions(updated);
       setSelectedQuestions([]);
       onChange();
     }
   };
 
-  const filteredQuestions = selectedQuiz ? definitions[selectedQuiz].questions.map((q, i) => ({ q, i })).filter(({ q }) => 
-    q.en.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    q.th.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredQuestions = selectedQuiz ? (definitions[selectedQuiz].questions || []).map((q, i) => ({ q, i })).filter(({ q }) => 
+    (q?.en || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (q?.th || '').toLowerCase().includes(searchQuery.toLowerCase())
   ) : [];
 
   return (
@@ -484,8 +489,8 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
               onClick={() => { setSelectedQuiz(id); setSelectedQuestions([]); setSearchQuery(''); }} 
               className="w-full text-left font-bold text-sm truncate pr-12"
             >
-              {definitions[id].title.en}
-              <span className="block text-[10px] font-medium opacity-50 mt-0.5">{id} · {definitions[id].questions.length} Qs</span>
+              {definitions[id]?.title?.en || id}
+              <span className="block text-[10px] font-medium opacity-50 mt-0.5">{id} · {(definitions[id]?.questions || []).length} Qs</span>
             </button>
             <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button onClick={() => handleDuplicateQuiz(id)} className="p-1 text-primary hover:bg-primary/10 rounded" title="Duplicate"><Layers size={14} /></button>
@@ -510,7 +515,7 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
         >
           <div className="flex items-center justify-between">
             <h4 className="font-black text-sm uppercase tracking-wider text-primary flex items-center gap-2">
-              <Edit3 size={16} /> Editing: {definitions[selectedQuiz].title.en}
+              <Edit3 size={16} /> Editing: {definitions[selectedQuiz]?.title?.en || selectedQuiz}
             </h4>
             <button onClick={() => setSelectedQuiz(null)} className="text-xs font-bold text-muted-foreground hover:text-foreground">Close Editor</button>
           </div>
@@ -529,7 +534,7 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
               <label className="text-[10px] font-black uppercase opacity-50 px-1">Pass Threshold (%)</label>
               <input 
                 type="number" 
-                value={Math.round(definitions[selectedQuiz].passThreshold * 100)} 
+                value={Math.round((definitions[selectedQuiz]?.passThreshold || 0.7) * 100)} 
                 onChange={e => handleUpdateQuiz(selectedQuiz, 'passThreshold', parseInt(e.target.value) / 100)} 
                 className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" 
               />
@@ -551,18 +556,18 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-[10px] font-black uppercase opacity-50 px-1">Display Title EN</label>
-              <input type="text" value={definitions[selectedQuiz].title.en} onChange={e => handleUpdateQuiz(selectedQuiz, 'title.en', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+              <input type="text" value={definitions[selectedQuiz]?.title?.en || ''} onChange={e => handleUpdateQuiz(selectedQuiz, 'title.en', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-black uppercase opacity-50 px-1">Display Title TH</label>
-              <input type="text" value={definitions[selectedQuiz].title.th} onChange={e => handleUpdateQuiz(selectedQuiz, 'title.th', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+              <input type="text" value={definitions[selectedQuiz]?.title?.th || ''} onChange={e => handleUpdateQuiz(selectedQuiz, 'title.th', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
             </div>
           </div>
 
           <div className="space-y-3 pt-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
               <div className="flex items-center gap-3">
-                <label className="text-xs font-black uppercase tracking-tighter">Questions ({definitions[selectedQuiz].questions.length})</label>
+                <label className="text-xs font-black uppercase tracking-tighter">Questions ({(definitions[selectedQuiz]?.questions || []).length})</label>
                 <div className="flex p-0.5 rounded-lg bg-secondary/50 border border-border">
                   <button onClick={() => setImportMode('replace')} className={`px-2 py-1 text-[10px] font-black rounded-md transition-all ${importMode === 'replace' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}>Replace</button>
                   <button onClick={() => setImportMode('append')} className={`px-2 py-1 text-[10px] font-black rounded-md transition-all ${importMode === 'append' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}>Append</button>
@@ -625,7 +630,7 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
                         onClick={() => {
                           if (confirm('Delete this question?')) {
                             const updated = { ...definitions };
-                            updated[selectedQuiz].questions = updated[selectedQuiz].questions.filter((_, idx) => idx !== i);
+                            updated[selectedQuiz].questions = (updated[selectedQuiz].questions || []).filter((_, idx) => idx !== i);
                             setDefinitions(updated);
                             setSelectedQuestions(prev => prev.filter(idx => idx !== i).map(idx => idx > i ? idx - 1 : idx));
                             onChange();
@@ -639,19 +644,19 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
                     <p className="text-xs text-muted-foreground mt-1 pl-11">{q.th}</p>
                     
                     <div className="mt-3 pl-11 grid grid-cols-2 gap-2">
-                      {q.options.en.map((opt, optIdx) => (
+                      {(q.options?.en || []).map((opt, optIdx) => (
                         <div key={optIdx} className={`text-[10px] p-2 rounded-lg border ${optIdx === q.correctIdx ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 font-bold' : 'bg-secondary/20 border-border text-muted-foreground'}`}>
                           {opt}
                         </div>
                       ))}
                     </div>
                     
-                    {(q.explain.en || q.explain.th) && (
+                    {(q.explain?.en || q.explain?.th) && (
                       <div className="mt-3 pl-11">
                          <div className="bg-blue-500/5 border border-blue-500/10 p-2.5 rounded-lg">
                            <p className="text-[9px] font-black text-blue-600 uppercase mb-1 flex items-center gap-1"><HelpCircle size={10} /> Explanation</p>
-                           <p className="text-[10px] text-blue-800/70 italic leading-relaxed">{q.explain.en}</p>
-                           {q.explain.th && <p className="text-[10px] text-blue-800/50 mt-1">{q.explain.th}</p>}
+                           {q.explain?.en && <p className="text-[10px] text-blue-800/70 italic leading-relaxed">{q.explain.en}</p>}
+                           {q.explain?.th && <p className="text-[10px] text-blue-800/50 mt-1">{q.explain.th}</p>}
                          </div>
                       </div>
                     )}
@@ -946,6 +951,7 @@ function LearnEditor({ data, onSave, onChange, saving }: { data: LearnConfig | u
         {order.map((id, idx) => {
           const mod = modules[id];
           if (!mod) return null;
+          const slideCount = (mod.presentations?.en?.slideUrls?.length || 0) + (mod.presentations?.th?.slideUrls?.length || 0);
           return (
             <div key={id} className={`group p-4 rounded-xl border transition-all ${editingId === id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-secondary/10 hover:border-primary/30'}`}>
               <div className="flex justify-between items-start mb-3">
@@ -977,10 +983,10 @@ function LearnEditor({ data, onSave, onChange, saving }: { data: LearnConfig | u
                   </button>
                 </div>
               </div>
-              <h4 className="font-bold truncate text-sm mb-1">{mod.title}</h4>
+              <h4 className="font-bold truncate text-sm mb-1">{mod.title || 'Untitled'}</h4>
               <div className="flex items-center gap-3">
                  <div className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
-                   <FileText size={10} /> {mod.presentations.en.slideUrls.length + mod.presentations.th.slideUrls.length} Slides
+                   <FileText size={10} /> {slideCount} Slides
                  </div>
               </div>
             </div>
@@ -1049,7 +1055,7 @@ function LearnEditor({ data, onSave, onChange, saving }: { data: LearnConfig | u
                     </button>
                   </div>
 
-                  {modules[editingId].presentations[lang as 'en' | 'th'].slideUrls?.length > 0 ? (
+                  {(modules[editingId]?.presentations?.[lang as 'en' | 'th']?.slideUrls?.length || 0) > 0 ? (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-tighter">
