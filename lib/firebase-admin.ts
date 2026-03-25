@@ -80,11 +80,25 @@ function getAdminApp(): App {
   }
 
   // 5. Robust PEM Key Sanitization
+  // We want to ensure it's a clean "BEGIN...END" block with actual newlines.
   let privateKey = rawKey.replace(/\\n/g, '\n').trim();
+
+  // If it's still not a valid PEM, try to reconstruct it from the base64 blob
+  if (privateKey && (!privateKey.includes('-----BEGIN') || privateKey.includes('\n') === false)) {
+    // Strip everything that isn't base64
+    const base64 = privateKey
+      .replace('-----BEGIN PRIVATE KEY-----', '')
+      .replace('-----END PRIVATE KEY-----', '')
+      .replace(/\s/g, '');
+    
+    // Reconstruct with 64-char lines as per PEM spec
+    const lines = base64.match(/.{1,64}/g) || [];
+    privateKey = `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----`;
+  }
   
-  // Ensure headers exist
-  if (privateKey && !privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
-    privateKey = `-----BEGIN PRIVATE KEY-----\n${privateKey}\n-----END PRIVATE KEY-----`;
+  // Ensure it has actual newlines, not just spaces
+  if (privateKey.includes(' ') && !privateKey.includes('\n')) {
+     privateKey = privateKey.replace(/\s+/g, '\n');
   }
 
   // Final check for mandatory fields
