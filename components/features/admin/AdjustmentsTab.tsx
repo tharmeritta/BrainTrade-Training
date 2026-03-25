@@ -8,7 +8,7 @@ import {
   Save, Target, Zap, Loader2, CheckCircle2, AlertCircle, Edit3, Plus, 
   Trash2, BookOpen, FileUp, Download, Upload, HelpCircle, ChevronDown, 
   Database, Sparkles, Copy, ExternalLink, Eye, Search, FileJson, 
-  ArrowUp, ArrowDown, MoveUp, MoveDown, Layers, FileText
+  ArrowUp, ArrowDown, MoveUp, MoveDown, Layers, FileText, ShieldCheck
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { storage, auth } from '@/lib/firebase';
