@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { ShieldCheck, Plus, Check, X, Eye, EyeOff, Pencil, Trash2 } from 'lucide-react';
+import { ShieldCheck, Plus, Check, X, Eye, EyeOff, Pencil, Trash2, Download } from 'lucide-react';
 import type { StaffAccount } from '@/types';
 
 interface EditState {
@@ -21,6 +21,7 @@ export default function StaffTab() {
   const [showForm, setShowForm] = useState(false);
   const [editing,  setEditing]  = useState<EditState | null>(null);
   const [saving,   setSaving]   = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [showPw,   setShowPw]   = useState<Record<string, boolean>>({});
   const [staffErr, setStaffErr] = useState('');
 
@@ -37,6 +38,29 @@ export default function StaffTab() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  async function exportStaff() {
+    setDownloading(true);
+    try {
+      const res = await fetch('/api/admin/export-staff');
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Staff_Accounts_${new Date().toISOString().slice(0,10)}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } else {
+        alert('Failed to export staff accounts');
+      }
+    } catch {
+      alert('Network error during export');
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   async function createStaff(e: React.FormEvent) {
     e.preventDefault();
@@ -126,12 +150,22 @@ export default function StaffTab() {
           </h2>
           <p className="text-sm text-muted-foreground mt-0.5">{t('staff.desc')}</p>
         </div>
-        <button
-          onClick={() => setShowForm(f => !f)}
-          className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
-        >
-          <Plus size={16} /> {t('staff.addAccount')}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={exportStaff}
+            disabled={downloading}
+            className="flex items-center gap-2 bg-secondary text-foreground px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-secondary/80 transition-colors disabled:opacity-50"
+          >
+            <Download size={16} className={downloading ? 'animate-bounce' : ''} />
+            {downloading ? t('reports.exporting') : t('reports.export')}
+          </button>
+          <button
+            onClick={() => setShowForm(f => !f)}
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
+          >
+            <Plus size={16} /> {t('staff.addAccount')}
+          </button>
+        </div>
       </div>
 
       {/* Create form */}
