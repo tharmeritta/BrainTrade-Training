@@ -115,7 +115,10 @@ function getAdminApp(): App {
     console.log('[Firebase Admin] Initializing for project:', projectId);
     console.log('[Firebase Admin] Service Account:', clientEmail);
     console.log('[Firebase Admin] Private Key Length:', privateKey ? privateKey.length : 0);
-    console.log('[Firebase Admin] Private Key Starts With:', privateKey ? privateKey.substring(0, 30) : 'N/A');
+    console.log('[Firebase Admin] Private Key (First 40 chars):', JSON.stringify(privateKey.substring(0, 40)));
+    console.log('[Firebase Admin] Private Key (Last 40 chars):', JSON.stringify(privateKey.substring(privateKey.length - 40)));
+    console.log('[Firebase Admin] Private Key Contains Newlines:', privateKey.includes('\n'));
+    console.log('[Firebase Admin] Private Key Header Correct:', privateKey.startsWith('-----BEGIN PRIVATE KEY-----'));
     
     // Some versions of firebase-admin use snake_case, some camelCase. 
     // We provide both as an object that satisfies the ServiceAccount interface.
