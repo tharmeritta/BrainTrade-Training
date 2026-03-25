@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin, requireAdminManagerOrTrainer } from '@/lib/session';
+import { requireAdminOrIT, requireAdminManagerOrTrainer } from '@/lib/session';
 import { fsAdd } from '@/lib/firestore-db';
+import { createApprovalRequest } from '@/lib/services/approval-service';
 import { getAllAgentStats } from '@/lib/agents';
 
 export async function GET() {
@@ -15,13 +16,25 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  try { await requireAdmin(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  let user;
+  try { user = await requireAdminOrIT(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   
   let body;
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
+
+  // Handle IT role approval
+  if (user.role === 'it') {
+    await createApprovalRequest(
+      { uid: user.uid, name: user.name },
+      'create_agent',
+      body,
+      { name: Array.isArray(body) ? `Bulk Import (${body.length} agents)` : body.name }
+    );
+    return NextResponse.json({ message: 'Request submitted for approval' }, { status: 202 });
   }
 
   // Handle bulk import

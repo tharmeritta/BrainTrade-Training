@@ -1,11 +1,11 @@
-export type UserRole = 'admin' | 'manager' | 'agent' | 'evaluator' | 'trainer';
+export type UserRole = 'admin' | 'manager' | 'it' | 'agent' | 'evaluator' | 'trainer';
 
 export interface StaffAccount {
   id: string;
   username: string;
   password: string;
   name: string;
-  role: 'admin' | 'manager' | 'evaluator' | 'trainer';
+  role: 'admin' | 'manager' | 'it' | 'evaluator' | 'trainer';
   active: boolean;
   createdAt: string;
   passwordChanged?: boolean;
@@ -226,4 +226,27 @@ export interface DisciplineRecord {
   type: DisciplineType;
   description: string;
   createdAt: string;
+}
+
+// ── Approval Requests ──────────────────────────────────────────────────────
+
+export type ApprovalActionType = 
+  | 'create_staff' | 'edit_staff' | 'delete_staff' | 'toggle_staff'
+  | 'update_config' 
+  | 'create_agent' | 'edit_agent' | 'delete_agent' | 'toggle_agent';
+
+export interface ApprovalRequest {
+  id: string;
+  requesterId: string;
+  requesterName: string;
+  actionType: ApprovalActionType;
+  targetId?: string;      // ID of the staff/agent being modified
+  targetName?: string;    // Name of the staff/agent
+  data: any;              // The payload to be applied if approved
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+  resolvedAt?: string;
+  resolvedBy?: string;    // Admin UID
+  resolvedByName?: string;
+  rejectionReason?: string;
 }

@@ -8,7 +8,7 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
     const user = await requireAdminManagerOrTrainer();
     return (
       <AdminDashboard
-        role={user.role as 'admin' | 'manager' | 'trainer'}
+        role={user.role as 'admin' | 'manager' | 'it' | 'trainer'}
         uid={user.uid}
         name={user.name}
         passwordChanged={user.passwordChanged}

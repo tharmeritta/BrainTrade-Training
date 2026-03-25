@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin, requireAdminManagerOrTrainer } from '@/lib/session';
-import { fsUpdate, fsDelete } from '@/lib/firestore-db';
+import { requireAdminOrIT, requireAdminManagerOrTrainer } from '@/lib/session';
+import { fsUpdate, fsDelete, fsGet } from '@/lib/firestore-db';
+import { createApprovalRequest } from '@/lib/services/approval-service';
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   let user;
@@ -9,6 +10,21 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
   const body = await req.json();
   const update: Record<string, unknown> = {};
+
+  const target = await fsGet<any>('agents', id);
+  const targetName = target?.name || id;
+
+  // IT role requires approval for everything in agent management
+  if (user.role === 'it') {
+    const actionType = (typeof body.active === 'boolean') ? 'toggle_agent' : 'edit_agent';
+    await createApprovalRequest(
+      { uid: user.uid, name: user.name },
+      actionType,
+      body,
+      { id, name: targetName }
+    );
+    return NextResponse.json({ message: 'Request submitted for approval' }, { status: 202 });
+  }
 
   if (typeof body.active === 'boolean') {
     if (user.role !== 'admin') {
@@ -26,9 +42,24 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  // Delete is admin-only — managers cannot delete agents
-  try { await requireAdmin(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  let user;
+  try { user = await requireAdminOrIT(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   const { id } = await params;
+
+  const target = await fsGet<any>('agents', id);
+  const targetName = target?.name || id;
+
+  // IT role requires approval
+  if (user.role === 'it') {
+    await createApprovalRequest(
+      { uid: user.uid, name: user.name },
+      'delete_agent',
+      null,
+      { id, name: targetName }
+    );
+    return NextResponse.json({ message: 'Request submitted for approval' }, { status: 202 });
+  }
+
   await fsDelete('agents', id);
   return NextResponse.json({ ok: true });
 }

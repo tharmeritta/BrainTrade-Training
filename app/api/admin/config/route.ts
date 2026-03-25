@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/session';
+import { requireAdminOrIT } from '@/lib/session';
 import { getAdminDb } from '@/lib/firebase-admin';
+import { createApprovalRequest } from '@/lib/services/approval-service';
 
 export async function GET() {
-  try { await requireAdmin(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { await requireAdminOrIT(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   try {
     const db = getAdminDb();
@@ -20,11 +21,23 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
-  try { await requireAdmin(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  let user;
+  try { user = await requireAdminOrIT(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   try {
     const { id, data } = await req.json();
     if (!id || !data) return NextResponse.json({ error: 'ID and Data required' }, { status: 400 });
+
+    // IT role requires approval
+    if (user.role === 'it') {
+      await createApprovalRequest(
+        { uid: user.uid, name: user.name },
+        'update_config',
+        { key: id, payload: data },
+        { id, name: `Config: ${id}` }
+      );
+      return NextResponse.json({ message: 'Request submitted for approval' }, { status: 202 });
+    }
 
     const db = getAdminDb();
     await db.collection('module_config').doc(id).set({

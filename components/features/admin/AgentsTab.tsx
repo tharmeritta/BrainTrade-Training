@@ -11,7 +11,7 @@ import { getCompletionStatus, type CompletionStatus } from '@/lib/completion';
 import AgentDetailModal from './AgentDetailModal';
 import BulkImportModal from './BulkImportModal';
 
-export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'trainer' }) {
+export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'it' | 'trainer' }) {
   const t = useTranslations('admin');
   const [agents,       setAgents]       = useState<AgentStats[]>([]);
   const [loading,      setLoading]      = useState(true);
@@ -157,7 +157,7 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
             </select>
           </div>
         </div>
-        {role === 'admin' && (
+        {(role === 'admin' || role === 'it') && (
           <div className="flex gap-2">
             <button
               onClick={() => setShowBulk(true)}
@@ -182,7 +182,7 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
       </AnimatePresence>
 
       <AnimatePresence>
-        {showForm && role === 'admin' && (
+        {showForm && (role === 'admin' || role === 'it') && (
           <motion.form
             onSubmit={addAgent}
             initial={{ opacity: 0, height: 0 }}
@@ -375,13 +375,13 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'train
                         className="text-[11px] font-bold text-primary hover:text-primary/80 transition-colors whitespace-nowrap px-3 py-1.5 bg-primary/10 rounded-lg">
                         {t('agents.viewDetails')}
                       </button>
-                      {role === 'admin' && (
+                      {(role === 'admin' || role === 'it') && (
                         <button onClick={() => toggleActive(a.agent.id, a.agent.active)}
                           className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap px-2 py-1.5 bg-secondary/50 rounded-lg">
                           {a.agent.active ? t('agents.deactivate') : t('agents.reactivate')}
                         </button>
                       )}
-                      {role === 'admin' && (
+                      {(role === 'admin' || role === 'it') && (
                         <button onClick={() => deleteAgent(a.agent.id, a.agent.name)}
                           className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-500/10 transition-colors">
                           <Trash2 size={14} />

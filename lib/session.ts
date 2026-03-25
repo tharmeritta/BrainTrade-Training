@@ -21,7 +21,7 @@ export async function getServerUser(): Promise<{ uid: string; name: string; role
     if (parts.length >= 4) {
       const [role, uid, pwChanged, ...nameParts] = parts;
       const name = decodeURIComponent(nameParts.join('|'));
-      if (['admin', 'manager', 'evaluator', 'agent', 'trainer'].includes(role)) {
+      if (['admin', 'manager', 'it', 'evaluator', 'agent', 'trainer'].includes(role)) {
         return { uid, name, role: role as UserRole, passwordChanged: pwChanged === '1' };
       }
     }
@@ -53,9 +53,15 @@ export async function requireAdmin() {
   return user;
 }
 
+export async function requireAdminOrIT() {
+  const user = await requireAuth();
+  if (user.role !== 'admin' && user.role !== 'it') throw new Error('Forbidden');
+  return user;
+}
+
 export async function requireAdminOrManager() {
   const user = await requireAuth();
-  if (user.role !== 'admin' && user.role !== 'manager') throw new Error('Forbidden');
+  if (user.role !== 'admin' && user.role !== 'manager' && user.role !== 'it') throw new Error('Forbidden');
   return user;
 }
 
@@ -67,12 +73,12 @@ export async function requireEvaluator() {
 
 export async function requireAdminManagerOrTrainer() {
   const user = await requireAuth();
-  if (!['admin', 'manager', 'trainer'].includes(user.role)) throw new Error('Forbidden');
+  if (!['admin', 'manager', 'it', 'trainer'].includes(user.role)) throw new Error('Forbidden');
   return user;
 }
 
 export async function requireTrainer() {
   const user = await requireAuth();
-  if (!['admin', 'manager', 'trainer'].includes(user.role)) throw new Error('Forbidden');
+  if (!['admin', 'manager', 'it', 'trainer'].includes(user.role)) throw new Error('Forbidden');
   return user;
 }

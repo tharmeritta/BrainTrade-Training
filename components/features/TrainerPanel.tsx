@@ -65,7 +65,7 @@ function NewPeriodModal({ agents, trainers, currentUser, onClose, onCreated }: N
   const [saving,      setSaving]      = useState(false);
   const [err,         setErr]         = useState('');
 
-  const canPickTrainer = currentUser.role === 'admin' || currentUser.role === 'manager';
+  const canPickTrainer = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.role === 'it';
 
   function toggleAgent(id: string) {
     setSelectedIds(prev => {
@@ -457,7 +457,7 @@ interface DaysTabProps {
   onRemoveAgent: (id: string, name: string) => void;
   onDeactivateAgent: (id: string, name: string) => void;
   readOnly: boolean;
-  role: 'admin' | 'manager' | 'trainer';
+  role: 'admin' | 'manager' | 'it' | 'trainer';
 }
 
 function DaysSubTab({ period, records, onRecordSaved, onPeriodUpdated, onRemoveAgent, onDeactivateAgent, readOnly, role }: DaysTabProps) {
@@ -492,7 +492,7 @@ function DaysSubTab({ period, records, onRecordSaved, onPeriodUpdated, onRemoveA
     finally { setSavingTopic(false); }
   }
 
-  const canDeactivate = role === 'admin';
+  const canDeactivate = role === 'admin' || role === 'it';
 
   return (
     <div className="space-y-3">
@@ -929,7 +929,7 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
   const agentNames  = Object.values(period.agentNames ?? {});
   const modTitle    = locale === 'th-TH' ? selectedMod.titleTh : selectedMod.title;
 
-  const isManager = role === 'manager';
+  const isManager = role === 'manager' || role === 'it';
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -1334,8 +1334,8 @@ function PeriodDetail({ period, agents, role, onPeriodUpdated, onPeriodDeleted }
   const [selectedToAdd, setSelectedToAdd] = useState('');
   const [deleting, setDeleting] = useState(false);
 
-  const canEdit = role === 'trainer' || role === 'admin';
-  const canManage = role === 'trainer' || role === 'admin' || role === 'manager';
+  const canEdit = role === 'trainer' || role === 'admin' || role === 'it';
+  const canManage = role === 'trainer' || role === 'admin' || role === 'manager' || role === 'it';
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -1619,12 +1619,12 @@ function PeriodDetail({ period, agents, role, onPeriodUpdated, onPeriodDeleted }
 // ── Main TrainerPanel ─────────────────────────────────────────────────────────
 
 interface TrainerPanelProps {
-  role: 'admin' | 'manager' | 'trainer';
+  role: 'admin' | 'manager' | 'it' | 'trainer';
   uid?: string;
   name?: string;
 }
 
-export default function TrainerPanel({ role, uid, name }: TrainerPanelProps) {
+export default function TrainerPanel({ role, uid, name }: { role: 'admin' | 'manager' | 'it' | 'trainer', uid?: string, name?: string }) {
   const t = useTranslations('trainer');
   const locale = t('management') === 'จัดการการฝึกอบรม' ? 'th-TH' : 'en-GB';
   const [periods,          setPeriods]          = useState<TrainingPeriod[]>([]);
@@ -1634,7 +1634,7 @@ export default function TrainerPanel({ role, uid, name }: TrainerPanelProps) {
   const [loadingPeriods,   setLoadingPeriods]   = useState(true);
   const [showNewPeriod,    setShowNewPeriod]     = useState(false);
 
-  const canManage = role === 'trainer' || role === 'admin' || role === 'manager';
+  const canManage = role === 'trainer' || role === 'admin' || role === 'manager' || role === 'it';
   const hasAutoSelected = useRef(false);
 
   const loadPeriods = useCallback(async () => {
@@ -1663,8 +1663,8 @@ export default function TrainerPanel({ role, uid, name }: TrainerPanelProps) {
       .then(d => setAgents((d.agents ?? []).map((a: AgentStats) => ({ id: a.agent.id, name: a.agent.name }))))
       .catch(() => {});
 
-    // Fetch staff if admin/manager to allow assigning trainers
-    if (role === 'admin' || role === 'manager') {
+    // Fetch staff if admin/manager/it to allow assigning trainers
+    if (role === 'admin' || role === 'manager' || role === 'it') {
       fetch('/api/admin/staff')
         .then(r => r.json())
         .then(d => setStaff(d.staff ?? []))

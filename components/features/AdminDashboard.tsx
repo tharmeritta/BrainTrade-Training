@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import {
   LayoutDashboard, Users, FileSpreadsheet, LogOut,
-  ShieldCheck, ClipboardCheck, GraduationCap, Zap, Edit3, ChevronRight,
+  ShieldCheck, ClipboardCheck, GraduationCap, Zap, Edit3, ChevronRight, Clock
 } from 'lucide-react';
 
 import TrainerPanel from '@/components/features/TrainerPanel';
@@ -18,16 +18,17 @@ import ReportsTab from './admin/ReportsTab';
 import StaffTab from './admin/StaffTab';
 import EvaluationsTab from './admin/EvaluationsTab';
 import AdjustmentsTab from './admin/AdjustmentsTab';
+import ApprovalsTab from './admin/ApprovalsTab';
 import ChangePasswordModal from './admin/ChangePasswordModal';
 
-type Tab = 'overview' | 'agents' | 'reports' | 'staff' | 'evaluations' | 'training' | 'adjustments';
+type Tab = 'overview' | 'agents' | 'reports' | 'staff' | 'evaluations' | 'training' | 'adjustments' | 'approvals';
 
 function logout() {
   fetch('/api/auth/session', { method: 'DELETE' });
   window.location.replace('/login');
 }
 
-export default function AdminDashboard({ role, uid, name, passwordChanged }: { role: 'admin' | 'manager' | 'trainer'; uid: string; name: string; passwordChanged: boolean }) {
+export default function AdminDashboard({ role, uid, name, passwordChanged }: { role: 'admin' | 'manager' | 'it' | 'trainer'; uid: string; name: string; passwordChanged: boolean }) {
   const t = useTranslations('admin');
   const [tab, setTab] = useState<Tab>(role === 'trainer' ? 'training' : 'overview');
   const [isPwModalOpen, setIsPwModalOpen] = useState(false);
@@ -40,12 +41,13 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
     { id: 'training',    labelKey: 'training',       icon: GraduationCap,    group: 'main' },
     { id: 'evaluations', labelKey: 'evaluations',    icon: ClipboardCheck,   hideForTrainer: true, group: 'main' },
     { id: 'reports',     labelKey: 'reports',        icon: FileSpreadsheet,  hideForTrainer: true, group: 'main' },
+    { id: 'approvals',   labelKey: 'approvals',      icon: Clock,            adminOnly: true, group: 'admin' },
     { id: 'staff',       labelKey: 'staff',          icon: ShieldCheck,      adminOnly: true, group: 'admin' },
     { id: 'adjustments', labelKey: 'adjustments',    icon: Edit3,            adminOnly: true, group: 'admin' },
   ];
 
   const visibleTabs = TABS.filter(t => {
-    if (t.adminOnly && role !== 'admin') return false;
+    if (t.adminOnly && role !== 'admin' && role !== 'it') return false;
     if (t.hideForTrainer && role === 'trainer') return false;
     return true;
   });
@@ -57,8 +59,9 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
 
   const roleBadgeClass =
     role === 'admin'   ? 'bg-purple-500/15 text-purple-400 border-purple-500/20' :
+    role === 'it'      ? 'bg-blue-500/15 text-blue-400 border-blue-500/20' :
     role === 'trainer' ? 'bg-amber-500/15 text-amber-400 border-amber-500/20' :
-                         'bg-blue-500/15 text-blue-400 border-blue-500/20';
+                         'bg-slate-500/15 text-slate-400 border-slate-500/20';
 
   function NavGroup({ label, items }: { label?: string; items: typeof visibleTabs }) {
     if (items.length === 0) return null;
@@ -273,8 +276,9 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
                 {tab === 'training'    && <TrainerPanel role={role} uid={uid} name={name} />}
                 {tab === 'evaluations' && <EvaluationsTab />}
                 {tab === 'reports'     && <ReportsTab />}
-                {tab === 'staff'       && role === 'admin' && <StaffTab />}
-                {tab === 'adjustments' && role === 'admin' && <AdjustmentsTab />}
+                {tab === 'approvals'   && <ApprovalsTab />}
+                {tab === 'staff'       && (role === 'admin' || role === 'it') && <StaffTab />}
+                {tab === 'adjustments' && (role === 'admin' || role === 'it') && <AdjustmentsTab />}
               </motion.div>
             </AnimatePresence>
           </main>

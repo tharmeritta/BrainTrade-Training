@@ -157,6 +157,7 @@
     "roles": {
       "admin": "Administrator",
       "manager": "Manager",
+      "it": "IT Support",
       "trainer": "Trainer",
       "evaluator": "Evaluator"
     },
@@ -170,6 +171,7 @@
       "roles": {
         "admin": "Administrator",
         "manager": "Manager",
+        "it": "IT Support",
         "evaluator": "Evaluator",
         "trainer": "Trainer"
       },
@@ -192,6 +194,7 @@
       "deleteConfirm": "Are you sure you want to delete {name}?",
       "aboutTitle": "About Staff Roles",
       "aboutManager": "Managers can see all stats, manage agents, and export reports.",
+      "aboutIT": "IT Support has the same authority as Managers, plus access to staff management.",
       "aboutTrainer": "Trainers focus on daily logs, attendance, and discipline.",
       "aboutEvaluator": "Evaluators score agents in the Sales Simulation panel.",
       "aboutAdmin": "Administrators (you) have full access including staff management."
@@ -743,6 +746,10 @@
     "invalid": "Invalid username or password",
     "backToMain": "Back to Home",
     "roles": {
+      "it": {
+        "label": "IT Support",
+        "desc": "IT Support · System management, staff accounts, and configurations"
+      },
       "manager": {
         "label": "Manager",
         "desc": "Admin / Manager · Manage agents, view stats, export reports"

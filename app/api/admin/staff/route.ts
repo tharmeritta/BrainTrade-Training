@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/session';
+import { requireAdminOrIT } from '@/lib/session';
 import { fsGetAll, fsAdd } from '@/lib/firestore-db';
+import { createApprovalRequest } from '@/lib/services/approval-service';
 import type { StaffAccount } from '@/types';
 
-// GET /api/admin/staff — list all managers + evaluators (passwords included for admin editing)
+// GET /api/admin/staff — list all staff (passwords included for admin/it editing)
 export async function GET() {
   try { 
-    await requireAdmin(); 
+    await requireAdminOrIT(); 
   } catch (err: any) { 
     console.warn('[GET /api/admin/staff] Auth failed:', err.message);
     return NextResponse.json({ error: 'Unauthorized', message: err.message }, { status: 401 }); 
@@ -28,7 +29,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  try { await requireAdmin(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  let user;
+  try { user = await requireAdminOrIT(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   
   let body;
   try {
@@ -41,8 +43,19 @@ export async function POST(req: NextRequest) {
   if (!username?.trim() || !password?.trim() || !name?.trim()) {
     return NextResponse.json({ error: 'username, password, and name are required' }, { status: 400 });
   }
-  if (!['admin', 'manager', 'evaluator', 'trainer'].includes(role)) {
-    return NextResponse.json({ error: 'role must be admin, manager, evaluator, or trainer' }, { status: 400 });
+  if (!['admin', 'manager', 'it', 'evaluator', 'trainer'].includes(role)) {
+    return NextResponse.json({ error: 'role must be admin, manager, it, evaluator, or trainer' }, { status: 400 });
+  }
+
+  // IT role requires approval
+  if (user.role === 'it') {
+    await createApprovalRequest(
+      { uid: user.uid, name: user.name },
+      'create_staff',
+      { username, password, name, role, active: true, createdAt: new Date().toISOString() },
+      { name: `${name} (${username})` }
+    );
+    return NextResponse.json({ message: 'Request submitted for approval' }, { status: 202 });
   }
 
   try {
