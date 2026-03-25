@@ -4,12 +4,14 @@ import type { UserRole } from '@/types';
 // Session cookie format: `${SECRET}|${role}|${uid}|${encodeURIComponent(name)}`
 // Legacy format (admin only): just `${SECRET}`
 
+const DEFAULT_SECRET = 'fallback-secret-for-dev-only';
+
 export async function getServerUser(): Promise<{ uid: string; name: string; role: UserRole; passwordChanged: boolean } | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get('session')?.value;
   if (!token) return null;
 
-  const secret = process.env.SESSION_SECRET || '';
+  const secret = process.env.SESSION_SECRET || DEFAULT_SECRET;
   if (!secret) return null;
 
   // Format: secret|role|uid|passwordChanged|encodedName
@@ -35,7 +37,7 @@ export async function getServerUser(): Promise<{ uid: string; name: string; role
 }
 
 export function makeSessionToken(role: UserRole, uid: string, name: string, passwordChanged: boolean = false): string {
-  const secret = process.env.SESSION_SECRET || 'fallback-secret-for-dev-only';
+  const secret = process.env.SESSION_SECRET || DEFAULT_SECRET;
   return `${secret}|${role}|${uid}|${passwordChanged ? '1' : '0'}|${encodeURIComponent(name)}`;
 }
 
