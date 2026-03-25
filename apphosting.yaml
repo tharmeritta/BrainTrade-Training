@@ -10,7 +10,7 @@ env:
   
   # Session Configuration
   - variable: SESSION_SECRET
-    secret: session-secret
+    secret: admin-password  # Updated as session-secret was removed from GCP
 
   # Firebase Admin SDK
   - variable: FIREBASE_PROJECT_ID
@@ -18,11 +18,11 @@ env:
   - variable: FIREBASE_CLIENT_EMAIL
     value: "firebase-adminsdk-fbsvc@bt-training-firebase.iam.gserviceaccount.com"
   - variable: FIREBASE_PRIVATE_KEY
-    secret: firebase-private-key
+    secret: FIREBASE-SECRET-KEY # Updated from firebase-private-key
 
   # Client-side Firebase Config (Public)
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    secret: firebase-api-key
+    secret: FIREBASE-API-KEY # Updated from firebase-api-key
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
     value: "bt-training-firebase.firebaseapp.com"
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID

@@ -7,10 +7,21 @@ import { getAuth } from 'firebase/auth';
 
 /**
  * Clean environment variables that may have quotes or hidden newlines (CRLF).
+ * Also attempts to extract a value from a JS-like snippet if the entire config 
+ * was accidentally pasted into a single environment variable.
  */
-function clean(val: string | undefined): string {
+function clean(val: string | undefined, key?: string): string {
   if (!val) return '';
   let s = val.trim();
+
+  // If the value looks like a JS snippet (contains "const firebaseConfig" or similar)
+  // and we have a key to look for, try to extract it.
+  if (key && (s.includes('firebaseConfig') || s.includes('apiKey:'))) {
+    const regex = new RegExp(`${key}:\\s*["']([^"']+)["']`);
+    const match = s.match(regex);
+    if (match && match[1]) return match[1].trim();
+  }
+
   // Remove wrapping quotes
   while ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
     s = s.substring(1, s.length - 1).trim();
@@ -19,15 +30,17 @@ function clean(val: string | undefined): string {
   return s.replace(/[\r\n]/g, '').trim();
 }
 
+const rawApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
 const firebaseConfig = {
-  apiKey:            clean(process.env.NEXT_PUBLIC_FIREBASE_API_KEY),
-  authDomain:        clean(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN),
-  projectId:         clean(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID),
-  databaseURL:       clean(process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL),
-  storageBucket:     clean(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET),
-  messagingSenderId: clean(process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID),
-  appId:             clean(process.env.NEXT_PUBLIC_FIREBASE_APP_ID),
-  measurementId:     clean(process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID),
+  apiKey:            clean(rawApiKey, 'apiKey'),
+  authDomain:        clean(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || rawApiKey, 'authDomain'),
+  projectId:         clean(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || rawApiKey, 'projectId'),
+  databaseURL:       clean(process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || rawApiKey, 'databaseURL'),
+  storageBucket:     clean(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || rawApiKey, 'storageBucket'),
+  messagingSenderId: clean(process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || rawApiKey, 'messagingSenderId'),
+  appId:             clean(process.env.NEXT_PUBLIC_FIREBASE_APP_ID || rawApiKey, 'appId'),
+  measurementId:     clean(process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || rawApiKey, 'measurementId'),
 };
 
 if (typeof window !== 'undefined') {
