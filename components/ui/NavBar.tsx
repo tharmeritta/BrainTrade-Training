@@ -15,6 +15,7 @@ import { useState, useEffect } from 'react';
 import LangToggle from '@/components/ui/LangToggle';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import { getAgentSession } from '@/lib/agent-session';
+import { hasStaffSession } from '@/lib/session';
 
 import { useTranslations } from 'next-intl';
 
@@ -69,7 +70,7 @@ export default function NavBar() {
 
   function guardedNavigate(e: React.MouseEvent, href: string) {
     if (href === '/dashboard') return; // always allow
-    if (!hasSession) {
+    if (!hasSession && !hasStaffSession()) {
       e.preventDefault();
       router.push(`/${locale}/dashboard?loginRequired=1`);
     }

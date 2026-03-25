@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { getAgentSession } from '@/lib/agent-session';
+import { hasStaffSession } from '@/lib/session';
 
 /**
  * Client-side guard that redirects unauthenticated agents back to the
@@ -22,7 +23,7 @@ export default function AgentAuthGuard({
 
   useEffect(() => {
     // If allowStaff is true, we immediately permit access.
-    if (allowStaff) {
+    if (allowStaff || hasStaffSession()) {
       setReady(true);
       return;
     }

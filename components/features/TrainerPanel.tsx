@@ -11,6 +11,8 @@ import {
   Square, Send, RotateCcw
 } from 'lucide-react';
 import type { TrainingPeriod, TrainingDayRecord, DisciplineRecord, AgentStats, DisciplineType } from '@/types';
+import PresentationViewer from '@/components/features/PresentationViewer';
+import { getCourseModule, type CourseModule } from '@/lib/courses';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -910,8 +912,9 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
   const lang = locale.split('-')[0];
 
   const [phase,          setPhase]          = useState<LivePhase>('setup');
-  // ... rest of state ...
   const [selectedModId,  setSelectedModId]  = useState(LIVE_MODULES[0].id);
+  const [course,         setCourse]         = useState<CourseModule | null>(null);
+  const [loadingCourse,  setLoadingCourse]  = useState(false);
   const [copied,         setCopied]         = useState(false);
   const [elapsed,        setElapsed]        = useState(0);
   const [broadcastText,  setBroadcastText]  = useState('');
@@ -931,6 +934,19 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
 
   const isManager = role === 'manager' || role === 'it';
 
+  // Load course module details
+  useEffect(() => {
+    let active = true;
+    setLoadingCourse(true);
+    getCourseModule(selectedModId).then(c => {
+      if (active) {
+        setCourse(c);
+        setLoadingCourse(false);
+      }
+    });
+    return () => { active = false; };
+  }, [selectedModId]);
+
   // Cleanup timer on unmount
   useEffect(() => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
@@ -944,7 +960,9 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
     setConfirmEnd(false);
     timerRef.current = setInterval(() => setElapsed(s => s + 1), 1000);
     setPhase('active');
-    window.open(`/${lang}/learn/${selectedModId}?sync=true`, '_blank');
+    // We no longer necessarily need window.open if we embed it, 
+    // but we can still do it if requested. 
+    // For now, let's just stay in this tab.
   }
 
   function endSession() {
@@ -1084,106 +1102,139 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
             </div>
           </div>
 
-          {/* Two-column control area */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          {/* Two-column control area — updated to 3-col grid when active */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
 
-            {/* ── Left col (3/5): module + notes ── */}
-            <div className="md:col-span-3 space-y-4">
-
-              {/* Current module card */}
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <p className="text-[10px] font-black uppercase tracking-widest text-primary/60 mb-1">{t('sessionModule')}</p>
-                <h4 className="text-base font-black text-foreground mb-0.5">{modTitle}</h4>
-                <p className="text-[11px] font-mono text-muted-foreground mb-4">{selectedMod.id}</p>
-                <div className="flex flex-col gap-2">
+            {/* ── Left col (XL: 7/12): Live Presentation Viewer ── */}
+            <div className="xl:col-span-7 flex flex-col gap-3">
+              <div className="rounded-2xl border border-border bg-black/40 overflow-hidden aspect-video flex flex-col relative group">
+                {course ? (
+                  <PresentationViewer 
+                    module={course}
+                    locale={locale}
+                    initialLang={lang as any}
+                    user={{ uid: period.trainerId || 'trainer', name: period.trainerName || 'Trainer', role }}
+                    minimal
+                    embedded
+                  />
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center gap-3 text-muted-foreground bg-muted/5">
+                    {loadingCourse ? <Spinner /> : <BookOpen size={32} className="opacity-20" />}
+                    <p className="text-xs font-medium opacity-50">{loadingCourse ? 'Loading presentation...' : 'No presentation available'}</p>
+                  </div>
+                )}
+                
+                {/* Pop out button (hover) */}
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-30">
                   <button
                     onClick={() => window.open(`/${lang}/learn/${selectedModId}?sync=true`, '_blank')}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold bg-primary text-white shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:bg-black/80 transition-all"
                   >
-                    <Zap size={13} />
-                    {t('reopenPresenter')}
-                  </button>
-                  <button
-                    onClick={() => window.open(`/${lang}/learn/${selectedModId}`, '_blank')}
-                    className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-semibold border border-border text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-primary/5 transition-all"
-                  >
-                    <Eye size={12} />
-                    {t('previewAsAgent')}
+                    <Eye size={12} /> {t('reopenPresenter')}
                   </button>
                 </div>
               </div>
-
-              {/* Session notes */}
+              
+              {/* Broadcast */}
               <div className="rounded-2xl border border-border bg-card p-5">
-                <p className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5">
-                  <BookOpen size={13} className="text-primary" />
-                  {t('sessionNotes')}
-                </p>
-                <textarea
-                  value={sessionNotes}
-                  onChange={e => setSessionNotes(e.target.value)}
-                  placeholder={t('sessionNotesPlaceholder')}
-                  rows={4}
-                  className="w-full text-xs bg-background border border-border rounded-xl px-3 py-2.5 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/40 transition-colors"
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Radio size={13} className="text-primary" />
+                    {t('broadcastMessage')}
+                  </p>
+                  {broadcastSent && (
+                    <motion.span 
+                      initial={{ opacity: 0, x: 5 }} animate={{ opacity: 1, x: 0 }}
+                      className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest"
+                    >
+                      {t('broadcastSent')}
+                    </motion.span>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    value={broadcastText}
+                    onChange={e => setBroadcastText(e.target.value)}
+                    placeholder={t('broadcastPlaceholder')}
+                    className="flex-1 text-xs bg-background border border-border rounded-xl px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-colors"
+                  />
+                  <button
+                    onClick={sendBroadcast}
+                    disabled={!broadcastText.trim()}
+                    className="flex items-center justify-center px-5 rounded-xl text-xs font-bold border transition-all"
+                    style={
+                      broadcastSent
+                        ? { color: '#22c55e', borderColor: 'rgba(34,197,94,0.4)', background: 'rgba(34,197,94,0.08)' }
+                        : broadcastText.trim()
+                        ? { color: 'hsl(var(--primary))', borderColor: 'rgba(var(--primary-rgb,99,102,241),0.4)', background: 'rgba(var(--primary-rgb,99,102,241),0.08)' }
+                        : { color: 'hsl(var(--muted-foreground))', borderColor: 'hsl(var(--border))', opacity: 0.45 }
+                    }
+                  >
+                    {broadcastSent ? <Check size={14} /> : <Send size={14} />}
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* ── Right col (2/5): agents + broadcast ── */}
-            <div className="md:col-span-2 space-y-4">
+            {/* ── Right col (XL: 5/12): Participants + Notes ── */}
+            <div className="xl:col-span-5 space-y-4 flex flex-col">
 
-              {/* Agents in batch */}
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
-                  <Users size={13} className="text-primary" />
-                  {t('agentsInBatch')}
-                  <span
-                    className="ml-auto text-[10px] font-black rounded-full px-2 py-0.5"
-                    style={{ color: 'hsl(var(--primary))', background: 'rgba(var(--primary-rgb,99,102,241),0.10)', border: '1px solid rgba(var(--primary-rgb,99,102,241),0.20)' }}
-                  >
-                    {agentNames.length}
-                  </span>
-                </p>
-                <div className="space-y-0.5 max-h-44 overflow-y-auto">
-                  {agentNames.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">{t('noAgentsInPeriod')}</p>
-                  ) : agentNames.map((name, i) => (
-                    <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors">
-                      <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 flex-shrink-0" />
-                      <span className="text-xs text-foreground">{name}</span>
+              {/* Module & Notes combined card */}
+              <div className="rounded-2xl border border-border bg-card overflow-hidden flex flex-col flex-1">
+                <div className="p-5 border-b border-border bg-muted/10">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-primary/60 mb-1">{t('sessionModule')}</p>
+                  <h4 className="text-sm font-black text-foreground">{modTitle}</h4>
+                </div>
+                
+                <div className="p-5 space-y-4 flex-1 flex flex-col">
+                  {/* Agents in batch */}
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5"><Users size={12} /> {t('agentsInBatch')}</span>
+                      <span className="text-primary">{agentNames.length}</span>
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+                      {agentNames.length === 0 ? (
+                        <p className="text-xs text-muted-foreground">{t('noAgentsInPeriod')}</p>
+                      ) : agentNames.map((name, i) => (
+                        <span key={i} className="px-2 py-1 rounded-lg bg-muted/40 border border-border text-[11px] font-medium text-foreground">
+                          {name}
+                        </span>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Session notes */}
+                  <div className="flex-1 flex flex-col">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5">
+                      <Pencil size={12} />
+                      {t('sessionNotes')}
+                    </p>
+                    <textarea
+                      value={sessionNotes}
+                      onChange={e => setSessionNotes(e.target.value)}
+                      placeholder={t('sessionNotesPlaceholder')}
+                      className="flex-1 w-full text-xs bg-background border border-border rounded-xl px-3.5 py-3 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/40 transition-colors min-h-[120px]"
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Broadcast */}
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <p className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5">
-                  <Radio size={13} className="text-primary" />
-                  {t('broadcastMessage')}
-                </p>
-                <textarea
-                  value={broadcastText}
-                  onChange={e => setBroadcastText(e.target.value)}
-                  placeholder={t('broadcastPlaceholder')}
-                  rows={3}
-                  className="w-full text-xs bg-background border border-border rounded-xl px-3 py-2.5 text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/40 transition-colors mb-2"
-                />
+              {/* Control Buttons (Pop out & Preview) */}
+              <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={sendBroadcast}
-                  disabled={!broadcastText.trim()}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold border transition-all"
-                  style={
-                    broadcastSent
-                      ? { color: '#22c55e', borderColor: 'rgba(34,197,94,0.4)', background: 'rgba(34,197,94,0.08)' }
-                      : broadcastText.trim()
-                      ? { color: 'hsl(var(--primary))', borderColor: 'rgba(var(--primary-rgb,99,102,241),0.4)', background: 'rgba(var(--primary-rgb,99,102,241),0.08)' }
-                      : { color: 'hsl(var(--muted-foreground))', borderColor: 'hsl(var(--border))', opacity: 0.45 }
-                  }
-
+                  onClick={() => window.open(`/${lang}/learn/${selectedModId}?sync=true`, '_blank')}
+                  className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold border border-border text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all"
                 >
-                  {broadcastSent ? <Check size={12} /> : <Send size={12} />}
-                  {broadcastSent ? t('broadcastSent') : t('sendBroadcast')}
+                  <Eye size={13} />
+                  {t('reopenPresenter')}
+                </button>
+                <button
+                  onClick={() => window.open(`/${lang}/learn/${selectedModId}`, '_blank')}
+                  className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold border border-border text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all"
+                >
+                  <HelpCircle size={13} />
+                  {t('previewAsAgent')}
                 </button>
               </div>
             </div>

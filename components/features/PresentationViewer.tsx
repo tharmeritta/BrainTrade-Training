@@ -53,9 +53,15 @@ interface PresentationViewerProps {
   locale: string;
   initialLang: CourseLang;
   user?: { uid: string; name: string; role: UserRole } | null;
+  minimal?: boolean;
+  embedded?: boolean;
 }
 
-export default function PresentationViewer({ module, locale, initialLang, user }: PresentationViewerProps) {
+export default function PresentationViewer({ 
+  module, locale, initialLang, user,
+  minimal = false,
+  embedded = false,
+}: PresentationViewerProps) {
   const t = useTranslations('presentation');
   const router = useRouter();
 
@@ -89,7 +95,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
   const containerRef = useRef<HTMLDivElement>(null);
   const slideRef = useRef(slide);
   const touchStartX = useRef<number | null>(null);
-  const isTrainer = user && ['admin', 'manager', 'trainer'].includes(user.role);
+  const isTrainer = user && ['admin', 'manager', 'it', 'trainer'].includes(user.role);
   const amInControl = syncActive && syncedById === (user?.uid || agentId);
 
   const { presentationId, totalSlides: total, cacheKey, slideUrls } = module.presentations[lang];
@@ -436,17 +442,18 @@ export default function PresentationViewer({ module, locale, initialLang, user }
   return (
     <div
       ref={containerRef}
-      className="flex flex-col overflow-hidden bg-muted/20 text-foreground dark:bg-black/20"
-      style={{ height: 'calc(100dvh - 72px)' }}
+      className={`flex flex-col overflow-hidden text-foreground ${embedded ? 'bg-transparent' : 'bg-muted/20 dark:bg-black/20'}`}
+      style={{ height: embedded ? '100%' : 'calc(100dvh - 72px)' }}
     >
       {/* ── Main: fills everything, arrows flank the slide ─── */}
       <main
-        className="relative flex flex-1 min-h-0 items-center gap-2 sm:gap-3 px-3 pb-3 pt-3 sm:px-4 sm:pb-4"
+        className={`relative flex flex-1 min-h-0 items-center gap-2 sm:gap-3 ${embedded ? 'p-0' : 'px-3 pb-3 pt-3 sm:px-4 sm:pb-4'}`}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
         {/* ── Floating glass header ─────────────────────────── */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3">
+        {!minimal && (
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3">
           {/* Left: back + breadcrumb + title */}
           <div className="pointer-events-auto flex min-w-0 items-center gap-2">
             <button
@@ -513,7 +520,7 @@ export default function PresentationViewer({ module, locale, initialLang, user }
               ))}
             </div>
           </div>
-        </div>
+        )}
 
         {/* ── Left nav arrow (agent only — trainer uses bottom bar) ── */}
         {!isTrainer && (
