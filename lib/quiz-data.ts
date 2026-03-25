@@ -2417,7 +2417,7 @@ export const MODULE_QUIZ_MAP: Record<string, QuizDefinition> = {
       en: '30 questions across 5 topics — Stocks, Trading, Brokers, Forex/Crypto/CFD, and Sales Skills.',
       th: '30 ข้อ ใน 5 หัวข้อ — หุ้น การเทรด โบรกเกอร์ Forex/Crypto/CFD และทักษะการขาย',
     },
-    passThreshold: 0.8,
+    passThreshold: 0.7,
     phases: [
       { name: { en: 'Part 1: Stocks & Markets', th: 'ส่วนที่ 1: หุ้นและตลาดการเงิน' }, color: '#D97706', light: '#FEF3C7' },
       { name: { en: 'Part 2: Trading Styles', th: 'ส่วนที่ 2: การเทรดและสไตล์การลงทุน' }, color: '#185FA5', light: '#E6F1FB' },
@@ -2439,7 +2439,7 @@ export const MODULE_QUIZ_MAP: Record<string, QuizDefinition> = {
       en: 'Comprehensive 40-question quiz covering ecosystem, journey, features, and sales skills.',
       th: 'แบบทดสอบครอบคลุม 40 ข้อ ทั้งระบบนิเวศ เส้นทาง ฟีเจอร์ และทักษะการขาย',
     },
-    passThreshold: 0.8,
+    passThreshold: 0.7,
     phases: [
       { name: { en: 'Part 1: Ecosystem & Journey', th: 'ส่วนที่ 1: ระบบนิเวศและเส้นทาง 60 วัน' }, color: '#0F6E56', light: '#E1F5EE' },
       { name: { en: 'Part 2: Features & Pricing', th: 'ส่วนที่ 2: ฟีเจอร์และแพ็คเกจราคา' }, color: '#185FA5', light: '#E6F1FB' },
@@ -2456,7 +2456,7 @@ export const MODULE_QUIZ_MAP: Record<string, QuizDefinition> = {
       en: '30 questions across 6 sections — Fundamentals, Segmentation, Deep KYC, Pain Points, Psychology, and Scripts.',
       th: '30 ข้อ ใน 6 หมวด — พื้นฐาน การแบ่งกลุ่มลูกค้า Deep KYC การค้นหา Pain Point จิตวิทยา และสคริปต์การขาย',
     },
-    passThreshold: 0.8,
+    passThreshold: 0.7,
     phases: [
       { name: { en: 'Part 1: KYC Fundamentals', th: 'หมวดที่ 1 — พื้นฐาน KYC' }, color: '#D97706', light: '#FEF3C7' },
       { name: { en: 'Part 2: Segmentation', th: 'หมวดที่ 2 — การแบ่งกลุ่มลูกค้า' }, color: '#185FA5', light: '#E6F1FB' },
@@ -2474,12 +2474,12 @@ export const MODULE_QUIZ_MAP: Record<string, QuizDefinition> = {
       en: 'Questions covering BrainTrade subscription packages, pricing, payment methods, and handling payment objections.',
       th: 'ข้อสอบครอบคลุมแพ็กเกจ ราคา วิธีชำระเงินของ BrainTrade และการรับมือข้อโต้แย้งด้านราคา',
     },
-    passThreshold: 0.8,
+    passThreshold: 0.7,
     questions: [], // loaded from Firestore at runtime
   },
 };
 
-export const PASS_THRESHOLD = 0.8; // 80%
+export const PASS_THRESHOLD = 0.7; // 70%
 
 export const UI_STRINGS = {
   en: {
