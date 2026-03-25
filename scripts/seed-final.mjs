@@ -1,16 +1,11 @@
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { readFileSync, existsSync } from 'fs';
 
-const projectId = process.env.FIREBASE_PROJECT_ID;
-const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+const saPath = "c:\\Users\\Admin\\Downloads\\bt-training-firebase-5fc1fa7b7eea.json";
+const sa = JSON.parse(readFileSync(saPath, 'utf8'));
 
-if (!projectId || !clientEmail || !privateKey) {
-  console.error('Missing Firebase credentials.');
-  process.exit(1);
-}
-
-initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
+initializeApp({ credential: cert(sa) });
 const db = getFirestore();
 
 async function seed() {
