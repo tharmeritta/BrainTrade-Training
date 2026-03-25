@@ -80,21 +80,11 @@ function getAdminApp(): App {
   }
 
   // 5. Robust PEM Key Sanitization
-  let privateKey = rawKey
-    .replace(/\\n/g, '\n') // Handle escaped newlines
-    .replace(/\r/g, '')    // Remove CR
-    .split('\n')
-    .map(line => line.trim()) // Trim each line
-    .filter(line => line.length > 0)
-    .join('\n')
-    .trim();
+  let privateKey = rawKey.replace(/\\n/g, '\n').trim();
   
   // Ensure headers exist
   if (privateKey && !privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
-    // If it's just the base64 blob, wrap it
-    if (privateKey.length > 100) {
-      privateKey = `-----BEGIN PRIVATE KEY-----\n${privateKey}\n-----END PRIVATE KEY-----`;
-    }
+    privateKey = `-----BEGIN PRIVATE KEY-----\n${privateKey}\n-----END PRIVATE KEY-----`;
   }
 
   // Final check for mandatory fields
