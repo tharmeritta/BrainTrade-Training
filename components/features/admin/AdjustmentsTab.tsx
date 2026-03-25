@@ -20,7 +20,6 @@ import { signInWithCustomToken } from 'firebase/auth';
 type ConfigType = 'quizzes' | 'ai-eval' | 'learn';
 
 interface PresentationInfo {
-  presentationId: string;
   slideUrls: string[];
   totalSlides: number;
 }
@@ -89,8 +88,8 @@ const LEARN_DEFAULT_MODULES: Record<string, LearnModule> = {
     descriptionTh: 'เรียนรู้พื้นฐานของหุ้น ส่วนของผู้ถือหุ้น และวิธีการทำงานของตลาดหลักทรัพย์',
     gradient: 'from-blue-600 to-indigo-700',
     presentations: {
-      th: { presentationId: '1SNZxAJAZets0wMIGsLSoaVDtV2tTP21i', slideUrls: [], totalSlides: 16 },
-      en: { presentationId: '1U0Vbd0NgJIfKfiTl17Q4c67ytl1GMtY-', slideUrls: [], totalSlides: 16 },
+      th: { slideUrls: [], totalSlides: 0 },
+      en: { slideUrls: [], totalSlides: 0 },
     },
   },
   kyc: {
@@ -101,8 +100,8 @@ const LEARN_DEFAULT_MODULES: Record<string, LearnModule> = {
     descriptionTh: 'เรียนรู้กระบวนการ KYC การตรวจสอบตัวตนลูกค้า และข้อกำหนดด้านการปฏิบัติตามกฎระเบียบสำหรับบริการทางการเงิน',
     gradient: 'from-emerald-600 to-teal-700',
     presentations: {
-      th: { presentationId: '1DMs0-BZ1dI0KE6HYncMzeNjDUavdPOtA', slideUrls: [], totalSlides: 11 },
-      en: { presentationId: '1SeHjETc4hrYlo4QAQREk5yzjOMznfdxm', slideUrls: [], totalSlides: 11 },
+      th: { slideUrls: [], totalSlides: 0 },
+      en: { slideUrls: [], totalSlides: 0 },
     },
   },
   website: {
@@ -113,8 +112,8 @@ const LEARN_DEFAULT_MODULES: Record<string, LearnModule> = {
     descriptionTh: 'แนะนำแพลตฟอร์ม BrainTrade ฟีเจอร์ต่างๆ และวิธีการใช้งานเว็บไซต์อย่างมีประสิทธิภาพ',
     gradient: 'from-violet-600 to-purple-700',
     presentations: {
-      th: { presentationId: '1DZvsOEv_0G4ZLm1hC6JQlxm2EpaLHqk6', slideUrls: [], totalSlides: 16 },
-      en: { presentationId: '1FW-wC8qqlvHyTo8mhliCqoOC0kL7mYXK', slideUrls: [], totalSlides: 16 },
+      th: { slideUrls: [], totalSlides: 0 },
+      en: { slideUrls: [], totalSlides: 0 },
     },
   },
 };
@@ -1044,14 +1043,14 @@ function LearnEditor({ data, onSave, onChange, saving }: { data: LearnConfig | u
               {['en', 'th'].map((lang) => (
                 <div key={lang} className="space-y-3 p-4 rounded-2xl bg-secondary/10 border border-border">
                   <div className="flex items-center justify-between">
-                    <h5 className="text-xs font-black uppercase tracking-widest text-primary">{lang === 'en' ? 'English' : 'Thai'} Presentation</h5>
+                    <h5 className="text-xs font-black uppercase tracking-widest text-primary">{lang === 'en' ? 'English' : 'Thai'} Slides</h5>
                     {uploadStatus[`${editingId}_${lang}`] === 'loading' && <Loader2 size={14} className="animate-spin text-primary" />}
                   </div>
-                  
+
                   <div className="flex gap-2">
                     <input type="file" id={`up-${lang}`} className="hidden" multiple accept="image/*" onChange={e => e.target.files && handleFileUpload(editingId, lang as any, e.target.files)} />
                     <button onClick={() => document.getElementById(`up-${lang}`)?.click()} className="flex-1 py-3 rounded-xl border border-primary/20 bg-primary/5 text-[10px] font-black uppercase text-primary flex items-center justify-center gap-2 hover:bg-primary/10 transition-all">
-                      <Upload size={14} /> Upload PNG Slides
+                      <Upload size={14} /> {modules[editingId]?.presentations?.[lang as 'en' | 'th']?.slideUrls?.length ? 'Re-upload Slides' : 'Upload PNG Slides'}
                     </button>
                   </div>
 
@@ -1059,11 +1058,11 @@ function LearnEditor({ data, onSave, onChange, saving }: { data: LearnConfig | u
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-tighter">
-                          {modules[editingId].presentations[lang as 'en' | 'th'].slideUrls.length} Slides Synced
+                          {modules[editingId].presentations[lang as 'en' | 'th'].slideUrls.length} Slides in Storage
                         </p>
                         <button 
                           onClick={() => {
-                             if (confirm('Clear all slides? Files will remain in storage but won\'t be linked to this module.')) {
+                             if (confirm('Clear all uploaded slides?')) {
                                handleUpdateModule(editingId, `presentations.${lang}.slideUrls`, []);
                                handleUpdateModule(editingId, `presentations.${lang}.totalSlides`, 0);
                              }
