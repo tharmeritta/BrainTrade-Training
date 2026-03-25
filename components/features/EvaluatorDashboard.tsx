@@ -83,7 +83,7 @@ function scoreHex(n: number) {
   return n >= 70 ? '#60A5FA' : n >= 50 ? '#FBBF24' : '#F87171';
 }
 
-function timeAgo(iso: string | null, t: (key: string, p?: any) => string): string {
+function timeAgo(iso: string | null | undefined, t: (key: string, p?: any) => string): string {
   if (!iso) return '—';
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60000);

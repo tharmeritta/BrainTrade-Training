@@ -492,7 +492,7 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
               >
                 <div className="flex items-center gap-1.5">
                   {definitions[id]?.title?.en || id}
-                  {isSystem && <ShieldCheck size={12} className="text-primary" title="System Module" />}
+                  {isSystem && <span title="System Module"><ShieldCheck size={12} className="text-primary" /></span>}
                 </div>
                 <span className="block text-[10px] font-medium opacity-50 mt-0.5">{id} · {(definitions[id]?.questions || []).length} Qs</span>
               </button>

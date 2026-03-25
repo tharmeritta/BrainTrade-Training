@@ -28,7 +28,7 @@ export function scoreBg(score: number | undefined) {
   return 'bg-red-400';
 }
 
-export function timeAgo(iso: string | null, t?: (key: string, params?: any) => string) {
+export function timeAgo(iso: string | null | undefined, t?: (key: string, params?: any) => string) {
   if (!iso) return t ? t('time.never') : 'Never';
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60000);

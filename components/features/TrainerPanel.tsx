@@ -888,7 +888,7 @@ function DisciplineSubTab({ period, records, onAdded, onDeleted, readOnly }: Dis
 interface LiveSubTabProps {
   period: TrainingPeriod;
   locale: string;
-  role: 'admin' | 'manager' | 'trainer';
+  role: 'admin' | 'manager' | 'it' | 'trainer';
 }
 
 type LivePhase = 'setup' | 'active' | 'summary';
@@ -1318,7 +1318,7 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
 interface PeriodDetailProps {
   period: TrainingPeriod;
   agents: { id: string; name: string }[];
-  role: 'admin' | 'manager' | 'trainer';
+  role: 'admin' | 'manager' | 'it' | 'trainer';
   onPeriodUpdated: (p: TrainingPeriod) => void;
   onPeriodDeleted?: (id: string) => void;
 }
