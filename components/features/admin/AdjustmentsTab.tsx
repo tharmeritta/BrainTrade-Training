@@ -482,21 +482,29 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-        {Object.keys(definitions).map(id => (
-          <div key={id} className={`group relative p-4 rounded-xl border transition-all ${selectedQuiz === id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-secondary/10 hover:border-primary/30'}`}>
-            <button 
-              onClick={() => { setSelectedQuiz(id); setSelectedQuestions([]); setSearchQuery(''); }} 
-              className="w-full text-left font-bold text-sm truncate pr-12"
-            >
-              {definitions[id]?.title?.en || id}
-              <span className="block text-[10px] font-medium opacity-50 mt-0.5">{id} · {(definitions[id]?.questions || []).length} Qs</span>
-            </button>
-            <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={() => handleDuplicateQuiz(id)} className="p-1 text-primary hover:bg-primary/10 rounded" title="Duplicate"><Layers size={14} /></button>
-              <button onClick={() => handleDeleteQuiz(id)} className="p-1 text-red-500 hover:bg-red-500/10 rounded" title="Delete"><Trash2 size={14} /></button>
+        {Object.keys(definitions).map(id => {
+          const isSystem = ['foundation', 'product', 'process'].includes(id.toLowerCase());
+          return (
+            <div key={id} className={`group relative p-4 rounded-xl border transition-all ${selectedQuiz === id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-secondary/10 hover:border-primary/30'}`}>
+              <button 
+                onClick={() => { setSelectedQuiz(id); setSelectedQuestions([]); setSearchQuery(''); }} 
+                className="w-full text-left font-bold text-sm truncate pr-12"
+              >
+                <div className="flex items-center gap-1.5">
+                  {definitions[id]?.title?.en || id}
+                  {isSystem && <ShieldCheck size={12} className="text-primary" title="System Module" />}
+                </div>
+                <span className="block text-[10px] font-medium opacity-50 mt-0.5">{id} · {(definitions[id]?.questions || []).length} Qs</span>
+              </button>
+              <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onClick={() => handleDuplicateQuiz(id)} className="p-1 text-primary hover:bg-primary/10 rounded" title="Duplicate"><Layers size={14} /></button>
+                {!isSystem && (
+                  <button onClick={() => handleDeleteQuiz(id)} className="p-1 text-red-500 hover:bg-red-500/10 rounded" title="Delete"><Trash2 size={14} /></button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         {Object.keys(definitions).length === 0 && (
           <div className="col-span-full py-12 border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center text-muted-foreground gap-2">
             <Database size={32} className="opacity-20" />

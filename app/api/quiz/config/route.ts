@@ -12,19 +12,30 @@ export async function GET(req: NextRequest) {
     const doc = await db.collection('module_config').doc('quizzes').get();
     
     if (!doc.exists) {
-      // Fallback or return empty
+      console.log('[API Quiz] No Firestore document found for "module_config/quizzes", using hardcoded fallbacks.');
       return NextResponse.json({ config: null });
     }
 
-    const allQuizzes = doc.data()?.definitions || {};
+    const data = doc.data();
+    const allQuizzes = data?.definitions || {};
     
     if (moduleId) {
-      return NextResponse.json({ config: allQuizzes[moduleId] || null });
+      // 1. Try exact match
+      let config = allQuizzes[moduleId];
+
+      // 2. Try case-insensitive partial match (e.g., "Foundation" vs "foundation")
+      if (!config) {
+        const key = Object.keys(allQuizzes).find(k => k.toLowerCase() === moduleId.toLowerCase());
+        if (key) config = allQuizzes[key];
+      }
+
+      console.log(`[API Quiz] Fetching moduleId: ${moduleId}. Found in DB: ${!!config}`);
+      return NextResponse.json({ config: config || null });
     }
 
     return NextResponse.json({ configs: allQuizzes });
-  } catch (err) {
-    console.error('Fetch quiz config error:', err);
+  } catch (err: any) {
+    console.error('Fetch quiz config error:', err.message);
     return NextResponse.json({ error: 'Failed to fetch quiz config' }, { status: 500 });
   }
 }
