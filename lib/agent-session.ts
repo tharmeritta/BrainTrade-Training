@@ -36,12 +36,13 @@ export function getAgentSession(): AgentSession | null {
 /**
  * Saves a new agent session to localStorage.
  */
-export function setAgentSession(session: AgentSession): void {
+export function setAgentSession(session: { id: string; name: string; stageName: string }): void {
   if (typeof window === 'undefined') return;
 
   localStorage.setItem(AGENT_ID_KEY, session.id);
   localStorage.setItem(AGENT_NAME_KEY, session.name);
   localStorage.setItem(AGENT_STAGE_NAME_KEY, session.stageName);
+  window.dispatchEvent(new Event('agent-session-changed'));
 }
 
 /**
@@ -53,4 +54,5 @@ export function clearAgentSession(): void {
   localStorage.removeItem(AGENT_ID_KEY);
   localStorage.removeItem(AGENT_NAME_KEY);
   localStorage.removeItem(AGENT_STAGE_NAME_KEY);
+  window.dispatchEvent(new Event('agent-session-changed'));
 }

@@ -1,9 +1,9 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAnalytics, isSupported } from 'firebase/analytics';
-import { getFirestore } from 'firebase/firestore';
-import { getDatabase } from 'firebase/database';
-import { getStorage } from 'firebase/storage';
-import { getAuth } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getDatabase, connectDatabaseEmulator } from 'firebase/database';
+import { getStorage, connectStorageEmulator } from 'firebase/storage';
+import { getAuth, connectAuthEmulator } from 'firebase/auth';
 
 /**
  * Clean environment variables that may have quotes or hidden newlines (CRLF).
@@ -57,6 +57,17 @@ export const db  = getFirestore(app);
 export const rtdb = getDatabase(app);
 export const storage = getStorage(app);
 export const auth = getAuth(app);
+
+// --- Emulator Logic ---
+if (process.env.NODE_ENV === 'development') {
+  if (typeof window !== 'undefined') {
+    console.log('[Firebase Client] Connecting to emulators...');
+    connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+    connectFirestoreEmulator(db, 'localhost', 8080);
+    connectDatabaseEmulator(rtdb, 'localhost', 9000);
+    connectStorageEmulator(storage, 'localhost', 9199);
+  }
+}
 
 // Analytics is browser-only
 export const getClientAnalytics = () =>

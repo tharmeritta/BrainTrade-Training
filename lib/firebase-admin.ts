@@ -103,12 +103,19 @@ function getAdminApp(): App {
 
   // Final check for mandatory fields
   if (!projectId || !clientEmail || !privateKey) {
-    const missing = [];
-    if (!projectId)   missing.push('PROJECT_ID');
-    if (!clientEmail) missing.push('CLIENT_EMAIL');
-    if (!privateKey)  missing.push('PRIVATE_KEY');
-    console.error('[Firebase Admin] Initialization failed - missing:', missing.join(', '));
-    throw new Error(`Firebase Admin credentials incomplete: ${missing.join(', ')}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[Firebase Admin] Missing credentials, using placeholders for emulator mode.');
+      projectId = projectId || 'bt-training-firebase';
+      clientEmail = clientEmail || 'dummy@example.com';
+      privateKey = privateKey || '-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC7...dummy...\n-----END PRIVATE KEY-----';
+    } else {
+      const missing = [];
+      if (!projectId)   missing.push('PROJECT_ID');
+      if (!clientEmail) missing.push('CLIENT_EMAIL');
+      if (!privateKey)  missing.push('PRIVATE_KEY');
+      console.error('[Firebase Admin] Initialization failed - missing:', missing.join(', '));
+      throw new Error(`Firebase Admin credentials incomplete: ${missing.join(', ')}`);
+    }
   }
 
   try {
@@ -134,6 +141,15 @@ function getAdminApp(): App {
 
     const databaseURL = cleanValue(process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL);
     
+    // --- Admin Emulator Logic ---
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Firebase Admin] Setting emulator environment variables...');
+      process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8080';
+      process.env.FIREBASE_DATABASE_EMULATOR_HOST = 'localhost:9000';
+      process.env.FIREBASE_AUTH_EMULATOR_HOST = 'localhost:9099';
+      process.env.FIREBASE_STORAGE_EMULATOR_HOST = 'localhost:9199';
+    }
+
     return initializeApp({
       projectId,
       credential: cert(serviceAccount as any),
