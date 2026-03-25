@@ -907,8 +907,8 @@ function LearnEditor({ data, onSave, onChange, saving }: { data: LearnConfig | u
       descriptionTh: 'คำอธิบายคอร์ส', 
       gradient: 'from-gray-600 to-slate-700', 
       presentations: { 
-        th: { presentationId: '', slideUrls: [], totalSlides: 0 }, 
-        en: { presentationId: '', slideUrls: [], totalSlides: 0 } 
+        th: { slideUrls: [], totalSlides: 0 }, 
+        en: { slideUrls: [], totalSlides: 0 } 
       } 
     };
     setModules({ ...modules, [id]: newModule });
