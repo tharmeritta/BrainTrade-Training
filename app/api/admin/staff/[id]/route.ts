@@ -27,7 +27,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   // If username is being changed, check for duplicates
-...
+  if (body.username) {
+    const existing = await fsGetAll<StaffAccount>('staff_accounts');
+    if (existing.some(s => s.username === body.username?.trim() && s.id !== id)) {
+      return NextResponse.json({ error: 'Username already taken' }, { status: 409 });
+    }
+  }
+
+  await fsUpdate('staff_accounts', id, {
+    ...body,
+    updatedAt: new Date().toISOString()
+  });
+  return NextResponse.json({ ok: true });
+}
 // DELETE /api/admin/staff/:id — remove a staff account
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   let user;
