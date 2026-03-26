@@ -96,7 +96,6 @@ export async function DELETE(req: NextRequest) {
     await requireAdminOrIT();
     const id = req.nextUrl.searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
-    if (id === 'default') return NextResponse.json({ error: 'Cannot delete default scenario' }, { status: 400 });
 
     await fsDelete(COLLECTION, id);
     return NextResponse.json({ success: true });

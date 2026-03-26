@@ -85,10 +85,16 @@ export default function AiScenariosTab() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this scenario?')) return;
     try {
-      await fetch(`/api/admin/ai-scenarios?id=${id}`, { method: 'DELETE' });
-      fetchScenarios();
+      const res = await fetch(`/api/admin/ai-scenarios?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchScenarios();
+      } else {
+        const d = await res.json();
+        alert(d.error || 'Delete failed');
+      }
     } catch (err) {
       console.error('Delete failed', err);
+      alert('Network error while deleting scenario');
     }
   };
 

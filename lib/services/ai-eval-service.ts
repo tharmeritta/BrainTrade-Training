@@ -70,12 +70,16 @@ export class AiEvalService {
     let session = await fsGet<AiEvalSession>(this.COLLECTION_SESSIONS, agentId);
     
     // b. Load Scenario
-    const scenarioId = session?.scenarioId || 'default';
-    const scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, scenarioId) 
+    const scenarioIdFromReq = session?.scenarioId || (isStart ? (userMessage && userMessage.length < 50 ? userMessage : 'default') : 'default');
+    // Note: If isStart is true, the 'userMessage' field might actually contain the scenarioId from the client
+    const actualScenarioId = (isStart && userMessage && !userMessage.includes(' ')) ? userMessage : scenarioIdFromReq;
+
+    const scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, actualScenarioId) 
+                     || await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, 'default')
                      || await this.seedDefaultScenario();
 
     if (!session) {
-      session = await this.startSession(agentId, 'Agent', scenarioId);
+      session = await this.startSession(agentId, 'Agent', actualScenarioId);
     }
 
     // c. Add user message
@@ -251,10 +255,15 @@ export class AiEvalService {
   }
 
   private static async logCompletion(session: AiEvalSession, passed: boolean) {
+    const scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, session.scenarioId);
+    const difficultyMap: Record<string, number> = { 'beginner': 1, 'intermediate': 2, 'advanced': 3, 'expert': 4 };
+    const level = scenario ? difficultyMap[scenario.difficulty] || 1 : 1;
+
     await fsAdd(this.COLLECTION_LOGS, {
       agentId: session.agentId,
       agentName: session.agentName,
       scenarioId: session.scenarioId,
+      difficulty: scenario?.difficulty || 'beginner',
       passed,
       finalTurnCount: session.turnCount,
       timestamp: new Date().toISOString()
@@ -263,7 +272,7 @@ export class AiEvalService {
     if (passed) {
       // Update global progress
       const existing = await fsGet<any>('agent_progress', session.agentId) || { agentId: session.agentId, evalCompletedLevels: [] };
-      const levels = Array.from(new Set([...(existing.evalCompletedLevels || []), 1])).sort();
+      const levels = Array.from(new Set([...(existing.evalCompletedLevels || []), level])).sort();
       await fsSet('agent_progress', session.agentId, { ...existing, evalCompletedLevels: levels });
     }
   }

@@ -6,7 +6,8 @@ import {
   Send, User as UserIcon, Bot, ChevronLeft, Play,
   CheckCircle2, Trophy, RotateCcw, ArrowRight,
   Lock, BookOpen, AlertTriangle, ChevronRight, History,
-  ChevronDown, Smile, Frown, Meh, Zap, Loader2, XCircle
+  ChevronDown, Smile, Frown, Meh, Zap, Loader2, XCircle,
+  Target, BarChart3, ShieldCheck
 } from 'lucide-react';
 
 import type { PitchMessage } from '@/types';
@@ -18,7 +19,6 @@ import { ActiveAgentUI } from '@/components/ui/ActiveAgentUI';
 
 /* ─── Constants & Types ────────────────────────────────────────────────────── */
 
-
 const CRITERIA_KEYS = [
   'rapport',
   'objectionHandling',
@@ -27,9 +27,17 @@ const CRITERIA_KEYS = [
   'naturalness',
 ];
 
-type Step = 'intro' | 'chat';
+type Step = 'intro' | 'scenarios' | 'chat';
 
 /* ─── Interfaces ───────────────────────────────────────────────────────────── */
+
+interface Scenario {
+  id: string;
+  name: string;
+  description: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  passThreshold: number;
+}
 
 interface CoachingData {
   score: number;
@@ -78,9 +86,9 @@ interface ChatViewProps {
 
 /* ─── Step Progress Indicator ──────────────────────────────────────────────── */
 
-const StepProgress = ({ current }: { current: 1 | 2 }) => (
+const StepProgress = ({ current }: { current: 1 | 2 | 3 }) => (
   <div className="flex items-center gap-1.5">
-    {([1, 2] as const).map(s => (
+    {([1, 2, 3] as const).map(s => (
       <div
         key={s}
         className={`rounded-full transition-all duration-300 ${
@@ -111,7 +119,7 @@ const CoachingCard = memo(({ coaching, autoExpand, onUseScript, criteriaKeys }: 
   criteriaKeys: string[];
 }) => {
   const [open, setOpen] = useState(autoExpand);
-  const { score, criteria, strengths, improvements, coachingScript, coachingTip, metadata } = coaching;
+  const { score, criteria, strengths, improvements, coachingScript, coachingTip } = coaching;
   const style = SCORE_STYLE(score);
   const t = useTranslations('aiEval');
 
@@ -240,12 +248,12 @@ const ScoreTrend = memo(({ coaching }: { coaching: Map<number, CoachingData> }) 
 
 ScoreTrend.displayName = 'ScoreTrend';
 
-/* ─── Sub-components ────────────────────────────────────────────────────────── */
+/* ─── Intro View ───────────────────────────────────────────────────────────── */
 
 const IntroView = memo(({ onContinue, guideline, agentName, loading, criteriaKeys }: IntroViewProps) => {
   const t = useTranslations('aiEval');
   return (
-    <div className="max-w-4xl mx-auto py-8">
+    <div className="max-w-4xl mx-auto py-8 px-4">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={TRANSITION.base} className="bg-card rounded-3xl shadow-2xl border border-black/5 dark:border-white/5 overflow-hidden">
         <div className="bg-gradient-to-br from-primary to-primary/80 px-8 py-8 text-primary-foreground relative overflow-hidden">
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 blur-3xl rounded-full" />
@@ -286,16 +294,6 @@ const IntroView = memo(({ onContinue, guideline, agentName, loading, criteriaKey
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-4">
-              <div className="flex items-center gap-2 mb-2 text-emerald-700 dark:text-emerald-400"><CheckCircle2 size={16} /><span className="font-black text-sm uppercase tracking-tight">{t('passCriteria')}</span></div>
-              <p className="text-xs text-emerald-800/70 dark:text-emerald-300/70 leading-relaxed font-medium">{t('passDesc')}</p>
-            </div>
-            <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-2xl p-4">
-              <div className="flex items-center gap-2 mb-2 text-rose-700 dark:text-rose-400"><AlertTriangle size={16} /><span className="font-black text-sm uppercase tracking-tight">{t('failCriteria')}</span></div>
-              <p className="text-xs text-rose-800/70 dark:text-rose-300/70 leading-relaxed font-medium">{t('failDesc')}</p>
-            </div>
-          </div>
           <button onClick={onContinue} disabled={loading || !guideline} className="w-full flex items-center justify-center gap-2.5 bg-foreground text-background hover:bg-primary hover:text-white transition-all duration-500 py-4 rounded-2xl font-black text-base shadow-xl active:scale-[0.99] group disabled:opacity-50">
             {loading ? t('connecting') : t('startSimBtn')}
             <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -306,6 +304,109 @@ const IntroView = memo(({ onContinue, guideline, agentName, loading, criteriaKey
   );
 });
 IntroView.displayName = 'IntroView';
+
+/* ─── Scenario Picker ──────────────────────────────────────────────────────── */
+
+const ScenarioPicker = memo(({ scenarios, completedLevels, onSelect, onBack, agentName }: { 
+  scenarios: Scenario[]; 
+  completedLevels: number[]; 
+  onSelect: (id: string) => void;
+  onBack: () => void;
+  agentName: string | null;
+}) => {
+  const t = useTranslations('aiEval');
+  
+  const difficultyMap: Record<string, number> = { 'beginner': 1, 'intermediate': 2, 'advanced': 3, 'expert': 4 };
+  const sortedScenarios = [...scenarios].sort((a, b) => difficultyMap[a.difficulty] - difficultyMap[b.difficulty]);
+
+  return (
+    <div className="max-w-4xl mx-auto py-8 px-4">
+      <div className="flex items-center justify-between mb-8">
+        <button onClick={onBack} className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-all">
+          <ChevronLeft size={18} /> {t('backToSelection')}
+        </button>
+        <div className="flex flex-col items-end gap-2">
+          <StepProgress current={2} />
+          <ActiveAgentUI agentName={agentName} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {sortedScenarios.map((s, idx) => {
+          const level = difficultyMap[s.difficulty];
+          const isCompleted = completedLevels.includes(level);
+          // Unlock logic: level 1 is always open, others need previous level completed
+          const isLocked = level > 1 && !completedLevels.includes(level - 1);
+          
+          return (
+            <motion.div
+              key={s.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              onClick={() => !isLocked && onSelect(s.id)}
+              className={`relative group bg-card border rounded-3xl p-6 transition-all duration-500 overflow-hidden ${isLocked ? 'opacity-60 grayscale cursor-not-allowed border-border' : 'cursor-pointer hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5 border-black/5 dark:border-white/10'}`}
+            >
+              {isLocked && (
+                <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] flex items-center justify-center z-10">
+                  <div className="bg-white/90 dark:bg-card/90 p-3 rounded-2xl shadow-xl flex items-center gap-3">
+                    <Lock size={18} className="text-muted-foreground" />
+                    <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Level Locked</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-start justify-between mb-4 relative z-0">
+                <div className={`p-3 rounded-2xl ${
+                  s.difficulty === 'beginner' ? 'bg-emerald-500/10 text-emerald-500' :
+                  s.difficulty === 'intermediate' ? 'bg-amber-500/10 text-amber-500' :
+                  s.difficulty === 'advanced' ? 'bg-rose-500/10 text-rose-500' :
+                  'bg-purple-500/10 text-purple-500'
+                }`}>
+                  <Target size={24} />
+                </div>
+                {isCompleted && (
+                  <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
+                    <CheckCircle2 size={12} /> Passed
+                  </div>
+                )}
+              </div>
+
+              <h3 className="font-black text-lg text-foreground mb-2 group-hover:text-primary transition-colors">{s.name}</h3>
+              <p className="text-xs text-muted-foreground font-medium leading-relaxed mb-6 line-clamp-2">{s.description}</p>
+
+              <div className="flex items-center justify-between pt-4 border-t border-black/5 dark:border-white/5">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-50">Difficulty</span>
+                  <span className={`text-[11px] font-black uppercase tracking-wider ${
+                    s.difficulty === 'beginner' ? 'text-emerald-500' :
+                    s.difficulty === 'intermediate' ? 'text-amber-500' :
+                    'text-rose-500'
+                  }`}>{s.difficulty}</span>
+                </div>
+                <div className="flex flex-col gap-1 text-right">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-50">Threshold</span>
+                  <span className="text-[11px] font-black text-foreground">{s.passThreshold}/10</span>
+                </div>
+              </div>
+
+              {!isLocked && (
+                <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                  <div className="w-8 h-8 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg">
+                    <Play size={14} fill="currentColor" />
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+});
+ScenarioPicker.displayName = 'ScenarioPicker';
+
+/* ─── Message Bubble ────────────────────────────────────────────────────────── */
 
 const MessageBubble = memo(({ m, i }: { m: PitchMessage; i: number }) => {
   const isUser = m.role === 'user';
@@ -326,6 +427,8 @@ const MessageBubble = memo(({ m, i }: { m: PitchMessage; i: number }) => {
 });
 MessageBubble.displayName = 'MessageBubble';
 
+/* ─── Chat View ────────────────────────────────────────────────────────────── */
+
 const ChatView = memo(({
   messages, coaching, customerProfile, input, setInput, loading, passed, failed, error,
   onSend, onReset, onClearError, onUseScript, bottomRef, textareaRef, criteriaKeys
@@ -340,7 +443,7 @@ const ChatView = memo(({
   }, [onSend]);
 
   return (
-    <div className="max-w-4xl mx-auto py-2">
+    <div className="max-w-4xl mx-auto py-2 px-4">
       <div className="bg-card rounded-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)] border border-black/5 dark:border-white/10 flex flex-col overflow-hidden" style={{ height: (passed || failed) ? 'auto' : 'calc(100dvh - 96px)', maxHeight: (passed || failed) ? 'none' : '920px', minHeight: '500px' }}>
         <div className="flex items-center justify-between px-5 py-3 border-b border-black/5 dark:border-white/10 bg-white/90 dark:bg-card/90 backdrop-blur-md z-10 shrink-0">
           <div className="flex items-center gap-3">
@@ -357,7 +460,7 @@ const ChatView = memo(({
           </div>
           <div className="flex items-center gap-3">
             <ScoreTrend coaching={coaching} />
-            <StepProgress current={2} />
+            <StepProgress current={3} />
             <button onClick={() => onReset(passed || failed)} className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground hover:text-rose-50 transition-all py-2 px-3 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10">
               <ChevronLeft size={14} />{(passed || failed) ? t('backToSelection') : t('endTraining')}
             </button>
@@ -428,7 +531,7 @@ const ChatView = memo(({
                   <RotateCcw size={15} />{t('retryBtn', { level: '' }).replace(' Level ', '')}
                 </button>
                 {passed ? (
-                  <div className="flex-1 flex items-center justify-center gap-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-3.5 rounded-xl font-bold text-sm shadow-xl shadow-emerald-500/20"><Trophy size={15} />{t('allCompleted')}</div>
+                  <button onClick={() => onReset(true)} className="flex-1 flex items-center justify-center gap-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-3.5 rounded-xl font-bold text-sm shadow-xl shadow-emerald-500/20"><ArrowRight size={15} />Next Level Selection</button>
                 ) : (
                   <button onClick={() => onReset(true)} className="flex-1 flex items-center justify-center gap-2.5 bg-foreground text-background px-6 py-3.5 rounded-xl font-bold text-sm shadow-xl">
                     <ArrowRight size={15} />Start New Attempt
@@ -466,6 +569,8 @@ const ChatView = memo(({
 });
 ChatView.displayName = 'ChatView';
 
+/* ─── Main Component ────────────────────────────────────────────────────────── */
+
 export default function AiEvaluation() {
   const [step, setStep] = useState<Step>('intro');
   const [messages, setMessages] = useState<PitchMessage[]>([]);
@@ -480,6 +585,9 @@ export default function AiEvaluation() {
   const [guideline, setGuideline] = useState<string | null>(null);
   const [criteriaKeys, setCriteriaKeys] = useState<string[]>(CRITERIA_KEYS);
   const [error, setError] = useState<string | null>(null);
+  const [scenarios, setScenarios] = useState<Scenario[]>([]);
+  const [completedLevels, setCompletedLevels] = useState<number[]>([]);
+  
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -489,15 +597,30 @@ export default function AiEvaluation() {
     errorTimerRef.current = setTimeout(() => setError(null), 7000);
   }, []);
 
-  useEffect(() => {
-    fetch('/api/ai-eval/config', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(data => {
-      if (data?.guideline) setGuideline(data.guideline);
-      if (data?.criteria) setCriteriaKeys(data.criteria);
-    }).catch(() => setGuideline('AI customer will act as a Thai client. Handle objections professionally.'));
-
-    const session = getAgentSession();
-    if (session) { setAgentId(session.id); setAgentName(session.name); }
+  const fetchConfig = useCallback(async (id: string | null) => {
+    try {
+      const url = id ? `/api/ai-eval/config?agentId=${id}` : '/api/ai-eval/config';
+      const res = await fetch(url, { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.guideline) setGuideline(data.guideline);
+        if (data.criteria) setCriteriaKeys(data.criteria);
+        if (data.scenarios) setScenarios(data.scenarios);
+        if (data.completedLevels) setCompletedLevels(data.completedLevels);
+      }
+    } catch (err) {
+      console.error('Failed to fetch AI Eval Config', err);
+    }
   }, []);
+
+  useEffect(() => {
+    const session = getAgentSession();
+    if (session) { 
+      setAgentId(session.id); 
+      setAgentName(session.name); 
+      fetchConfig(session.id);
+    }
+  }, [fetchConfig]);
 
   useEffect(() => {
     if (agentId) {
@@ -521,10 +644,13 @@ export default function AiEvaluation() {
 
   useEffect(() => { if (step === 'chat') { setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100); } }, [messages, loading, step]);
 
-  const startSession = useCallback(async () => {
+  const startSession = useCallback(async (scenarioId: string) => {
     if (!agentId) return; setLoading(true); setError(null);
     try {
-      const res = await fetch('/api/ai-eval', { method: 'POST', body: JSON.stringify({ agentId, agentName, isStart: true }) });
+      const res = await fetch('/api/ai-eval', { 
+        method: 'POST', 
+        body: JSON.stringify({ agentId, agentName, isStart: true, message: scenarioId }) 
+      });
       if (!res.ok) throw new Error('Start failed');
       const data = await res.json();
       setMessages(data.messages || []); setCustomerProfile(data.customerProfile || null);
@@ -547,20 +673,34 @@ export default function AiEvaluation() {
       }
       if (data.passed) setPassed(true);
       if (data.failed) setFailed(true);
+      
+      // If passed, refresh progress to update locked levels
+      if (data.passed) fetchConfig(agentId);
     } catch (err: any) { showError(err.message); } finally { setLoading(false); }
-  }, [input, agentId, agentName, loading, passed, failed, showError]);
+  }, [input, agentId, agentName, loading, passed, failed, showError, fetchConfig]);
 
   const handleUseScript = useCallback((text: string) => { setInput(text); textareaRef.current?.focus(); }, []);
+
+  const handleReset = useCallback((clearHistory: boolean) => {
+    setStep('scenarios');
+    if (clearHistory && agentId) {
+      fetch(`/api/ai-eval/active?agentId=${agentId}`, { method: 'DELETE' });
+    }
+  }, [agentId]);
 
   return (
     <AnimatePresence mode="wait">
       {step === 'intro' ? (
         <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={TRANSITION.base}>
-          <IntroView onContinue={startSession} guideline={guideline} agentName={agentName} loading={loading} criteriaKeys={criteriaKeys} />
+          <IntroView onContinue={() => setStep('scenarios')} guideline={guideline} agentName={agentName} loading={loading} criteriaKeys={criteriaKeys} />
+        </motion.div>
+      ) : step === 'scenarios' ? (
+        <motion.div key="scenarios" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={TRANSITION.base}>
+          <ScenarioPicker scenarios={scenarios} completedLevels={completedLevels} onSelect={startSession} onBack={() => setStep('intro')} agentName={agentName} />
         </motion.div>
       ) : (
         <motion.div key="chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={TRANSITION.base}>
-          <ChatView messages={messages} coaching={coaching} customerProfile={customerProfile} input={input} setInput={setInput} loading={loading} passed={passed} failed={failed} error={error} onSend={sendMessage} onReset={() => { setStep('intro'); if (agentId) fetch(`/api/ai-eval/active?agentId=${agentId}`, { method: 'DELETE' }); }} onClearError={() => setError(null)} onUseScript={handleUseScript} bottomRef={bottomRef} textareaRef={textareaRef} criteriaKeys={criteriaKeys} />
+          <ChatView messages={messages} coaching={coaching} customerProfile={customerProfile} input={input} setInput={setInput} loading={loading} passed={passed} failed={failed} error={error} onSend={sendMessage} onReset={handleReset} onClearError={() => setError(null)} onUseScript={handleUseScript} bottomRef={bottomRef} textareaRef={textareaRef} criteriaKeys={criteriaKeys} />
         </motion.div>
       )}
     </AnimatePresence>
