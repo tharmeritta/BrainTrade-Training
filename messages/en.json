@@ -283,6 +283,7 @@
       "viewDetails": "View Details",
       "deactivate": "Deactivate",
       "reactivate": "Reactivate",
+      "inspect": "View as Agent",
       "deleteConfirm": "Permanently delete \"{name}\"? This cannot be undone.",
       "badgeShare": "{pct}% of agents",
       "statusCleared": "Cleared",

@@ -3,16 +3,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { Search, Plus, X, Pencil, Trash2, Upload, Filter } from 'lucide-react';
+import { Search, Plus, X, Pencil, Trash2, Upload, Filter, Eye } from 'lucide-react';
 import type { AgentStats } from '@/types';
 import { BadgePill } from './AdminComponents';
 import { scoreColor, scoreBg, timeAgo, BADGE_CONFIG } from './AdminHelpers';
 import { getCompletionStatus, type CompletionStatus } from '@/lib/completion';
+import { setAgentSession } from '@/lib/agent-session';
 import AgentDetailModal from './AgentDetailModal';
 import BulkImportModal from './BulkImportModal';
+import { useRouter } from 'next/navigation';
 
 export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'it' | 'trainer' }) {
   const t = useTranslations('admin');
+  const router = useRouter();
   const [agents,       setAgents]       = useState<AgentStats[]>([]);
   const [loading,      setLoading]      = useState(true);
   const [search,       setSearch]       = useState('');
@@ -34,6 +37,13 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'it' |
     } catch { /* show empty state */ }
     setLoading(false);
   }, []);
+
+  function inspectAgent(a: AgentStats['agent']) {
+    setAgentSession({ id: a.id, name: a.name, stageName: a.stageName ?? '' });
+    // Use window.location to ensure a clean state/redirect
+    const locale = window.location.pathname.split('/')[1] ?? 'th';
+    window.location.href = `/${locale}/dashboard`;
+  }
 
   useEffect(() => { load(); }, [load]);
 
@@ -371,6 +381,12 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'it' |
                   </td>
                   <td className="px-4 py-4 rounded-r-2xl border-y border-r border-border/50 group-hover:border-primary/20">
                     <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => inspectAgent(a.agent)}
+                        className="p-1.5 rounded-lg text-primary hover:bg-primary/10 transition-colors"
+                        title={t('agents.inspect')}
+                      >
+                        <Eye size={16} />
+                      </button>
                       <button onClick={() => setSelectedForDetail(a)}
                         className="text-[11px] font-bold text-primary hover:text-primary/80 transition-colors whitespace-nowrap px-3 py-1.5 bg-primary/10 rounded-lg">
                         {t('agents.viewDetails')}
