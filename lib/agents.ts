@@ -1,5 +1,6 @@
 import { fsGet as gcsGet, fsGetAll as gcsGetAll } from './firestore-db';
 import type { Agent, AgentStats, ModuleStat, AgentEvaluation } from '@/types';
+import { MOCKUP_AGENT_ID } from './agent-session';
 
 const MODULES = ['foundation', 'product', 'process', 'payment'] as const;
 
@@ -29,6 +30,29 @@ export function computeOverallScore(stats: Omit<AgentStats, 'overallScore' | 'ba
 // ── Single-agent stats (used by /api/agent/progress GET) ──────────────────
 
 export async function getAgentStats(agentId: string, agentName: string): Promise<AgentStats> {
+  // Handle Mockup Agent
+  if (agentId === MOCKUP_AGENT_ID) {
+    const partialMock = {
+      agent: { id: MOCKUP_AGENT_ID, name: agentName || 'Mockup Agent', active: true, createdAt: new Date() },
+      quiz: {
+        foundation: { bestScore: 90, passed: true, attempts: 1, history: [{ score: 9, total: 10, passed: true, timestamp: new Date().toISOString() }] }
+      },
+      aiEval: null,
+      lastActive: new Date().toISOString(),
+      evalCompletedLevels: [],
+      learnedModules: ['foundation', 'product'],
+      humanEvaluations: [],
+    };
+    
+    const overallScore = computeOverallScore(partialMock);
+    const mockStats: AgentStats = {
+      ...partialMock,
+      overallScore,
+      badge: computeBadge(overallScore)
+    };
+    return mockStats;
+  }
+
   const [quizDocs, evalDocs, progressDoc, humanEvals] = await Promise.all([
     gcsGetAll<QuizRecord>('quiz_results'),
     gcsGetAll<EvalRecord>('ai_eval_logs'),

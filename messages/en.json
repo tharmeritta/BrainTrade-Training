@@ -112,6 +112,8 @@
     "loginBtn": "Sign In",
     "loading": "Loading...",
     "nameNotFound": "Name not found? Contact manager",
+    "mockupBtn": "Try Demo",
+    "mockupName": "Mockup Agent",
     "staffLogin": "Staff Login →",
     "fetchError": "Could not connect to system. Please refresh.",
     "matchError": "Name not found in system. Please check and try again."

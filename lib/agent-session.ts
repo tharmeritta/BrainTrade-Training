@@ -12,10 +12,21 @@ export const AGENT_ID_KEY         = 'brainstrade_agent_id';
 export const AGENT_NAME_KEY       = 'brainstrade_agent_name';
 export const AGENT_STAGE_NAME_KEY = 'brainstrade_agent_stage_name';
 
+export const MOCKUP_AGENT_ID      = 'mockup-agent';
+
 export interface AgentSession {
   id: string;
   name: string;
   stageName: string;
+}
+
+/**
+ * Checks if the current session is a mockup agent.
+ */
+export function isMockupAgent(id?: string): boolean {
+  if (id) return id === MOCKUP_AGENT_ID;
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem(AGENT_ID_KEY) === MOCKUP_AGENT_ID;
 }
 
 /**

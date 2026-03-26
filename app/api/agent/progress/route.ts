@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fsGet, fsSet, fsDelete } from '@/lib/firestore-db';
 import { getAgentStats } from '@/lib/agents';
+import { MOCKUP_AGENT_ID } from '@/lib/agent-session';
 
 export interface ProgressRecord {
   agentId: string;
@@ -36,6 +37,11 @@ export async function POST(req: NextRequest) {
     const body: Partial<ProgressRecord> & { agentId: string; agentName: string } = await req.json();
     const { agentId, agentName } = body;
     if (!agentId) return NextResponse.json({ error: 'agentId required' }, { status: 400 });
+
+    // Handle Mockup Agent
+    if (agentId === MOCKUP_AGENT_ID) {
+      return NextResponse.json({ success: true, mockup: true });
+    }
 
     const existing = await fsGet<ProgressRecord>('agent_progress', agentId) ?? defaults(agentId, agentName);
 

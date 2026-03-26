@@ -12,7 +12,7 @@ import {
 import { StatCounter } from '@/components/ui/StatCounter';
 import { BackgroundEffects } from '@/components/ui/BackgroundEffects';
 import { EASE, TRANSITION, FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
-import { getAgentSession, setAgentSession, clearAgentSession } from '@/lib/agent-session';
+import { getAgentSession, setAgentSession, clearAgentSession, MOCKUP_AGENT_ID } from '@/lib/agent-session';
 
 // --- Constants & Types ---
 const CYAN = '#00B4D8';
@@ -273,6 +273,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
   const [inputFocused, setInputFocused]   = useState(false);
   const [loginPrompt, setLoginPrompt]     = useState(false);
   const [shakeKey, setShakeKey]           = useState(0);
+  const [features, setFeatures]           = useState<{ allowMockupMode: boolean }>({ allowMockupMode: true });
 
   const inputRef   = useRef<HTMLInputElement>(null);
   const pathname   = usePathname();
@@ -295,6 +296,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
     const session = getAgentSession();
     if (session) setReturning(session);
 
+    // Fetch agents
     fetch('/api/agents')
       .then(r => r.json())
       .then(d => {
@@ -307,6 +309,14 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
         setError(err.message || 'Fetch failed');
       })
       .finally(() => setLoading(false));
+
+    // Fetch public features config
+    fetch('/api/config/public')
+      .then(r => r.json())
+      .then(d => {
+        if (d.features) setFeatures(d.features);
+      })
+      .catch(() => {});
 
     setTimeout(() => inputRef.current?.focus(), 500);
   }, []);
@@ -342,6 +352,14 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
     setAgentSession({ id: match.id, name: match.name, stageName });
     onAgentSelected(match.id, match.name, stageName);
     // Note: submitting state remains true as we expect the component to unmount
+  }
+
+  async function handleMockupLogin() {
+    setSubmitting(true);
+    await new Promise(r => setTimeout(r, 600));
+    const mockName = t('mockupName');
+    setAgentSession({ id: MOCKUP_AGENT_ID, name: mockName, stageName: 'Demo Agent' });
+    onAgentSelected(MOCKUP_AGENT_ID, mockName, 'Demo Agent');
   }
 
   const handleClearReturning = () => {
@@ -586,7 +604,18 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                 </form>
 
                 <div className="mt-8 pt-6 flex items-center justify-between" style={{ borderTop: '1px solid var(--hub-border)' }}>
-                  <span className="text-[11px] font-bold opacity-60" style={{ color: 'var(--hub-text)' }}>{t('nameNotFound')}</span>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[11px] font-bold opacity-60" style={{ color: 'var(--hub-text)' }}>{t('nameNotFound')}</span>
+                    {features.allowMockupMode && (
+                      <button 
+                        type="button"
+                        onClick={handleMockupLogin}
+                        className="text-[11px] font-black text-brand-cyan hover:brightness-125 transition-all text-left uppercase tracking-wider"
+                      >
+                        {t('mockupBtn')}
+                      </button>
+                    )}
+                  </div>
                   <Link href={`/${locale}/login`} className="text-[11px] font-bold tracking-tight text-brand-cyan hover:underline decoration-2 underline-offset-4 transition-all">{t('staffLogin')}</Link>
                 </div>
               </div>

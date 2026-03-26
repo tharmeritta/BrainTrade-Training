@@ -8,7 +8,8 @@ import {
   Save, Target, Zap, Loader2, CheckCircle2, AlertCircle, Edit3, Plus, 
   Trash2, BookOpen, FileUp, Download, Upload, HelpCircle, ChevronDown, 
   Database, Sparkles, Copy, ExternalLink, Eye, Search, FileJson, 
-  ArrowUp, ArrowDown, MoveUp, MoveDown, Layers, FileText, ShieldCheck
+  ArrowUp, ArrowDown, MoveUp, MoveDown, Layers, FileText, ShieldCheck,
+  Settings
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { storage, auth } from '@/lib/firebase';
@@ -18,7 +19,7 @@ import { COURSE_MODULES } from '@/lib/courses';
 
 // --- Types & Interfaces ---
 
-type ConfigType = 'quizzes' | 'ai-eval' | 'learn';
+type ConfigType = 'quizzes' | 'ai-eval' | 'learn' | 'features';
 
 interface PresentationInfo {
   slideUrls?: string[];
@@ -77,10 +78,16 @@ interface AiEvalConfig {
   [key: string]: any;
 }
 
+interface FeaturesConfig {
+  allowMockupMode: boolean;
+  [key: string]: any;
+}
+
 interface ConfigData {
   learn?: LearnConfig;
   quizzes?: QuizzesConfig;
   ai_eval?: AiEvalConfig;
+  features?: FeaturesConfig;
 }
 
 export default function AdjustmentsTab() {
@@ -220,6 +227,12 @@ export default function AdjustmentsTab() {
         >
           <Zap size={16} /> AI Eval Prompt
         </button>
+        <button 
+          onClick={() => confirmTabChange('features')} 
+          className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'features' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+        >
+          <Settings size={16} /> System
+        </button>
       </div>
 
       <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
@@ -243,6 +256,14 @@ export default function AdjustmentsTab() {
           <AiEvalEditor 
             data={configs.ai_eval} 
             onSave={(data) => handleSave('ai_eval', data)} 
+            onChange={() => setHasUnsavedChanges(true)}
+            saving={saving} 
+          />
+        )}
+        {activeTab === 'features' && (
+          <SystemEditor 
+            data={configs.features} 
+            onSave={(data) => handleSave('features', data)} 
             onChange={() => setHasUnsavedChanges(true)}
             saving={saving} 
           />
@@ -1221,6 +1242,53 @@ function LearnEditor({ data, onSave, onChange, saving }: { data: LearnConfig | u
           </div>
         </motion.div>
       )}
+    </div>
+  );
+}
+
+function SystemEditor({ data, onSave, onChange, saving }: { data: FeaturesConfig | undefined, onSave: (d: FeaturesConfig) => void, onChange: () => void, saving: boolean }) {
+  const [config, setConfig] = useState<FeaturesConfig>(data || { allowMockupMode: true });
+
+  const handleToggle = (key: keyof FeaturesConfig) => {
+    setConfig(prev => ({ ...prev, [key]: !prev[key] }));
+    onChange();
+  };
+
+  return (
+    <div className="p-6 space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="font-bold flex items-center gap-2 text-primary"><Settings size={18} /> Global Features</h3>
+          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mt-1">Enable or disable core platform functionalities.</p>
+        </div>
+        <button
+          onClick={() => onSave(config)}
+          className="bg-primary text-white px-5 py-1.5 rounded-lg text-xs font-bold disabled:opacity-50 flex items-center gap-2 transition-all active:scale-95"
+          disabled={saving}
+        >
+          {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save Settings
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-5 rounded-2xl border border-border bg-secondary/5 flex items-center justify-between group hover:border-primary/30 transition-all">
+          <div className="flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${config.allowMockupMode ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-secondary text-muted-foreground border border-border'}`}>
+              <Eye size={24} />
+            </div>
+            <div>
+              <p className="text-sm font-bold">Mockup Agent Mode</p>
+              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight max-w-[200px] leading-tight mt-0.5">Allows guests to try the agent dashboard via &quot;Demo&quot; button</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => handleToggle('allowMockupMode')}
+            className={`relative w-12 h-6 rounded-full transition-all duration-300 outline-none ${config.allowMockupMode ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'bg-slate-300'}`}
+          >
+            <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-300 ${config.allowMockupMode ? 'translate-x-6' : 'translate-x-0'}`} />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
