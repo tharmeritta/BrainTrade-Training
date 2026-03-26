@@ -136,7 +136,7 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
             {!sidebarCollapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-black text-foreground tracking-tight truncate">{t('title')}</p>
-                <p className="text-[10px] text-muted-foreground truncate">{t('controlPanel', { role: '' }).trim()}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{t('controlPanel', { role: t(`roles.${role}`) })}</p>
               </div>
             )}
           </div>

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/session';
+import { requireAdminOrIT } from '@/lib/session';
 import { fsGetAll } from '@/lib/firestore-db';
 import type { StaffAccount } from '@/types';
 import * as XLSX from 'xlsx';
 
 export async function GET(req: NextRequest) {
   try {
-    await requireAdmin();
+    await requireAdminOrIT();
   } catch {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

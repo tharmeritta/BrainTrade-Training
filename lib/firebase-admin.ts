@@ -180,7 +180,7 @@ export const getAdminDb = (): Firestore => {
     if (!cachedDb) {
       const app = getAdminApp();
       cachedDb = getFirestore(app);
-      // Test the connection immediately if possible? No, Firestore is lazy.
+      cachedDb.settings({ ignoreUndefinedProperties: true });
     }
     return cachedDb;
   } catch (e: any) {

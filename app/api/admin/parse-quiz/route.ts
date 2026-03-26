@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/session';
+import { requireAdminOrIT } from '@/lib/session';
 import { getOpenAI } from '@/lib/openai';
 
 export const maxDuration = 60; // Allow up to 60s for AI parsing on Vercel
@@ -59,7 +59,7 @@ Example Output format:
 
 export async function POST(req: NextRequest) {
   try {
-    await requireAdmin();
+    await requireAdminOrIT();
   } catch {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

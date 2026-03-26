@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/lib/session';
+import { requireAdminOrIT } from '@/lib/session';
 import { fsGetAll } from '@/lib/firestore-db';
 import { resolveApprovalRequest } from '@/lib/services/approval-service';
 import type { ApprovalRequest } from '@/types';
 
 // GET /api/admin/approvals — list all approval requests
 export async function GET() {
-  try { await requireAdmin(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { await requireAdminOrIT(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   try {
     const requests = await fsGetAll<ApprovalRequest>('approval_requests');
@@ -22,7 +22,7 @@ export async function GET() {
 // POST /api/admin/approvals — approve or reject a request
 export async function POST(req: NextRequest) {
   let user;
-  try { user = await requireAdmin(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { user = await requireAdminOrIT(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   const body = await req.json();
   const { requestId, status, rejectionReason } = body;
