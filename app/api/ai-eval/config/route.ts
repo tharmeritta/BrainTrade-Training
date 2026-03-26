@@ -30,15 +30,50 @@ export async function GET(req: NextRequest) {
     ]);
 
     const configData = configDoc.exists ? configDoc.data() : {};
+    const unlockMode = configData?.unlockMode || 'sequential';
     const scenarios = scenariosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    const completedLevels = progressDoc?.exists ? (progressDoc.data()?.evalCompletedLevels || []) : [];
+    
+    // Dynamic Level Completion Logic
+    const progressData = progressDoc?.exists ? progressDoc.data() : {};
+    const passedScenarios = progressData?.evalPassedScenarios || [];
+    const legacyCompletedLevels = progressData?.evalCompletedLevels || [];
+    
+    // Group active scenarios by level
+    const difficultyMap: Record<string, number> = { 'beginner': 1, 'intermediate': 2, 'advanced': 3, 'expert': 4 };
+    const levelToScenarios: Record<number, string[]> = {};
+    scenarios.forEach((s: any) => {
+      const lv = difficultyMap[s.difficulty] || 1;
+      if (!levelToScenarios[lv]) levelToScenarios[lv] = [];
+      levelToScenarios[lv].push(s.id);
+    });
+
+    // A level is completed if:
+    // 1. Sequential: ALL active scenarios in that level are passed
+    // 2. Flexible: AT LEAST ONE active scenario in that level is passed
+    const dynamicCompletedLevels = Object.keys(levelToScenarios)
+      .map(Number)
+      .filter(lv => {
+        const activeIds = levelToScenarios[lv];
+        if (activeIds.length === 0) return false;
+        
+        if (unlockMode === 'flexible') {
+          return activeIds.some(id => passedScenarios.includes(id));
+        }
+        return activeIds.every(id => passedScenarios.includes(id));
+      });
+
+    // Combine legacy and dynamic (ensure no duplicates)
+    // If dynamicCompletedLevels has content, we prefer it, but keep legacy if they passed it before
+    const completedLevels = Array.from(new Set([...legacyCompletedLevels, ...dynamicCompletedLevels])).sort();
 
     return NextResponse.json({
       guideline: configData?.agentGuideline || FALLBACK_AGENT_GUIDELINE,
       passThreshold: configData?.passThreshold || 7,
       criteria: configData?.criteria || ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
+      unlockMode,
       scenarios,
-      completedLevels
+      completedLevels,
+      passedScenarios
     });
   } catch (err) {
     console.error('Fetch AI eval guideline error:', err);

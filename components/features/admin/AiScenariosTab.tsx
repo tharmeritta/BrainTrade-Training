@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Edit2, Trash2, Check, X, Zap, 
   Target, MessageSquare, AlertTriangle, Save,
-  ChevronDown, ChevronUp, Activity, Shield, FileUp
+  ChevronDown, ChevronUp, Activity, Shield, FileUp, Settings,
+  RotateCcw
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { AiEvalScenario, AiEvalScenarioSchema } from '@/types/ai-eval';
@@ -20,6 +21,8 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
   const [editForm, setEditForm] = useState<Partial<AiEvalScenario>>({});
   const [isCreating, setIsCreating] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [globalConfig, setGlobalConfig] = useState<{ unlockMode: 'sequential' | 'flexible' }>({ unlockMode: 'sequential' });
+  const [savingConfig, setSavingConfig] = useState(false);
 
   const t = useTranslations('admin');
 
@@ -27,7 +30,6 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
   const fetchScenarios = useCallback(async () => {
     setLoading(true);
     try {
-      // Note: We'll create this API route next
       const res = await fetch('/api/admin/ai-scenarios');
       if (res.ok) {
         const data = await res.json();
@@ -40,9 +42,43 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
     }
   }, []);
 
+  const fetchGlobalConfig = useCallback(async () => {
+    try {
+      const res = await fetch('/api/admin/config');
+      if (res.ok) {
+        const data = await res.json();
+        const aiEvalConfig = data.configs?.ai_eval || {};
+        setGlobalConfig({
+          unlockMode: aiEvalConfig.unlockMode || 'sequential'
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch global config', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchScenarios();
-  }, [fetchScenarios]);
+    fetchGlobalConfig();
+  }, [fetchScenarios, fetchGlobalConfig]);
+
+  const updateGlobalConfig = async (newConfig: typeof globalConfig) => {
+    setSavingConfig(true);
+    try {
+      const res = await fetch('/api/admin/config', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: 'ai_eval', data: newConfig }),
+      });
+      if (res.ok) {
+        setGlobalConfig(newConfig);
+      }
+    } catch (err) {
+      console.error('Failed to update global config', err);
+    } finally {
+      setSavingConfig(false);
+    }
+  };
 
   const handleEdit = (s: AiEvalScenario) => {
     setEditingId(s.id);
@@ -129,6 +165,64 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
         )}
       </div>
 
+      {!readOnly && (
+        <div className="bg-card border border-border/50 rounded-3xl p-5 shadow-sm">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-2xl bg-primary/10 text-primary">
+                <Settings size={20} />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-foreground tracking-tight">Level Unlocking Mode</h3>
+                <p className="text-[10px] text-muted-foreground font-medium">Control how agents progress through difficulty levels.</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center bg-secondary/50 p-1 rounded-xl border border-border/50">
+              <button
+                onClick={() => updateGlobalConfig({ unlockMode: 'sequential' })}
+                disabled={savingConfig}
+                className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                  globalConfig.unlockMode === 'sequential' 
+                    ? 'bg-background text-foreground shadow-sm' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Sequential
+              </button>
+              <button
+                onClick={() => updateGlobalConfig({ unlockMode: 'flexible' })}
+                disabled={savingConfig}
+                className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                  globalConfig.unlockMode === 'flexible' 
+                    ? 'bg-background text-foreground shadow-sm' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Flexible
+              </button>
+            </div>
+          </div>
+          
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className={`p-3 rounded-2xl border transition-all ${globalConfig.unlockMode === 'sequential' ? 'border-primary/30 bg-primary/5' : 'border-border/50 bg-secondary/20 opacity-50'}`}>
+              <div className="flex items-center gap-2 mb-1">
+                <Shield size={14} className={globalConfig.unlockMode === 'sequential' ? 'text-primary' : 'text-muted-foreground'} />
+                <span className="text-[10px] font-black uppercase tracking-tight">Sequential Mode (Default)</span>
+              </div>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">Agents must pass <strong>ALL active scenarios</strong> in a level to unlock the next difficulty.</p>
+            </div>
+            <div className={`p-3 rounded-2xl border transition-all ${globalConfig.unlockMode === 'flexible' ? 'border-primary/30 bg-primary/5' : 'border-border/50 bg-secondary/20 opacity-50'}`}>
+              <div className="flex items-center gap-2 mb-1">
+                <RotateCcw size={14} className={globalConfig.unlockMode === 'flexible' ? 'text-primary' : 'text-muted-foreground'} />
+                <span className="text-[10px] font-black uppercase tracking-tight">Flexible Mode</span>
+              </div>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">Agents only need to pass <strong>ANY ONE scenario</strong> in a level to unlock the next difficulty.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <AnimatePresence>
         {showImport && (
           <AiScenarioImportModal 
@@ -184,6 +278,18 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
                         value={editForm.passThreshold}
                         onChange={e => setEditForm({ ...editForm, passThreshold: parseInt(e.target.value) })}
                       />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Active Status</label>
+                    <div className="flex items-center gap-3 bg-secondary/30 rounded-xl px-4 py-2.5">
+                      <button
+                        onClick={() => setEditForm({ ...editForm, isActive: !editForm.isActive })}
+                        className={`w-10 h-5 rounded-full relative transition-colors ${editForm.isActive ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                      >
+                        <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${editForm.isActive ? 'left-6' : 'left-1'}`} />
+                      </button>
+                      <span className="text-sm font-bold">{editForm.isActive ? 'Active' : 'Inactive'}</span>
                     </div>
                   </div>
                   <div className="space-y-1.5">
@@ -312,21 +418,41 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
                   </div>
                 </div>
                 {!readOnly && (
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => handleEdit(s)}
-                      className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-all"
-                      title="Edit"
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(s.id)}
-                      className="p-2 rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-all"
-                      title="Delete"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                  <div className="flex items-center gap-4">
+                    <div className="flex flex-col items-end gap-1">
+                      <button
+                        onClick={async () => {
+                          const res = await fetch('/api/admin/ai-scenarios', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: s.id, data: { isActive: !s.isActive } }),
+                          });
+                          if (res.ok) fetchScenarios();
+                        }}
+                        className={`w-8 h-4 rounded-full relative transition-colors ${s.isActive ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                      >
+                        <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${s.isActive ? 'left-4.5' : 'left-0.5'}`} />
+                      </button>
+                      <span className="text-[9px] font-black uppercase tracking-tighter text-muted-foreground">
+                        {s.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => handleEdit(s)}
+                        className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-all"
+                        title="Edit"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(s.id)}
+                        className="p-2 rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-all"
+                        title="Delete"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

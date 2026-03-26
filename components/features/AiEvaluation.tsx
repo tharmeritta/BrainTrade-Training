@@ -307,9 +307,11 @@ IntroView.displayName = 'IntroView';
 
 /* ─── Scenario Picker ──────────────────────────────────────────────────────── */
 
-const ScenarioPicker = memo(({ scenarios, completedLevels, onSelect, onBack, agentName }: { 
+const ScenarioPicker = memo(({ scenarios, completedLevels, passedScenarios, unlockMode, onSelect, onBack, agentName }: { 
   scenarios: Scenario[]; 
   completedLevels: number[]; 
+  passedScenarios: string[];
+  unlockMode: 'sequential' | 'flexible';
   onSelect: (id: string) => void;
   onBack: () => void;
   agentName: string | null;
@@ -322,9 +324,24 @@ const ScenarioPicker = memo(({ scenarios, completedLevels, onSelect, onBack, age
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <div className="flex items-center justify-between mb-8">
-        <button onClick={onBack} className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-all">
-          <ChevronLeft size={18} /> {t('backToSelection')}
-        </button>
+        <div className="flex flex-col gap-1">
+          <button onClick={onBack} className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-all">
+            <ChevronLeft size={18} /> {t('backToSelection')}
+          </button>
+          <div className="mt-2 flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-xl border border-primary/10">
+            {unlockMode === 'flexible' ? (
+              <>
+                <RotateCcw size={14} className="text-primary" />
+                <span className="text-[10px] font-black uppercase tracking-tight text-primary">Flexible Mode: Pass ANY one to unlock next level</span>
+              </>
+            ) : (
+              <>
+                <ShieldCheck size={14} className="text-primary" />
+                <span className="text-[10px] font-black uppercase tracking-tight text-primary">Sequential Mode: Pass ALL active to unlock next level</span>
+              </>
+            )}
+          </div>
+        </div>
         <div className="flex flex-col items-end gap-2">
           <StepProgress current={2} />
           <ActiveAgentUI agentName={agentName} />
@@ -334,7 +351,8 @@ const ScenarioPicker = memo(({ scenarios, completedLevels, onSelect, onBack, age
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {sortedScenarios.map((s, idx) => {
           const level = difficultyMap[s.difficulty];
-          const isCompleted = completedLevels.includes(level);
+          const isCompleted = passedScenarios.includes(s.id);
+          const isLevelPassed = completedLevels.includes(level);
           // Unlock logic: level 1 is always open, others need previous level completed
           const isLocked = level > 1 && !completedLevels.includes(level - 1);
           
@@ -368,6 +386,11 @@ const ScenarioPicker = memo(({ scenarios, completedLevels, onSelect, onBack, age
                 {isCompleted && (
                   <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
                     <CheckCircle2 size={12} /> Passed
+                  </div>
+                )}
+                {!isCompleted && isLevelPassed && (
+                   <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
+                    <AlertTriangle size={12} /> Level Passed (Legacy)
                   </div>
                 )}
               </div>
@@ -587,6 +610,8 @@ export default function AiEvaluation() {
   const [error, setError] = useState<string | null>(null);
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [completedLevels, setCompletedLevels] = useState<number[]>([]);
+  const [passedScenarios, setPassedScenarios] = useState<string[]>([]);
+  const [unlockMode, setUnlockMode] = useState<'sequential' | 'flexible'>('sequential');
   
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -607,6 +632,8 @@ export default function AiEvaluation() {
         if (data.criteria) setCriteriaKeys(data.criteria);
         if (data.scenarios) setScenarios(data.scenarios);
         if (data.completedLevels) setCompletedLevels(data.completedLevels);
+        if (data.passedScenarios) setPassedScenarios(data.passedScenarios);
+        if (data.unlockMode) setUnlockMode(data.unlockMode);
       }
     } catch (err) {
       console.error('Failed to fetch AI Eval Config', err);
@@ -696,7 +723,15 @@ export default function AiEvaluation() {
         </motion.div>
       ) : step === 'scenarios' ? (
         <motion.div key="scenarios" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={TRANSITION.base}>
-          <ScenarioPicker scenarios={scenarios} completedLevels={completedLevels} onSelect={startSession} onBack={() => setStep('intro')} agentName={agentName} />
+          <ScenarioPicker 
+            scenarios={scenarios} 
+            completedLevels={completedLevels} 
+            passedScenarios={passedScenarios}
+            unlockMode={unlockMode}
+            onSelect={startSession} 
+            onBack={() => setStep('intro')} 
+            agentName={agentName} 
+          />
         </motion.div>
       ) : (
         <motion.div key="chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={TRANSITION.base}>

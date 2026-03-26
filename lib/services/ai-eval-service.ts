@@ -280,9 +280,10 @@ export class AiEvalService {
     
     if (passed) {
       // Update global progress
-      const existing = await fsGet<any>('agent_progress', session.agentId) || { agentId: session.agentId, evalCompletedLevels: [] };
+      const existing = await fsGet<any>('agent_progress', session.agentId) || { agentId: session.agentId, evalCompletedLevels: [], evalPassedScenarios: [] };
       const levels = Array.from(new Set([...(existing.evalCompletedLevels || []), level])).sort();
-      await fsSet('agent_progress', session.agentId, { ...existing, evalCompletedLevels: levels });
+      const scenarios = Array.from(new Set([...(existing.evalPassedScenarios || []), session.scenarioId]));
+      await fsSet('agent_progress', session.agentId, { ...existing, evalCompletedLevels: levels, evalPassedScenarios: scenarios });
     }
   }
 
