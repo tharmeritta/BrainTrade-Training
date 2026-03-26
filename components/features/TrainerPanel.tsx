@@ -937,7 +937,7 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
         setLoadingList(false);
       })
       .catch(() => setLoadingList(false));
-  }, []);
+  }, []); // eslint-disable-next-line react-hooks/exhaustive-deps
 
   const selectedMod = availableMods.find(m => m.id === selectedModId) || availableMods[0];
   const agentNames  = Object.values(period.agentNames ?? {});

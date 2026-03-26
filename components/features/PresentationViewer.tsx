@@ -223,12 +223,15 @@ export default function PresentationViewer({
 
   // ... (Presence Tracking and Sync Actions remain unchanged)
 
-  // ── Presence Tracking ──────────────────────────────────────────────────────
+  // ── Presence Tracking & Participants ──────────────────────────────────────
 
+  const myId = user?.uid || agentId;
+  const myName = user?.name || agentName;
+  const myRole = user?.role || 'agent';
+
+  // 1. Core Presence (set on mount, remove on unmount)
   useEffect(() => {
-    const myId = user?.uid || agentId;
-    const myName = user?.name || agentName;
-    if (!myId || !myName) return;
+    if (!myId || !myName || !module.id) return;
 
     const myPresenceRef = ref(rtdb, `presentation_sync/${module.id}/participants/${myId}`);
     
@@ -236,7 +239,7 @@ export default function PresentationViewer({
     set(myPresenceRef, {
       id: myId,
       name: myName,
-      role: user?.role || 'agent',
+      role: myRole,
       inControl: amInControl,
       updatedAt: rtdbTimestamp(),
     }).then(() => {
@@ -246,10 +249,25 @@ export default function PresentationViewer({
       console.error('RTDB Presence Write Fatal:', err.message);
     });
 
-    // Update inControl status when it changes
-    update(myPresenceRef, { inControl: amInControl }).catch(() => {});
+    // Cleanup presence on unmount or identity change
+    return () => {
+      remove(myPresenceRef).catch(() => {});
+    };
+  }, [module.id, myId, myName, myRole]); // eslint-disable-next-line react-hooks/exhaustive-deps 
 
-    // Listen for all participants
+  // 2. Update status fields (inControl) without removing/re-adding presence
+  useEffect(() => {
+    if (!myId || !module.id) return;
+    const myPresenceRef = ref(rtdb, `presentation_sync/${module.id}/participants/${myId}`);
+    update(myPresenceRef, { 
+      inControl: amInControl,
+      updatedAt: rtdbTimestamp() 
+    }).catch(() => {});
+  }, [amInControl, myId, module.id]);
+
+  // 3. Listen for all participants
+  useEffect(() => {
+    if (!module.id) return;
     const participantsRef = ref(rtdb, `presentation_sync/${module.id}/participants`);
     const unsub = onValue(participantsRef, (snap) => {
       if (snap.exists()) {
@@ -261,12 +279,8 @@ export default function PresentationViewer({
       }
     });
 
-    // Cleanup presence on unmount
-    return () => {
-      remove(myPresenceRef).catch(() => {});
-      unsub();
-    };
-  }, [module.id, user, agentId, agentName, amInControl]);
+    return () => unsub();
+  }, [module.id]);
 
   // ── Sync Actions ────────────────────────────────────────────────────────────
 
