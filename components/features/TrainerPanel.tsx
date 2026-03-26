@@ -938,16 +938,28 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
   useEffect(() => {
     let active = true;
     setLoadingCourse(true);
+    setCourse(null); // Reset course while loading new one
+
     fetch(`/api/courses/${selectedModId}`)
-      .then(res => res.ok ? res.json() : null)
+      .then(async res => {
+        if (!res.ok) {
+          console.error(`[TrainerPanel] Fetch failed for ${selectedModId}: ${res.status}`);
+          return null;
+        }
+        return res.json();
+      })
       .then(c => {
         if (active) {
           setCourse(c);
           setLoadingCourse(false);
         }
       })
-      .catch(() => {
-        if (active) setLoadingCourse(false);
+      .catch(err => {
+        console.error(`[TrainerPanel] Error loading course ${selectedModId}:`, err);
+        if (active) {
+          setCourse(null);
+          setLoadingCourse(false);
+        }
       });
     return () => { active = false; };
   }, [selectedModId]);
