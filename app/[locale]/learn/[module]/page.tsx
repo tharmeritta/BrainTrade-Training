@@ -11,10 +11,10 @@ export default async function LearnPage({
   params: Promise<{ locale: string; module: string }>;
   searchParams: Promise<{ lang?: string }>;
 }) {
-  const { locale, module } = await params;
+  const { locale, module: moduleSlug } = await params;
   const { lang } = await searchParams;
 
-  const course = await getCourseModule(module);
+  const course = await getCourseModule(moduleSlug);
   if (!course) redirect('/dashboard');
 
   const user = await getServerUser();

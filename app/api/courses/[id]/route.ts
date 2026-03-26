@@ -7,13 +7,13 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const module = await getCourseModule(id);
+    const courseModule = await getCourseModule(id);
     
-    if (!module) {
+    if (!courseModule) {
       return NextResponse.json({ error: 'Module not found' }, { status: 404 });
     }
 
-    return NextResponse.json(module);
+    return NextResponse.json(courseModule);
   } catch (error: any) {
     console.error('[API Course] GET error:', error.message);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
