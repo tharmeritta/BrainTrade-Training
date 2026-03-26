@@ -81,15 +81,15 @@ export default function AiScenarioImportModal({ onClose, onSuccess }: AiScenario
 
       const scenarios = json
         .map(row => ({
-          name: row.Name || row.name,
-          difficulty: (row.Difficulty || row.difficulty || 'beginner').toLowerCase(),
-          passThreshold: parseInt(row.Threshold || row.threshold || row.passThreshold || 7),
-          customerPersona: row.Persona || row.persona || row.customerPersona,
-          objective: row.Objective || row.objective,
-          initialMood: row.Mood || row.mood || row.initialMood,
-          maxTurns: parseInt(row.MaxTurns || row.maxTurns || 12),
-          winCondition: row.WinHint || row.winHint || row.winCondition,
-          failCondition: row.FailHint || row.failHint || row.failCondition,
+          name: row.Name || row.name || row['ชื่อ'] || row['ชื่อสถานการณ์'],
+          difficulty: (row.Difficulty || row.difficulty || row['ความยาก'] || 'beginner').toLowerCase(),
+          passThreshold: parseInt(row.Threshold || row.threshold || row.passThreshold || row['เกณฑ์คะแนน'] || row['คะแนนผ่าน'] || 7),
+          customerPersona: row.Persona || row.persona || row.customerPersona || row['บุคลิกลูกค้า'] || row['ข้อมูลลูกค้า'],
+          objective: row.Objective || row.objective || row['วัตถุประสงค์'],
+          initialMood: row.Mood || row.mood || row.initialMood || row['อารมณ์'],
+          maxTurns: parseInt(row.MaxTurns || row.maxTurns || row['รอบสูงสุด'] || row['จำนวนรอบ'] || 12),
+          winCondition: row.WinHint || row.winHint || row.winCondition || row['เงื่อนไขการชนะ'] || row['คำแนะนำการชนะ'],
+          failCondition: row.FailHint || row.failHint || row.failCondition || row['เงื่อนไขการแพ้'] || row['คำแนะนำการแพ้'],
           isActive: true
         }))
         .filter(s => s.name && s.customerPersona);
