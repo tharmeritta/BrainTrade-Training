@@ -5,10 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Edit2, Trash2, Check, X, Zap, 
   Target, MessageSquare, AlertTriangle, Save,
-  ChevronDown, ChevronUp, Activity, Shield
+  ChevronDown, ChevronUp, Activity, Shield, FileUp
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { AiEvalScenario, AiEvalScenarioSchema } from '@/types/ai-eval';
+import AiScenarioImportModal from './AiScenarioImportModal';
 
 /* ─── Components ─────────────────────────────────────────────────────────── */
 
@@ -18,6 +19,7 @@ export default function AiScenariosTab() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<AiEvalScenario>>({});
   const [isCreating, setIsCreating] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   
   const t = useTranslations('admin');
 
@@ -100,14 +102,32 @@ export default function AiScenariosTab() {
           </h2>
           <p className="text-xs text-muted-foreground font-medium">Manage customer personas and evaluation criteria for AI Eval.</p>
         </div>
-        <button
-          onClick={() => { setIsCreating(true); setEditForm({ difficulty: 'beginner', isActive: true, maxTurns: 12, passThreshold: 7 }); }}
-          className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
-        >
-          <Plus size={16} />
-          Create Scenario
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowImport(true)}
+            className="flex items-center gap-2 bg-secondary text-foreground px-4 py-2 rounded-xl text-sm font-bold hover:bg-secondary/80 transition-all"
+          >
+            <FileUp size={16} />
+            {t('aiScenarios.bulkImport')}
+          </button>
+          <button
+            onClick={() => { setIsCreating(true); setEditForm({ difficulty: 'beginner', isActive: true, maxTurns: 12, passThreshold: 7 }); }}
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
+          >
+            <Plus size={16} />
+            {t('aiScenarios.create')}
+          </button>
+        </div>
       </div>
+
+      <AnimatePresence>
+        {showImport && (
+          <AiScenarioImportModal 
+            onClose={() => setShowImport(false)} 
+            onSuccess={() => fetchScenarios()} 
+          />
+        )}
+      </AnimatePresence>
 
       <div className="grid grid-cols-1 gap-4">
         <AnimatePresence mode="popLayout">

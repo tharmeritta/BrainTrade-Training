@@ -191,7 +191,15 @@
       "cancel": "Cancel",
       "deleteConfirm": "Are you sure you want to delete this scenario?",
       "noScenarios": "No scenarios found",
-      "loading": "Loading AI Scenarios..."
+      "loading": "Loading AI Scenarios...",
+      "bulkImport": "Bulk Import",
+      "importTitle": "Import Scenarios from File",
+      "importDesc": "Upload a CSV or Excel (.xlsx) file with scenarios. Columns: Name, Difficulty, Threshold, Persona, Objective, Mood, MaxTurns, WinHint, FailHint.",
+      "selectFile": "Select File",
+      "uploading": "Importing {count} scenarios...",
+      "importSuccess": "Successfully imported {count} scenarios.",
+      "importError": "Error importing scenarios.",
+      "downloadTemplate": "Download Template"
     },
     "roles": {
       "admin": "Administrator",

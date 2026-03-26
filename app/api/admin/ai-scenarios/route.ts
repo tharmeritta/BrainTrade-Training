@@ -27,15 +27,38 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     await requireAdminOrIT();
-    const data = await req.json();
-    const id = crypto.randomUUID();
+    const body = await req.json();
     
+    // Handle bulk import
+    if (Array.isArray(body)) {
+      const results = [];
+      for (const item of body) {
+        if (!item.name) continue;
+        const id = item.id || crypto.randomUUID();
+        const scenario: AiEvalScenario = {
+          ...item,
+          id,
+          createdAt: item.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isActive: item.isActive ?? true,
+          difficulty: item.difficulty || 'beginner',
+          maxTurns: item.maxTurns || 12,
+          passThreshold: item.passThreshold || 7
+        };
+        await fsSet(COLLECTION, id, scenario);
+        results.push(scenario);
+      }
+      return NextResponse.json({ success: true, count: results.length });
+    }
+
+    // Handle single creation
+    const id = crypto.randomUUID();
     const scenario: AiEvalScenario = {
-      ...data,
+      ...body,
       id,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      isActive: data.isActive ?? true
+      isActive: body.isActive ?? true
     };
 
     await fsSet(COLLECTION, id, scenario);

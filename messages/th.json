@@ -191,7 +191,15 @@
       "cancel": "ยกเลิก",
       "deleteConfirm": "คุณแน่ใจหรือไม่ว่าต้องการลบสถานการณ์นี้?",
       "noScenarios": "ไม่พบสถานการณ์",
-      "loading": "กำลังโหลดข้อมูลสถานการณ์ AI..."
+      "loading": "กำลังโหลดข้อมูลสถานการณ์ AI...",
+      "bulkImport": "นำเข้าข้อมูลจำนวนมาก",
+      "importTitle": "นำเข้าสถานการณ์จากไฟล์",
+      "importDesc": "อัปโหลดไฟล์ CSV หรือ Excel (.xlsx) ที่มีข้อมูลสถานการณ์ คอลัมน์: Name, Difficulty, Threshold, Persona, Objective, Mood, MaxTurns, WinHint, FailHint",
+      "selectFile": "เลือกไฟล์",
+      "uploading": "กำลังนำเข้า {count} สถานการณ์...",
+      "importSuccess": "นำเข้าสำเร็จ {count} สถานการณ์",
+      "importError": "เกิดข้อผิดพลาดในการนำเข้า",
+      "downloadTemplate": "ดาวน์โหลดเทมเพลต"
     },
     "roles": {
       "admin": "ผู้ดูแลระบบ",
