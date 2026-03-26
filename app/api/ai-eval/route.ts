@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAI } from '@/lib/openai';
 import { getGeminiModel } from '@/lib/gemini';
-import { getAnthropic } from '@/lib/anthropic';
 import { fsAdd, fsGet, fsSet, fsDelete } from '@/lib/firestore-db';
 import { getAdminDb } from '@/lib/firebase-admin';
 import type { PitchMessage } from '@/types';
@@ -104,7 +103,7 @@ const FALLBACK_SYSTEM_PROMPT = `คุณคือ "ลูกค้าคนไ�
 /* ─── AI Call Wrapper ───────────────────────────────────────────────────────── */
 
 async function callAI(
-  provider: 'openai' | 'gemini' | 'anthropic',
+  provider: 'openai' | 'gemini',
   messages: { role: 'user' | 'assistant'; content: string }[],
   systemPrompt: string,
   isStart: boolean
@@ -129,25 +128,6 @@ async function callAI(
     const lastMsg = messages.length > 0 ? messages[messages.length - 1].content : '[สาย]';
     const result = await chat.sendMessage(lastMsg);
     return result.response.text();
-  }
-
-  if (provider === 'anthropic') {
-    const anthropic = getAnthropic();
-    if (!anthropic) throw new Error('Anthropic API key is not configured');
-
-    const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20240620',
-      max_tokens: isStart ? 300 : 1000,
-      temperature: 0.8,
-      system: systemPrompt,
-      messages: messages.map(m => ({
-        role: m.role === 'assistant' ? 'assistant' : 'user',
-        content: m.content,
-      })),
-    });
-
-    const content = response.content[0];
-    return content.type === 'text' ? content.text : '';
   }
 
   // Default to OpenAI
@@ -200,16 +180,34 @@ export async function POST(req: NextRequest) {
     const passThreshold = Number(config.passThreshold) || 7;
     const configCriteria = Array.isArray(config.criteria) ? config.criteria : FALLBACK_CRITERIA;
 
-    // Determine Provider with fallback logic
-    let provider: 'openai' | 'gemini' | 'anthropic' = config.provider || 'openai';
+    // 1. Smart Language Routing
+    // Detect if the user's latest input contains Thai characters
+    const lastUserMsg = Array.isArray(messages) && messages.length > 0 
+      ? messages[messages.length - 1].content 
+      : '';
+    const hasThai = /[\u0e00-\u0e7f]/.test(lastUserMsg);
+
+    // 2. Intelligent Provider Selection
+    // Priority: 
+    // - Thai detected -> Gemini (best for Thai context)
+    // - No Thai detected -> OpenAI (best for English sales logic)
+    // - Fallback to whatever key is actually available in environment
     
-    // Auto-fallback if preferred provider is not available
-    if (provider === 'openai' && !process.env.OPENAI_API_KEY) {
-      if (process.env.GEMINI_API_KEY) provider = 'gemini';
-      else if (process.env.ANTHROPIC_API_KEY) provider = 'anthropic';
-    } else if (provider === 'gemini' && !process.env.GEMINI_API_KEY) {
-      if (process.env.OPENAI_API_KEY) provider = 'openai';
-      else if (process.env.ANTHROPIC_API_KEY) provider = 'anthropic';
+    let provider: 'openai' | 'gemini' = config.provider === 'gemini' ? 'gemini' : 'openai';
+
+    const hasOpenAI = !!process.env.OPENAI_API_KEY;
+    const hasGemini = !!process.env.GEMINI_API_KEY;
+
+    if (!isStart && hasOpenAI && hasGemini) {
+      // Dynamic override based on input language
+      provider = hasThai ? 'gemini' : 'openai';
+    } else {
+      // Key availability fallback
+      if (provider === 'openai' && !hasOpenAI) {
+        if (hasGemini) provider = 'gemini';
+      } else if (provider === 'gemini' && !hasGemini) {
+        if (hasOpenAI) provider = 'openai';
+      }
     }
 
     // Sliding window — cap token usage

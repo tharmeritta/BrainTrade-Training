@@ -77,7 +77,7 @@ interface AiEvalConfig {
   agentGuideline: string;
   passThreshold?: number;
   criteria?: string[];
-  provider?: 'openai' | 'gemini' | 'anthropic';
+  provider?: 'openai' | 'gemini';
   [key: string]: any;
 }
 
@@ -771,7 +771,9 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
   const [agentGuideline, setAgentGuideline] = useState(data?.agentGuideline || '');
   const [passThreshold, setPassThreshold] = useState(data?.passThreshold ?? 7);
   const [criteria, setCriteria] = useState<string[]>(data?.criteria || ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness']);
-  const [provider, setProvider] = useState<'openai' | 'gemini' | 'anthropic'>(data?.provider || 'openai');
+  const [provider, setProvider] = useState<'openai' | 'gemini'>(
+    (data?.provider === 'gemini' || data?.provider === 'openai') ? data.provider : 'openai'
+  );
   const [previewMode, setPreviewMode] = useState(false);
 
   const copyToClipboard = (text: string) => {
@@ -801,7 +803,6 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
           >
             <option value="openai">OpenAI (GPT-4o mini)</option>
             <option value="gemini">Google Gemini (1.5 Flash)</option>
-            <option value="anthropic">Anthropic Claude (3.5 Sonnet)</option>
           </select>
           <p className="text-[9px] text-muted-foreground italic px-1">Choose which AI engine powers the evaluation. System will fallback to Gemini if OpenAI key is missing.</p>
         </div>
