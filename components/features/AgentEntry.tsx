@@ -10,6 +10,7 @@ import {
   BookOpen, Settings, CreditCard, Bot, Target, Zap, CheckCircle2, Lock,
 } from 'lucide-react';
 import { StatCounter } from '@/components/ui/StatCounter';
+import { BackgroundEffects } from '@/components/ui/BackgroundEffects';
 import { EASE, TRANSITION, FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
 import { getAgentSession, setAgentSession, clearAgentSession } from '@/lib/agent-session';
 
@@ -55,65 +56,41 @@ function getInitials(n: string) {
 // --- Sub-components ---
 
 /**
- * BackgroundEffects: Renders the ambient background orbs and grid.
+ * FloatingDecoration: Decorative floating glass elements for premium feel.
  */
-const BackgroundEffects = () => (
-  <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
-    {/* Noise Texture Overlay */}
-    <div className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03] contrast-150 brightness-100 mix-blend-overlay" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
-
-    {/* Top-left cyan orb */}
-    <motion.div className="absolute rounded-full"
-      style={{ width: 900, height: 900, top: -300, left: -250,
-        background: `radial-gradient(circle, rgba(0,180,216,0.12) 0%, transparent 70%)` }}
-      animate={{ x: [0, 40, 0], y: [0, 50, 0], scale: [1, 1.1, 1] }}
-      transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
-    />
-    
-    {/* Secondary soft cyan orb */}
-    <motion.div className="absolute rounded-full"
-      style={{ width: 600, height: 600, top: '10%', left: '30%',
-        background: `radial-gradient(circle, rgba(0,180,216,0.06) 0%, transparent 60%)` }}
-      animate={{ x: [0, -30, 0], y: [0, 40, 0] }}
-      transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-    />
-
-    {/* Bottom-right purple orb */}
-    <motion.div className="absolute rounded-full"
-      style={{ width: 800, height: 800, bottom: -200, right: -150,
-        background: `radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 70%)` }}
-      animate={{ x: [0, -60, 0], y: [0, -40, 0], scale: [1, 1.05, 1] }}
-      transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
-    />
-
-    {/* Center accent orb */}
-    <motion.div className="absolute rounded-full hidden lg:block"
-      style={{ width: 450, height: 450, top: '45%', left: '50%', transform: 'translate(-50%,-50%)',
-        background: `radial-gradient(circle, rgba(0,180,216,0.04) 0%, rgba(124,58,237,0.03) 50%, transparent 75%)` }}
-      animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.6, 0.3] }}
-      transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-    />
-
-    {/* Subtle animated grid */}
+const FloatingDecoration = () => (
+  <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
     <motion.div 
-      className="absolute inset-0 opacity-[0.025]" 
-      style={{
-        backgroundImage: `linear-gradient(var(--hub-grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--hub-grid-color) 1px, transparent 1px)`,
-        backgroundSize: '64px 64px',
-      }}
-      animate={{ backgroundPosition: ['0px 0px', '64px 64px'] }}
-      transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
-    />
+      className="absolute top-[15%] left-[5%] p-4 rounded-2xl glass border-white/20 hidden xl:block shadow-2xl"
+      animate={{ y: [0, -15, 0], rotate: [0, 2, 0] }}
+      transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+    >
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-brand-cyan/20 flex items-center justify-center">
+          <Award size={16} className="text-brand-cyan" />
+        </div>
+        <div className="flex flex-col">
+          <div className="w-16 h-1.5 bg-brand-cyan/30 rounded-full mb-1" />
+          <div className="w-10 h-1.5 bg-brand-cyan/15 rounded-full" />
+        </div>
+      </div>
+    </motion.div>
 
-    {/* Refined vertical seam */}
-    <div className="hidden lg:block" style={{
-      position: 'absolute',
-      top: '5%', bottom: '5%',
-      right: 420,
-      width: 1,
-      background: `linear-gradient(180deg, transparent 0%, rgba(0,180,216,0.2) 20%, rgba(124,58,237,0.2) 80%, transparent 100%)`,
-      filter: 'blur(0.5px)',
-    }} />
+    <motion.div 
+      className="absolute bottom-[20%] left-[8%] p-4 rounded-2xl glass border-white/20 hidden xl:block shadow-2xl"
+      animate={{ y: [0, 20, 0], rotate: [0, -3, 0] }}
+      transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+    >
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+          <Target size={16} className="text-purple-400" />
+        </div>
+        <div className="flex flex-col">
+          <div className="w-20 h-1.5 bg-purple-400/30 rounded-full mb-1" />
+          <div className="w-12 h-1.5 bg-purple-400/15 rounded-full" />
+        </div>
+      </div>
+    </motion.div>
   </div>
 );
 
@@ -126,6 +103,8 @@ const BrandingPanel = () => {
 
   return (
     <div className="relative hidden lg:flex flex-col justify-between flex-1 overflow-hidden px-12 py-12">
+      <FloatingDecoration />
+      
       <motion.div 
         variants={FADE_IN}
         initial="initial"
