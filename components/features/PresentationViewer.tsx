@@ -55,17 +55,24 @@ interface PresentationViewerProps {
   user?: { uid: string; name: string; role: UserRole } | null;
   minimal?: boolean;
   embedded?: boolean;
+  showLangToggle?: boolean;
 }
 
 export default function PresentationViewer({ 
   module, locale, initialLang, user,
   minimal = false,
   embedded = false,
+  showLangToggle = false,
 }: PresentationViewerProps) {
   const t = useTranslations('presentation');
   const router = useRouter();
 
   const [lang, setLang] = useState<CourseLang>(initialLang);
+
+  // Sync lang state if prop changes from outside
+  useEffect(() => {
+    setLang(initialLang);
+  }, [initialLang]);
 
   const [slide, setSlide] = useState(() => {
     if (typeof window === 'undefined') return 1;
@@ -341,6 +348,14 @@ export default function PresentationViewer({
     url.searchParams.set('slide', String(slide));
     window.history.replaceState(null, '', url.toString());
   }, [slide]);
+
+  // Sync state to RTDB on mount if already in control (e.g. after language remount)
+  useEffect(() => {
+    if (amInControl && syncActive) {
+      updateSyncLang(lang);
+      updateSyncSlide(slide);
+    }
+  }, [amInControl, syncActive, lang, slide, updateSyncLang, updateSyncSlide]);
 
   // Loading timeout
   useEffect(() => {

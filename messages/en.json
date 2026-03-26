@@ -509,6 +509,7 @@
     "previewAsAgent": "Preview as Agent",
     "pickModule": "Pick a Module",
     "enrolledAgents": "Enrolled Agents ({count})",
+    "presentationLanguage": "Presentation Language",
     "sessionStart": "Start Sync Session",
     "sessionLive": "SESSION LIVE",
     "sessionModule": "Module",

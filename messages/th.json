@@ -509,6 +509,7 @@
     "previewAsAgent": "ดูในฐานะเอเจนต์",
     "pickModule": "เลือกบทเรียน",
     "enrolledAgents": "เอเจนต์ที่ลงทะเบียน ({count} คน)",
+    "presentationLanguage": "ภาษาของพรีเซนเทชัน",
     "sessionStart": "เริ่มเซสชันซิงค์",
     "sessionLive": "สดอยู่",
     "sessionModule": "บทเรียน",

@@ -904,8 +904,10 @@ interface SessionSummaryData {
 function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
   const t   = useTranslations('trainer');
   const lang = locale.split('-')[0];
+  const trainerLang = (lang === 'th' ? 'th' : 'en') as CourseLang;
 
   const [phase,          setPhase]          = useState<LivePhase>('setup');
+  const [sessionLang,    setSessionLang]    = useState<CourseLang>(trainerLang);
   const [availableMods,  setAvailableMods]  = useState<CourseModule[]>([]);
   const [selectedModId,  setSelectedModId]  = useState<string>('');
   const [course,         setCourse]         = useState<CourseModule | null>(null);
@@ -1139,9 +1141,10 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
               <div className="rounded-2xl border border-border bg-black/40 overflow-hidden aspect-video flex flex-col relative group">
                 {course ? (
                   <PresentationViewer 
+                    key={`${selectedModId}-${sessionLang}`}
                     module={course}
                     locale={locale}
-                    initialLang={lang as any}
+                    initialLang={sessionLang}
                     user={{ uid: period.trainerId || 'trainer', name: period.trainerName || 'Trainer', role }}
                     minimal
                     embedded
@@ -1154,9 +1157,22 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
                 )}
                 
                 {/* Pop out button (hover) */}
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-30">
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-30 flex items-center gap-2">
+                  <div className="flex gap-0.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 p-1">
+                    {(['th', 'en'] as const).map(l => (
+                      <button
+                        key={l}
+                        onClick={() => setSessionLang(l)}
+                        className={`px-2 py-1 rounded-lg text-[9px] font-black transition-all ${
+                          sessionLang === l ? 'bg-white text-black' : 'text-white/40 hover:text-white'
+                        }`}
+                      >
+                        {l.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
                   <button
-                    onClick={() => window.open(`/${lang}/learn/${selectedModId}?sync=true`, '_blank')}
+                    onClick={() => window.open(`/${lang}/learn/${selectedModId}?sync=true&lang=${sessionLang}`, '_blank')}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:bg-black/80 transition-all"
                   >
                     <Eye size={12} /> {t('reopenPresenter')}
@@ -1252,14 +1268,14 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
               {/* Control Buttons (Pop out & Preview) */}
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={() => window.open(`/${lang}/learn/${selectedModId}?sync=true`, '_blank')}
+                  onClick={() => window.open(`/${lang}/learn/${selectedModId}?sync=true&lang=${sessionLang}`, '_blank')}
                   className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold border border-border text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all"
                 >
                   <Eye size={13} />
                   {t('reopenPresenter')}
                 </button>
                 <button
-                  onClick={() => window.open(`/${lang}/learn/${selectedModId}`, '_blank')}
+                  onClick={() => window.open(`/${lang}/learn/${selectedModId}?lang=${sessionLang}`, '_blank')}
                   className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold border border-border text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all"
                 >
                   <HelpCircle size={13} />
@@ -1377,6 +1393,33 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
                 {copied ? <Check size={12} /> : <Copy size={12} />}
                 {copied ? t('linkCopied') : t('copyAgentLink')}
               </button>
+            </div>
+          </div>
+
+          {/* Step 3 — Presentation Language */}
+          <div className="space-y-2">
+            <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground px-1">{t('presentationLanguage') || 'Presentation Language'}</p>
+            <div className="flex gap-3">
+              {(['th', 'en'] as const).map(l => (
+                <button
+                  key={l}
+                  onClick={() => setSessionLang(l)}
+                  className="flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl text-sm font-black border transition-all"
+                  style={
+                    sessionLang === l
+                      ? { borderColor: 'hsl(var(--primary))', background: 'rgba(var(--primary-rgb,99,102,241),0.08)', color: 'hsl(var(--primary))' }
+                      : { borderColor: 'hsl(var(--border))', background: 'transparent', color: 'hsl(var(--muted-foreground))' }
+                  }
+                >
+                  <div 
+                    className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
+                    style={{ borderColor: sessionLang === l ? 'hsl(var(--primary))' : 'hsl(var(--border))' }}
+                  >
+                    {sessionLang === l && <div className="w-2 h-2 rounded-full bg-primary" />}
+                  </div>
+                  {l === 'th' ? 'ภาษาไทย (TH)' : 'English (EN)'}
+                </button>
+              ))}
             </div>
           </div>
 
