@@ -1,49 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fsGet, fsSet, fsDelete } from '@/lib/firestore-db';
-import type { PitchMessage } from '@/types';
-
-interface ActiveEvalSession {
-  agentId: string;
-  sessionId: string;
-  level: 1 | 2 | 3 | 4;
-  messages: PitchMessage[];
-  savedAt: number;
-  customerProfile?: any;
-  coaching?: Record<number, any>;
-}
+import { fsGet, fsDelete } from '@/lib/firestore-db';
+import { AiEvalSession } from '@/types/ai-eval';
 
 // GET /api/ai-eval/active?agentId=xxx
 export async function GET(req: NextRequest) {
   const agentId = req.nextUrl.searchParams.get('agentId');
   if (!agentId) return NextResponse.json({ session: null });
   try {
-    const session = await fsGet<ActiveEvalSession>('aiev_active', agentId);
+    const session = await fsGet<AiEvalSession>('aiev_sessions_v2', agentId);
     return NextResponse.json({ session: session ?? null });
   } catch {
     return NextResponse.json({ session: null });
-  }
-}
-
-// POST /api/ai-eval/active — upsert active session with latest messages
-export async function POST(req: NextRequest) {
-  try {
-    const { agentId, sessionId, level, messages, customerProfile, coaching } = await req.json();
-    if (!agentId || !sessionId) {
-      return NextResponse.json({ error: 'agentId and sessionId required' }, { status: 400 });
-    }
-    await fsSet<ActiveEvalSession>('aiev_active', agentId, {
-      agentId,
-      sessionId,
-      level,
-      messages,
-      customerProfile,
-      coaching,
-      savedAt: Date.now(),
-    });
-    return NextResponse.json({ ok: true });
-  } catch (err) {
-    console.error('AI eval active save error:', err);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
 
@@ -52,9 +19,9 @@ export async function DELETE(req: NextRequest) {
   const agentId = req.nextUrl.searchParams.get('agentId');
   if (!agentId) return NextResponse.json({ error: 'agentId required' }, { status: 400 });
   try {
-    await fsDelete('aiev_active', agentId);
+    await fsDelete('aiev_sessions_v2', agentId);
   } catch {
-    // File may not exist — ignore
+    // ignore
   }
   return NextResponse.json({ ok: true });
 }

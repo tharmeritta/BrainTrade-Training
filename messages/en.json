@@ -170,7 +170,28 @@
       "requestStatus": "Request Status",
       "staff": "Staff Accounts",
       "adjustments": "Adjustments",
+      "aiscenarios": "AI Scenarios",
       "profile": "User Profile"
+    },
+    "aiScenarios": {
+      "title": "AI Training Scenarios",
+      "desc": "Manage customer personas and evaluation criteria for AI Eval.",
+      "create": "Create Scenario",
+      "edit": "Edit Scenario",
+      "name": "Scenario Name",
+      "difficulty": "Difficulty",
+      "threshold": "Pass Threshold",
+      "persona": "Customer Persona",
+      "objective": "Customer Objective",
+      "mood": "Initial Mood",
+      "maxTurns": "Max Turns",
+      "winHint": "Win Condition (AI Hint)",
+      "failHint": "Fail Condition (AI Hint)",
+      "save": "Save Changes",
+      "cancel": "Cancel",
+      "deleteConfirm": "Are you sure you want to delete this scenario?",
+      "noScenarios": "No scenarios found",
+      "loading": "Loading AI Scenarios..."
     },
     "roles": {
       "admin": "Administrator",

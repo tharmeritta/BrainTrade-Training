@@ -19,9 +19,10 @@ import StaffTab from './admin/StaffTab';
 import EvaluationsTab from './admin/EvaluationsTab';
 import AdjustmentsTab from './admin/AdjustmentsTab';
 import ApprovalsTab from './admin/ApprovalsTab';
+import AiScenariosTab from './admin/AiScenariosTab';
 import ChangePasswordModal from './admin/ChangePasswordModal';
 
-type Tab = 'overview' | 'agents' | 'reports' | 'staff' | 'evaluations' | 'training' | 'adjustments' | 'approvals';
+type Tab = 'overview' | 'agents' | 'reports' | 'staff' | 'evaluations' | 'training' | 'adjustments' | 'approvals' | 'aiscenarios';
 
 function logout() {
   fetch('/api/auth/session', { method: 'DELETE' });
@@ -43,6 +44,7 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
     { id: 'reports',     labelKey: 'reports',        icon: FileSpreadsheet,  hideForTrainer: true, group: 'main' },
     { id: 'approvals',   labelKey: role === 'it' ? 'requestStatus' : 'approvals', icon: Clock, adminOnly: true, group: 'admin' },
     { id: 'staff',       labelKey: 'staff',          icon: ShieldCheck,      adminOnly: true, group: 'admin' },
+    { id: 'aiscenarios', labelKey: 'aiscenarios',    icon: Zap,              adminOnly: true, group: 'admin' },
     { id: 'adjustments', labelKey: 'adjustments',    icon: Edit3,            adminOnly: true, group: 'admin' },
   ];
 
@@ -278,6 +280,7 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
                 {tab === 'reports'     && <ReportsTab />}
                 {tab === 'approvals'   && <ApprovalsTab currentUserId={uid} role={role} />}
                 {tab === 'staff'       && (role === 'admin' || role === 'it') && <StaffTab role={role} />}
+                {tab === 'aiscenarios' && (role === 'admin' || role === 'it') && <AiScenariosTab />}
                 {tab === 'adjustments' && (role === 'admin' || role === 'it') && <AdjustmentsTab role={role} />}
               </motion.div>
             </AnimatePresence>
