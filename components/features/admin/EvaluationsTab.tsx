@@ -18,7 +18,7 @@ interface AdminEval {
   evaluatedAt: string;
 }
 
-export default function EvaluationsTab() {
+export default function EvaluationsTab({ readOnly }: { readOnly?: boolean }) {
   const t = useTranslations('admin');
   const [evals,   setEvals]   = useState<AdminEval[]>([]);
   const [loading, setLoading] = useState(true);

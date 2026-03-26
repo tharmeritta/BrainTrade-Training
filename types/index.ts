@@ -10,6 +10,7 @@ export interface StaffAccount {
   createdAt: string;
   passwordChanged?: boolean;
   sortOrder?: number;
+  interactiveAccessUntil?: string; // ISO timestamp
 }
 
 // ── AI Evaluation ──────────────────────────────────────────────────────────
@@ -236,7 +237,10 @@ export interface DisciplineRecord {
 export type ApprovalActionType = 
   | 'create_staff' | 'edit_staff' | 'delete_staff' | 'toggle_staff'
   | 'update_config' 
-  | 'create_agent' | 'edit_agent' | 'delete_agent' | 'toggle_agent';
+  | 'create_agent' | 'edit_agent' | 'delete_agent' | 'toggle_agent'
+  | 'request_interactive_access'
+  | 'create_ai_scenario' | 'edit_ai_scenario' | 'delete_ai_scenario'
+  | 'create_training_period' | 'edit_training_period' | 'delete_training_period';
 
 export interface ApprovalRequest {
   id: string;

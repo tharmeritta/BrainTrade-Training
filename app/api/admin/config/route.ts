@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminOrIT } from '@/lib/session';
+import { requireAdminOrManager } from '@/lib/session';
 import { getAdminDb } from '@/lib/firebase-admin';
 import { createApprovalRequest } from '@/lib/services/approval-service';
 
 export async function GET() {
-  try { await requireAdminOrIT(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { await requireAdminOrManager(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   try {
     const db = getAdminDb();
@@ -22,14 +22,14 @@ export async function GET() {
 
 export async function PATCH(req: NextRequest) {
   let user;
-  try { user = await requireAdminOrIT(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { user = await requireAdminOrManager(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   try {
     const { id, data } = await req.json();
     if (!id || !data) return NextResponse.json({ error: 'ID and Data required' }, { status: 400 });
 
-    // IT role requires approval
-    if (user.role === 'it') {
+    // IT and Manager roles require approval
+    if (user.role === 'it' || user.role === 'manager') {
       await createApprovalRequest(
         { uid: user.uid, name: user.name },
         'update_config',

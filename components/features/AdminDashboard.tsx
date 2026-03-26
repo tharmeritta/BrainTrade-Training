@@ -29,7 +29,7 @@ function logout() {
   window.location.replace('/login');
 }
 
-export default function AdminDashboard({ role, uid, name, passwordChanged }: { role: 'admin' | 'manager' | 'it' | 'trainer'; uid: string; name: string; passwordChanged: boolean }) {
+export default function AdminDashboard({ role, uid, name, passwordChanged, interactiveAccessUntil }: { role: 'admin' | 'manager' | 'it' | 'trainer'; uid: string; name: string; passwordChanged: boolean; interactiveAccessUntil?: string }) {
   const t = useTranslations('admin');
   const [tab, setTab] = useState<Tab>(
     role === 'trainer' ? 'training' : 
@@ -39,6 +39,12 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
   const [isPwModalOpen, setIsPwModalOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [requestingAccess, setRequestingAccess] = useState(false);
+
+  const isReadOnlyRole = role === 'it' || role === 'manager';
+  const isInteractive = role === 'admin' || role === 'trainer' || (
+    isReadOnlyRole && interactiveAccessUntil && new Date(interactiveAccessUntil) > new Date()
+  );
 
   const TABS: { id: Tab; labelKey: string; icon: React.ElementType; adminOnly?: boolean; hideForTrainer?: boolean; group?: string }[] = [
     { id: 'overview',    labelKey: 'overview',       icon: LayoutDashboard,  group: 'main' },
@@ -46,21 +52,44 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
     { id: 'training',    labelKey: 'training',       icon: GraduationCap,    group: 'main' },
     { id: 'evaluations', labelKey: 'evaluations',    icon: ClipboardCheck,   hideForTrainer: true, group: 'main' },
     { id: 'reports',     labelKey: 'reports',        icon: FileSpreadsheet,  hideForTrainer: true, group: 'main' },
-    { id: 'approvals',   labelKey: role === 'it' ? 'requestStatus' : 'approvals', icon: Clock, adminOnly: true, group: 'admin' },
+    { id: 'approvals',   labelKey: isReadOnlyRole ? 'requestStatus' : 'approvals', icon: Clock, adminOnly: true, group: 'admin' },
     { id: 'staff',       labelKey: 'staff',          icon: ShieldCheck,      adminOnly: true, group: 'admin' },
     { id: 'aiscenarios', labelKey: 'aiscenarios',    icon: Zap,              adminOnly: true, group: 'admin' },
     { id: 'adjustments', labelKey: 'adjustments',    icon: Edit3,            adminOnly: true, group: 'admin' },
   ];
 
   const visibleTabs = TABS.filter(t => {
-    if (role === 'it') {
-      // IT ONLY sees Staff and Approvals (Request Status)
-      return t.id === 'staff' || t.id === 'approvals';
+    if (isReadOnlyRole) {
+      // IT and Manager can see all menus but interaction is restricted
+      return true;
     }
     if (t.adminOnly && role !== 'admin') return false;
     if (t.hideForTrainer && role === 'trainer') return false;
     return true;
   });
+
+  async function requestInteractiveAccess() {
+    setRequestingAccess(true);
+    try {
+      const res = await fetch('/api/admin/approvals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          actionType: 'request_interactive_access',
+          data: {},
+        }),
+      });
+      if (res.ok) {
+        alert(t('it.requestSent'));
+      } else {
+        alert(t('it.requestFailed'));
+      }
+    } catch {
+      alert('Network error');
+    } finally {
+      setRequestingAccess(false);
+    }
+  }
 
   const mainTabs  = visibleTabs.filter(t => t.group === 'main');
   const adminTabs = visibleTabs.filter(t => t.group === 'admin');
@@ -217,6 +246,30 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
           <nav className="flex-1 overflow-y-auto px-2 py-2 scrollbar-hide">
             <NavGroup items={mainTabs} />
             {adminTabs.length > 0 && <NavGroup label="Admin" items={adminTabs} />}
+            
+            {isReadOnlyRole && !sidebarCollapsed && (
+              <div className="mt-6 px-3">
+                <div className={`p-4 rounded-2xl border ${isInteractive ? 'bg-blue-500/10 border-blue-500/20' : 'bg-amber-500/10 border-amber-500/20'}`}>
+                  <p className={`text-[10px] font-bold uppercase tracking-wider mb-2 ${isInteractive ? 'text-blue-400' : 'text-amber-400'}`}>
+                    {isInteractive ? t('it.interactiveActive') : t('it.readOnlyMode')}
+                  </p>
+                  {!isInteractive && (
+                    <button
+                      onClick={requestInteractiveAccess}
+                      disabled={requestingAccess}
+                      className="w-full py-2 bg-amber-500 text-white text-xs font-bold rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-50"
+                    >
+                      {requestingAccess ? '...' : t('it.requestInteractive')}
+                    </button>
+                  )}
+                  {isInteractive && interactiveAccessUntil && (
+                    <p className="text-[9px] text-blue-400/80 leading-tight">
+                      {t('it.expiresAt', { time: new Date(interactiveAccessUntil).toLocaleTimeString() })}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
           </nav>
 
           {/* Bottom: collapse + logout */}
@@ -281,15 +334,15 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2 }}
               >
-                {tab === 'overview'    && <OverviewTab />}
-                {tab === 'agents'      && <AgentsTab role={role} />}
-                {tab === 'training'    && <TrainerPanel role={role} uid={uid} name={name} />}
-                {tab === 'evaluations' && <EvaluationsTab />}
-                {tab === 'reports'     && <ReportsTab />}
+                {tab === 'overview'    && <OverviewTab readOnly={!isInteractive} />}
+                {tab === 'agents'      && <AgentsTab role={role} readOnly={!isInteractive} />}
+                {tab === 'training'    && <TrainerPanel role={role} uid={uid} name={name} readOnly={!isInteractive} />}
+                {tab === 'evaluations' && <EvaluationsTab readOnly={!isInteractive} />}
+                {tab === 'reports'     && <ReportsTab readOnly={!isInteractive} />}
                 {tab === 'approvals'   && <ApprovalsTab currentUserId={uid} role={role} />}
-                {tab === 'staff'       && (role === 'admin' || role === 'it') && <StaffTab role={role} />}
-                {tab === 'aiscenarios' && role === 'admin' && <AiScenariosTab />}
-                {tab === 'adjustments' && role === 'admin' && <AdjustmentsTab role={role} />}
+                {tab === 'staff'       && (role === 'admin' || isReadOnlyRole) && <StaffTab role={role} />}
+                {tab === 'aiscenarios' && (role === 'admin' || isReadOnlyRole) && <AiScenariosTab readOnly={!isInteractive} />}
+                {tab === 'adjustments' && (role === 'admin' || isReadOnlyRole) && <AdjustmentsTab role={role} readOnly={!isInteractive} />}
               </motion.div>
             </AnimatePresence>
           </main>

@@ -93,7 +93,7 @@ interface ConfigData {
   features?: FeaturesConfig;
 }
 
-export default function AdjustmentsTab({ role }: { role: string }) {
+export default function AdjustmentsTab({ role, readOnly }: { role: string; readOnly?: boolean }) {
   const t = useTranslations('admin');
   const [activeTab, setActiveTab] = useState<ConfigType>('learn');
   const [configs, setConfigs] = useState<ConfigData>({});
@@ -250,7 +250,8 @@ export default function AdjustmentsTab({ role }: { role: string }) {
             data={configs.learn} 
             onSave={(data) => handleSave('learn', data)} 
             onChange={() => setHasUnsavedChanges(true)}
-            saving={saving} 
+            saving={saving}
+            readOnly={readOnly}
           />
         )}
         {activeTab === 'quizzes' && (
@@ -258,7 +259,8 @@ export default function AdjustmentsTab({ role }: { role: string }) {
             data={configs.quizzes} 
             onSave={(data) => handleSave('quizzes', data)} 
             onChange={() => setHasUnsavedChanges(true)}
-            saving={saving} 
+            saving={saving}
+            readOnly={readOnly}
           />
         )}
         {activeTab === 'ai-eval' && (
@@ -266,7 +268,8 @@ export default function AdjustmentsTab({ role }: { role: string }) {
             data={configs.ai_eval} 
             onSave={(data) => handleSave('ai_eval', data)} 
             onChange={() => setHasUnsavedChanges(true)}
-            saving={saving} 
+            saving={saving}
+            readOnly={readOnly}
           />
         )}
         {activeTab === 'features' && (
@@ -274,7 +277,8 @@ export default function AdjustmentsTab({ role }: { role: string }) {
             data={configs.features} 
             onSave={(data) => handleSave('features', data)} 
             onChange={() => setHasUnsavedChanges(true)}
-            saving={saving} 
+            saving={saving}
+            readOnly={readOnly}
           />
         )}
       </div>
@@ -285,7 +289,7 @@ export default function AdjustmentsTab({ role }: { role: string }) {
 
 // --- Editor Components ---
 
-function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig | undefined, onSave: (d: QuizzesConfig) => void, onChange: () => void, saving: boolean }) {
+function QuizzesEditor({ data, onSave, onChange, saving, readOnly }: { data: QuizzesConfig | undefined, onSave: (d: QuizzesConfig) => void, onChange: () => void, saving: boolean, readOnly?: boolean }) {
   const [definitions, setDefinitions] = useState<Record<string, QuizDefinition>>(data?.definitions || {});
   const [order, setOrder] = useState<string[]>(data?.order || Object.keys(definitions));
   const [selectedQuiz, setSelectedQuiz] = useState<string | null>(null);
@@ -514,17 +518,21 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h3 className="font-bold flex items-center gap-2 text-primary"><Target size={18} /> Quiz Management</h3>
         <div className="flex flex-wrap items-center gap-2">
-          <button onClick={exportToJson} className="bg-secondary/50 hover:bg-secondary px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors" title="Export all as JSON">
-            <FileJson size={14} /> Export JSON
-          </button>
-          <button onClick={handleAddQuiz} className="bg-secondary px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors"><Plus size={14} /> Add Quiz</button>
-          <button 
-            onClick={() => onSave({ definitions, order })} 
-            disabled={saving}
-            className="bg-primary text-white px-5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
-          >
-            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save All Quizzes
-          </button>
+          {!readOnly && (
+            <>
+              <button onClick={exportToJson} className="bg-secondary/50 hover:bg-secondary px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors" title="Export all as JSON">
+                <FileJson size={14} /> Export JSON
+              </button>
+              <button onClick={handleAddQuiz} className="bg-secondary px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors"><Plus size={14} /> Add Quiz</button>
+              <button 
+                onClick={() => onSave({ definitions, order })} 
+                disabled={saving}
+                className="bg-primary text-white px-5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
+              >
+                {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save All Quizzes
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -765,7 +773,7 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
 }
 
 
-function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig | undefined, onSave: (d: AiEvalConfig) => void, onChange: () => void, saving: boolean }) {
+function AiEvalEditor({ data, onSave, onChange, saving, readOnly }: { data: AiEvalConfig | undefined, onSave: (d: AiEvalConfig) => void, onChange: () => void, saving: boolean, readOnly?: boolean }) {
   const [agentGuideline, setAgentGuideline] = useState(data?.agentGuideline || '');
   const [passThreshold, setPassThreshold] = useState(data?.passThreshold ?? 7);
   const [criteria, setCriteria] = useState<string[]>(data?.criteria || ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness']);
@@ -894,7 +902,7 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
 }
 
 
-function LearnEditor({ data, onSave, onChange, saving }: { data: LearnConfig | undefined, onSave: (d: LearnConfig) => void, onChange: () => void, saving: boolean }) {
+function LearnEditor({ data, onSave, onChange, saving, readOnly }: { data: LearnConfig | undefined, onSave: (d: LearnConfig) => void, onChange: () => void, saving: boolean, readOnly?: boolean }) {
   // Merge baseline from lib/courses.ts with data from Firestore
   const initialModules = useMemo(() => {
     const baseline = { ...COURSE_MODULES } as unknown as Record<string, LearnModule>;
@@ -1290,7 +1298,7 @@ function LearnEditor({ data, onSave, onChange, saving }: { data: LearnConfig | u
   );
 }
 
-function SystemEditor({ data, onSave, onChange, saving }: { data: FeaturesConfig | undefined, onSave: (d: FeaturesConfig) => void, onChange: () => void, saving: boolean }) {
+function SystemEditor({ data, onSave, onChange, saving, readOnly }: { data: FeaturesConfig | undefined, onSave: (d: FeaturesConfig) => void, onChange: () => void, saving: boolean, readOnly?: boolean }) {
   const [config, setConfig] = useState<FeaturesConfig>(data || { allowMockupMode: true });
 
   const handleToggle = (key: keyof FeaturesConfig) => {

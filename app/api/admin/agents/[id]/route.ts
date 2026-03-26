@@ -14,8 +14,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const target = await fsGet<any>('agents', id);
   const targetName = target?.name || id;
 
-  // IT role requires approval for everything in agent management
-  if (user.role === 'it') {
+  // IT and Manager roles require approval for everything in agent management
+  if (user.role === 'it' || user.role === 'manager') {
     const actionType = (typeof body.active === 'boolean') ? 'toggle_agent' : 'edit_agent';
     await createApprovalRequest(
       { uid: user.uid, name: user.name },
@@ -49,8 +49,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const target = await fsGet<any>('agents', id);
   const targetName = target?.name || id;
 
-  // IT role requires approval
-  if (user.role === 'it') {
+  // IT and Manager roles require approval
+  if (user.role === 'it' || user.role === 'manager') {
     await createApprovalRequest(
       { uid: user.uid, name: user.name },
       'delete_agent',

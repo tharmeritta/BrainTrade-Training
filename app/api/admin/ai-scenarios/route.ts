@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminOrIT } from '@/lib/session';
+import { getServerUser, requireAdminOrManager } from '@/lib/session';
 import { fsGet, fsSet, fsDelete, fsGetAll } from '@/lib/firestore-db';
 import { AiEvalScenario } from '@/types/ai-eval';
 import { AiEvalService } from '@/lib/services/ai-eval-service';
+import { createApprovalRequest } from '@/lib/services/approval-service';
 
 const COLLECTION = 'aiev_scenarios';
 
 export async function GET(req: NextRequest) {
   try {
-    await requireAdminOrIT();
+    await requireAdminOrManager();
     const scenarios = await fsGetAll<AiEvalScenario>(COLLECTION);
     
     // Ensure at least the default scenario exists
@@ -26,10 +27,22 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    await requireAdminOrIT();
+    const user = await getServerUser();
+    if (!user || !['admin', 'manager', 'it'].includes(user.role)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const body = await req.json();
     
-    // Handle bulk import
+    // IT and Manager roles require approval
+    if (user.role === 'it' || user.role === 'manager') {
+      await createApprovalRequest(
+        { uid: user.uid, name: user.name },
+        'create_ai_scenario',
+        Array.isArray(body) ? body : { ...body, id: crypto.randomUUID() },
+        { name: Array.isArray(body) ? `Bulk Import (${body.length} scenarios)` : body.name }
+      );
+      return NextResponse.json({ message: 'Request submitted for approval' }, { status: 202 });
+    }
     if (Array.isArray(body)) {
       const results = [];
       for (const item of body) {
@@ -70,12 +83,26 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
-    await requireAdminOrIT();
+    const user = await getServerUser();
+    if (!user || !['admin', 'manager', 'it'].includes(user.role)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const { id, data } = await req.json();
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
 
     const existing = await fsGet<AiEvalScenario>(COLLECTION, id);
     if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+    // IT and Manager roles require approval
+    if (user.role === 'it' || user.role === 'manager') {
+      await createApprovalRequest(
+        { uid: user.uid, name: user.name },
+        'edit_ai_scenario',
+        data,
+        { id, name: existing.name }
+      );
+      return NextResponse.json({ message: 'Request submitted for approval' }, { status: 202 });
+    }
 
     const updated = {
       ...existing,
@@ -93,9 +120,25 @@ export async function PATCH(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    await requireAdminOrIT();
+    const user = await getServerUser();
+    if (!user || (user.role !== 'admin' && user.role !== 'it')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const id = req.nextUrl.searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 });
+
+    const existing = await fsGet<AiEvalScenario>(COLLECTION, id);
+
+    // IT role requires approval
+    if (user.role === 'it') {
+      await createApprovalRequest(
+        { uid: user.uid, name: user.name },
+        'delete_ai_scenario',
+        null,
+        { id, name: existing?.name || id }
+      );
+      return NextResponse.json({ message: 'Request submitted for approval' }, { status: 202 });
+    }
 
     await fsDelete(COLLECTION, id);
     return NextResponse.json({ success: true });

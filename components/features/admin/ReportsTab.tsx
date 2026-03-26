@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { FileSpreadsheet, Download, Users, ChevronDown, Zap, Loader2, Eye, Table } from 'lucide-react';
 import type { AgentStats } from '@/types';
 
-export default function ReportsTab() {
+export default function ReportsTab({ readOnly }: { readOnly?: boolean }) {
   const t = useTranslations('admin');
   const [allStats,    setAllStats]    = useState<AgentStats[]>([]);
   const [loading,     setLoading]     = useState(true);

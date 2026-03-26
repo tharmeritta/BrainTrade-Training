@@ -426,6 +426,14 @@
       "loading": "Loading evaluations...",
       "evaluatedBy": "evaluated by",
       "redFlags": "{count} 🚩 red flag{count, plural, =1 {} other {s}}"
+    },
+    "it": {
+      "readOnlyMode": "Read-Only Mode",
+      "interactiveActive": "Interactive Access Active",
+      "requestInteractive": "Request Interactive Access",
+      "requestSent": "Request submitted for approval",
+      "requestFailed": "Failed to submit request",
+      "expiresAt": "Expires at {time}"
     }
   },
   "courseHub": {

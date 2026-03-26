@@ -84,5 +84,27 @@ async function executeApprovedAction(request: ApprovalRequest) {
     case 'toggle_agent':
       if (targetId) await fsUpdate('agents', targetId, { active: data.active });
       break;
+    case 'request_interactive_access':
+      const until = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      await fsUpdate('staff_accounts', request.requesterId, { interactiveAccessUntil: until });
+      break;
+    case 'create_ai_scenario':
+      await fsSet('aiev_scenarios', data.id, data);
+      break;
+    case 'edit_ai_scenario':
+      if (targetId) await fsSet('aiev_scenarios', targetId, data);
+      break;
+    case 'delete_ai_scenario':
+      if (targetId) await fsDelete('aiev_scenarios', targetId);
+      break;
+    case 'create_training_period':
+      await fsAdd('training_periods', data);
+      break;
+    case 'edit_training_period':
+      if (targetId) await fsUpdate('training_periods', targetId, data);
+      break;
+    case 'delete_training_period':
+      if (targetId) await fsDelete('training_periods', targetId);
+      break;
   }
 }

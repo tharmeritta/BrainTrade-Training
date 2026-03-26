@@ -13,7 +13,7 @@ import AgentDetailModal from './AgentDetailModal';
 import BulkImportModal from './BulkImportModal';
 import { useRouter } from 'next/navigation';
 
-export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'it' | 'trainer' }) {
+export default function AgentsTab({ role, readOnly }: { role: 'admin' | 'manager' | 'it' | 'trainer'; readOnly?: boolean }) {
   const t = useTranslations('admin');
   const router = useRouter();
   const [agents,       setAgents]       = useState<AgentStats[]>([]);
@@ -177,7 +177,7 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'it' |
             </select>
           </div>
         </div>
-        {(role === 'admin' || role === 'it') && (
+        {(role === 'admin' || role === 'it') && !readOnly && (
           <div className="flex gap-2">
             <button
               onClick={() => setShowBulk(true)}
@@ -329,13 +329,15 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'it' |
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
                           <div className="font-semibold text-foreground text-sm truncate">{a.agent.name}</div>
-                          <button
-                            onClick={() => setEditingAgent({ id: a.agent.id, name: a.agent.name, stageName: a.agent.stageName ?? '' })}
-                            className="p-1 rounded-md text-muted-foreground/40 hover:text-primary hover:bg-primary/10 transition-colors opacity-0 group-hover:opacity-100 shrink-0"
-                            title="Edit agent info"
-                          >
-                            <Pencil size={12} />
-                          </button>
+                          {!readOnly && (
+                            <button
+                              onClick={() => setEditingAgent({ id: a.agent.id, name: a.agent.name, stageName: a.agent.stageName ?? '' })}
+                              className="p-1 rounded-md text-muted-foreground/40 hover:text-primary hover:bg-primary/10 transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+                              title="Edit agent info"
+                            >
+                              <Pencil size={12} />
+                            </button>
+                          )}
                         </div>
                         {a.agent.stageName && (
                           <div className="text-xs text-primary/70 font-medium mt-0.5 truncate">&quot;{a.agent.stageName}&quot;</div>
@@ -401,13 +403,13 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'it' |
                         className="text-[11px] font-bold text-primary hover:text-primary/80 transition-colors whitespace-nowrap px-3 py-1.5 bg-primary/10 rounded-lg">
                         {t('agents.viewDetails')}
                       </button>
-                      {(role === 'admin' || role === 'it') && (
+                      {(role === 'admin' || role === 'it') && !readOnly && (
                         <button onClick={() => toggleActive(a.agent.id, a.agent.active)}
                           className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap px-2 py-1.5 bg-secondary/50 rounded-lg">
                           {a.agent.active ? t('agents.deactivate') : t('agents.reactivate')}
                         </button>
                       )}
-                      {(role === 'admin' || role === 'it') && (
+                      {(role === 'admin' || role === 'it') && !readOnly && (
                         <button onClick={() => deleteAgent(a.agent.id, a.agent.name)}
                           className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-500/10 transition-colors">
                           <Trash2 size={14} />

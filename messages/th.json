@@ -426,6 +426,14 @@
       "loading": "กำลังโหลดการประเมิน...",
       "evaluatedBy": "ประเมินโดย",
       "redFlags": "{count} 🚩 Red Flag"
+    },
+    "it": {
+      "readOnlyMode": "โหมดอ่านอย่างเดียว",
+      "interactiveActive": "เปิดใช้งานสิทธิ์การแก้ไขแล้ว",
+      "requestInteractive": "ส่งคำขอสิทธิ์การแก้ไข (1 วัน)",
+      "requestSent": "ส่งคำขอเพื่อรอการอนุมัติแล้ว",
+      "requestFailed": "ไม่สามารถส่งคำขอได้",
+      "expiresAt": "จะหมดอายุเมื่อ {time}"
     }
   },
   "courseHub": {

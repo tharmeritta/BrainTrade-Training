@@ -10,7 +10,7 @@ import { scoreColor, scoreBg, timeAgo } from './AdminHelpers';
 import LiveFeed from './LiveFeed';
 import { getCompletionStatus, type CompletionStatus } from '@/lib/completion';
 
-export default function OverviewTab() {
+export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
   const t = useTranslations('admin');
   const [data,    setData]    = useState<AdminOverviewData | null>(null);
   const [feed,    setFeed]    = useState<any[]>([]);

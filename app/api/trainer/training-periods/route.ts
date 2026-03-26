@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminManagerOrTrainer } from '@/lib/session';
+import { getServerUser, requireAdminManagerOrTrainer } from '@/lib/session';
 import { fsAdd, fsGetAll } from '@/lib/firestore-db';
+import { createApprovalRequest } from '@/lib/services/approval-service';
 import type { TrainingPeriod } from '@/types';
 
 export async function GET() {
@@ -13,7 +14,11 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   let user;
-  try { user = await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { user = await getServerUser(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  if (!user || !['admin', 'manager', 'it', 'trainer'].includes(user.role)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   const body = await req.json();
   const { name, agentIds, agentNames, totalDays, startDate, trainerId, trainerName, dayTopics } = body;
   if (!name?.trim()) return NextResponse.json({ error: 'Name required' }, { status: 400 });
@@ -22,7 +27,7 @@ export async function POST(req: NextRequest) {
   const finalTrainerId = (['admin', 'manager'].includes(user.role) && trainerId) ? trainerId : user.uid;
   const finalTrainerName = (['admin', 'manager'].includes(user.role) && trainerName) ? trainerName : user.name;
 
-  const period = await fsAdd<Omit<TrainingPeriod, 'id'>>('training_periods', {
+  const periodData = {
     name: name.trim(),
     agentIds: agentIds ?? [],
     agentNames: agentNames ?? {},
@@ -33,6 +38,19 @@ export async function POST(req: NextRequest) {
     dayTopics: dayTopics ?? {},
     active: true,
     createdAt: new Date().toISOString(),
-  });
+  };
+
+  // IT and Manager roles require approval
+  if (user.role === 'it' || user.role === 'manager') {
+    await createApprovalRequest(
+      { uid: user.uid, name: user.name },
+      'create_training_period',
+      periodData,
+      { name: periodData.name }
+    );
+    return NextResponse.json({ message: 'Request submitted for approval' }, { status: 202 });
+  }
+
+  const period = await fsAdd<Omit<TrainingPeriod, 'id'>>('training_periods', periodData);
   return NextResponse.json(period);
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { inflateRawSync } from 'zlib';
-import { requireAdminOrIT } from '@/lib/session';
+import { requireAdminOrManager } from '@/lib/session';
 import { getAdminDb, getAdminStorage } from '@/lib/firebase-admin';
 import { COURSE_MODULES, type CourseLang } from '@/lib/courses';
 
@@ -14,7 +14,7 @@ export const maxDuration = 120;
 // ── Route handler ─────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
-  try { await requireAdminOrIT(); } catch {
+  try { await requireAdminOrManager(); } catch {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminOrIT } from '@/lib/session';
+import { requireAdminOrManager } from '@/lib/session';
 import { fsGetAll, fsAdd, fsUpdateMany } from '@/lib/firestore-db';
 import { createApprovalRequest } from '@/lib/services/approval-service';
 import type { StaffAccount } from '@/types';
@@ -7,7 +7,7 @@ import type { StaffAccount } from '@/types';
 // GET /api/admin/staff — list all staff (passwords included for admin/it editing)
 export async function GET() {
   try { 
-    await requireAdminOrIT(); 
+    await requireAdminOrManager(); 
   } catch (err: any) { 
     console.warn('[GET /api/admin/staff] Auth failed:', err.message);
     return NextResponse.json({ error: 'Unauthorized', message: err.message }, { status: 401 }); 
@@ -41,7 +41,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   let user;
-  try { user = await requireAdminOrIT(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { user = await requireAdminOrManager(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   
   let body;
   try {
@@ -67,8 +67,8 @@ export async function POST(req: NextRequest) {
 
     const maxSortOrder = existing.reduce((max, s) => Math.max(max, s.sortOrder ?? 0), 0);
 
-    // IT role requires approval
-    if (user.role === 'it') {
+    // IT and Manager roles require approval
+    if (user.role === 'it' || user.role === 'manager') {
       await createApprovalRequest(
         { uid: user.uid, name: user.name },
         'create_staff',
@@ -97,11 +97,11 @@ export async function POST(req: NextRequest) {
 // PATCH /api/admin/staff — bulk update sort order
 export async function PATCH(req: NextRequest) {
   let user;
-  try { user = await requireAdminOrIT(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { user = await requireAdminOrManager(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   
-  // IT role cannot bulk re-order (for simplicity, or requires approval)
-  if (user.role === 'it') {
-    return NextResponse.json({ error: 'IT role cannot bulk re-order' }, { status: 403 });
+  // IT and Manager roles cannot bulk re-order (for simplicity, or requires approval)
+  if (user.role === 'it' || user.role === 'manager') {
+    return NextResponse.json({ error: 'This role cannot bulk re-order' }, { status: 403 });
   }
 
   try {

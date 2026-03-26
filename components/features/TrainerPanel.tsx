@@ -1757,7 +1757,7 @@ interface TrainerPanelProps {
   name?: string;
 }
 
-export default function TrainerPanel({ role, uid, name }: { role: 'admin' | 'manager' | 'it' | 'trainer', uid?: string, name?: string }) {
+export default function TrainerPanel({ role, uid, name, readOnly }: { role: 'admin' | 'manager' | 'it' | 'trainer', uid?: string, name?: string, readOnly?: boolean }) {
   const t = useTranslations('trainer');
   const locale = t('management') === 'จัดการการฝึกอบรม' ? 'th-TH' : 'en-GB';
   const [periods,          setPeriods]          = useState<TrainingPeriod[]>([]);

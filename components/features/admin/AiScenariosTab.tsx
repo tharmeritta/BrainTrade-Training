@@ -13,15 +13,16 @@ import AiScenarioImportModal from './AiScenarioImportModal';
 
 /* ─── Components ─────────────────────────────────────────────────────────── */
 
-export default function AiScenariosTab() {
+export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
   const [scenarios, setScenarios] = useState<AiEvalScenario[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<AiEvalScenario>>({});
   const [isCreating, setIsCreating] = useState(false);
   const [showImport, setShowImport] = useState(false);
-  
+
   const t = useTranslations('admin');
+
 
   const fetchScenarios = useCallback(async () => {
     setLoading(true);
@@ -108,22 +109,24 @@ export default function AiScenariosTab() {
           </h2>
           <p className="text-xs text-muted-foreground font-medium">Manage customer personas and evaluation criteria for AI Eval.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowImport(true)}
-            className="flex items-center gap-2 bg-secondary text-foreground px-4 py-2 rounded-xl text-sm font-bold hover:bg-secondary/80 transition-all"
-          >
-            <FileUp size={16} />
-            {t('aiScenarios.bulkImport')}
-          </button>
-          <button
-            onClick={() => { setIsCreating(true); setEditForm({ difficulty: 'beginner', isActive: true, maxTurns: 12, passThreshold: 7 }); }}
-            className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
-          >
-            <Plus size={16} />
-            {t('aiScenarios.create')}
-          </button>
-        </div>
+        {!readOnly && (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowImport(true)}
+              className="flex items-center gap-2 bg-secondary text-foreground px-4 py-2 rounded-xl text-sm font-bold hover:bg-secondary/80 transition-all"
+            >
+              <FileUp size={16} />
+              {t('aiScenarios.bulkImport')}
+            </button>
+            <button
+              onClick={() => { setIsCreating(true); setEditForm({ difficulty: 'beginner', isActive: true, maxTurns: 12, passThreshold: 7 }); }}
+              className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
+            >
+              <Plus size={16} />
+              {t('aiScenarios.create')}
+            </button>
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
@@ -308,22 +311,24 @@ export default function AiScenariosTab() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={() => handleEdit(s)}
-                    className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-all"
-                    title="Edit"
-                  >
-                    <Edit2 size={16} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(s.id)}
-                    className="p-2 rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-all"
-                    title="Delete"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
+                {!readOnly && (
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => handleEdit(s)}
+                      className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-all"
+                      title="Edit"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(s.id)}
+                      className="p-2 rounded-lg hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-all"
+                      title="Delete"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                )}
               </div>
             </motion.div>
           ))}

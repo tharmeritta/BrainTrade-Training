@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminOrIT } from '@/lib/session';
+import { requireAdminOrManager } from '@/lib/session';
 import { fsUpdate, fsDelete, fsGetAll, fsGet } from '@/lib/firestore-db';
 import { createApprovalRequest } from '@/lib/services/approval-service';
 import type { StaffAccount } from '@/types';
@@ -7,15 +7,15 @@ import type { StaffAccount } from '@/types';
 // PATCH /api/admin/staff/:id — update username / password / name / role / active
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   let user;
-  try { user = await requireAdminOrIT(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { user = await requireAdminOrManager(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   const { id } = await params;
   const body: Partial<Pick<StaffAccount, 'username' | 'password' | 'name' | 'role' | 'active'>> = await req.json();
 
   const target = await fsGet<StaffAccount>('staff_accounts', id);
   const targetName = target?.name || id;
 
-  // IT role requires approval
-  if (user.role === 'it') {
+  // IT and Manager roles require approval
+  if (user.role === 'it' || user.role === 'manager') {
     const actionType = (Object.keys(body).length === 1 && 'active' in body) ? 'toggle_staff' : 'edit_staff';
     await createApprovalRequest(
       { uid: user.uid, name: user.name },
@@ -43,14 +43,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 // DELETE /api/admin/staff/:id — remove a staff account
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   let user;
-  try { user = await requireAdminOrIT(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { user = await requireAdminOrManager(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   const { id } = await params;
 
   const target = await fsGet<StaffAccount>('staff_accounts', id);
   const targetName = target?.name || id;
 
-  // IT role requires approval
-  if (user.role === 'it') {
+  // IT and Manager roles require approval
+  if (user.role === 'it' || user.role === 'manager') {
     await createApprovalRequest(
       { uid: user.uid, name: user.name },
       'delete_staff',
