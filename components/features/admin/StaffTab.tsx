@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { ShieldCheck, Plus, Check, X, Eye, EyeOff, Pencil, Trash2, Download } from 'lucide-react';
+import { ShieldCheck, Plus, Check, X, Eye, EyeOff, Pencil, Trash2, Download, ChevronUp, ChevronDown } from 'lucide-react';
 import type { StaffAccount } from '@/types';
 
 interface EditState {
@@ -24,6 +24,7 @@ export default function StaffTab() {
   const [downloading, setDownloading] = useState(false);
   const [showPw,   setShowPw]   = useState<Record<string, boolean>>({});
   const [staffErr, setStaffErr] = useState('');
+  const [isOrderChanged, setIsOrderChanged] = useState(false);
 
   // New account form state
   const [newUser, setNewUser] = useState({ username: '', password: '', name: '', role: 'manager' as 'admin' | 'manager' | 'it' | 'evaluator' | 'trainer' });
@@ -32,12 +33,50 @@ export default function StaffTab() {
     setLoading(true);
     try {
       const res = await fetch('/api/admin/staff');
-      if (res.ok) { const d = await res.json(); setStaff(d.staff ?? []); }
+      if (res.ok) { 
+        const d = await res.json(); 
+        setStaff(d.staff ?? []); 
+        setIsOrderChanged(false);
+      }
     } catch { /* empty */ }
     setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  function moveStaff(index: number, direction: 'up' | 'down') {
+    const newStaff = [...staff];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newStaff.length) return;
+
+    const temp = newStaff[index];
+    newStaff[index] = newStaff[targetIndex];
+    newStaff[targetIndex] = temp;
+
+    setStaff(newStaff);
+    setIsOrderChanged(true);
+  }
+
+  async function saveArrangement() {
+    setSaving(true);
+    try {
+      const order = staff.map((s, idx) => ({ id: s.id, sortOrder: idx + 1 }));
+      const res = await fetch('/api/admin/staff', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order }),
+      });
+      if (res.ok) {
+        setIsOrderChanged(false);
+      } else {
+        alert('Failed to save arrangement');
+      }
+    } catch {
+      alert('Network error');
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function exportStaff() {
     setDownloading(true);
@@ -152,6 +191,16 @@ export default function StaffTab() {
           <p className="text-sm text-muted-foreground mt-0.5">{t('staff.desc')}</p>
         </div>
         <div className="flex items-center gap-2">
+          {isOrderChanged && (
+            <button
+              onClick={saveArrangement}
+              disabled={saving}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-700 transition-colors disabled:opacity-50 shadow-lg shadow-blue-500/20"
+            >
+              <Check size={16} />
+              {saving ? t('staff.savingArrangement') : t('staff.saveArrangement')}
+            </button>
+          )}
           <button
             onClick={exportStaff}
             disabled={downloading}
@@ -242,6 +291,7 @@ export default function StaffTab() {
           <table className="w-full text-sm border-separate border-spacing-y-2 px-2">
             <thead>
               <tr className="text-muted-foreground">
+                <th className="w-8" />
                 <th className="text-left px-5 py-3 font-bold uppercase tracking-wider text-[10px]">{t('staff.table.name')}</th>
                 <th className="text-left px-4 py-3 font-bold uppercase tracking-wider text-[10px]">{t('staff.table.username')}</th>
                 <th className="text-left px-4 py-3 font-bold uppercase tracking-wider text-[10px]">{t('staff.table.password')}</th>
@@ -251,12 +301,13 @@ export default function StaffTab() {
               </tr>
             </thead>
             <tbody>
-              {staff.map(s => (
+              {staff.map((s, idx) => (
                 <tr key={s.id} className="bg-card/60 backdrop-blur-md hover:bg-card hover:shadow-md transition-all group">
                   {editing?.id === s.id ? (
                     // Edit row
                     <>
-                      <td className="px-5 py-3 rounded-l-2xl border-y border-l border-border/50 group-hover:border-primary/20">
+                      <td className="px-2 rounded-l-2xl border-y border-l border-border/50 group-hover:border-primary/20" />
+                      <td className="px-5 py-3 border-y border-border/50 group-hover:border-y-primary/20">
                         <input value={editing.name} onChange={e => setEditing(v => v && ({ ...v, name: e.target.value }))}
                           className="w-full bg-secondary/40 border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                       </td>
@@ -299,7 +350,25 @@ export default function StaffTab() {
                   ) : (
                     // View row
                     <>
-                      <td className="px-5 py-4 rounded-l-2xl border-y border-l border-border/50 group-hover:border-primary/20 font-semibold text-foreground">{s.name}</td>
+                      <td className="px-2 rounded-l-2xl border-y border-l border-border/50 group-hover:border-primary/20">
+                        <div className="flex flex-col items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => moveStaff(idx, 'up')}
+                            disabled={idx === 0}
+                            className="p-0.5 rounded hover:bg-secondary text-muted-foreground disabled:opacity-20 transition-colors"
+                          >
+                            <ChevronUp size={12} />
+                          </button>
+                          <button
+                            onClick={() => moveStaff(idx, 'down')}
+                            disabled={idx === staff.length - 1}
+                            className="p-0.5 rounded hover:bg-secondary text-muted-foreground disabled:opacity-20 transition-colors"
+                          >
+                            <ChevronDown size={12} />
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 border-y border-border/50 group-hover:border-y-primary/20 font-semibold text-foreground">{s.name}</td>
                       <td className="px-4 py-4 border-y border-border/50 group-hover:border-y-primary/20 font-mono text-sm text-foreground">{s.username}</td>
                       <td className="px-4 py-4 border-y border-border/50 group-hover:border-y-primary/20">
                         <div className="flex items-center gap-2">

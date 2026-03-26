@@ -9,6 +9,7 @@ export interface StaffAccount {
   active: boolean;
   createdAt: string;
   passwordChanged?: boolean;
+  sortOrder?: number;
 }
 
 // ── AI Evaluation ──────────────────────────────────────────────────────────

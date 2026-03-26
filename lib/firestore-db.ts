@@ -55,6 +55,19 @@ export async function fsUpdate<T extends object>(
   await db.collection(collection).doc(id).update(patch as Record<string, unknown>);
 }
 
+export async function fsUpdateMany<T extends object>(
+  collection: string,
+  updates: { id: string; patch: Partial<T> }[]
+): Promise<void> {
+  const db    = getAdminDb();
+  const batch = db.batch();
+  updates.forEach(({ id, patch }) => {
+    const docRef = db.collection(collection).doc(id);
+    batch.update(docRef, patch as Record<string, unknown>);
+  });
+  await batch.commit();
+}
+
 // ── Delete ─────────────────────────────────────────────────────────────────
 
 export async function fsDelete(collection: string, id: string): Promise<void> {
