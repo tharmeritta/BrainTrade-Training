@@ -4,7 +4,7 @@ import { fsGetAll } from '@/lib/firestore-db';
 
 interface FeedItem {
   id: string;
-  type: 'quiz' | 'ai-eval';
+  type: 'quiz' | 'ai-eval' | 'learning';
   agentId: string;
   agentName: string;
   timestamp: string;
@@ -22,11 +22,10 @@ export async function GET() {
   }
 
   try {
-    // We could optimize this by using a "limit" and "orderBy" in Firestore,
-    // but fsGetAll doesn't support it yet.
-    const [quizDocs, evalDocs] = await Promise.all([
+    const [quizDocs, evalDocs, learnDocs] = await Promise.all([
       fsGetAll<{ id: string; agentId: string; agentName: string; moduleId: string; score: number; totalQuestions: number; passed: boolean; timestamp: string }>('quiz_results'),
       fsGetAll<{ id: string; agentId: string; agentName: string; level: number; score: number; timestamp: string; passed: boolean }>('ai_eval_logs'),
+      fsGetAll<{ id: string; agentId: string; agentName: string; moduleId: string; timestamp: string }>('learning_logs'),
     ]);
 
     const feed: FeedItem[] = [
@@ -50,6 +49,14 @@ export async function GET() {
         score: d.score,
         level: d.level,
         passed: d.passed
+      })),
+      ...learnDocs.map(d => ({
+        id: d.id,
+        type: 'learning' as const,
+        agentId: d.agentId,
+        agentName: d.agentName || 'Unknown Agent',
+        timestamp: d.timestamp,
+        details: `Finished Learning: ${d.moduleId}`,
       })),
     ];
 

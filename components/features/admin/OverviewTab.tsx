@@ -177,36 +177,41 @@ export default function OverviewTab() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-card rounded-2xl border border-border p-6 shadow-sm">
-          <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
-            <TrendingUp size={20} className="text-primary" /> {t('overview.trainingCompletion')}
-          </h3>
-          <div className="space-y-7">
-
-            {/* Learn — per topic */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <BookOpen size={15} className="text-blue-400" />
-                <span className="font-semibold text-sm text-foreground">{t('overview.learnCourses')}</span>
-                <span className="text-xs text-muted-foreground ml-auto">
-                  {t('overview.agentsCount', { done: data.moduleStats.find(m => m.moduleId === 'learn')?.passCount ?? 0, total: data.totalAgents })}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* ── Training Completion Grid (3/4 width) ─────────────────── */}
+        <div className="lg:col-span-3 bg-card rounded-2xl border border-border p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="font-bold text-base flex items-center gap-2">
+              <TrendingUp size={18} className="text-primary" /> {t('overview.trainingCompletion')}
+            </h3>
+            <div className="flex items-center gap-4 text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">
+              <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-blue-400" /> Learn</span>
+              <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-amber-400" /> Quiz</span>
+              <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-purple-400" /> AI Eval</span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            {/* Learn Column */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+                <BookOpen size={14} className="text-blue-400" />
+                <span className="font-bold text-xs uppercase tracking-wider">{t('overview.learnCourses')}</span>
+                <span className="ml-auto text-[10px] font-bold text-muted-foreground bg-secondary px-1.5 py-0.5 rounded">
+                  {data.moduleStats.find(m => m.moduleId === 'learn')?.passCount ?? 0}/{data.totalAgents}
                 </span>
               </div>
-              <div className="space-y-2.5 pl-5 border-l-2 border-blue-400/20">
+              <div className="space-y-3">
                 {(['foundation', 'product', 'process', 'payment'] as const).map(topic => {
-                  const count = data.leaderboard.filter(a => !!a.quiz[topic]).length;
+                  const count = data.leaderboard.filter(a => (a.learnedModules ?? []).includes(topic)).length;
                   const pct   = data.totalAgents > 0 ? Math.round(count / data.totalAgents * 100) : 0;
                   return (
                     <div key={topic} className="space-y-1">
-                      <div className="flex justify-between text-xs">
+                      <div className="flex justify-between text-[10px] font-medium">
                         <span className="capitalize text-muted-foreground">{t(`modules.${topic}`)}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground/60">{count}/{data.totalAgents}</span>
-                          <span className={`font-bold ${scoreColor(pct)}`}>{pct}%</span>
-                        </div>
+                        <span className={`font-bold ${scoreColor(pct)}`}>{pct}%</span>
                       </div>
-                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
                         <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: 'easeOut' }}
                           className="h-full rounded-full bg-blue-400" />
                       </div>
@@ -216,31 +221,27 @@ export default function OverviewTab() {
               </div>
             </div>
 
-            {/* Quiz — per topic pass rate */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Target size={15} className="text-amber-400" />
-                <span className="font-semibold text-sm text-foreground">{t('overview.quiz')}</span>
-                <span className="text-xs text-muted-foreground ml-auto">
-                  {t('overview.passedAll', { done: data.moduleStats.find(m => m.moduleId === 'quiz')?.passCount ?? 0, total: data.totalAgents })}
+            {/* Quiz Column */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+                <Target size={14} className="text-amber-400" />
+                <span className="font-bold text-xs uppercase tracking-wider">{t('overview.quiz')}</span>
+                <span className="ml-auto text-[10px] font-bold text-muted-foreground bg-secondary px-1.5 py-0.5 rounded">
+                  {data.moduleStats.find(m => m.moduleId === 'quiz')?.passCount ?? 0}/{data.totalAgents}
                 </span>
               </div>
-              <div className="space-y-2.5 pl-5 border-l-2 border-amber-400/20">
+              <div className="space-y-3">
                 {(['foundation', 'product', 'process', 'payment'] as const).map(topic => {
                   const attempted = data.leaderboard.filter(a => !!a.quiz[topic]);
                   const passed    = attempted.filter(a => a.quiz[topic]?.passed).length;
-                  const avgScore  = attempted.length > 0 ? Math.round(attempted.reduce((s, a) => s + (a.quiz[topic]?.bestScore ?? 0), 0) / attempted.length) : 0;
                   const pct       = data.totalAgents > 0 ? Math.round(passed / data.totalAgents * 100) : 0;
                   return (
                     <div key={topic} className="space-y-1">
-                      <div className="flex justify-between text-xs">
+                      <div className="flex justify-between text-[10px] font-medium">
                         <span className="capitalize text-muted-foreground">{t(`modules.${topic}`)}</span>
-                        <div className="flex items-center gap-3">
-                          {avgScore > 0 && <span className={`${scoreColor(avgScore)}`}>{t('overview.avgScore', { score: avgScore })}</span>}
-                          <span className={`font-bold ${scoreColor(pct)}`}>{t('overview.passCount', { count: passed, total: data.totalAgents })}</span>
-                        </div>
+                        <span className={`font-bold ${scoreColor(pct)}`}>{pct}%</span>
                       </div>
-                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
                         <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: 'easeOut' }}
                           className={`h-full rounded-full ${scoreBg(pct)}`} />
                       </div>
@@ -250,49 +251,50 @@ export default function OverviewTab() {
               </div>
             </div>
 
-            {/* AI Eval — unified status */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Zap size={15} className="text-purple-400" />
-                <span className="font-semibold text-sm text-foreground">{t('overview.aiEval')}</span>
-                <span className="text-xs text-muted-foreground ml-auto">
-                  {t('overview.startedCount', { done: data.moduleStats.find(m => m.moduleId === 'ai-eval')?.passCount ?? 0, total: data.totalAgents })}
-                  {data.avgAiEvalScore > 0 && <span className={` ml-2 font-bold ${scoreColor(data.avgAiEvalScore)}`}>· {t('overview.avgScore', { score: data.avgAiEvalScore })}/100</span>}
+            {/* AI Eval & Overall Summary Column */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+                <Zap size={14} className="text-purple-400" />
+                <span className="font-bold text-xs uppercase tracking-wider">{t('overview.aiEval')}</span>
+                <span className="ml-auto text-[10px] font-bold text-muted-foreground bg-secondary px-1.5 py-0.5 rounded">
+                  {data.moduleStats.find(m => m.moduleId === 'ai-eval')?.passCount ?? 0}/{data.totalAgents}
                 </span>
               </div>
-              <div className="space-y-2.5 pl-5 border-l-2 border-purple-400/20">
-                {(() => {
-                  const passedAgents = data.leaderboard.filter(a => (a.evalCompletedLevels ?? []).length > 0);
-                  const passRate     = data.totalAgents > 0 ? Math.round(passedAgents.length / data.totalAgents * 100) : 0;
-                  return (
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span className="text-muted-foreground">Evaluation Status</span>
-                        <div className="flex items-center gap-3">
-                          <span className={`font-bold ${scoreColor(passRate)}`}>{t('overview.passCount', { count: passedAgents.length, total: data.totalAgents })}</span>
-                        </div>
-                      </div>
-                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                        <motion.div initial={{ width: 0 }} animate={{ width: `${passRate}%` }} transition={{ duration: 0.8, ease: 'easeOut' }}
-                          className="h-full rounded-full bg-purple-400" />
-                      </div>
-                    </div>
-                  );
-                })()}
+              
+              <div className="bg-secondary/20 rounded-xl p-3 border border-border/30 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Avg Score</span>
+                  <span className={`text-sm font-black ${scoreColor(data.avgAiEvalScore)}`}>{data.avgAiEvalScore}%</span>
+                </div>
+                <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${data.avgAiEvalScore}%` }} transition={{ duration: 0.8, ease: 'easeOut' }}
+                    className={`h-full rounded-full ${scoreBg(data.avgAiEvalScore)}`} />
+                </div>
+                <div className="pt-2 mt-2 border-t border-border/30">
+                   <div className="flex items-center justify-between text-[10px]">
+                      <span className="font-bold text-muted-foreground uppercase tracking-tighter">{t('overview.overallResult')}</span>
+                      <span className="font-black text-blue-500">{Math.round((data.passFail.passed / data.totalAgents) * 100)}% Pass</span>
+                   </div>
+                   <div className="flex gap-1 mt-1.5">
+                      {Array.from({ length: 10 }).map((_, i) => (
+                        <div key={i} className={`h-1 flex-1 rounded-full ${i < (data.passFail.passed / data.totalAgents) * 10 ? 'bg-blue-500' : 'bg-secondary'}`} />
+                      ))}
+                   </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 p-2 rounded-lg border border-blue-500/10 bg-blue-500/5">
+                 <Award size={14} className="text-blue-500 shrink-0" />
+                 <p className="text-[9px] leading-tight text-blue-700/70 font-medium">
+                    {data.passFail.passed} agents have cleared all training modules and are ready for live operation.
+                 </p>
               </div>
             </div>
-
-
           </div>
         </div>
 
-        <div className="flex flex-col gap-6">
-          <div className="bg-card rounded-2xl border border-border p-6 shadow-sm flex flex-col items-center justify-center">
-            <h3 className="font-bold text-lg mb-4 self-start">{t('overview.overallResult')}</h3>
-            <DonutChart passed={data.passFail.passed} failed={data.passFail.failed} />
-            <p className="text-xs text-muted-foreground mt-4 text-center">{t('overview.overallDesc')}</p>
-          </div>
-          
+        {/* ── Live Feed (1/4 width) ─────────────────────────────── */}
+        <div className="lg:col-span-1">
           <LiveFeed feed={feed} />
         </div>
       </div>

@@ -16,7 +16,7 @@ const EMPTY: AdminOverviewData = {
   leaderboard: [], passFail: { passed: 0, failed: 0 },
 };
 
-const MODULES = ['foundation', 'product', 'process'] as const;
+const MODULES = ['foundation', 'product', 'process', 'payment'] as const;
 
 export async function GET() {
   try { 

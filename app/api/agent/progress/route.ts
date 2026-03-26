@@ -39,6 +39,8 @@ export async function POST(req: NextRequest) {
 
     const existing = await fsGet<ProgressRecord>('agent_progress', agentId) ?? defaults(agentId, agentName);
 
+    const newlyLearned = (body.learnedModules ?? []).filter(m => !existing.learnedModules.includes(m));
+
     const merged: ProgressRecord = {
       agentId,
       agentName: agentName || existing.agentName,
@@ -53,6 +55,18 @@ export async function POST(req: NextRequest) {
     };
 
     const saved = await fsSet('agent_progress', agentId, merged);
+
+    // Log newly learned modules for the live feed
+    if (newlyLearned.length > 0) {
+      await Promise.all(newlyLearned.map(modId => 
+        fsSet('learning_logs', `${agentId}_${modId}`, {
+          agentId,
+          agentName: merged.agentName,
+          moduleId: modId,
+          timestamp: new Date().toISOString()
+        })
+      ));
+    }
 
     const evalDone = merged.evalCompletedLevels.length > 0;
 
