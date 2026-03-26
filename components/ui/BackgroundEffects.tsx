@@ -8,9 +8,8 @@ import { motion } from 'framer-motion';
  * - Fractal noise texture overlay
  * - Layered, animated ambient orbs (Cyan/Purple)
  * - Drifting SVG grid
- * - Subtle vertical separator (optional)
  */
-export const BackgroundEffects = ({ showSeam = true }: { showSeam?: boolean }) => (
+export const BackgroundEffects = () => (
   <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
     {/* Noise Texture Overlay */}
     <div 
@@ -60,17 +59,5 @@ export const BackgroundEffects = ({ showSeam = true }: { showSeam?: boolean }) =
       animate={{ backgroundPosition: ['0px 0px', '64px 64px'] }}
       transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
     />
-
-    {/* Refined vertical seam */}
-    {showSeam && (
-      <div className="hidden lg:block" style={{
-        position: 'absolute',
-        top: '5%', bottom: '5%',
-        right: 420,
-        width: 1,
-        background: `linear-gradient(180deg, transparent 0%, rgba(0,180,216,0.2) 20%, rgba(124,58,237,0.2) 80%, transparent 100%)`,
-        filter: 'blur(0.5px)',
-      }} />
-    )}
   </div>
 );

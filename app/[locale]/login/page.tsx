@@ -100,7 +100,7 @@ export default function LoginPage() {
       className="h-screen w-screen overflow-hidden flex items-center justify-center relative"
       style={{ background: 'var(--hub-bg)', fontFamily: "'DM Sans', system-ui, sans-serif" }}
     >
-      <BackgroundEffects showSeam={false} />
+      <BackgroundEffects />
 
       <div className="relative z-10 w-full max-w-[440px] px-6">
         <Link href={`/${locale}`}
