@@ -75,6 +75,8 @@ interface QuizzesConfig {
 interface AiEvalConfig {
   systemPrompt: string;
   agentGuideline: string;
+  passThreshold?: number;
+  criteria?: string[];
   [key: string]: any;
 }
 
@@ -759,6 +761,8 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
 function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig | undefined, onSave: (d: AiEvalConfig) => void, onChange: () => void, saving: boolean }) {
   const [systemPrompt, setSystemPrompt] = useState(data?.systemPrompt || '');
   const [agentGuideline, setAgentGuideline] = useState(data?.agentGuideline || '');
+  const [passThreshold, setPassThreshold] = useState(data?.passThreshold ?? 7);
+  const [criteria, setCriteria] = useState<string[]>(data?.criteria || ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness']);
   const [previewMode, setPreviewMode] = useState(false);
 
   const copyToClipboard = (text: string) => {
@@ -766,14 +770,47 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
     alert('Copied to clipboard');
   };
 
-  const handleUpdate = (type: 'prompt' | 'guideline', val: string) => {
+  const handleUpdate = (type: 'prompt' | 'guideline' | 'threshold' | 'criteria', val: any) => {
     if (type === 'prompt') setSystemPrompt(val);
-    else setAgentGuideline(val);
+    else if (type === 'guideline') setAgentGuideline(val);
+    else if (type === 'threshold') setPassThreshold(val);
+    else if (type === 'criteria') setCriteria(val);
     onChange();
   };
 
   return (
     <div className="p-6 space-y-8">
+      {/* Settings Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-4 border-b border-border">
+        <div className="space-y-2">
+          <label className="text-[10px] font-black uppercase opacity-50 px-1">Pass Threshold (Score 1-10)</label>
+          <div className="flex items-center gap-3">
+            <input 
+              type="range" 
+              min="1" 
+              max="10" 
+              step="0.5"
+              value={passThreshold} 
+              onChange={e => handleUpdate('threshold', Number(e.target.value))} 
+              className="flex-1 accent-primary" 
+            />
+            <span className="w-12 text-center font-black text-sm bg-primary/10 text-primary py-1 rounded-lg border border-primary/20">{passThreshold}</span>
+          </div>
+          <p className="text-[9px] text-muted-foreground italic px-1">Agents must average this score across all criteria to pass.</p>
+        </div>
+        <div className="space-y-2">
+          <label className="text-[10px] font-black uppercase opacity-50 px-1">Evaluation Criteria (Keys)</label>
+          <input 
+            type="text" 
+            value={criteria.join(', ')} 
+            onChange={e => handleUpdate('criteria', e.target.value.split(',').map(s => s.trim()).filter(Boolean))} 
+            className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all font-mono" 
+            placeholder="rapport, closing, credibility..."
+          />
+          <p className="text-[9px] text-muted-foreground italic px-1">Comma-separated keys. Must match keys used in the System Prompt JSON schema.</p>
+        </div>
+      </div>
+
       {/* Agent-facing Guideline */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -789,7 +826,7 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
               {previewMode ? <Edit3 size={14} /> : <Eye size={14} />} {previewMode ? 'Edit' : 'Preview'}
             </button>
             <button
-              onClick={() => onSave({ ...data, systemPrompt, agentGuideline })}
+              onClick={() => onSave({ ...data, systemPrompt, agentGuideline, passThreshold, criteria })}
               className="bg-primary text-white px-5 py-1.5 rounded-lg text-xs font-bold disabled:opacity-50 flex items-center gap-2"
               disabled={saving}
             >

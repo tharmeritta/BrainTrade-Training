@@ -77,6 +77,7 @@ interface ChatViewProps {
   onUseScript: (text: string) => void;
   bottomRef: React.RefObject<HTMLDivElement>;
   textareaRef: React.RefObject<HTMLTextAreaElement>;
+  criteriaKeys: string[];
 }
 
 /* ─── Step Progress Indicator ──────────────────────────────────────────────── */
@@ -107,10 +108,11 @@ const SCORE_STYLE = (score: number) =>
     ? { badge: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800', dot: 'bg-amber-400' }
     : { badge: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800', dot: 'bg-rose-500' };
 
-const CoachingCard = memo(({ coaching, autoExpand, onUseScript }: { 
+const CoachingCard = memo(({ coaching, autoExpand, onUseScript, criteriaKeys }: { 
   coaching: CoachingData; 
   autoExpand: boolean;
   onUseScript?: (text: string) => void;
+  criteriaKeys: string[];
 }) => {
   const [open, setOpen] = useState(autoExpand);
   const { score, criteria, strengths, improvements, coachingScript, coachingTip, metadata } = coaching;
@@ -149,12 +151,14 @@ const CoachingCard = memo(({ coaching, autoExpand, onUseScript }: {
                   <div className="px-4 py-3 bg-secondary/10">
                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-2.5">{t('performanceBreakdown')}</p>
                     <div className="space-y-2">
-                      {CRITERIA_KEYS.map((key) => {
+                      {criteriaKeys.map((key) => {
                         const val = (criteria as any)[key] || 0;
                         return (
                           <div key={key}>
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-[10px] font-bold text-foreground/70">{t(`criteria.${key}`)}</span>
+                              <span className="text-[10px] font-bold text-foreground/70">
+                                {t.raw(`criteria.${key}`) ? t(`criteria.${key}`) : key}
+                              </span>
                               <span className="text-[10px] font-black text-primary">{val}/10</span>
                             </div>
                             <div className="h-1 w-full bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
@@ -304,7 +308,7 @@ ScoreTrend.displayName = 'ScoreTrend';
 /**
  * IntroView: Step 1 - Instructions and overview
  */
-const IntroView = memo(({ onContinue, guideline, agentName, loading }: IntroViewProps) => {
+const IntroView = memo(({ onContinue, guideline, agentName, loading, criteriaKeys }: IntroViewProps & { criteriaKeys: string[] }) => {
   const t = useTranslations('aiEval');
 
   return (
@@ -357,9 +361,9 @@ const IntroView = memo(({ onContinue, guideline, agentName, loading }: IntroView
               <h3 className="font-black text-foreground text-base tracking-tight">{t('criteriaTitle')}</h3>
             </div>
             <div className="flex flex-wrap gap-2">
-              {CRITERIA_KEYS.map((key) => (
+              {criteriaKeys.map((key) => (
                 <span key={key} className="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 text-foreground text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm">
-                  {t(`criteria.${key}`)}
+                  {t.raw(`criteria.${key}`) ? t(`criteria.${key}`) : key}
                 </span>
               ))}
             </div>
@@ -454,7 +458,7 @@ MessageBubble.displayName = 'MessageBubble';
  */
 const ChatView = memo(({
   messages, coaching, customerProfile, input, setInput, loading, passed, error,
-  onSend, onReset, onClearError, onUseScript, bottomRef, textareaRef
+  onSend, onReset, onClearError, onUseScript, bottomRef, textareaRef, criteriaKeys
 }: ChatViewProps) => {
   const t = useTranslations('aiEval');
 
@@ -579,6 +583,7 @@ const ChatView = memo(({
                       coaching={card}
                       autoExpand={card.score < 6}
                       onUseScript={onUseScript}
+                      criteriaKeys={criteriaKeys}
                     />
                   )}
                 </React.Fragment>
@@ -712,10 +717,13 @@ export default function AiEvaluation() {
   const [passed,          setPassed]          = useState(false);
   const [completedLevels, setCompletedLevels] = useState<Set<number>>(new Set());
   const [guideline,       setGuideline]       = useState<string | null>(null);
+  const [passThreshold,   setPassThreshold]   = useState<number>(7);
+  const [criteriaKeys,    setCriteriaKeys]    = useState<string[]>(CRITERIA_KEYS);
   const [error,           setError]           = useState<string | null>(null);
-  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showError = useCallback((msg: string) => {
     setError(msg);
@@ -733,6 +741,8 @@ export default function AiEvaluation() {
         } else {
           setGuideline('AI customer will act as a Thai client. Handle objections professionally and try to close the sale.');
         }
+        if (data?.passThreshold) setPassThreshold(data.passThreshold);
+        if (data?.criteria) setCriteriaKeys(data.criteria);
       })
       .catch(() => {
         setGuideline('AI customer will act as a Thai client. Handle objections professionally and try to close the sale.');
@@ -775,6 +785,13 @@ export default function AiEvaluation() {
               setSessionId(s.sessionId);
               setMessages(s.messages);
               if (s.customerProfile) setCustomerProfile(s.customerProfile);
+              if (s.coaching) {
+                const restoredCoaching = new Map<number, CoachingData>();
+                Object.entries(s.coaching).forEach(([k, v]) => {
+                  restoredCoaching.set(parseInt(k), v as CoachingData);
+                });
+                setCoaching(restoredCoaching);
+              }
               setStep('chat');
             }
           }
@@ -917,11 +934,13 @@ export default function AiEvaluation() {
       }
 
       // Store coaching
+      let nextCoaching = coaching;
       if (data.coaching) {
         const assistantIndex = finalMessages.length - 1;
         setCoaching(prev => {
           const next = new Map(prev);
           next.set(assistantIndex, data.coaching);
+          nextCoaching = next;
           return next;
         });
       }
@@ -939,7 +958,8 @@ export default function AiEvaluation() {
             sessionId,
             level: 1,
             messages: finalMessages,
-            customerProfile: data.customerProfile || customerProfile
+            customerProfile: data.customerProfile || customerProfile,
+            coaching: Object.fromEntries(nextCoaching)
           }),
         }).catch(() => {});
       }
@@ -950,7 +970,7 @@ export default function AiEvaluation() {
     } finally {
       setLoading(false);
     }
-  }, [input, sessionId, loading, passed, messages, agentId, agentName, markLevelCompleted, showError, customerProfile]);
+  }, [input, sessionId, loading, passed, messages, agentId, agentName, markLevelCompleted, showError, customerProfile, coaching]);
 
   const resetToSelect = useCallback((clearHistory = false) => {
     if (clearHistory) {
@@ -980,6 +1000,7 @@ export default function AiEvaluation() {
             guideline={guideline}
             agentName={agentName}
             loading={loading}
+            criteriaKeys={criteriaKeys}
           />
         </motion.div>
       ) : (
@@ -999,6 +1020,7 @@ export default function AiEvaluation() {
             onUseScript={handleUseScript}
             bottomRef={bottomRef}
             textareaRef={textareaRef}
+            criteriaKeys={criteriaKeys}
           />
         </motion.div>
       )}

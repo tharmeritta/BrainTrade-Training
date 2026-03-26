@@ -103,7 +103,7 @@ export default function LoginPage() {
       <BackgroundEffects showSeam={false} />
 
       <div className="relative z-10 w-full max-w-[440px] px-6">
-        <Link href={`/${locale}/dashboard`}
+        <Link href={`/${locale}`}
           className="group inline-flex items-center gap-2 text-xs font-bold mb-8 transition-all hover:translate-x-[-4px]"
           style={{ color: 'var(--hub-muted)' }}
         >

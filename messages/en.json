@@ -1,4 +1,15 @@
 {
+  "landing": {
+    "title": "Welcome to <span class=\"text-primary\">BrainTrade</span>",
+    "subtitle": "Professional sales training and skill development platform.",
+    "agentTitle": "For Agents",
+    "agentDesc": "Log in to start training, take quizzes, and get AI evaluations.",
+    "agentBtn": "Agent Entry",
+    "staffTitle": "For Staff",
+    "staffDesc": "Manage training, track progress, and evaluate agents.",
+    "staffBtn": "Staff Portal",
+    "footer": "© 2026 BrainTrade Training Infrastructure. All rights reserved."
+  },
   "nav": {
     "dashboard": "Dashboard",
     "learn": "Learn",
@@ -115,6 +126,7 @@
     "mockupBtn": "Try Demo",
     "mockupName": "Mockup Agent",
     "staffLogin": "Staff Login →",
+    "back": "Go Back",
     "fetchError": "Could not connect to system. Please refresh.",
     "matchError": "Name not found in system. Please check and try again."
   },

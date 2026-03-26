@@ -29,7 +29,9 @@ export async function GET() {
 
     const data = doc.data();
     return NextResponse.json({
-      guideline: data?.agentGuideline || FALLBACK_AGENT_GUIDELINE
+      guideline: data?.agentGuideline || FALLBACK_AGENT_GUIDELINE,
+      passThreshold: data?.passThreshold || 7,
+      criteria: data?.criteria || ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness']
     });
   } catch (err) {
     console.error('Fetch AI eval guideline error:', err);

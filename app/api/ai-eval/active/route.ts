@@ -9,6 +9,7 @@ interface ActiveEvalSession {
   messages: PitchMessage[];
   savedAt: number;
   customerProfile?: any;
+  coaching?: Record<number, any>;
 }
 
 // GET /api/ai-eval/active?agentId=xxx
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
 // POST /api/ai-eval/active — upsert active session with latest messages
 export async function POST(req: NextRequest) {
   try {
-    const { agentId, sessionId, level, messages, customerProfile } = await req.json();
+    const { agentId, sessionId, level, messages, customerProfile, coaching } = await req.json();
     if (!agentId || !sessionId) {
       return NextResponse.json({ error: 'agentId and sessionId required' }, { status: 400 });
     }
@@ -36,6 +37,7 @@ export async function POST(req: NextRequest) {
       level,
       messages,
       customerProfile,
+      coaching,
       savedAt: Date.now(),
     });
     return NextResponse.json({ ok: true });

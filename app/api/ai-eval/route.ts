@@ -14,11 +14,11 @@ interface ProgressRecord {
   updatedAt?: string;
 }
 
-async function markEvalPassed(agentId: string, agentName: string): Promise<void> {
+async function markEvalPassed(agentId: string, agentName: string, level: number = 1): Promise<void> {
   const existing = await fsGet<ProgressRecord>('agent_progress', agentId) ?? {
     agentId, agentName, evalCompletedLevels: [], evalSavedLevel: null,
   };
-  const levels = Array.from(new Set([...existing.evalCompletedLevels, 1])).sort((a, b) => a - b);
+  const levels = Array.from(new Set([...existing.evalCompletedLevels, level])).sort((a, b) => a - b);
   await fsSet('agent_progress', agentId, {
     ...existing,
     agentId,
@@ -35,13 +35,7 @@ async function markEvalPassed(agentId: string, agentName: string): Promise<void>
 
 interface CoachingData {
   score: number;
-  criteria?: {
-    rapport: number;
-    objectionHandling: number;
-    credibility: number;
-    closing: number;
-    naturalness: number;
-  };
+  criteria?: Record<string, number>;
   strengths: string;
   improvements: string;
   coachingScript: string;
@@ -52,6 +46,8 @@ interface CoachingData {
 /* ─── System Prompt ─────────────────────────────────────────────────────────── */
 // IMPORTANT: This prompt uses response_format: json_object.
 // Any custom prompt stored in Firestore must also follow the JSON schema below.
+
+const FALLBACK_CRITERIA = ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'];
 
 const FALLBACK_SYSTEM_PROMPT = `คุณคือ "ลูกค้าคนไทย" ที่กำลังรับสายจากพนักงานเทเลเซลล์
 
@@ -115,7 +111,11 @@ async function loadFullConfig(): Promise<any> {
   } catch (err) {
     console.error('Firestore AI eval config load error:', err);
   }
-  return { systemPrompt: FALLBACK_SYSTEM_PROMPT };
+  return { 
+    systemPrompt: FALLBACK_SYSTEM_PROMPT,
+    passThreshold: 7,
+    criteria: FALLBACK_CRITERIA
+  };
 }
 
 /* ─── POST handler ──────────────────────────────────────────────────────────── */
@@ -124,11 +124,13 @@ export async function POST(req: NextRequest) {
   try {
     const { level: reqLevel, messages, agentId, agentName, isStart } = await req.json();
 
-    const level = 1; // Single evaluation level now
+    const level = Number(reqLevel) || 1;
 
-    const openai      = getOpenAI();
-    const config      = await loadFullConfig();
-    const systemPrompt = config.systemPrompt || FALLBACK_SYSTEM_PROMPT;
+    const openai       = getOpenAI();
+    const config       = await loadFullConfig();
+    const systemPrompt  = config.systemPrompt  || FALLBACK_SYSTEM_PROMPT;
+    const passThreshold = Number(config.passThreshold) || 7;
+    const configCriteria = Array.isArray(config.criteria) ? config.criteria : FALLBACK_CRITERIA;
 
     // Sliding window — cap token usage
     // Sanitize: ensure role is valid and content is a string to prevent 400 errors
@@ -164,7 +166,8 @@ export async function POST(req: NextRequest) {
 2. You are NOT the Agent (เอเจนต์/พนักงานขาย).
 3. Do NOT use the name "${agentName}" for yourself.
 4. Your response must be what a CUSTOMER would say when receiving a call.
-5. Use the JSON format provided below.`;
+5. Use the JSON format provided below.
+6. The "passed" field MUST be true only if "Score" >= ${passThreshold}.`;
 
     // OpenAI requires the first non-system message to be from 'user'.
     // If the conversation starts with the AI's opening greeting (assistant role),
@@ -209,7 +212,11 @@ export async function POST(req: NextRequest) {
         customerLine = customerLine.replace('ลูกค้า: ', '');
       }
 
-      passed = isStart ? false : (parsed.passed === true || (typeof parsed.passed === 'string' && parsed.passed.toLowerCase() === 'true'));
+      // Check passed flag but ALSO double check score against threshold
+      const scoreVal = parsed.Score ?? parsed.score;
+      const aiReportedPass = parsed.passed === true || (typeof parsed.passed === 'string' && parsed.passed.toLowerCase() === 'true');
+      
+      passed = isStart ? false : (aiReportedPass || (scoreVal != null && Number(scoreVal) >= passThreshold));
 
       // Extract Customer Profile if present
       if (parsed.Customer) {
@@ -222,8 +229,7 @@ export async function POST(req: NextRequest) {
         };
       }
 
-      if (!isStart && (parsed.score != null || parsed.Score != null)) {
-        const scoreVal = parsed.score ?? parsed.Score;
+      if (!isStart && (scoreVal != null)) {
         const crit = parsed.Criteria || parsed.criteria;
         
         coaching = {
@@ -248,13 +254,17 @@ export async function POST(req: NextRequest) {
         });
 
         if (crit) {
-          coaching.criteria = {
-            rapport:           Number(crit.rapport) || 5,
-            objectionHandling: Number(crit.objectionHandling || crit.objection_handling) || 5,
-            credibility:       Number(crit.credibility) || 5,
-            closing:           Number(crit.closing) || 5,
-            naturalness:       Number(crit.naturalness) || 5
-          };
+          coaching.criteria = {};
+          // Try to extract known criteria or any keys in the criteria object
+          configCriteria.forEach((k: string) => {
+            coaching!.criteria![k] = Number(crit[k] || crit[k.toLowerCase()] || crit[k.charAt(0).toUpperCase() + k.slice(1)]) || 5;
+          });
+          // Also catch anything else in the criteria object
+          Object.keys(crit).forEach(ck => {
+            if (!coaching!.criteria![ck]) {
+              coaching!.criteria![ck] = Number(crit[ck]) || 5;
+            }
+          });
         }
       }
     } catch {
@@ -290,7 +300,7 @@ export async function POST(req: NextRequest) {
       // Write pass directly from the server — do not rely on the client to report it
       if (passed) {
         try {
-          await markEvalPassed(agentId, agentName);
+          await markEvalPassed(agentId, agentName, level);
         } catch (progressErr) {
           console.error('AI eval progress update failed (non-blocking):', progressErr);
         }

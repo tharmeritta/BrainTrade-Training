@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import {
   ArrowRight, Loader2, AlertCircle, Users, Award, Layers, User,
   BookOpen, Settings, CreditCard, Bot, Target, Zap, CheckCircle2, Lock,
+  ArrowLeft
 } from 'lucide-react';
 import { StatCounter } from '@/components/ui/StatCounter';
 import { BackgroundEffects } from '@/components/ui/BackgroundEffects';
@@ -145,17 +146,27 @@ const BrandingPanel = () => {
             <motion.div 
               key={i} 
               variants={STAGGER_ITEM} 
-              whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              className="group flex flex-col py-5 px-6 rounded-[24px] transition-colors" 
-              style={{ background: 'var(--hub-card)', border: '1px solid var(--hub-border)', minWidth: 100, boxShadow: '0 10px 30px -10px rgba(0,0,0,0.05)' }}
+              whileHover={{ 
+                y: -8, 
+                rotateZ: i % 2 === 0 ? 1 : -1,
+                scale: 1.02,
+                transition: { type: 'spring', stiffness: 400, damping: 15 } 
+              }}
+              className="group flex flex-col py-6 px-7 rounded-[28px] transition-all duration-300" 
+              style={{ 
+                background: 'var(--hub-card)', 
+                border: '1px solid var(--hub-border)', 
+                minWidth: 110, 
+                boxShadow: '0 10px 30px -10px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(255,255,255,0.02)' 
+              }}
             >
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-3 bg-brand-cyan/10 group-hover:bg-brand-cyan/20 transition-colors">
-                <s.Icon size={16} className="text-brand-cyan" />
+              <div className="w-10 h-10 rounded-2xl flex items-center justify-center mb-4 bg-brand-cyan/10 group-hover:bg-brand-cyan/20 group-hover:scale-110 transition-all duration-300">
+                <s.Icon size={18} className="text-brand-cyan" />
               </div>
-              <div className="text-3xl font-black leading-none mb-1 text-[color:var(--hub-text)]">
+              <div className="text-3xl font-black leading-none mb-1 text-[color:var(--hub-text)] tracking-tight">
                 <StatCounter target={s.target} suffix={s.suffix} delay={400 + i * 120} />
               </div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-[color:var(--hub-muted)]">{t(s.labelKey)}</div>
+              <div className="text-[10px] font-black uppercase tracking-[0.15em] text-[color:var(--hub-muted)] opacity-70">{t(s.labelKey)}</div>
             </motion.div>
           ))}
         </motion.div>
@@ -397,33 +408,60 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
             />
           </div>
 
+          <Link href={`/${locale}`}
+            className="group inline-flex items-center gap-2 text-xs font-bold mb-6 transition-all hover:translate-x-[-4px]"
+            style={{ color: 'var(--hub-muted)' }}
+          >
+            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 border border-white/10 group-hover:bg-brand-cyan/10 group-hover:border-brand-cyan/20 transition-all">
+              <ArrowLeft size={14} className="group-hover:text-brand-cyan transition-colors" />
+            </div>
+            {t('back')}
+          </Link>
+
           <motion.div
             key={shakeKey}
             animate={shakeKey > 0 ? { x: [0, -10, 10, -8, 8, -4, 4, 0] } : {}}
             transition={{ duration: 0.45, ease: 'easeInOut' }}
             className="relative group"
             style={{ 
-              background: `linear-gradient(135deg, rgba(0,180,216,0.4), rgba(124,58,237,0.3), rgba(0,180,216,0.2))`, 
-              borderRadius: 32, 
+              background: `linear-gradient(135deg, rgba(0,180,216,0.3), rgba(124,58,237,0.2), rgba(0,180,216,0.1))`, 
+              borderRadius: 36, 
               padding: 1, 
-              boxShadow: '0 40px 80px -20px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.05)' 
+              boxShadow: `
+                0 40px 80px -20px rgba(0,0,0,0.3),
+                0 0 0 1px rgba(255,255,255,0.05),
+                inset 0 0 20px rgba(255,255,255,0.02)
+              `
             }}
           >
-            {/* Animated border glow */}
-            <div className="absolute -inset-[1px] rounded-[32px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm pointer-events-none"
-              style={{ background: `linear-gradient(90deg, transparent, ${CYAN}44, ${PURPLE}44, transparent)` }}
+            {/* Animated border glow (Full wraparound) */}
+            <motion.div 
+              className="absolute -inset-[1px] rounded-[36px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+              animate={{ backgroundPosition: ['0% 0%', '200% 200%'] }}
+              style={{ 
+                background: `linear-gradient(45deg, ${CYAN}33, ${PURPLE}33, ${CYAN}33)`,
+                backgroundSize: '200% 200%',
+                filter: 'blur(8px)'
+              }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
             />
 
             <div style={{ background: 'var(--entry-card-bg)', borderRadius: 31, backdropFilter: 'blur(32px)', overflow: 'hidden', position: 'relative' }}>
-              {/* Dynamic top-bar gradient */}
+              {/* Refined top-bar gradient with pulse */}
               <motion.div 
-                className="absolute top-0 left-0 right-0 h-[3px]"
-                animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+                className="absolute top-0 left-0 right-0 h-[4px] z-20"
+                animate={{ 
+                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                  opacity: [0.8, 1, 0.8]
+                }}
                 style={{ 
                   background: `linear-gradient(90deg, ${CYAN}, ${PURPLE}, ${CYAN})`,
                   backgroundSize: '200% 100%'
                 }}
-                transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+                transition={{ 
+                  backgroundPosition: { duration: 6, repeat: Infinity, ease: 'linear' },
+                  opacity: { duration: 2, repeat: Infinity, ease: 'easeInOut' }
+                }}
               />
 
               <div style={{ padding: '36px 32px' }}>
@@ -472,14 +510,14 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                 </AnimatePresence>
 
                 {/* Avatar / greeting */}
-                <div className="flex items-center gap-4 mb-8">
+                <div className="flex items-center gap-5 mb-10">
                   <div className="relative">
                     <motion.div
-                      className="w-14 h-14 rounded-[20px] flex items-center justify-center text-lg font-black shrink-0 overflow-hidden z-10 relative"
+                      className="w-16 h-16 rounded-[24px] flex items-center justify-center text-xl font-black shrink-0 overflow-hidden z-10 relative"
                       style={{
-                        background: initials ? `linear-gradient(135deg, ${CYAN}, ${PURPLE})` : 'rgba(0,180,216,0.08)',
-                        border: `1px solid ${initials ? 'transparent' : 'rgba(0,180,216,0.2)'}`,
-                        boxShadow: initials ? `0 8px 20px -5px ${CYAN}66` : 'none',
+                        background: initials ? `linear-gradient(135deg, ${CYAN}, ${PURPLE})` : 'rgba(0,180,216,0.05)',
+                        border: `1px solid ${initials ? 'transparent' : 'rgba(0,180,216,0.15)'}`,
+                        boxShadow: initials ? `0 12px 24px -6px ${CYAN}66` : 'none',
                       }}
                       initial={{ scale: 0.8, opacity: 0 }} 
                       animate={{ scale: 1, opacity: 1 }} 
@@ -491,25 +529,31 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                             {initials}
                           </motion.span>
                         ) : (
-                          <motion.div key="icon" className="relative" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }} transition={{ duration: 0.12 }}>
-                            <User size={24} className="text-brand-cyan" />
-                            {/* Scanning line effect */}
+                          <motion.div key="icon" className="relative flex items-center justify-center w-full h-full" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }} transition={{ duration: 0.12 }}>
+                            <User size={28} className="text-brand-cyan/80" />
+                            {/* Improved scanning line effect */}
                             <motion.div 
-                              className="absolute left-0 right-0 h-[2px] bg-brand-cyan/40"
-                              animate={{ top: ['0%', '100%', '0%'] }}
-                              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                              className="absolute left-0 right-0 h-[3px] bg-brand-cyan shadow-[0_0_10px_rgba(0,180,216,0.8)]"
+                              animate={{ top: ['-10%', '110%', '-10%'] }}
+                              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                            />
+                            {/* Radar pulse */}
+                            <motion.div 
+                              className="absolute inset-0 border-2 border-brand-cyan/20 rounded-[24px]"
+                              animate={{ scale: [1, 1.4], opacity: [0.5, 0] }}
+                              transition={{ duration: 2, repeat: Infinity, ease: 'easeOut' }}
                             />
                           </motion.div>
                         )}
                       </AnimatePresence>
                     </motion.div>
                     {!initials && (
-                      <div className="absolute -inset-1 rounded-[24px] border border-brand-cyan/20 animate-pulse pointer-events-none" />
+                      <div className="absolute -inset-2 rounded-[28px] border border-brand-cyan/10 animate-pulse pointer-events-none" />
                     )}
                   </div>
                   <div>
-                    <h2 className="text-xl font-black leading-tight tracking-tight" style={{ color: 'var(--hub-text)' }}>{t('welcome')}</h2>
-                    <p className="text-sm font-medium" style={{ color: 'var(--hub-muted)' }}>{t('loginDesc')}</p>
+                    <h2 className="text-2xl font-black leading-tight tracking-tight text-[color:var(--hub-text)]">{t('welcome')}</h2>
+                    <p className="text-sm font-bold opacity-60" style={{ color: 'var(--hub-muted)' }}>{t('loginDesc')}</p>
                   </div>
                 </div>
 
