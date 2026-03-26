@@ -260,7 +260,7 @@ export default function PresentationViewer({
     return () => {
       remove(myPresenceRef).catch(() => {});
     };
-  }, [module.id, myId, myName, myRole]); // eslint-disable-next-line react-hooks/exhaustive-deps 
+  }, [module.id, myId, myName, myRole, amInControl]);
 
   // 2. Update status fields (inControl) without removing/re-adding presence
   useEffect(() => {

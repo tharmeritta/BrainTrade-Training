@@ -65,6 +65,7 @@ interface QuizDefinition {
 
 interface QuizzesConfig {
   definitions: Record<string, QuizDefinition>;
+  order?: string[];
 }
 
 interface AiEvalConfig {
@@ -292,6 +293,7 @@ export default function AdjustmentsTab() {
 
 function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig | undefined, onSave: (d: QuizzesConfig) => void, onChange: () => void, saving: boolean }) {
   const [definitions, setDefinitions] = useState<Record<string, QuizDefinition>>(data?.definitions || {});
+  const [order, setOrder] = useState<string[]>(data?.order || Object.keys(definitions));
   const [selectedQuiz, setSelectedQuiz] = useState<string | null>(null);
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -299,6 +301,57 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
 
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState('');
+
+  // Synchronize order when definitions change
+  useEffect(() => {
+    const quizIds = Object.keys(definitions);
+    let changed = false;
+    
+    const newOrder = [...order];
+    quizIds.forEach(id => {
+      if (!newOrder.includes(id)) {
+        newOrder.push(id);
+        changed = true;
+      }
+    });
+
+    const filteredOrder = newOrder.filter(id => definitions[id]);
+    if (filteredOrder.length !== newOrder.length) changed = true;
+
+    if (changed) {
+      setOrder(filteredOrder);
+    }
+  }, [definitions, order]);
+
+  const moveQuiz = (idx: number, direction: 'up' | 'down') => {
+    const newOrder = [...order];
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= newOrder.length) return;
+    
+    [newOrder[idx], newOrder[targetIdx]] = [newOrder[targetIdx], newOrder[idx]];
+    setOrder(newOrder);
+    onChange();
+  };
+
+  const moveQuestion = (quizId: string, idx: number, direction: 'up' | 'down') => {
+    const updated = { ...definitions };
+    const questions = [...(updated[quizId].questions || [])];
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= questions.length) return;
+
+    [questions[idx], questions[targetIdx]] = [questions[targetIdx], questions[idx]];
+    updated[quizId].questions = questions;
+    setDefinitions(updated);
+    
+    // Update selected questions indices if they moved
+    setSelectedQuestions(prev => prev.map(sIdx => {
+      if (sIdx === idx) return targetIdx;
+      if (sIdx === targetIdx) return idx;
+      return sIdx;
+    }));
+    
+    onChange();
+  };
 
   const downloadTemplate = () => {
     const template = [{
@@ -472,7 +525,7 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
           </button>
           <button onClick={handleAddQuiz} className="bg-secondary px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors"><Plus size={14} /> Add Quiz</button>
           <button 
-            onClick={() => onSave({ definitions })} 
+            onClick={() => onSave({ definitions, order })} 
             disabled={saving}
             className="bg-primary text-white px-5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
           >
@@ -482,7 +535,7 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-        {Object.keys(definitions).map(id => {
+        {order.map((id, idx) => {
           const isSystem = ['foundation', 'product', 'process'].includes(id.toLowerCase());
           return (
             <div key={id} className={`group relative p-4 rounded-xl border transition-all ${selectedQuiz === id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-secondary/10 hover:border-primary/30'}`}>
@@ -497,6 +550,20 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
                 <span className="block text-[10px] font-medium opacity-50 mt-0.5">{id} · {(definitions[id]?.questions || []).length} Qs</span>
               </button>
               <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button 
+                  disabled={idx === 0}
+                  onClick={() => moveQuiz(idx, 'up')}
+                  className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-20"
+                >
+                  <ArrowUp size={14} />
+                </button>
+                <button 
+                  disabled={idx === order.length - 1}
+                  onClick={() => moveQuiz(idx, 'down')}
+                  className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-20"
+                >
+                  <ArrowDown size={14} />
+                </button>
                 <button onClick={() => handleDuplicateQuiz(id)} className="p-1 text-primary hover:bg-primary/10 rounded" title="Duplicate"><Layers size={14} /></button>
                 {!isSystem && (
                   <button onClick={() => handleDeleteQuiz(id)} className="p-1 text-red-500 hover:bg-red-500/10 rounded" title="Delete"><Trash2 size={14} /></button>
@@ -629,9 +696,27 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start gap-2">
-                      <div>
-                        <span className="text-[9px] font-black text-primary uppercase bg-primary/10 px-1.5 py-0.5 rounded mr-2">Q{i+1}</span>
-                        <span className="text-sm font-bold text-foreground">{q.en}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            disabled={i === 0}
+                            onClick={(e) => { e.stopPropagation(); moveQuestion(selectedQuiz, i, 'up'); }}
+                            className="p-0.5 rounded bg-background border border-border hover:bg-secondary disabled:opacity-20"
+                          >
+                            <ArrowUp size={10} />
+                          </button>
+                          <button 
+                            disabled={i === (definitions[selectedQuiz]?.questions || []).length - 1}
+                            onClick={(e) => { e.stopPropagation(); moveQuestion(selectedQuiz, i, 'down'); }}
+                            className="p-0.5 rounded bg-background border border-border hover:bg-secondary disabled:opacity-20"
+                          >
+                            <ArrowDown size={10} />
+                          </button>
+                        </div>
+                        <div>
+                          <span className="text-[9px] font-black text-primary uppercase bg-primary/10 px-1.5 py-0.5 rounded mr-2">Q{i+1}</span>
+                          <span className="text-sm font-bold text-foreground">{q.en}</span>
+                        </div>
                       </div>
                       <button 
                         onClick={() => {

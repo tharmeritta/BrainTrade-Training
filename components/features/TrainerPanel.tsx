@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import type { TrainingPeriod, TrainingDayRecord, DisciplineRecord, AgentStats, DisciplineType } from '@/types';
 import PresentationViewer from '@/components/features/PresentationViewer';
-import type { CourseModule } from '@/lib/courses';
+import type { CourseModule, CourseLang } from '@/lib/courses';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -937,10 +937,9 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
           setSelectedModId(mods[0].id);
         }
         setLoadingList(false);
-      })
-      .catch(() => setLoadingList(false));
-  }, []); // eslint-disable-next-line react-hooks/exhaustive-deps
-
+        })
+        .catch(() => setLoadingList(false));
+        }, [selectedModId]);
   const selectedMod = availableMods.find(m => m.id === selectedModId) || availableMods[0];
   const agentNames  = Object.values(period.agentNames ?? {});
   const modTitle    = selectedMod ? (locale === 'th-TH' ? selectedMod.titleTh : selectedMod.title) : '...';
