@@ -231,13 +231,12 @@ export default function AdjustmentsTab({ role }: { role: string }) {
         >
           <Target size={16} /> Quizzes
         </button>
-        <button 
-          onClick={() => confirmTabChange('ai-eval')} 
+        <button
+          onClick={() => confirmTabChange('ai-eval')}
           className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'ai-eval' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
         >
-          <Zap size={16} /> AI Eval Prompt
-        </button>
-        <button 
+          <Zap size={16} /> AI Eval Settings
+        </button>        <button 
           onClick={() => confirmTabChange('features')} 
           className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'features' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
         >
@@ -767,7 +766,6 @@ function QuizzesEditor({ data, onSave, onChange, saving }: { data: QuizzesConfig
 
 
 function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig | undefined, onSave: (d: AiEvalConfig) => void, onChange: () => void, saving: boolean }) {
-  const [systemPrompt, setSystemPrompt] = useState(data?.systemPrompt || '');
   const [agentGuideline, setAgentGuideline] = useState(data?.agentGuideline || '');
   const [passThreshold, setPassThreshold] = useState(data?.passThreshold ?? 7);
   const [criteria, setCriteria] = useState<string[]>(data?.criteria || ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness']);
@@ -776,14 +774,8 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
   );
   const [previewMode, setPreviewMode] = useState(false);
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    alert('Copied to clipboard');
-  };
-
-  const handleUpdate = (type: 'prompt' | 'guideline' | 'threshold' | 'criteria' | 'provider', val: any) => {
-    if (type === 'prompt') setSystemPrompt(val);
-    else if (type === 'guideline') setAgentGuideline(val);
+  const handleUpdate = (type: 'guideline' | 'threshold' | 'criteria' | 'provider', val: any) => {
+    if (type === 'guideline') setAgentGuideline(val);
     else if (type === 'threshold') setPassThreshold(val);
     else if (type === 'criteria') setCriteria(val);
     else if (type === 'provider') setProvider(val);
@@ -792,6 +784,23 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
 
   return (
     <div className="p-6 space-y-8">
+      {/* Scenario-based Note */}
+      <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5 flex items-start gap-4">
+        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+          <Sparkles className="text-primary" size={20} />
+        </div>
+        <div className="flex-1">
+          <h4 className="text-sm font-black text-primary uppercase tracking-wider mb-1">New: Scenario-based Architecture</h4>
+          <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+            AI Eval now uses <span className="text-foreground font-bold">Dynamic Scenarios</span>. 
+            The system prompt is automatically generated for each scenario. 
+            To manage customer personas, win/fail conditions, and difficulty levels, please use the 
+            <span className="text-foreground font-black mx-1">AI Scenarios</span> tab on the sidebar.
+            The settings below serve as <span className="italic">global defaults</span>.
+          </p>
+        </div>
+      </div>
+
       {/* Settings Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pb-4 border-b border-border">
         <div className="space-y-2">
@@ -807,7 +816,7 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
           <p className="text-[9px] text-muted-foreground italic px-1">Choose which AI engine powers the evaluation. System will fallback to Gemini if OpenAI key is missing.</p>
         </div>
         <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase opacity-50 px-1">Pass Threshold (Score 1-10)</label>
+          <label className="text-[10px] font-black uppercase opacity-50 px-1">Default Pass Threshold (Score 1-10)</label>
           <div className="flex items-center gap-3">
             <input 
               type="range" 
@@ -820,10 +829,10 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
             />
             <span className="w-12 text-center font-black text-sm bg-primary/10 text-primary py-1 rounded-lg border border-primary/20">{passThreshold}</span>
           </div>
-          <p className="text-[9px] text-muted-foreground italic px-1">Agents must average this score across all criteria to pass.</p>
+          <p className="text-[9px] text-muted-foreground italic px-1">Global fallback threshold if not defined in the scenario.</p>
         </div>
         <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase opacity-50 px-1">Evaluation Criteria (Keys)</label>
+          <label className="text-[10px] font-black uppercase opacity-50 px-1">Global Criteria Keys</label>
           <input 
             type="text" 
             value={criteria.join(', ')} 
@@ -831,7 +840,7 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
             className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all font-mono" 
             placeholder="rapport, closing, credibility..."
           />
-          <p className="text-[9px] text-muted-foreground italic px-1">Comma-separated keys. Must match keys used in the System Prompt JSON schema.</p>
+          <p className="text-[9px] text-muted-foreground italic px-1">Comma-separated keys used for scoring breakdown across all sessions.</p>
         </div>
       </div>
 
@@ -839,8 +848,8 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-bold flex items-center gap-2"><BookOpen size={16} /> Agent Guideline</h3>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mt-1">Shown to agents on the intro screen before they start. Use line breaks for formatting.</p>
+            <h3 className="font-bold flex items-center gap-2"><BookOpen size={16} /> Global Intro Guideline</h3>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mt-1">This text appears on the intro screen before an agent selects a scenario.</p>
           </div>
           <div className="flex items-center gap-2">
             <button 
@@ -850,18 +859,18 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
               {previewMode ? <Edit3 size={14} /> : <Eye size={14} />} {previewMode ? 'Edit' : 'Preview'}
             </button>
             <button
-              onClick={() => onSave({ ...data, systemPrompt, agentGuideline, passThreshold, criteria, provider })}
+              onClick={() => onSave({ ...data, agentGuideline, passThreshold, criteria, provider })}
               className="bg-primary text-white px-5 py-1.5 rounded-lg text-xs font-bold disabled:opacity-50 flex items-center gap-2"
               disabled={saving}
             >
-              {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save Changes
+              {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save Settings
             </button>
           </div>
         </div>
 
         <div className="relative">
           {previewMode ? (
-            <div className="w-full min-h-48 bg-secondary/10 p-6 rounded-xl border border-dashed border-border whitespace-pre-wrap text-sm leading-relaxed text-foreground font-medium">
+            <div className="w-full min-h-[400px] bg-secondary/10 p-6 rounded-xl border border-dashed border-border whitespace-pre-wrap text-sm leading-relaxed text-foreground font-medium">
               {agentGuideline || <span className="opacity-30 italic">No guideline content yet...</span>}
             </div>
           ) : (
@@ -869,41 +878,14 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
               <textarea
                 value={agentGuideline}
                 onChange={e => handleUpdate('guideline', e.target.value)}
-                className="w-full h-48 bg-secondary/20 p-4 rounded-xl border text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none"
-                placeholder="Enter human-readable instructions for agents (what to do, how to pass, tips)..."
+                className="w-full h-[400px] bg-secondary/20 p-4 rounded-xl border text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                placeholder="Enter intro instructions for agents (what to do, how to pass, tips)..."
               />
               <div className="absolute bottom-3 right-3 text-[10px] font-black text-muted-foreground bg-background/80 px-2 py-1 rounded border border-border backdrop-blur-sm">
                 {agentGuideline.length} characters
               </div>
             </>
           )}
-        </div>
-      </div>
-
-      {/* AI System Prompt */}
-      <div className="space-y-4 border-t border-border pt-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-bold flex items-center gap-2"><Zap size={16} /> AI System Prompt</h3>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mt-1">Internal prompt sent to the AI. Defines the customer persona and JSON schema.</p>
-          </div>
-          <button 
-            onClick={() => copyToClipboard(systemPrompt)}
-            className="text-xs font-bold text-primary hover:bg-primary/5 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors"
-          >
-            <Copy size={14} /> Copy Prompt
-          </button>
-        </div>
-        <div className="relative group">
-          <textarea
-            value={systemPrompt}
-            onChange={e => handleUpdate('prompt', e.target.value)}
-            className="w-full h-[600px] bg-slate-900 text-slate-300 p-6 rounded-xl border border-slate-800 font-mono text-xs leading-relaxed focus:ring-2 focus:ring-primary/20 transition-all outline-none scrollbar-hide"
-            placeholder="Enter AI system prompt..."
-          />
-          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-            <span className="text-[10px] font-bold text-slate-500 bg-slate-800 px-2 py-1 rounded border border-slate-700">MONO EDITOR</span>
-          </div>
         </div>
       </div>
     </div>

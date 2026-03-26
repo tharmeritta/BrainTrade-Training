@@ -134,7 +134,10 @@ export class AiEvalService {
     isStart: boolean
   ): Promise<AiEvalTurnResponse> {
     
-    const provider = this.determineProvider(session.messages);
+    // Fetch global config to check provider override
+    const config = await fsGet<any>('module_config', 'ai_eval');
+    const provider = config?.provider || this.determineProvider(session.messages);
+    
     const systemPrompt = this.buildSystemPrompt(session, scenario, isStart);
     
     const windowedHistory = session.messages.slice(-12).map(m => ({
