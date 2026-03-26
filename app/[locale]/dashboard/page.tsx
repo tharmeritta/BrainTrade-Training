@@ -57,6 +57,7 @@ export default function DashboardPage() {
             agentId,
             agentName: agentName ?? '',
             evalCompletedLevels: serverStats.evalCompletedLevels ?? [],
+            learnedModules: serverStats.learnedModules ?? [],
             updatedAt: new Date().toISOString(),
           });
         }
@@ -70,7 +71,8 @@ export default function DashboardPage() {
             quiz: {},
             aiEval: null,
             lastActive: cached.updatedAt ?? null,
-            evalCompletedLevels: cached.evalCompletedLevels,
+            evalCompletedLevels: cached.evalCompletedLevels ?? [],
+            learnedModules: cached.learnedModules ?? [],
             overallScore: 0,
             badge: 'needs-work',
           } as AgentStats);

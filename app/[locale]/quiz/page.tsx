@@ -195,11 +195,13 @@ function ModuleCard({
 export default function QuizIndexPage() {
   const t = useTranslations('quizSelection');
   const pathname = usePathname();
+  const router   = useRouter();
   const locale   = pathname.split('/')[1] ?? 'th';
   const lang     = (locale === 'en' ? 'en' : 'th') as Language;
 
   const [passedModules, setPassedModules] = useState<Set<string>>(new Set());
   const [quizConfigs,   setQuizConfigs]   = useState<Record<string, QuizDefinition>>(MODULE_QUIZ_MAP);
+  const [isLocked,      setIsLocked]      = useState(false);
 
   useEffect(() => {
     fetch('/api/quiz/config')
@@ -218,11 +220,41 @@ export default function QuizIndexPage() {
   useEffect(() => {
     const session = getAgentSession();
     if (!session) return;
+
+    // 1. Check learned modules to see if entire quiz module is locked
+    fetch(`/api/agent/progress?agentId=${encodeURIComponent(session.id)}`)
+      .then(r => r.json())
+      .then(d => {
+        const learned = d.stats?.learnedModules ?? [];
+        if (learned.length === 0) {
+          setIsLocked(true);
+          // Redirect back to dashboard after a short delay if locked
+          setTimeout(() => router.replace(`/${locale}/dashboard`), 2000);
+        }
+      })
+      .catch(() => {});
+
+    // 2. Fetch passed quizzes
     fetch(`/api/quiz/status?agentId=${encodeURIComponent(session.id)}`)
       .then(r => r.json())
       .then(({ passed }: { passed: string[] }) => setPassedModules(new Set(passed)))
       .catch(() => {});
-  }, []);
+  }, [locale, router]);
+
+  if (isLocked) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+          <Lock size={32} />
+        </div>
+        <h2 className="text-xl font-bold">Quiz Module Locked</h2>
+        <p className="text-muted-foreground text-center max-w-xs">
+          Please complete at least one learning module before starting the quiz.
+        </p>
+        <p className="text-xs text-muted-foreground animate-pulse mt-4">Redirecting to dashboard...</p>
+      </div>
+    );
+  }
 
   const allModules      = [...SECTION_1, ...SECTION_2];
   const completedCount  = allModules.filter(m => passedModules.has(m.id)).length;

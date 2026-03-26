@@ -77,6 +77,9 @@ function scoreColor(n: number) {
 }
 
 function deriveSteps(stats: AgentStats | null): Record<StepId, StepState> {
+  const learnedCount = stats?.learnedModules?.length ?? 0;
+  const isLearnPassed = learnedCount > 0;
+  
   const anyQ = !!(stats?.quiz?.foundation?.passed || stats?.quiz?.product?.passed || stats?.quiz?.process?.passed);
   const allQ = !!(stats?.quiz?.foundation?.passed && stats?.quiz?.product?.passed && stats?.quiz?.process?.passed);
   const aiOk = (stats?.aiEval?.count ?? 0) > 0;
@@ -90,9 +93,9 @@ function deriveSteps(stats: AgentStats | null): Record<StepId, StepState> {
   const avgQ = qs.length ? Math.round(qs.reduce((a, b) => a + b, 0) / qs.length) : undefined;
 
   return {
-    learn:     { locked: false,  passed: anyQ, score: stats?.quiz?.product?.bestScore },
-    quiz:      { locked: false,  passed: allQ, score: avgQ },
-    'ai-eval': { locked: !anyQ, passed: aiOk, score: stats?.aiEval ? Math.round(stats.aiEval.avgScore) : undefined },
+    learn:     { locked: false,         passed: isLearnPassed, score: stats?.quiz?.product?.bestScore },
+    quiz:      { locked: !isLearnPassed, passed: allQ,          score: avgQ },
+    'ai-eval': { locked: !anyQ,         passed: aiOk,           score: stats?.aiEval ? Math.round(stats.aiEval.avgScore) : undefined },
   };
 }
 

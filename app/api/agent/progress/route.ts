@@ -6,12 +6,13 @@ export interface ProgressRecord {
   agentId: string;
   agentName: string;
   evalCompletedLevels: number[];
+  learnedModules: string[];
   evalSavedLevel: number | null;
   updatedAt?: string;
 }
 
 function defaults(agentId: string, agentName = ''): ProgressRecord {
-  return { agentId, agentName, evalCompletedLevels: [], evalSavedLevel: null };
+  return { agentId, agentName, evalCompletedLevels: [], learnedModules: [], evalSavedLevel: null };
 }
 
 // GET /api/agent/progress?agentId=xxx&agentName=xxx
@@ -44,6 +45,9 @@ export async function POST(req: NextRequest) {
       evalCompletedLevels: Array.from(
         new Set([...existing.evalCompletedLevels, ...(body.evalCompletedLevels ?? [])])
       ).sort((a, b) => a - b),
+      learnedModules: Array.from(
+        new Set([...(existing.learnedModules ?? []), ...(body.learnedModules ?? [])])
+      ).sort(),
       // evalSavedLevel: null means "clear it"; omitted means "keep existing"
       evalSavedLevel: 'evalSavedLevel' in body ? (body.evalSavedLevel ?? null) : existing.evalSavedLevel,
     };

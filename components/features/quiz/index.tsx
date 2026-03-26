@@ -54,6 +54,7 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
   const [quiz,          setQuiz]         = useState<QuizDefinition | null>(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
   const [agent,         setAgent]        = useState<AgentSession | null>(null);
+  const [isLocked,      setIsLocked]      = useState(false);
 
   // ── Session state ──
   const [screen,      setScreen]      = useState<Screen>('briefing');
@@ -64,8 +65,24 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
   const [saving,      setSaving]      = useState(false);
 
   useEffect(() => {
-    setAgent(getAgentSession());
+    const session = getAgentSession();
+    setAgent(session);
     setLoadingConfig(true);
+
+    if (session) {
+      // Check learned modules to see if entire quiz module is locked
+      fetch(`/api/agent/progress?agentId=${encodeURIComponent(session.id)}`)
+        .then(r => r.json())
+        .then(d => {
+          const learned = d.stats?.learnedModules ?? [];
+          if (learned.length === 0) {
+            setIsLocked(true);
+            setTimeout(() => router.replace(`/${locale}/dashboard`), 2000);
+          }
+        })
+        .catch(() => {});
+    }
+
     fetch(`/api/quiz/config?moduleId=${moduleId}`)
       .then(r => r.json())
       .then(d => {
@@ -74,7 +91,7 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
       })
       .catch(() => setQuiz(MODULE_QUIZ_MAP[moduleId] || null))
       .finally(() => setLoadingConfig(false));
-  }, [moduleId]);
+  }, [moduleId, locale, router]);
 
   // The questions shown in the current session, derived from sessionMode
   const filteredQuestions = useMemo(() => {
@@ -163,6 +180,21 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
   // ── Render ──
 
   if (loadingConfig) return <QuizSkeleton />;
+
+  if (isLocked) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[80vh] gap-4 bg-[#F5F4F0]">
+        <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+          <AlertCircle size={32} />
+        </div>
+        <h2 className="text-xl font-bold">Quiz Locked</h2>
+        <p className="text-muted-foreground text-center max-w-xs">
+          Please complete at least one learning module before starting the quiz.
+        </p>
+        <p className="text-xs text-muted-foreground animate-pulse mt-4">Redirecting...</p>
+      </div>
+    );
+  }
 
   if (!quiz) {
     return (

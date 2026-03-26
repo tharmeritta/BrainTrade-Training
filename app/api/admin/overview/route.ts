@@ -31,7 +31,7 @@ export async function GET() {
       fsGetAll<Agent & { id: string }>('agents'),
       fsGetAll<{ id: string; agentId: string; moduleId: string; score: number; totalQuestions: number; passed: boolean; timestamp: string }>('quiz_results'),
       fsGetAll<{ id: string; agentId: string; score: number; timestamp: string }>('ai_eval_logs'),
-      fsGetAll<{ agentId: string; evalCompletedLevels: number[]; updatedAt: string }>('agent_progress'),
+      fsGetAll<{ agentId: string; evalCompletedLevels: number[]; learnedModules?: string[]; updatedAt: string }>('agent_progress'),
       fsGetAll<AgentEvaluation>('agent_evaluations'),
     ]);
 
@@ -80,9 +80,10 @@ export async function GET() {
           }
         : null;
 
-      const progress      = progressDocs.find(p => p.agentId === agent.id);
-      const evalCompleted = progress?.evalCompletedLevels ?? [];
-      const myHumanEvals  = humanEvals.filter(h => h.agentId === agent.id).sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
+      const progress       = progressDocs.find(p => p.agentId === agent.id);
+      const evalCompleted  = progress?.evalCompletedLevels ?? [];
+      const learnedModules = progress?.learnedModules ?? [];
+      const myHumanEvals   = humanEvals.filter(h => h.agentId === agent.id).sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
 
       const allTimes = [
         ...quizDocs.filter(r => r.agentId === agent.id),
@@ -90,7 +91,7 @@ export async function GET() {
       ].map(r => r.timestamp).filter(Boolean).sort();
       const lastActive = allTimes.length > 0 ? allTimes[allTimes.length - 1] : null;
 
-      const partial      = { agent, quiz, aiEval, lastActive, evalCompletedLevels: evalCompleted, humanEvaluations: myHumanEvals };
+      const partial      = { agent, quiz, aiEval, lastActive, evalCompletedLevels: evalCompleted, learnedModules, humanEvaluations: myHumanEvals };
       const overallScore = computeOverallScore(partial);
       return { ...partial, overallScore, badge: computeBadge(overallScore) };
     });
@@ -100,7 +101,10 @@ export async function GET() {
     const moduleStats: ModuleStat[] = [
       { 
         moduleId: 'learn', label: 'Learn', 
-        passCount: activeAgents.filter(a => quizDocs.some(q => q.agentId === a.id)).length,
+        passCount: activeAgents.filter(a => {
+          const p = progressDocs.find(pd => pd.agentId === a.id);
+          return (p?.learnedModules?.length ?? 0) > 0;
+        }).length,
         avgScore: 0, totalAttempts: totalAgents 
       },
       { 

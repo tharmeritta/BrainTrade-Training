@@ -124,6 +124,27 @@ export default function PresentationViewer({
     }
   }, []);
 
+  // ── Track completion ──────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!agentId || !module.id || !total || isTrainer) return;
+    
+    if (slide === total && isLoaded) {
+      // Small delay to ensure they actually see the last slide
+      const timer = setTimeout(() => {
+        fetch('/api/agent/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            agentId,
+            agentName: agentName || '',
+            learnedModules: [module.id]
+          })
+        }).catch(err => console.error('Failed to save learning progress:', err));
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [slide, total, isLoaded, agentId, agentName, module.id, isTrainer]);
+
   // ── Preloading Logic ──────────────────────────────────────────────────────
 
   useEffect(() => {

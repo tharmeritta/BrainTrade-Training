@@ -37,6 +37,7 @@ export interface LocalCache {
   agentId: string;
   agentName: string;
   evalCompletedLevels: number[];
+  learnedModules: string[];
   updatedAt?: string;
 }
 

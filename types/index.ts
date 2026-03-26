@@ -72,6 +72,8 @@ export interface AgentStats {
   } | null;
   /** human evaluations (v2) */
   humanEvaluations: AgentEvaluation[];
+  /** IDs of learning modules completed by the agent */
+  learnedModules: string[];
   /** for backward compat/tracking if needed */
   evalCompletedLevels: number[];
 }
