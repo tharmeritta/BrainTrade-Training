@@ -41,17 +41,6 @@ export function makeSessionToken(role: UserRole, uid: string, name: string, pass
   return `${secret}|${role}|${uid}|${passwordChanged ? '1' : '0'}|${encodeURIComponent(name)}`;
 }
 
-/** Client-side check for staff session presence */
-export function hasStaffSession(): boolean {
-  if (typeof document === 'undefined') return false;
-  const cookie = document.cookie.split('; ').find(row => row.startsWith('session='));
-  if (!cookie) return false;
-  
-  // Basic validation that it contains staff role (admin, manager, it, evaluator, trainer)
-  const val = decodeURIComponent(cookie.split('=')[1]);
-  return ['admin|', 'manager|', 'it|', 'evaluator|', 'trainer|'].some(r => val.includes(`|${r}`));
-}
-
 export async function requireAuth() {
   const user = await getServerUser();
   if (!user) throw new Error('Unauthorized');

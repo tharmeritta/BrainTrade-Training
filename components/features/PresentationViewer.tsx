@@ -520,7 +520,8 @@ export default function PresentationViewer({
               ))}
             </div>
           </div>
-        )}
+        </div>
+      )}
 
         {/* ── Left nav arrow (agent only — trainer uses bottom bar) ── */}
         {!isTrainer && (
@@ -678,7 +679,8 @@ export default function PresentationViewer({
                     alt={`Slide ${slide}`}
                     unoptimized
                     priority
-                  />                </motion.div>
+                  />
+                </motion.div>
               </AnimatePresence>
             )}
           </motion.div>

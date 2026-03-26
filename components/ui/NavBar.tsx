@@ -15,7 +15,7 @@ import { useState, useEffect } from 'react';
 import LangToggle from '@/components/ui/LangToggle';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import { getAgentSession } from '@/lib/agent-session';
-import { hasStaffSession } from '@/lib/session';
+import { hasStaffSession } from '@/lib/session-client';
 
 import { useTranslations } from 'next-intl';
 
