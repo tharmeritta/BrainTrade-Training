@@ -136,7 +136,8 @@ export class AiEvalService {
     
     // Fetch global config to check provider override
     const config = await fsGet<any>('module_config', 'ai_eval');
-    const provider = config?.provider || this.determineProvider(session.messages);
+    const providerSetting = config?.provider || 'auto';
+    const provider = providerSetting === 'auto' ? this.determineProvider(session.messages, scenario) : providerSetting;
     
     const systemPrompt = this.buildSystemPrompt(session, scenario, isStart);
     
@@ -243,12 +244,17 @@ export class AiEvalService {
 
   /* ─── Helpers ───────────────────────────────────────────────────────────── */
 
-  private static determineProvider(messages: PitchMessage[]): 'openai' | 'gemini' {
+  private static determineProvider(messages: PitchMessage[], scenario?: AiEvalScenario): 'openai' | 'gemini' {
     const hasOpenAI = !!process.env.OPENAI_API_KEY;
     const hasGemini = !!process.env.GEMINI_API_KEY;
     if (hasOpenAI && hasGemini) {
-      const lastMsg = messages[messages.length - 1]?.content || '';
-      return /[\u0e00-\u0e7f]/.test(lastMsg) ? 'gemini' : 'openai';
+      let textToTest = '';
+      if (messages && messages.length > 0) {
+        textToTest = messages[messages.length - 1]?.content || '';
+      } else if (scenario) {
+        textToTest = `${scenario.name} ${scenario.description} ${scenario.customerPersona}`;
+      }
+      return /[\u0e00-\u0e7f]/.test(textToTest) ? 'gemini' : 'openai';
     }
     return hasGemini ? 'gemini' : 'openai';
   }

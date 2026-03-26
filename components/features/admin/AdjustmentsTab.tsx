@@ -73,11 +73,11 @@ interface QuizzesConfig {
 }
 
 interface AiEvalConfig {
-  systemPrompt: string;
+  systemPrompt?: string;
   agentGuideline: string;
   passThreshold?: number;
   criteria?: string[];
-  provider?: 'openai' | 'gemini';
+  provider?: 'openai' | 'gemini' | 'auto';
   [key: string]: any;
 }
 
@@ -769,8 +769,8 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
   const [agentGuideline, setAgentGuideline] = useState(data?.agentGuideline || '');
   const [passThreshold, setPassThreshold] = useState(data?.passThreshold ?? 7);
   const [criteria, setCriteria] = useState<string[]>(data?.criteria || ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness']);
-  const [provider, setProvider] = useState<'openai' | 'gemini'>(
-    (data?.provider === 'gemini' || data?.provider === 'openai') ? data.provider : 'openai'
+  const [provider, setProvider] = useState<'openai' | 'gemini' | 'auto'>(
+    (data?.provider === 'gemini' || data?.provider === 'openai' || data?.provider === 'auto') ? data.provider : 'auto'
   );
   const [previewMode, setPreviewMode] = useState(false);
 
@@ -810,10 +810,11 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
             onChange={e => handleUpdate('provider', e.target.value)}
             className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all font-bold"
           >
+            <option value="auto">Auto (Detect Language)</option>
             <option value="openai">OpenAI (GPT-4o mini)</option>
             <option value="gemini">Google Gemini (1.5 Flash)</option>
           </select>
-          <p className="text-[9px] text-muted-foreground italic px-1">Choose which AI engine powers the evaluation. System will fallback to Gemini if OpenAI key is missing.</p>
+          <p className="text-[9px] text-muted-foreground italic px-1">Choose which AI engine powers the evaluation. &apos;Auto&apos; uses Gemini for Thai and OpenAI for English.</p>
         </div>
         <div className="space-y-2">
           <label className="text-[10px] font-black uppercase opacity-50 px-1">Default Pass Threshold (Score 1-10)</label>

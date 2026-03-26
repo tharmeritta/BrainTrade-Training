@@ -31,7 +31,11 @@ function logout() {
 
 export default function AdminDashboard({ role, uid, name, passwordChanged }: { role: 'admin' | 'manager' | 'it' | 'trainer'; uid: string; name: string; passwordChanged: boolean }) {
   const t = useTranslations('admin');
-  const [tab, setTab] = useState<Tab>(role === 'trainer' ? 'training' : 'overview');
+  const [tab, setTab] = useState<Tab>(
+    role === 'trainer' ? 'training' : 
+    role === 'it' ? 'staff' : 
+    'overview'
+  );
   const [isPwModalOpen, setIsPwModalOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -49,7 +53,11 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
   ];
 
   const visibleTabs = TABS.filter(t => {
-    if (t.adminOnly && role !== 'admin' && role !== 'it') return false;
+    if (role === 'it') {
+      // IT ONLY sees Staff and Approvals (Request Status)
+      return t.id === 'staff' || t.id === 'approvals';
+    }
+    if (t.adminOnly && role !== 'admin') return false;
     if (t.hideForTrainer && role === 'trainer') return false;
     return true;
   });
@@ -280,8 +288,8 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
                 {tab === 'reports'     && <ReportsTab />}
                 {tab === 'approvals'   && <ApprovalsTab currentUserId={uid} role={role} />}
                 {tab === 'staff'       && (role === 'admin' || role === 'it') && <StaffTab role={role} />}
-                {tab === 'aiscenarios' && (role === 'admin' || role === 'it') && <AiScenariosTab />}
-                {tab === 'adjustments' && (role === 'admin' || role === 'it') && <AdjustmentsTab role={role} />}
+                {tab === 'aiscenarios' && role === 'admin' && <AiScenariosTab />}
+                {tab === 'adjustments' && role === 'admin' && <AdjustmentsTab role={role} />}
               </motion.div>
             </AnimatePresence>
           </main>
