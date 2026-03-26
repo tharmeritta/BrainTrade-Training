@@ -3,8 +3,34 @@ import './globals.css';
 import NavigationProgress from '@/components/ui/NavigationProgress';
 
 export const metadata: Metadata = {
-  title: 'BrainTrade Training',
-  description: 'Sales Agent Training Platform',
+  metadataBase: new URL('https://bt-training-firebase.web.app'),
+  title: {
+    default: 'BrainTrade Training | Sales Excellence Academy',
+    template: '%s | BrainTrade Training',
+  },
+  description: 'Premium Sales Agent Training Platform - Excellence in Sales Academy.',
+  openGraph: {
+    title: 'BrainTrade Training',
+    description: 'Elevate your sales skills with our premium academy training platform.',
+    url: 'https://bt-training-firebase.web.app',
+    siteName: 'BrainTrade Training',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'BrainTrade Training Platform Preview',
+      },
+    ],
+    locale: 'th_TH',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BrainTrade Training',
+    description: 'Premium Sales Agent Training Platform',
+    images: ['/og-image.png'],
+  },
 };
 
 // Inline script runs synchronously before paint — prevents theme flash.
