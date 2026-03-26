@@ -2,9 +2,9 @@ import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 
 let _geminiModel: GenerativeModel | null = null;
 
-export function getGeminiModel(): GenerativeModel {
+export function getGeminiModel(): GenerativeModel | null {
   if (!process.env.GEMINI_API_KEY) {
-    throw new Error('GEMINI_API_KEY is not set');
+    return null;
   }
   if (!_geminiModel) {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);

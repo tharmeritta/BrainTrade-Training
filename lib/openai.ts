@@ -2,9 +2,9 @@ import OpenAI from 'openai';
 
 let _openai: OpenAI | null = null;
 
-export function getOpenAI(): OpenAI {
+export function getOpenAI(): OpenAI | null {
   if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY is not set');
+    return null;
   }
   
   if (!_openai) {

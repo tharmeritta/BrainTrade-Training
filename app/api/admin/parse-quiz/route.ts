@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminOrIT } from '@/lib/session';
 import { getOpenAI } from '@/lib/openai';
+import { getGeminiModel } from '@/lib/gemini';
 
 export const maxDuration = 60; // Allow up to 60s for AI parsing on Vercel
 
@@ -71,24 +72,42 @@ export async function POST(req: NextRequest) {
     }
 
     const openai = getOpenAI();
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 55000);
-    let completion;
-    try {
-      completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: rawText }
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.1,
-      }, { signal: controller.signal });
-    } finally {
-      clearTimeout(timeoutId);
+    let resultText = '';
+
+    if (!openai) {
+      // Fallback to Gemini if OpenAI is missing
+      const model = getGeminiModel();
+      if (!model) {
+        throw new Error('No AI provider available. Set OPENAI_API_KEY or GEMINI_API_KEY.');
+      }
+      
+      const result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: `SYSTEM: ${SYSTEM_PROMPT}\n\nUSER: ${rawText}` }] }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.1,
+        }
+      });
+      resultText = result.response.text();
+    } else {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 55000);
+      try {
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: rawText }
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.1,
+        }, { signal: controller.signal });
+        resultText = completion.choices[0].message.content || '';
+      } finally {
+        clearTimeout(timeoutId);
+      }
     }
 
-    const resultText = completion.choices[0].message.content;
     if (!resultText) {
       throw new Error('No response from AI');
     }

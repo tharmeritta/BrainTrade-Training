@@ -468,8 +468,9 @@ const ProfileSidebar = memo(({
             {/* Gloss effect for active state */}
             {bypassLock && (
               <motion.div 
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full"
-                animate={{ x: ['100%', '-100%'] }}
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none"
+                initial={{ x: '-100%' }}
+                animate={{ x: '100%' }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
               />
             )}

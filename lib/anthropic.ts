@@ -2,9 +2,9 @@ import Anthropic from '@anthropic-ai/sdk';
 
 let _anthropic: Anthropic | null = null;
 
-export function getAnthropic(): Anthropic {
+export function getAnthropic(): Anthropic | null {
   if (!process.env.ANTHROPIC_API_KEY) {
-    throw new Error('ANTHROPIC_API_KEY is not set');
+    return null;
   }
 
   if (!_anthropic) {

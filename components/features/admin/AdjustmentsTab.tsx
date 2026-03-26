@@ -77,6 +77,7 @@ interface AiEvalConfig {
   agentGuideline: string;
   passThreshold?: number;
   criteria?: string[];
+  provider?: 'openai' | 'gemini' | 'anthropic';
   [key: string]: any;
 }
 
@@ -770,6 +771,7 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
   const [agentGuideline, setAgentGuideline] = useState(data?.agentGuideline || '');
   const [passThreshold, setPassThreshold] = useState(data?.passThreshold ?? 7);
   const [criteria, setCriteria] = useState<string[]>(data?.criteria || ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness']);
+  const [provider, setProvider] = useState<'openai' | 'gemini' | 'anthropic'>(data?.provider || 'openai');
   const [previewMode, setPreviewMode] = useState(false);
 
   const copyToClipboard = (text: string) => {
@@ -777,18 +779,32 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
     alert('Copied to clipboard');
   };
 
-  const handleUpdate = (type: 'prompt' | 'guideline' | 'threshold' | 'criteria', val: any) => {
+  const handleUpdate = (type: 'prompt' | 'guideline' | 'threshold' | 'criteria' | 'provider', val: any) => {
     if (type === 'prompt') setSystemPrompt(val);
     else if (type === 'guideline') setAgentGuideline(val);
     else if (type === 'threshold') setPassThreshold(val);
     else if (type === 'criteria') setCriteria(val);
+    else if (type === 'provider') setProvider(val);
     onChange();
   };
 
   return (
     <div className="p-6 space-y-8">
       {/* Settings Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-4 border-b border-border">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pb-4 border-b border-border">
+        <div className="space-y-2">
+          <label className="text-[10px] font-black uppercase opacity-50 px-1">AI Provider</label>
+          <select 
+            value={provider} 
+            onChange={e => handleUpdate('provider', e.target.value)}
+            className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all font-bold"
+          >
+            <option value="openai">OpenAI (GPT-4o mini)</option>
+            <option value="gemini">Google Gemini (1.5 Flash)</option>
+            <option value="anthropic">Anthropic Claude (3.5 Sonnet)</option>
+          </select>
+          <p className="text-[9px] text-muted-foreground italic px-1">Choose which AI engine powers the evaluation. System will fallback to Gemini if OpenAI key is missing.</p>
+        </div>
         <div className="space-y-2">
           <label className="text-[10px] font-black uppercase opacity-50 px-1">Pass Threshold (Score 1-10)</label>
           <div className="flex items-center gap-3">
@@ -833,7 +849,7 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
               {previewMode ? <Edit3 size={14} /> : <Eye size={14} />} {previewMode ? 'Edit' : 'Preview'}
             </button>
             <button
-              onClick={() => onSave({ ...data, systemPrompt, agentGuideline, passThreshold, criteria })}
+              onClick={() => onSave({ ...data, systemPrompt, agentGuideline, passThreshold, criteria, provider })}
               className="bg-primary text-white px-5 py-1.5 rounded-lg text-xs font-bold disabled:opacity-50 flex items-center gap-2"
               disabled={saving}
             >

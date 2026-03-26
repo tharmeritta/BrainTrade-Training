@@ -20,6 +20,14 @@ env:
   - variable: FIREBASE_PRIVATE_KEY
     secret: FIREBASE-SECRET-KEY # Updated from firebase-private-key
 
+  # AI Provider Keys
+  - variable: OPENAI_API_KEY
+    secret: OPENAI_API_KEY
+  - variable: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
+  - variable: ANTHROPIC_API_KEY
+    secret: ANTHROPIC_API_KEY
+
   # Client-side Firebase Config (Public)
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
     secret: FIREBASE-API-KEY # Updated from firebase-api-key

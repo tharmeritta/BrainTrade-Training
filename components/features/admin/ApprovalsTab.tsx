@@ -203,7 +203,7 @@ export default function ApprovalsTab({ currentUserId, role }: { currentUserId: s
                   </div>
                 </div>
                 {req.rejectionReason && (
-                  <div className="hidden md:flex items-center gap-1.5 text-[10px] bg-red-500/5 text-red-500/70 px-3 py-1 rounded-full border border-red-500/10">
+                  <div className="flex items-center gap-1.5 text-[10px] bg-red-500/5 text-red-500/70 px-3 py-1 rounded-full border border-red-500/10">
                     <AlertCircle size={10} /> {req.rejectionReason}
                   </div>
                 )}

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOpenAI } from '@/lib/openai';
+import { getGeminiModel } from '@/lib/gemini';
+import { getAnthropic } from '@/lib/anthropic';
 import { fsAdd, fsGet, fsSet, fsDelete } from '@/lib/firestore-db';
 import { getAdminDb } from '@/lib/firebase-admin';
 import type { PitchMessage } from '@/types';
@@ -99,6 +101,73 @@ const FALLBACK_SYSTEM_PROMPT = `คุณคือ "ลูกค้าคนไ�
 - ห้ามพูดในฐานะครูฝึก เทรนเนอร์ หรือ AI ใน Dialogue
 - ห้ามตอบนอก JSON schema`;
 
+/* ─── AI Call Wrapper ───────────────────────────────────────────────────────── */
+
+async function callAI(
+  provider: 'openai' | 'gemini' | 'anthropic',
+  messages: { role: 'user' | 'assistant'; content: string }[],
+  systemPrompt: string,
+  isStart: boolean
+): Promise<string> {
+  if (provider === 'gemini') {
+    const model = getGeminiModel();
+    if (!model) throw new Error('Gemini API key is not configured');
+
+    const chat = model.startChat({
+      history: messages.slice(0, -1).map(m => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }],
+      })),
+      systemInstruction: systemPrompt,
+      generationConfig: {
+        maxOutputTokens: isStart ? 300 : 1000,
+        temperature: 0.8,
+        responseMimeType: 'application/json',
+      },
+    });
+
+    const lastMsg = messages.length > 0 ? messages[messages.length - 1].content : '[สาย]';
+    const result = await chat.sendMessage(lastMsg);
+    return result.response.text();
+  }
+
+  if (provider === 'anthropic') {
+    const anthropic = getAnthropic();
+    if (!anthropic) throw new Error('Anthropic API key is not configured');
+
+    const response = await anthropic.messages.create({
+      model: 'claude-3-5-sonnet-20240620',
+      max_tokens: isStart ? 300 : 1000,
+      temperature: 0.8,
+      system: systemPrompt,
+      messages: messages.map(m => ({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content: m.content,
+      })),
+    });
+
+    const content = response.content[0];
+    return content.type === 'text' ? content.text : '';
+  }
+
+  // Default to OpenAI
+  const openai = getOpenAI();
+  if (!openai) throw new Error('OpenAI API key is not configured');
+
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      ...messages,
+    ],
+    max_tokens: isStart ? 300 : 1000,
+    temperature: 0.8,
+    response_format: { type: 'json_object' },
+  });
+
+  return completion.choices[0].message.content ?? '{}';
+}
+
 /* ─── Prompt loader ─────────────────────────────────────────────────────────── */
 
 async function loadFullConfig(): Promise<any> {
@@ -126,11 +195,22 @@ export async function POST(req: NextRequest) {
 
     const level = Number(reqLevel) || 1;
 
-    const openai       = getOpenAI();
-    const config       = await loadFullConfig();
+    const config        = await loadFullConfig();
     const systemPrompt  = config.systemPrompt  || FALLBACK_SYSTEM_PROMPT;
     const passThreshold = Number(config.passThreshold) || 7;
     const configCriteria = Array.isArray(config.criteria) ? config.criteria : FALLBACK_CRITERIA;
+
+    // Determine Provider with fallback logic
+    let provider: 'openai' | 'gemini' | 'anthropic' = config.provider || 'openai';
+    
+    // Auto-fallback if preferred provider is not available
+    if (provider === 'openai' && !process.env.OPENAI_API_KEY) {
+      if (process.env.GEMINI_API_KEY) provider = 'gemini';
+      else if (process.env.ANTHROPIC_API_KEY) provider = 'anthropic';
+    } else if (provider === 'gemini' && !process.env.GEMINI_API_KEY) {
+      if (process.env.OPENAI_API_KEY) provider = 'openai';
+      else if (process.env.ANTHROPIC_API_KEY) provider = 'anthropic';
+    }
 
     // Sliding window — cap token usage
     // Sanitize: ensure role is valid and content is a string to prevent 400 errors
@@ -169,29 +249,21 @@ export async function POST(req: NextRequest) {
 5. Use the JSON format provided below.
 6. The "passed" field MUST be true only if "Score" >= ${passThreshold}.`;
 
-    // OpenAI requires the first non-system message to be from 'user'.
-    // If the conversation starts with the AI's opening greeting (assistant role),
-    // prepend a silent trigger so the role ordering is valid.
-    const messagesForOpenAI = windowedMessages.map((m: PitchMessage) => ({
+    // Role ordering adjustment
+    const messagesForAI = windowedMessages.map((m: PitchMessage) => ({
       role: m.role as 'user' | 'assistant',
       content: m.content,
     }));
-    if (messagesForOpenAI.length > 0 && messagesForOpenAI[0].role === 'assistant') {
-      messagesForOpenAI.unshift({ role: 'user', content: '[สาย]' });
+    if (messagesForAI.length > 0 && messagesForAI[0].role === 'assistant') {
+      messagesForAI.unshift({ role: 'user', content: '[สาย]' });
     }
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: (systemPrompt + agentNameContext + startHint + jsonSafety + roleEnforcement) as string },
-        ...messagesForOpenAI,
-      ],
-      max_tokens: isStart ? 300 : 1000,
-      temperature: 0.8,
-      response_format: { type: 'json_object' },
-    });
-
-    const raw = completion.choices[0].message.content ?? '{}';
+    const raw = await callAI(
+      provider,
+      messagesForAI,
+      systemPrompt + agentNameContext + startHint + jsonSafety + roleEnforcement,
+      isStart
+    );
 
     // Parse structured response
     let customerLine = '';
