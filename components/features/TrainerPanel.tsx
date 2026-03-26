@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import type { TrainingPeriod, TrainingDayRecord, DisciplineRecord, AgentStats, DisciplineType } from '@/types';
 import PresentationViewer from '@/components/features/PresentationViewer';
-import { getCourseModule, type CourseModule } from '@/lib/courses';
+import type { CourseModule } from '@/lib/courses';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -938,12 +938,17 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
   useEffect(() => {
     let active = true;
     setLoadingCourse(true);
-    getCourseModule(selectedModId).then(c => {
-      if (active) {
-        setCourse(c);
-        setLoadingCourse(false);
-      }
-    });
+    fetch(`/api/courses/${selectedModId}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(c => {
+        if (active) {
+          setCourse(c);
+          setLoadingCourse(false);
+        }
+      })
+      .catch(() => {
+        if (active) setLoadingCourse(false);
+      });
     return () => { active = false; };
   }, [selectedModId]);
 

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import PresentationViewer from '@/components/features/PresentationViewer';
-import { getCourseModule, type CourseLang } from '@/lib/courses';
+import { getCourseModule } from '@/lib/courses-server';
+import type { CourseLang } from '@/lib/courses';
 import { getServerUser } from '@/lib/session';
 
 export default async function LearnPage({
