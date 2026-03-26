@@ -99,32 +99,41 @@ function deriveSteps(stats: AgentStats | null): Record<StepId, StepState> {
 // ─── Sub-components ─────────────────────────────────────────────────────────────
 
 /**
- * BackgroundEffects: Renders animated orbs and the grid background.
+ * BackgroundEffects: Renders animated orbs, fractal noise, and a drifting grid.
  */
 const BackgroundEffects = memo(({ badgeColor }: { badgeColor: string }) => (
-  <div className="fixed inset-0 pointer-events-none z-0">
-    <motion.div 
-      className="absolute w-[600px] h-[600px] -top-[150px] -left-[150px] rounded-full"
-      style={{
-        background: `radial-gradient(circle, ${badgeColor}08 0%, transparent 65%)`,
-      }}
-      animate={{ x: [0, 30, 0], y: [0, 40, 0] }}
-      transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut', repeatType: 'mirror' }}
-    />
-    <motion.div 
-      className="absolute w-[400px] h-[400px] bottom-0 right-0 rounded-full"
-      style={{
-        background: `radial-gradient(circle, rgba(96,165,250,0.06) 0%, transparent 70%)`,
-      }}
-      animate={{ x: [0, -20, 0], y: [0, -30, 0] }}
-      transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', repeatType: 'mirror' }}
-    />
+  <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    {/* Noise Texture Overlay */}
     <div 
-      className="absolute inset-0 opacity-[0.012]"
+      className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03] contrast-125 brightness-100 mix-blend-overlay" 
+      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} 
+    />
+
+    <motion.div 
+      className="absolute w-[800px] h-[800px] -top-[200px] -left-[200px] rounded-full"
+      style={{
+        background: `radial-gradient(circle, ${badgeColor}0A 0%, transparent 70%)`,
+      }}
+      animate={{ x: [0, 40, 0], y: [0, 60, 0], scale: [1, 1.1, 1] }}
+      transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+    />
+    <motion.div 
+      className="absolute w-[600px] h-[600px] bottom-[-100px] right-[-100px] rounded-full"
+      style={{
+        background: `radial-gradient(circle, rgba(96,165,250,0.08) 0%, transparent 75%)`,
+      }}
+      animate={{ x: [0, -30, 0], y: [0, -50, 0], scale: [1, 1.05, 1] }}
+      transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+    />
+    
+    <motion.div 
+      className="absolute inset-0 opacity-[0.02]"
       style={{
         backgroundImage: `linear-gradient(var(--hub-grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--hub-grid-color) 1px, transparent 1px)`,
-        backgroundSize: '56px 56px',
-      }} 
+        backgroundSize: '64px 64px',
+      }}
+      animate={{ backgroundPosition: ['0px 0px', '64px 64px'] }}
+      transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
     />
   </div>
 ));
@@ -135,12 +144,12 @@ BackgroundEffects.displayName = 'BackgroundEffects';
  * SectionDivider: A simple labeled divider.
  */
 const SectionDivider = memo(({ label }: { label: string }) => (
-  <div className="flex items-center gap-2 w-full max-w-[260px] my-4">
-    <div className="flex-1 h-px bg-[color:var(--hub-border)]" />
-    <span className="text-[9px] font-black uppercase tracking-[0.22em] shrink-0 text-[color:var(--hub-dim)]">
+  <div className="flex items-center gap-3 w-full max-w-[260px] my-6">
+    <div className="flex-1 h-px bg-[color:var(--hub-border)] opacity-60" />
+    <span className="text-[10px] font-black uppercase tracking-[0.25em] shrink-0 text-[color:var(--hub-dim)]">
       {label}
     </span>
-    <div className="flex-1 h-px bg-[color:var(--hub-border)]" />
+    <div className="flex-1 h-px bg-[color:var(--hub-border)] opacity-60" />
   </div>
 ));
 
@@ -148,6 +157,7 @@ SectionDivider.displayName = 'SectionDivider';
 
 /**
  * ModuleCard: Displays an individual training module with its status and progress.
+ * Redesigned as a vertical card for better grid layout and visual hierarchy.
  */
 const ModuleCard = memo(({ step, state, index, href }: ModuleCardProps) => {
   const t = useTranslations('trainingHub');
@@ -160,113 +170,131 @@ const ModuleCard = memo(({ step, state, index, href }: ModuleCardProps) => {
   return (
     <motion.div
       variants={STAGGER_ITEM}
-      className="group relative flex items-stretch rounded-2xl overflow-hidden transition-all duration-300"
+      className="group relative flex flex-col rounded-[2rem] overflow-hidden transition-all duration-500 h-full border"
       style={{
         background: locked ? 'var(--hub-locked-bg)' : 'var(--hub-card)',
-        border: `1px solid ${locked ? 'var(--hub-dim-border)' : passed ? color + '38' : hasFailed ? 'rgba(248,113,113,0.35)' : isNext ? color + '28' : 'var(--hub-border)'}`,
-        opacity: locked ? 0.52 : 1,
-        boxShadow: passed ? `0 4px 28px ${color}12` : hasFailed ? '0 4px 20px rgba(248,113,113,0.12)' : isNext ? `0 4px 20px ${glow}` : 'none',
+        borderColor: locked 
+          ? 'var(--hub-dim-border)' 
+          : passed ? color + '40' 
+          : hasFailed ? 'rgba(248,113,113,0.4)' 
+          : isNext ? color + '30' 
+          : 'var(--hub-border)',
+        opacity: locked ? 0.65 : 1,
+        boxShadow: isNext ? `0 12px 40px -12px ${color}25` : 'none',
       }}
     >
-      <div className="relative flex flex-col items-center justify-center w-[72px] shrink-0 gap-1.5 py-5 border-r"
-        style={{
-          background: locked
-            ? 'var(--hub-locked-icon)'
-            : passed ? `linear-gradient(160deg, ${color}28 0%, ${color}10 100%)`
-            : hasFailed ? 'linear-gradient(160deg, rgba(248,113,113,0.20) 0%, rgba(248,113,113,0.07) 100%)'
-            : isNext ? `linear-gradient(160deg, ${color}20 0%, ${color}08 100%)`
-            : `linear-gradient(160deg, ${color}12 0%, ${color}04 100%)`,
-          borderColor: locked ? 'var(--hub-dim-border)' : hasFailed ? 'rgba(248,113,113,0.22)' : color + '18',
-        }}
-      >
-        <span className="text-[9px] font-black leading-none tracking-wider"
-          style={{ color: locked ? 'var(--hub-dim)' : color + 'BB' }}>
-          {stepNum < 10 ? `0${stepNum}` : stepNum}
-        </span>
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center border shadow-sm"
+      {/* Top Section: Icon & Step */}
+      <div className="p-7 pb-5 flex items-start justify-between relative z-10">
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center border shadow-sm transition-all duration-500 group-hover:scale-110 group-hover:rotate-3"
           style={{
-            background: locked ? 'rgba(0,0,0,0.06)' : `${color}1A`,
-            borderColor: locked ? 'var(--hub-dim-border)' : color + '35',
+            background: locked ? 'rgba(0,0,0,0.04)' : `${color}15`,
+            borderColor: locked ? 'var(--hub-dim-border)' : color + '30',
           }}>
           {passed
-            ? <CheckCircle2 size={20} style={{ color }} />
-            : locked ? <Lock size={15} style={{ color: 'var(--hub-dim)' }} />
-            : hasFailed ? <XCircle size={20} style={{ color: '#F87171' }} />
-            : <Icon size={20} style={{ color }} />
+            ? <CheckCircle2 size={28} style={{ color }} />
+            : locked ? <Lock size={20} style={{ color: 'var(--hub-dim)' }} />
+            : hasFailed ? <XCircle size={28} style={{ color: '#F87171' }} />
+            : <Icon size={28} style={{ color }} />
           }
         </div>
-        <span className="text-[8px] font-semibold uppercase tracking-widest"
-          style={{ color: locked ? 'var(--hub-dim)' : color + '88' }}>
-          {t(sublabelKey)}
-        </span>
-      </div>
-
-      <div className="flex-1 min-w-0 px-4 py-4 flex flex-col justify-center">
-        <div className="flex items-center gap-2 mb-0.5">
-          <span className="font-bold text-sm leading-tight text-[color:var(--hub-text)]"
-            style={{ color: locked ? 'var(--hub-dim)' : undefined }}>
-            {navT(labelKey)}
+        <div className="flex flex-col items-end">
+          <span className="text-[10px] font-black tracking-[0.25em] opacity-40 uppercase mb-1"
+            style={{ color: locked ? 'var(--hub-dim)' : color }}>
+            Step {stepNum < 10 ? `0${stepNum}` : stepNum}
           </span>
-          {passed && (
-            <span className="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wide border"
-              style={{ background: `${color}18`, color, borderColor: color + '35' }}>
-              ✓ {t('passed')}
-            </span>
-          )}
-          {hasFailed && (
-            <span className="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wide flex items-center gap-1 border border-red-400/30"
-              style={{ background: 'rgba(248,113,113,0.12)', color: '#F87171' }}>
-              ✕ {t('failed')}
-            </span>
-          )}
           {isNext && (
-            <span className="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wide flex items-center gap-1"
-              style={{ background: `${color}12`, color: color + 'BB' }}>
-              <Zap size={8} /> {t('next')}
-            </span>
+            <motion.span 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg shadow-sm" 
+              style={{ background: color, color: '#fff' }}>
+              <Zap size={9} fill="currentColor" /> {t('next')}
+            </motion.span>
           )}
         </div>
-        <p className="text-xs mb-2 text-[color:var(--hub-muted)]" style={{ color: locked ? 'var(--hub-dim)' : undefined }}>
+      </div>
+
+      {/* Content Section */}
+      <div className="px-7 flex-1 flex flex-col relative z-10">
+        <div className="mb-1.5">
+           <span className="text-[10px] font-black uppercase tracking-[0.18em] opacity-60" style={{ color: locked ? 'var(--hub-dim)' : color }}>
+             {t(sublabelKey)}
+           </span>
+        </div>
+        <h3 className="text-xl font-black text-[color:var(--hub-text)] mb-2.5 leading-tight group-hover:translate-x-1 transition-transform duration-300">
+          {navT(labelKey)}
+        </h3>
+        <p className="text-[13px] leading-relaxed text-[color:var(--hub-muted)] mb-8 font-medium">
           {t(descKey)}
         </p>
-        {score !== undefined && !locked && (
-          <div className="flex items-center gap-2 mt-1">
-            <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-[color:var(--hub-progress-bg)]">
-              <motion.div className="h-full rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${score}%` }}
-                transition={{ delay: 0.5 + index * 0.07, duration: 0.9, ease: 'easeOut' }}
-                style={{ background: hasFailed
-                  ? 'linear-gradient(90deg, rgba(248,113,113,0.6), #F87171)'
-                  : `linear-gradient(90deg, ${color}70, ${color})` }} />
-            </div>
-            <span className="text-[11px] font-black shrink-0"
-              style={{ color: hasFailed ? '#F87171' : scoreColor(score) }}>
-              {score}%
-            </span>
-          </div>
+
+        {/* Status badges for non-locked */}
+        {!locked && (
+           <div className="flex flex-wrap gap-2 mb-8">
+             {passed && (
+                <div className="px-3.5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border flex items-center gap-2"
+                     style={{ background: `${color}10`, color, borderColor: color + '30' }}>
+                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: color }} />
+                  {t('passed')}
+                </div>
+             )}
+             {hasFailed && (
+                <div className="px-3.5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border border-red-500/20 flex items-center gap-2"
+                     style={{ background: 'rgba(248,113,113,0.1)', color: '#F87171' }}>
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                  {t('failed')}
+                </div>
+             )}
+           </div>
         )}
       </div>
 
-      <div className="shrink-0 flex items-center pr-4 pl-2">
+      {/* Bottom Section: Progress & Action */}
+      <div className="p-7 pt-0 mt-auto relative z-10">
+        {score !== undefined && !locked && (
+          <div className="mb-6">
+            <div className="flex justify-between items-end mb-2.5">
+              <span className="text-[10px] font-black text-[color:var(--hub-dim)] uppercase tracking-widest">Performance</span>
+              <span className="text-sm font-black" style={{ color: hasFailed ? '#F87171' : scoreColor(score) }}>{score}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-[color:var(--hub-progress-bg)] overflow-hidden p-0.5 border border-white/5 shadow-inner">
+               <motion.div 
+                 className="h-full rounded-full shadow-[0_0_12px_rgba(0,0,0,0.1)]"
+                 initial={{ width: 0 }}
+                 animate={{ width: `${score}%` }}
+                 transition={{ delay: 0.3, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                 style={{ background: hasFailed ? 'linear-gradient(90deg, #F87171, #EF4444)' : `linear-gradient(90deg, ${color}80, ${color})` }}
+               />
+            </div>
+          </div>
+        )}
+
         {locked ? (
-          <div className="flex items-center gap-1.5 text-[10px] px-3 py-2 rounded-xl bg-[color:var(--hub-locked-bg)] border border-[color:var(--hub-dim-border)] text-[color:var(--hub-dim)]">
-            <Lock size={10} /> {t('locked')}
+          <div className="w-full flex items-center justify-center gap-2.5 py-4.5 rounded-2xl bg-[color:var(--hub-locked-bg)] border border-[color:var(--hub-dim-border)] text-[color:var(--hub-dim)] text-xs font-black uppercase tracking-widest opacity-80">
+            <Lock size={14} /> {t('locked')}
           </div>
         ) : (
           <Link href={href}
-            className="flex items-center gap-1.5 text-xs font-bold px-4 py-2.5 rounded-xl transition-all duration-150 whitespace-nowrap border"
-            style={{ background: `${color}18`, borderColor: color + '45', color }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${color}30`; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = `${color}18`; }}
+            className="group/btn w-full flex items-center justify-center gap-2.5 py-4.5 rounded-2xl text-sm font-black transition-all duration-300 border shadow-sm hover:shadow-xl"
+            style={{ 
+              background: isNext ? color : `${color}12`,
+              borderColor: isNext ? color : color + '40',
+              color: isNext ? '#fff' : color,
+              boxShadow: isNext ? `0 10px 25px -5px ${color}40` : 'none'
+            }}
           >
-            {passed
-              ? <><RotateCcw size={12} className="group-hover:rotate-180 transition-transform duration-500" />{t('retake')}</>
-              : <>{t('startNow')}<ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" /></>
-            }
+            {passed ? (
+              <><RotateCcw size={16} className="group-hover/btn:rotate-180 transition-transform duration-700" />{t('retake')}</>
+            ) : (
+              <>{t('startNow')}<ArrowRight size={16} className="transition-transform group-hover/btn:translate-x-1.5" /></>
+            )}
           </Link>
         )}
       </div>
+
+      {/* Decorative Background Element */}
+      <div className="absolute top-0 right-0 w-32 h-32 blur-[80px] rounded-full opacity-20 pointer-events-none"
+           style={{ background: color }} />
     </motion.div>
   );
 });
@@ -511,12 +539,12 @@ export default function AgentTrainingHub({ agentName, agentStageName, stats, onL
       <div className="relative z-10 flex-1 flex flex-col lg:overflow-y-auto">
         <ModuleHeader doneCount={doneCount} />
 
-        <div className="px-4 py-5 lg:px-6">
+        <div className="px-6 py-8 lg:px-10 lg:py-12">
           <motion.div 
             variants={STAGGER_CONTAINER}
             initial="initial"
             animate="animate"
-            className="flex flex-col gap-3 pb-6"
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8 pb-10"
           >
             {STEPS.map((step, i) => (
               <ModuleCard
