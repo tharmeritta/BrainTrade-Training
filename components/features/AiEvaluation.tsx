@@ -706,7 +706,6 @@ ChatView.displayName = 'ChatView';
 
 export default function AiEvaluation() {
   const [step,           setStep]           = useState<Step>('intro');
-  const [sessionId,      setSessionId]      = useState<string | null>(null);
   const [messages,       setMessages]       = useState<PitchMessage[]>([]);
   const [coaching,       setCoaching]       = useState<Map<number, CoachingData>>(new Map());
   const [customerProfile, setCustomerProfile] = useState<CustomerProfile | null>(null);
@@ -732,15 +731,13 @@ export default function AiEvaluation() {
   }, []);
 
   useEffect(() => {
-    // Fetch Guidelines from Admin Config — always runs regardless of session
+    // Fetch Guidelines from Admin Config
     fetch('/api/ai-eval/config', { cache: 'no-store' })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (data?.guideline) {
-          setGuideline(data.guideline);
-        } else {
-          setGuideline('AI customer will act as a Thai client. Handle objections professionally and try to close the sale.');
-        }
+        if (data?.guideline) setGuideline(data.guideline);
+        else setGuideline('AI customer will act as a Thai client. Handle objections professionally and try to close the sale.');
+        
         if (data?.passThreshold) setPassThreshold(data.passThreshold);
         if (data?.criteria) setCriteriaKeys(data.criteria);
       })
@@ -756,25 +753,18 @@ export default function AiEvaluation() {
     setAgentId(id);
     setAgentName(name);
 
-    // UX initialization from localStorage (completed levels flag only)
-    const localComp  = localStorage.getItem('brainstrade_eval_completed_levels');
-    const localSet: Set<number> = localComp ? new Set(JSON.parse(localComp)) : new Set();
-    if (localSet.size > 0) setCompletedLevels(localSet);
-
     if (id) {
-      // Sync completed levels from server (source of truth)
+      // Sync completed levels from server
       fetch(`/api/agent/progress?agentId=${id}`)
         .then(r => r.ok ? r.json() : null)
         .then(data => {
-          if (!data) return;
-          const serverComp: number[] = data.stats?.evalCompletedLevels ?? [];
-          const merged = new Set([...localSet, ...serverComp]);
-          setCompletedLevels(merged);
-          localStorage.setItem('brainstrade_eval_completed_levels', JSON.stringify([...merged]));
+          if (data?.stats?.evalCompletedLevels) {
+            setCompletedLevels(new Set(data.stats.evalCompletedLevels));
+          }
         })
         .catch(() => {});
 
-      // Restore active session from server only
+      // Restore active session from server source-of-truth
       fetch(`/api/ai-eval/active?agentId=${id}`)
         .then(r => r.ok ? r.json() : null)
         .then(data => {
@@ -782,7 +772,6 @@ export default function AiEvaluation() {
           if (s && s.messages?.length > 0) {
             const age = Date.now() - (s.savedAt ?? 0);
             if (age < 24 * 60 * 60 * 1000) {
-              setSessionId(s.sessionId);
               setMessages(s.messages);
               if (s.customerProfile) setCustomerProfile(s.customerProfile);
               if (s.coaching) {
@@ -800,18 +789,6 @@ export default function AiEvaluation() {
     }
   }, []);
 
-  const syncToServer = useCallback((patch: {
-    evalCompletedLevels?: number[];
-    evalSavedLevel?: number | null;
-  }) => {
-    if (!agentId) return;
-    fetch('/api/agent/progress', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ agentId, agentName: agentName ?? '', ...patch }),
-    }).catch(() => {});
-  }, [agentId, agentName]);
-
   useEffect(() => {
     if (step === 'chat') {
       setTimeout(() => {
@@ -820,73 +797,32 @@ export default function AiEvaluation() {
     }
   }, [messages, loading, step]);
 
-  const markLevelCompleted = useCallback((l: number) => {
-    setCompletedLevels(prev => {
-      const next = new Set(prev);
-      next.add(l);
-      localStorage.setItem('brainstrade_eval_completed_levels', JSON.stringify([...next]));
-      syncToServer({ evalCompletedLevels: [...next], evalSavedLevel: null });
-      return next;
-    });
-  }, [syncToServer]);
-
   const startSession = useCallback(async () => {
+    if (!agentId) return;
     setLoading(true);
     setError(null);
     try {
-      // 1. Create session record
-      const res = await fetch('/api/ai-eval/start', {
+      const res = await fetch('/api/ai-eval', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ level: 1, agentId, agentName }),
+        body: JSON.stringify({ 
+          agentId, 
+          agentName, 
+          isStart: true, 
+          level: 1 
+        }),
       });
+
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `Start failed (${res.status})`);
+        throw new Error(err.details || err.error || `Start failed (${res.status})`);
       }
+
       const data = await res.json();
-      const sid = data.sessionId;
-      setSessionId(sid);
-      setMessages([]);
+      setMessages(data.messages || []);
+      setCustomerProfile(data.customerProfile || null);
       setCoaching(new Map());
       setPassed(false);
-
-      syncToServer({ evalSavedLevel: 1 });
-
-      // 2. Fetch the customer's opening line
-      try {
-        const initRes = await fetch('/api/ai-eval', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId: sid, level: 1, messages: [], agentId, agentName, isStart: true }),
-        });
-        if (initRes.ok) {
-          const initData = await initRes.json();
-          if (initData.customerProfile) {
-            setCustomerProfile(initData.customerProfile);
-          }
-          if (initData.reply) {
-            const openingMsg: PitchMessage = { role: 'assistant', content: initData.reply, timestamp: new Date() };
-            setMessages([openingMsg]);
-            // Save to server
-            if (agentId) {
-              fetch('/api/ai-eval/active', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                  agentId, 
-                  sessionId: sid, 
-                  level: 1, 
-                  messages: [openingMsg],
-                  customerProfile: initData.customerProfile
-                }),
-              }).catch(() => {});
-            }
-          }
-        }
-      } catch {
-      }
-
       setStep('chat');
     } catch (err: any) {
       console.error('Failed to start AI session', err);
@@ -894,89 +830,85 @@ export default function AiEvaluation() {
     } finally {
       setLoading(false);
     }
-  }, [agentId, agentName, syncToServer, showError]);
+  }, [agentId, agentName, showError]);
 
   const sendMessage = useCallback(async () => {
-    if (!input.trim() || !sessionId || loading || passed) return;
-    const userMsg: PitchMessage = { role: 'user', content: input, timestamp: new Date() };
+    if (!input.trim() || !agentId || loading || passed) return;
     
-    // Sanitize existing messages
-    const sanitizedHistory = messages.filter(m => m && typeof m.content === 'string' && m.content.length > 0);
-    const newMessages = [...sanitizedHistory, userMsg];
-    
-    setMessages(newMessages);
+    const userMsgContent = input;
     setInput('');
     setLoading(true);
+
+    // Optimistically add user message for immediate UI feedback
+    const optimisticMsg: PitchMessage = { 
+      role: 'user', 
+      content: userMsgContent, 
+      timestamp: new Date().toISOString() 
+    };
+    setMessages(prev => [...prev, optimisticMsg]);
 
     try {
       const res = await fetch('/api/ai-eval', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, level: 1, messages: newMessages, agentId, agentName }),
+        body: JSON.stringify({ 
+          agentId, 
+          agentName, 
+          message: userMsgContent, 
+          level: 1 
+        }),
       });
       
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        const detailedMsg = errorData.details || errorData.error || 'Connection failure';
-        throw new Error(detailedMsg);
+        throw new Error(errorData.details || errorData.error || 'Connection failure');
       }
       
       const data = await res.json();
-      const reply = (data.reply || '').trim();
-      if (!reply) throw new Error('AI returned an empty response. Please try again.');
-
-      const aiMsg: PitchMessage = { role: 'assistant', content: reply, timestamp: new Date() };
-      const finalMessages = [...newMessages, aiMsg];
-      setMessages(finalMessages);
+      
+      // Update with full history from server to ensure sync
+      if (data.messages) {
+        setMessages(data.messages);
+      }
 
       if (data.customerProfile) {
         setCustomerProfile(data.customerProfile);
       }
 
       // Store coaching
-      let nextCoaching = coaching;
       if (data.coaching) {
-        const assistantIndex = finalMessages.length - 1;
+        const assistantIndex = data.messages.length - 1;
         setCoaching(prev => {
           const next = new Map(prev);
           next.set(assistantIndex, data.coaching);
-          nextCoaching = next;
           return next;
         });
       }
 
       if (data.passed) {
         setPassed(true);
-        markLevelCompleted(1);
-        if (agentId) fetch(`/api/ai-eval/active?agentId=${agentId}`, { method: 'DELETE' }).catch(() => {});
-      } else if (sessionId && agentId) {
-        fetch('/api/ai-eval/active', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            agentId,
-            sessionId,
-            level: 1,
-            messages: finalMessages,
-            customerProfile: data.customerProfile || customerProfile,
-            coaching: Object.fromEntries(nextCoaching)
-          }),
-        }).catch(() => {});
+        // Refresh completed levels from server
+        fetch(`/api/agent/progress?agentId=${agentId}`)
+          .then(r => r.ok ? r.json() : null)
+          .then(progressData => {
+            if (progressData?.stats?.evalCompletedLevels) {
+              setCompletedLevels(new Set(progressData.stats.evalCompletedLevels));
+            }
+          })
+          .catch(() => {});
       }
     } catch (err: any) {
       console.error('Failed to send message', err);
-      setMessages(messages);
       showError(err.message || 'Failed to get AI response. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, [input, sessionId, loading, passed, messages, agentId, agentName, markLevelCompleted, showError, customerProfile, coaching]);
+  }, [input, agentId, agentName, loading, passed, showError]);
 
   const resetToSelect = useCallback((clearHistory = false) => {
     if (clearHistory) {
       if (agentId) fetch(`/api/ai-eval/active?agentId=${agentId}`, { method: 'DELETE' }).catch(() => {});
     }
-    setSessionId(null);
     setMessages([]);
     setCoaching(new Map());
     setCustomerProfile(null);
