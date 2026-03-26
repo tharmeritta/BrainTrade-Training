@@ -901,20 +901,16 @@ interface SessionSummaryData {
   agentCount: number;
 }
 
-const LIVE_MODULES = [
-  { id: 'product', title: 'What is Stock?',           titleTh: 'หุ้นคืออะไร?' },
-  { id: 'kyc',     title: 'Know Your Customer (KYC)', titleTh: 'รู้จักลูกค้า (KYC)' },
-  { id: 'website', title: 'BrainTrade Website',       titleTh: 'เว็บไซต์ BrainTrade' },
-];
-
 function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
   const t   = useTranslations('trainer');
   const lang = locale.split('-')[0];
 
   const [phase,          setPhase]          = useState<LivePhase>('setup');
-  const [selectedModId,  setSelectedModId]  = useState(LIVE_MODULES[0].id);
+  const [availableMods,  setAvailableMods]  = useState<CourseModule[]>([]);
+  const [selectedModId,  setSelectedModId]  = useState<string>('');
   const [course,         setCourse]         = useState<CourseModule | null>(null);
   const [loadingCourse,  setLoadingCourse]  = useState(false);
+  const [loadingList,    setLoadingList]    = useState(true);
   const [copied,         setCopied]         = useState(false);
   const [elapsed,        setElapsed]        = useState(0);
   const [broadcastText,  setBroadcastText]  = useState('');
@@ -928,14 +924,30 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
     ? `${window.location.origin}/${lang}/learn`
     : `/${lang}/learn`;
 
-  const selectedMod = LIVE_MODULES.find(m => m.id === selectedModId) ?? LIVE_MODULES[0];
+  // Fetch all available modules for setup
+  useEffect(() => {
+    fetch('/api/courses')
+      .then(r => r.json())
+      .then(d => {
+        const mods = (d.modules || []) as CourseModule[];
+        setAvailableMods(mods);
+        if (mods.length > 0 && !selectedModId) {
+          setSelectedModId(mods[0].id);
+        }
+        setLoadingList(false);
+      })
+      .catch(() => setLoadingList(false));
+  }, []);
+
+  const selectedMod = availableMods.find(m => m.id === selectedModId) || availableMods[0];
   const agentNames  = Object.values(period.agentNames ?? {});
-  const modTitle    = locale === 'th-TH' ? selectedMod.titleTh : selectedMod.title;
+  const modTitle    = selectedMod ? (locale === 'th-TH' ? selectedMod.titleTh : selectedMod.title) : '...';
 
   const isManager = role === 'manager' || role === 'it';
 
-  // Load course module details
+  // Load course module details when selectedModId changes
   useEffect(() => {
+    if (!selectedModId) return;
     let active = true;
     setLoadingCourse(true);
     setCourse(null); // Reset course while loading new one
@@ -1281,41 +1293,52 @@ function LiveSubTab({ period, locale, role }: LiveSubTabProps) {
           {/* Step 1 — Pick module */}
           <div className="space-y-2">
             <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground px-1">{t('pickModule')}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {LIVE_MODULES.map(mod => {
-                const isSelected = mod.id === selectedModId;
-                return (
-                  <button
-                    key={mod.id}
-                    onClick={() => setSelectedModId(mod.id)}
-                    className="rounded-2xl border p-4 text-left transition-all"
-                    style={
-                      isSelected
-                        ? { borderColor: 'hsl(var(--primary))', background: 'rgba(var(--primary-rgb,99,102,241),0.08)' }
-                        : { borderColor: 'hsl(var(--border))', background: 'transparent' }
-                    }
-                  >
-                    <span
-                      className="text-[10px] font-black uppercase tracking-widest"
-                      style={{ color: isSelected ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))' }}
+            {loadingList ? (
+              <div className="flex items-center justify-center p-12 bg-card rounded-2xl border border-border">
+                <Spinner />
+              </div>
+            ) : availableMods.length === 0 ? (
+              <div className="p-8 text-center bg-card rounded-2xl border border-border text-muted-foreground text-sm">
+                No modules available.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {availableMods.map(mod => {
+                  const isSelected = mod.id === selectedModId;
+                  const title = locale === 'th-TH' ? mod.titleTh : mod.title;
+                  return (
+                    <button
+                      key={mod.id}
+                      onClick={() => setSelectedModId(mod.id)}
+                      className="rounded-2xl border p-4 text-left transition-all"
+                      style={
+                        isSelected
+                          ? { borderColor: 'hsl(var(--primary))', background: 'rgba(var(--primary-rgb,99,102,241),0.08)' }
+                          : { borderColor: 'hsl(var(--border))', background: 'transparent' }
+                      }
                     >
-                      {mod.id}
-                    </span>
-                    <p className="text-sm font-bold text-foreground mt-0.5 leading-tight">
-                      {locale === 'th-TH' ? mod.titleTh : mod.title}
-                    </p>
-                    {isSelected && (
                       <span
-                        className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold"
-                        style={{ color: 'hsl(var(--primary))' }}
+                        className="text-[10px] font-black uppercase tracking-widest"
+                        style={{ color: isSelected ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))' }}
                       >
-                        <Check size={10} /> Selected
+                        {mod.id}
                       </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+                      <p className="text-sm font-bold text-foreground mt-0.5 leading-tight">
+                        {title}
+                      </p>
+                      {isSelected && (
+                        <span
+                          className="mt-2 inline-flex items-center gap-1 text-[10px] font-bold"
+                          style={{ color: 'hsl(var(--primary))' }}
+                        >
+                          <Check size={10} /> Selected
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Step 2 — Enrolled agents */}
