@@ -14,14 +14,17 @@ import * as XLSX from 'xlsx';
 import { storage, auth } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { signInWithCustomToken } from 'firebase/auth';
+import { COURSE_MODULES } from '@/lib/courses';
 
 // --- Types & Interfaces ---
 
 type ConfigType = 'quizzes' | 'ai-eval' | 'learn';
 
 interface PresentationInfo {
-  slideUrls: string[];
+  slideUrls?: string[];
+  presentationId?: string;
   totalSlides: number;
+  cacheKey?: string;
 }
 
 interface LearnModule {
@@ -79,45 +82,6 @@ interface ConfigData {
   quizzes?: QuizzesConfig;
   ai_eval?: AiEvalConfig;
 }
-
-const LEARN_DEFAULT_MODULES: Record<string, LearnModule> = {
-  product: {
-    id: 'product',
-    title: 'What is Stock?',
-    titleTh: 'หุ้นคืออะไร?',
-    description: 'Learn the fundamentals of stocks, equity, and how the stock market works.',
-    descriptionTh: 'เรียนรู้พื้นฐานของหุ้น ส่วนของผู้ถือหุ้น และวิธีการทำงานของตลาดหลักทรัพย์',
-    gradient: 'from-blue-600 to-indigo-700',
-    presentations: {
-      th: { slideUrls: [], totalSlides: 0 },
-      en: { slideUrls: [], totalSlides: 0 },
-    },
-  },
-  kyc: {
-    id: 'kyc',
-    title: 'Know Your Customer (KYC)',
-    titleTh: 'รู้จักลูกค้า (KYC)',
-    description: 'Learn the KYC process, customer verification, and compliance requirements for financial services.',
-    descriptionTh: 'เรียนรู้กระบวนการ KYC การตรวจสอบตัวตนลูกค้า และข้อกำหนดด้านการปฏิบัติตามกฎระเบียบสำหรับบริการทางการเงิน',
-    gradient: 'from-emerald-600 to-teal-700',
-    presentations: {
-      th: { slideUrls: [], totalSlides: 0 },
-      en: { slideUrls: [], totalSlides: 0 },
-    },
-  },
-  website: {
-    id: 'website',
-    title: 'BrainTrade Website',
-    titleTh: 'เว็บไซต์ BrainTrade',
-    description: 'A walkthrough of the BrainTrade platform, its features, and how to navigate and use the website effectively.',
-    descriptionTh: 'แนะนำแพลตฟอร์ม BrainTrade ฟีเจอร์ต่างๆ และวิธีการใช้งานเว็บไซต์อย่างมีประสิทธิภาพ',
-    gradient: 'from-violet-600 to-purple-700',
-    presentations: {
-      th: { slideUrls: [], totalSlides: 0 },
-      en: { slideUrls: [], totalSlides: 0 },
-    },
-  },
-};
 
 export default function AdjustmentsTab() {
   const t = useTranslations('admin');
@@ -866,33 +830,26 @@ function AiEvalEditor({ data, onSave, onChange, saving }: { data: AiEvalConfig |
 
 
 function LearnEditor({ data, onSave, onChange, saving }: { data: LearnConfig | undefined, onSave: (d: LearnConfig) => void, onChange: () => void, saving: boolean }) {
-  const [modules, setModules] = useState<Record<string, LearnModule>>(data?.modules && Object.keys(data.modules).length > 0 ? data.modules : LEARN_DEFAULT_MODULES);
+  // Merge baseline from lib/courses.ts with data from Firestore
+  const initialModules = useMemo(() => {
+    const baseline = { ...COURSE_MODULES } as unknown as Record<string, LearnModule>;
+    if (data?.modules) {
+      Object.keys(data.modules).forEach(id => {
+        baseline[id] = data.modules[id];
+      });
+    }
+    return baseline;
+  }, [data?.modules]);
+
+  const [modules, setModules] = useState<Record<string, LearnModule>>(initialModules);
   const [order, setOrder] = useState<string[]>(data?.order || Object.keys(modules));
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<Record<string, 'idle' | 'loading' | 'done' | 'error'>>({});
 
-  // Synchronize order when modules change
+  // Sync state when initialModules change (e.g. after save or fetch)
   useEffect(() => {
-    const moduleIds = Object.keys(modules);
-    let changed = false;
-    
-    // Add missing IDs
-    const newOrder = [...order];
-    moduleIds.forEach(id => {
-      if (!newOrder.includes(id)) {
-        newOrder.push(id);
-        changed = true;
-      }
-    });
-
-    // Remove deleted IDs
-    const filteredOrder = newOrder.filter(id => modules[id]);
-    if (filteredOrder.length !== newOrder.length) changed = true;
-
-    if (changed) {
-      setOrder(filteredOrder);
-    }
-  }, [modules, order]);
+    setModules(initialModules);
+  }, [initialModules]);
 
   const ensureFirebaseSession = async () => {
     if (auth.currentUser) return;
@@ -1076,10 +1033,15 @@ function LearnEditor({ data, onSave, onChange, saving }: { data: LearnConfig | u
                 </div>
               </div>
               <h4 className="font-bold truncate text-sm mb-1">{mod.title || 'Untitled'}</h4>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col gap-1">
                  <div className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
-                   <FileText size={10} /> {slideCount} Slides
+                   <FileText size={10} /> {(mod.presentations?.en?.slideUrls?.length || 0) + (mod.presentations?.th?.slideUrls?.length || 0)} Uploaded Slides
                  </div>
+                 {(mod.presentations?.en?.presentationId || mod.presentations?.th?.presentationId) && (
+                   <div className="flex items-center gap-1 text-[10px] font-bold text-primary">
+                     <ExternalLink size={10} /> Has Google Slides
+                   </div>
+                 )}
               </div>
             </div>
           );
@@ -1133,81 +1095,128 @@ function LearnEditor({ data, onSave, onChange, saving }: { data: LearnConfig | u
             </div>
 
             <div className="space-y-6">
-              {['en', 'th'].map((lang) => (
-                <div key={lang} className="space-y-3 p-4 rounded-2xl bg-secondary/10 border border-border">
-                  <div className="flex items-center justify-between">
-                    <h5 className="text-xs font-black uppercase tracking-widest text-primary">{lang === 'en' ? 'English' : 'Thai'} Slides</h5>
-                    {uploadStatus[`${editingId}_${lang}`] === 'loading' && <Loader2 size={14} className="animate-spin text-primary" />}
-                  </div>
+              {['en', 'th'].map((lang) => {
+                const pres = modules[editingId].presentations[lang as 'en' | 'th'];
+                const hasUploaded = (pres?.slideUrls?.length || 0) > 0;
+                
+                return (
+                  <div key={lang} className="space-y-4 p-5 rounded-2xl bg-secondary/10 border border-border">
+                    <div className="flex items-center justify-between">
+                      <h5 className="text-xs font-black uppercase tracking-widest text-primary">{lang === 'en' ? 'English' : 'Thai'} Presentation</h5>
+                      {uploadStatus[`${editingId}_${lang}`] === 'loading' && <Loader2 size={14} className="animate-spin text-primary" />}
+                    </div>
 
-                  <div className="flex gap-2">
-                    <input type="file" id={`up-${lang}`} className="hidden" multiple accept="image/*" onChange={e => e.target.files && handleFileUpload(editingId, lang as any, e.target.files)} />
-                    <button onClick={() => document.getElementById(`up-${lang}`)?.click()} className="flex-1 py-3 rounded-xl border border-primary/20 bg-primary/5 text-[10px] font-black uppercase text-primary flex items-center justify-center gap-2 hover:bg-primary/10 transition-all">
-                      <Upload size={14} /> {modules[editingId]?.presentations?.[lang as 'en' | 'th']?.slideUrls?.length ? 'Re-upload Slides' : 'Upload PNG Slides'}
-                    </button>
-                  </div>
+                    {/* Google Slides Integration */}
+                    <div className="space-y-3 pt-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <ExternalLink size={14} className="text-primary" />
+                        <span className="text-[10px] font-black uppercase opacity-60">Google Slides Integration</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black uppercase opacity-40 px-1">Presentation ID</label>
+                          <input 
+                            type="text" 
+                            value={pres?.presentationId || ''} 
+                            onChange={e => handleUpdateModule(editingId, `presentations.${lang}.presentationId`, e.target.value)} 
+                            className="w-full bg-background/50 border border-border p-2 rounded-lg text-xs font-mono focus:ring-1 focus:ring-primary/30 outline-none transition-all" 
+                            placeholder="e.g. 1SNZxAJAZets0w..."
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-black uppercase opacity-40 px-1">Total Slides</label>
+                          <input 
+                            type="number" 
+                            value={pres?.totalSlides || 0} 
+                            onChange={e => handleUpdateModule(editingId, `presentations.${lang}.totalSlides`, parseInt(e.target.value) || 0)} 
+                            className="w-full bg-background/50 border border-border p-2 rounded-lg text-xs focus:ring-1 focus:ring-primary/30 outline-none transition-all" 
+                          />
+                        </div>
+                      </div>
+                      <p className="text-[9px] text-muted-foreground px-1 italic">
+                        If Presentation ID is set, it will be used instead of uploaded slides.
+                      </p>
+                    </div>
 
-                  {(modules[editingId]?.presentations?.[lang as 'en' | 'th']?.slideUrls?.length || 0) > 0 ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-tighter">
-                          {modules[editingId].presentations[lang as 'en' | 'th'].slideUrls.length} Slides in Storage
-                        </p>
-                        <button 
-                          onClick={() => {
-                             if (confirm('Clear all uploaded slides?')) {
-                               handleUpdateModule(editingId, `presentations.${lang}.slideUrls`, []);
-                               handleUpdateModule(editingId, `presentations.${lang}.totalSlides`, 0);
-                             }
-                          }} 
-                          className="text-[10px] text-red-500 font-bold hover:underline"
-                        >
-                          Clear
+                    <div className="relative h-px bg-border my-2">
+                       <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-secondary/10 px-2 text-[9px] font-black opacity-30">OR</span>
+                    </div>
+
+                    {/* File Upload Section */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Upload size={14} className="text-primary" />
+                        <span className="text-[10px] font-black uppercase opacity-60">Manual Slide Upload (PNG)</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <input type="file" id={`up-${lang}`} className="hidden" multiple accept="image/*" onChange={e => e.target.files && handleFileUpload(editingId, lang as any, e.target.files)} />
+                        <button onClick={() => document.getElementById(`up-${lang}`)?.click()} className="flex-1 py-2.5 rounded-xl border border-primary/20 bg-primary/5 text-[10px] font-black uppercase text-primary flex items-center justify-center gap-2 hover:bg-primary/10 transition-all">
+                          <Upload size={14} /> {hasUploaded ? 'Re-upload' : 'Upload PNGs'}
                         </button>
                       </div>
-                      <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5 max-h-48 overflow-y-auto p-2 bg-black/5 rounded-xl scrollbar-hide">
-                        {modules[editingId].presentations[lang as 'en' | 'th'].slideUrls.map((url: string, sIdx: number) => (
-                          <div key={sIdx} className="relative group aspect-video bg-black/20 rounded-lg border border-white/10 overflow-hidden shadow-sm">
-                            <Image src={url} fill className="object-cover" alt="" unoptimized />
-                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 z-10">
 
-                              <button 
-                                disabled={sIdx === 0}
-                                onClick={() => {
-                                  const urls = [...modules[editingId].presentations[lang as 'en' | 'th'].slideUrls];
-                                  [urls[sIdx], urls[sIdx-1]] = [urls[sIdx-1], urls[sIdx]];
-                                  handleUpdateModule(editingId, `presentations.${lang}.slideUrls`, urls);
-                                }}
-                                className="p-1 bg-white/20 hover:bg-white/40 rounded-md disabled:opacity-20"
-                              >
-                                <ArrowUp size={10} className="text-white -rotate-90" />
-                              </button>
-                              <button 
-                                onClick={() => {
-                                  if (confirm('Delete this slide?')) {
-                                    const urls = modules[editingId].presentations[lang as 'en' | 'th'].slideUrls.filter((_: any, i: number) => i !== sIdx);
-                                    handleUpdateModule(editingId, `presentations.${lang}.slideUrls`, urls);
-                                    handleUpdateModule(editingId, `presentations.${lang}.totalSlides`, urls.length);
-                                  }
-                                }}
-                                className="p-1 bg-red-500/40 hover:bg-red-500/60 rounded-md"
-                              >
-                                <Trash2 size={10} className="text-white" />
-                              </button>
-                            </div>
-                            <span className="absolute bottom-0.5 right-1 bg-black/60 text-[8px] text-white px-1 rounded-sm font-black">{sIdx + 1}</span>
+                      {hasUploaded ? (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-tighter">
+                              {pres.slideUrls!.length} Slides Uploaded
+                            </p>
+                            <button 
+                              onClick={() => {
+                                 if (confirm('Clear all uploaded slides?')) {
+                                   handleUpdateModule(editingId, `presentations.${lang}.slideUrls`, []);
+                                   if (!pres.presentationId) handleUpdateModule(editingId, `presentations.${lang}.totalSlides`, 0);
+                                 }
+                              }} 
+                              className="text-[10px] text-red-500 font-bold hover:underline"
+                            >
+                              Clear All
+                            </button>
                           </div>
-                        ))}
-                      </div>
+                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5 max-h-40 overflow-y-auto p-2 bg-black/5 rounded-xl scrollbar-hide">
+                            {pres.slideUrls!.map((url: string, sIdx: number) => (
+                              <div key={sIdx} className="relative group aspect-video bg-black/20 rounded-lg border border-white/10 overflow-hidden shadow-sm">
+                                <Image src={url} fill className="object-cover" alt="" unoptimized />
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 z-10">
+                                  <button 
+                                    disabled={sIdx === 0}
+                                    onClick={() => {
+                                      const urls = [...pres.slideUrls!];
+                                      [urls[sIdx], urls[sIdx-1]] = [urls[sIdx-1], urls[sIdx]];
+                                      handleUpdateModule(editingId, `presentations.${lang}.slideUrls`, urls);
+                                    }}
+                                    className="p-1 bg-white/20 hover:bg-white/40 rounded-md disabled:opacity-20"
+                                  >
+                                    <ArrowUp size={10} className="text-white -rotate-90" />
+                                  </button>
+                                  <button 
+                                    onClick={() => {
+                                      if (confirm('Delete this slide?')) {
+                                        const urls = pres.slideUrls!.filter((_: any, i: number) => i !== sIdx);
+                                        handleUpdateModule(editingId, `presentations.${lang}.slideUrls`, urls);
+                                        if (!pres.presentationId) handleUpdateModule(editingId, `presentations.${lang}.totalSlides`, urls.length);
+                                      }
+                                    }}
+                                    className="p-1 bg-red-500/40 hover:bg-red-500/60 rounded-md"
+                                  >
+                                    <Trash2 size={10} className="text-white" />
+                                  </button>
+                                </div>
+                                <span className="absolute bottom-0.5 right-1 bg-black/60 text-[8px] text-white px-1 rounded-sm font-black">{sIdx + 1}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="py-4 border border-dashed border-border rounded-xl flex flex-col items-center justify-center opacity-30 gap-1">
+                          <Layers size={16} />
+                          <p className="text-[9px] font-black uppercase">No slides uploaded</p>
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <div className="py-8 border border-dashed border-border rounded-xl flex flex-col items-center justify-center opacity-30 gap-1">
-                      <Layers size={20} />
-                      <p className="text-[9px] font-black uppercase">No slides uploaded</p>
-                    </div>
-                  )}
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </motion.div>
