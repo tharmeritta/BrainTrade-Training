@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminOrIT } from '@/lib/session';
+import { requireAdminOrIT, requireAdmin } from '@/lib/session';
 import { fsGetAll } from '@/lib/firestore-db';
 import { resolveApprovalRequest } from '@/lib/services/approval-service';
 import type { ApprovalRequest } from '@/types';
@@ -22,7 +22,7 @@ export async function GET() {
 // POST /api/admin/approvals — approve or reject a request
 export async function POST(req: NextRequest) {
   let user;
-  try { user = await requireAdminOrIT(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { user = await requireAdmin(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
 
   const body = await req.json();
   const { requestId, status, rejectionReason } = body;

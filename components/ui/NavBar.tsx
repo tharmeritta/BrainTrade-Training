@@ -32,11 +32,6 @@ const NAV_ITEMS = [
     key: 'learn',
     href: '/learn',
     icon: BookOpen,
-    children: [
-      { key: 'productKnowledge', href: '/learn/product' },
-      { key: 'kycProcess',       href: '/learn/kyc'     },
-      { key: 'websiteTutorial',  href: '/learn/website' },
-    ],
   },
   {
     key: 'quiz',
@@ -60,7 +55,6 @@ export default function NavBar() {
   const locale   = segments[1] === 'en' ? 'en' : 'th';
   const section  = segments[2] ? `/${segments[2]}` : '/dashboard';
 
-  const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [hasSession, setHasSession] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
@@ -83,7 +77,6 @@ export default function NavBar() {
     guardedNavigate(e, href);
     setPendingHref(href);
     window.dispatchEvent(new Event('nav:start'));
-    setOpenMenu(null);
   }
 
   function isActive(href: string) {
@@ -140,14 +133,11 @@ export default function NavBar() {
           const active = isActive(item.href);
           const Icon   = item.icon;
           const label  = t(item.key);
-          const hasChildren = 'children' in item && item.children;
 
           return (
             <div
               key={item.href}
               className="relative"
-              onMouseEnter={() => hasChildren ? setOpenMenu(item.href) : undefined}
-              onMouseLeave={() => setOpenMenu(null)}
             >
               {/* Pill Button */}
               <motion.div
@@ -197,64 +187,8 @@ export default function NavBar() {
                   >
                     {label}
                   </span>
-                  {hasChildren && (
-                    <motion.span
-                      className="relative z-10"
-                      animate={{ rotate: openMenu === item.href ? 180 : 0 }}
-                      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                    >
-                      <ChevronDown
-                        size={11}
-                        className={active ? 'text-foreground' : 'text-muted-foreground'}
-                      />
-                    </motion.span>
-                  )}
                 </Link>
               </motion.div>
-
-              {/* Dropdown */}
-              {hasChildren && (
-                <AnimatePresence>
-                  {openMenu === item.href && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 6, scale: 0.97 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 4, scale: 0.97 }}
-                      transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-                      className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 min-w-[176px] rounded-2xl border border-border/60 bg-background/95 backdrop-blur-md shadow-xl shadow-black/10 overflow-hidden p-1"
-                    >
-                      {item.children.map((child, i) => {
-                        const childLabel = t(child.key);
-                        const childActive = pathname.includes(child.href);
-                        return (
-                          <motion.div
-                            key={child.href}
-                            initial={{ opacity: 0, x: -6 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: i * 0.04, duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-                            whileTap={{ scale: 0.97 }}
-                          >
-                            <Link
-                              href={`/${locale}${child.href}`}
-                              onClick={(e) => handleNavClick(e, child.href)}
-                              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-colors ${
-                                childActive
-                                  ? 'bg-muted text-foreground font-medium'
-                                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-                              }`}
-                            >
-                              {childActive && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                              )}
-                              <span className={childActive ? '' : 'pl-3.5'}>{childLabel}</span>
-                            </Link>
-                          </motion.div>
-                        );
-                      })}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              )}
             </div>
           );
         })}

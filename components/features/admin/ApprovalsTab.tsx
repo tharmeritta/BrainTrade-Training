@@ -11,7 +11,7 @@ import {
 import type { ApprovalRequest } from '@/types';
 import { timeAgo } from './AdminHelpers';
 
-export default function ApprovalsTab() {
+export default function ApprovalsTab({ currentUserId, role }: { currentUserId: string; role: string }) {
   const t = useTranslations('admin');
   const [requests, setRequests] = useState<ApprovalRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,20 +19,27 @@ export default function ApprovalsTab() {
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectModal, setShowRejectModal] = useState<string | null>(null);
 
+  const isIT = role === 'it';
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch('/api/admin/approvals');
       if (res.ok) {
         const data = await res.json();
-        setRequests(data.requests ?? []);
+        let fetched = data.requests ?? [];
+        // IT sees only their own requests, Admin sees everything
+        if (isIT) {
+          fetched = fetched.filter((r: ApprovalRequest) => r.requesterId === currentUserId);
+        }
+        setRequests(fetched);
       }
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isIT, currentUserId]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -82,19 +89,28 @@ export default function ApprovalsTab() {
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
-      <div>
-        <h2 className="text-2xl font-black flex items-center gap-3 uppercase tracking-tight">
-          <Clock className="text-primary" /> Approval Requests
-        </h2>
-        <p className="text-sm text-muted-foreground font-medium mt-1">
-          Review and authorize actions requested by IT Support staff.
-        </p>
+      <div className="flex justify-between items-end">
+        <div>
+          <h2 className="text-2xl font-black flex items-center gap-3 uppercase tracking-tight">
+            <Clock className="text-primary" /> {isIT ? 'My Requests' : 'Approval Requests'}
+          </h2>
+          <p className="text-sm text-muted-foreground font-medium mt-1">
+            {isIT 
+              ? 'Track the status of system changes you have submitted for administrator approval.'
+              : 'Review and authorize actions requested by IT Support staff.'}
+          </p>
+        </div>
+        {isIT && (
+          <div className="text-[10px] font-black uppercase tracking-widest text-primary/50 bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10">
+            Only showing your requests
+          </div>
+        )}
       </div>
 
       {/* Pending Section */}
       <section className="space-y-4">
         <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-          Pending Authorization ({pending.length})
+          {isIT ? 'Pending Approval' : 'Pending Authorization'} ({pending.length})
         </h3>
         
         {loading ? (
@@ -139,14 +155,15 @@ export default function ApprovalsTab() {
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => resolve(req.id, 'approved')}
-                      disabled={!!resolving}
-                      className="flex-1 md:flex-none bg-emerald-500 text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase flex items-center justify-center gap-2 hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-50"
+                      disabled={!!resolving || req.requesterId === currentUserId}
+                      title={req.requesterId === currentUserId ? 'Self-approval not allowed' : undefined}
+                      className="flex-1 md:flex-none bg-emerald-500 text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase flex items-center justify-center gap-2 hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-50 disabled:grayscale"
                     >
                       {resolving === req.id ? '...' : <><CheckCircle2 size={14} /> Approve</>}
                     </button>
                     <button 
                       onClick={() => setShowRejectModal(req.id)}
-                      disabled={!!resolving}
+                      disabled={!!resolving || req.requesterId === currentUserId}
                       className="flex-1 md:flex-none bg-secondary text-foreground px-6 py-2.5 rounded-xl text-xs font-black uppercase flex items-center justify-center gap-2 hover:bg-red-500/10 hover:text-red-500 transition-all active:scale-95 disabled:opacity-50"
                     >
                       <XCircle size={14} /> Reject

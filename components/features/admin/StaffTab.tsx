@@ -14,7 +14,7 @@ interface EditState {
   role: 'admin' | 'manager' | 'it' | 'evaluator' | 'trainer';
 }
 
-export default function StaffTab() {
+export default function StaffTab({ role }: { role: string }) {
   const t = useTranslations('admin');
   const [staff,    setStaff]    = useState<StaffAccount[]>([]);
   const [loading,  setLoading]  = useState(true);
@@ -26,8 +26,15 @@ export default function StaffTab() {
   const [staffErr, setStaffErr] = useState('');
   const [isOrderChanged, setIsOrderChanged] = useState(false);
 
+  const isIT = role === 'it';
+
   // New account form state
   const [newUser, setNewUser] = useState({ username: '', password: '', name: '', role: 'manager' as 'admin' | 'manager' | 'it' | 'evaluator' | 'trainer' });
+
+  const confirmITAction = useCallback(() => {
+    if (!isIT) return true;
+    return confirm("Confirm to send this request for administrator approval?");
+  }, [isIT]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -103,6 +110,7 @@ export default function StaffTab() {
 
   async function createStaff(e: React.FormEvent) {
     e.preventDefault();
+    if (!confirmITAction()) return;
     setSaving(true);
     setStaffErr('');
     try {
@@ -129,6 +137,7 @@ export default function StaffTab() {
 
   async function saveEdit() {
     if (!editing) return;
+    if (!confirmITAction()) return;
     setSaving(true);
     setStaffErr('');
     try {
@@ -158,6 +167,7 @@ export default function StaffTab() {
   }
 
   async function toggleStaffActive(id: string, active: boolean) {
+    if (!confirmITAction()) return;
     await fetch(`/api/admin/staff/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -168,6 +178,7 @@ export default function StaffTab() {
 
   async function deleteStaff(id: string, name: string) {
     if (!confirm(t('staff.deleteConfirm', { name }))) return;
+    if (!confirmITAction()) return;
     await fetch(`/api/admin/staff/${id}`, { method: 'DELETE' });
     await load();
   }

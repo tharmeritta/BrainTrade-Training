@@ -31,6 +31,10 @@ export async function resolveApprovalRequest(
     throw new Error('Request not found or already resolved');
   }
 
+  if (request.requesterId === admin.uid) {
+    throw new Error('Self-approval is not allowed');
+  }
+
   const update: Partial<ApprovalRequest> = {
     status,
     resolvedAt: new Date().toISOString(),

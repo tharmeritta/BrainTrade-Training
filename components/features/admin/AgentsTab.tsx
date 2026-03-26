@@ -29,6 +29,12 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'it' |
   const [savingAgent,  setSavingAgent]  = useState(false);
   const [selectedForDetail, setSelectedForDetail] = useState<AgentStats | null>(null);
 
+  const isIT = role === 'it';
+  const confirmITAction = useCallback(() => {
+    if (!isIT) return true;
+    return confirm("Confirm to send this request for administrator approval?");
+  }, [isIT]);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -57,6 +63,7 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'it' |
 
   async function saveAgentEdit() {
     if (!editingAgent) return;
+    if (!confirmITAction()) return;
     setSavingAgent(true);
     setAgentErr('');
     const res = await fetch(`/api/admin/agents/${editingAgent.id}`, {
@@ -77,6 +84,7 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'it' |
   async function addAgent(e: React.FormEvent) {
     e.preventDefault();
     if (!newName.trim()) return;
+    if (!confirmITAction()) return;
     setAdding(true);
     setAgentErr('');
     const res = await fetch('/api/admin/agents', {
@@ -95,6 +103,7 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'it' |
   }
 
   async function toggleActive(id: string, active: boolean) {
+    if (!confirmITAction()) return;
     await fetch(`/api/admin/agents/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -105,6 +114,7 @@ export default function AgentsTab({ role }: { role: 'admin' | 'manager' | 'it' |
 
   async function deleteAgent(id: string, name: string) {
     if (!confirm(t('agents.deleteConfirm', { name }))) return;
+    if (!confirmITAction()) return;
     setAgentErr('');
     const res = await fetch(`/api/admin/agents/${id}`, { method: 'DELETE' });
     if (!res.ok) setAgentErr('Failed to delete agent.');

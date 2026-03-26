@@ -41,7 +41,7 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
     { id: 'training',    labelKey: 'training',       icon: GraduationCap,    group: 'main' },
     { id: 'evaluations', labelKey: 'evaluations',    icon: ClipboardCheck,   hideForTrainer: true, group: 'main' },
     { id: 'reports',     labelKey: 'reports',        icon: FileSpreadsheet,  hideForTrainer: true, group: 'main' },
-    { id: 'approvals',   labelKey: 'approvals',      icon: Clock,            adminOnly: true, group: 'admin' },
+    { id: 'approvals',   labelKey: role === 'it' ? 'requestStatus' : 'approvals', icon: Clock, adminOnly: true, group: 'admin' },
     { id: 'staff',       labelKey: 'staff',          icon: ShieldCheck,      adminOnly: true, group: 'admin' },
     { id: 'adjustments', labelKey: 'adjustments',    icon: Edit3,            adminOnly: true, group: 'admin' },
   ];
@@ -276,9 +276,9 @@ export default function AdminDashboard({ role, uid, name, passwordChanged }: { r
                 {tab === 'training'    && <TrainerPanel role={role} uid={uid} name={name} />}
                 {tab === 'evaluations' && <EvaluationsTab />}
                 {tab === 'reports'     && <ReportsTab />}
-                {tab === 'approvals'   && <ApprovalsTab />}
-                {tab === 'staff'       && (role === 'admin' || role === 'it') && <StaffTab />}
-                {tab === 'adjustments' && (role === 'admin' || role === 'it') && <AdjustmentsTab />}
+                {tab === 'approvals'   && <ApprovalsTab currentUserId={uid} role={role} />}
+                {tab === 'staff'       && (role === 'admin' || role === 'it') && <StaffTab role={role} />}
+                {tab === 'adjustments' && (role === 'admin' || role === 'it') && <AdjustmentsTab role={role} />}
               </motion.div>
             </AnimatePresence>
           </main>

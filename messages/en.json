@@ -146,6 +146,8 @@
     "allPassed": "All modules passed",
     "training": "Training",
     "step": "Step {step}",
+    "unlockAll": "Unlock All Modules",
+    "standardView": "Standard View",
     "startTraining": "Start Training",
     "progress": "Progress",
     "passedModules": "Passed Modules",
@@ -165,6 +167,7 @@
       "evaluations": "Evaluations",
       "reports": "Reports",
       "approvals": "Approvals",
+      "requestStatus": "Request Status",
       "staff": "Staff Accounts",
       "adjustments": "Adjustments",
       "profile": "User Profile"

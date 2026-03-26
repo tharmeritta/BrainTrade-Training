@@ -146,6 +146,8 @@
     "allPassed": "ผ่านครบทุกโมดูลแล้ว",
     "training": "กำลัง",
     "step": "ขั้นที่ {step}",
+    "unlockAll": "ปลดล็อกทุกโมดูล",
+    "standardView": "มุมมองปกติ",
     "startTraining": "เริ่มต้นการฝึก",
     "progress": "ความคืบหน้า",
     "passedModules": "โมดูลที่ผ่าน",
@@ -165,6 +167,7 @@
       "evaluations": "การประเมิน",
       "reports": "รายงาน",
       "approvals": "การอนุมัติ",
+      "requestStatus": "สถานะการส่งคำขอ",
       "staff": "บัญชีเจ้าหน้าที่",
       "adjustments": "การปรับแต่ง",
       "profile": "โปรไฟล์ผู้ใช้"

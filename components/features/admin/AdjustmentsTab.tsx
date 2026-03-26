@@ -92,7 +92,7 @@ interface ConfigData {
   features?: FeaturesConfig;
 }
 
-export default function AdjustmentsTab() {
+export default function AdjustmentsTab({ role }: { role: string }) {
   const t = useTranslations('admin');
   const [activeTab, setActiveTab] = useState<ConfigType>('learn');
   const [configs, setConfigs] = useState<ConfigData>({});
@@ -100,6 +100,12 @@ export default function AdjustmentsTab() {
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  const isIT = role === 'it';
+  const confirmITAction = useCallback(() => {
+    if (!isIT) return true;
+    return confirm("Confirm to send this request for administrator approval?");
+  }, [isIT]);
 
   const initialConfigsRef = useRef<ConfigData>({});
 
@@ -126,6 +132,7 @@ export default function AdjustmentsTab() {
   }, [loadConfigs]);
 
   const handleSave = async (id: string, data: any) => {
+    if (!confirmITAction()) return;
     setSaving(true);
     setSaveStatus('idle');
     try {
