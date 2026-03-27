@@ -36,6 +36,7 @@ export default function AiScenarioImportModal({ onClose, onSuccess }: AiScenario
   };
 
   const downloadTemplate = () => {
+    const DEFAULT_CRITERIA = 'rapport,objectionHandling,credibility,closing,naturalness';
     const template = [
       {
         Name: 'The Skeptical Investor',
@@ -45,6 +46,7 @@ export default function AiScenarioImportModal({ onClose, onSuccess }: AiScenario
         Objective: 'Understand the risk management and safety of the platform.',
         Mood: 'Cautious and skeptical',
         MaxTurns: 12,
+        Criteria: DEFAULT_CRITERIA,
         WinHint: 'Agent explains the 1:1 coaching and regulatory compliance.',
         FailHint: 'Agent is too pushy or dismisses the customer\'s past bad experience.'
       },
@@ -56,6 +58,7 @@ export default function AiScenarioImportModal({ onClose, onSuccess }: AiScenario
         Objective: 'Learn how to start with a small deposit.',
         Mood: 'Excited but confused',
         MaxTurns: 10,
+        Criteria: DEFAULT_CRITERIA,
         WinHint: 'Agent simplifies the registration process.',
         FailHint: 'Agent uses too much technical jargon.'
       }
@@ -90,6 +93,11 @@ export default function AiScenarioImportModal({ onClose, onSuccess }: AiScenario
           maxTurns: parseInt(row.MaxTurns || row.maxTurns || row['รอบสูงสุด'] || row['จำนวนรอบ'] || 12),
           winCondition: row.WinHint || row.winHint || row.winCondition || row['เงื่อนไขการชนะ'] || row['คำแนะนำการชนะ'],
           failCondition: row.FailHint || row.failHint || row.failCondition || row['เงื่อนไขการแพ้'] || row['คำแนะนำการแพ้'],
+          requiredCriteria: (() => {
+            const raw = row.Criteria || row.criteria || row.requiredCriteria || row['เกณฑ์การประเมิน'];
+            if (!raw) return ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'];
+            return String(raw).split(',').map((s: string) => s.trim()).filter(Boolean);
+          })(),
           isActive: true
         }))
         .filter(s => s.name && s.customerPersona);

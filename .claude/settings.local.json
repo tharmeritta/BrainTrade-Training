@@ -37,7 +37,8 @@
       "Bash(npm install:*)",
       "Bash(firebase deploy:*)",
       "Bash(npx firebase-tools:*)",
-      "Bash(npm:*)"
+      "Bash(npm:*)",
+      "Bash(npx eslint:*)"
     ]
   }
 }
