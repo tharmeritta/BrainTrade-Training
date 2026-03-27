@@ -210,6 +210,7 @@ export const ChatView = memo(({
           <AnimatePresence>
             {error && (
               <motion.div
+                key="error-banner"
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}

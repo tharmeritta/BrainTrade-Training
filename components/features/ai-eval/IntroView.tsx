@@ -18,6 +18,9 @@ interface IntroViewProps {
 
 export const IntroView = memo(({ onContinue, guideline, agentName, loading, criteriaKeys }: IntroViewProps) => {
   const t = useTranslations('aiEval');
+  // t.raw() can throw for unknown keys (e.g. custom criteria added via admin panel).
+  // Fall back to the raw key name so the component never crashes.
+  const tc = (key: string) => { try { return t(`criteria.${key}` as any); } catch { return key; } };
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
@@ -71,7 +74,7 @@ export const IntroView = memo(({ onContinue, guideline, agentName, loading, crit
                   key={key}
                   className="bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 text-foreground text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm"
                 >
-                  {t.raw(`criteria.${key}`) ? t(`criteria.${key}` as any) : key}
+                  {tc(key)}
                 </span>
               ))}
             </div>

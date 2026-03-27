@@ -27,6 +27,9 @@ export const CoachingCard = memo(({ coaching, autoExpand, onUseScript, criteriaK
   const { score, criteria, strengths, improvements, coachingScript, coachingTip } = coaching;
   const style = SCORE_STYLE(score);
   const t = useTranslations('aiEval');
+  // t.raw() can throw for unknown keys (e.g. custom criteria added via admin panel).
+  // Fall back to the raw key name so the component never crashes.
+  const tc = (key: string) => { try { return t(`criteria.${key}` as any); } catch { return key; } };
 
   return (
     <div className="ml-9 mt-1.5 mb-1">
@@ -62,7 +65,7 @@ export const CoachingCard = memo(({ coaching, autoExpand, onUseScript, criteriaK
                           <div key={key}>
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-[10px] font-bold text-foreground/70">
-                                {t.raw(`criteria.${key}`) ? t(`criteria.${key}` as any) : key}
+                                {tc(key)}
                               </span>
                               <span className="text-[10px] font-black text-primary">{val}/10</span>
                             </div>

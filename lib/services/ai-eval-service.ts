@@ -198,7 +198,12 @@ export class AiEvalService {
     let raw = '';
     try {
       if (provider === 'gemini') {
-        const model = getGeminiModel();
+        const model = getGeminiModel({
+          systemInstruction: {
+            role: 'system',
+            parts: [{ text: systemPrompt }]
+          }
+        });
         if (!model) {
           console.error('[AiEvalService] Gemini Model Initialization Failed (API Key missing?)');
           throw new Error('Gemini API Missing or Invalid');
@@ -208,7 +213,6 @@ export class AiEvalService {
             role: m.role === 'assistant' ? 'model' : 'user',
             parts: [{ text: m.content }],
           })),
-          systemInstruction: systemPrompt,
           generationConfig: { responseMimeType: 'application/json', temperature: 0.7 }
         });
         const last = windowedHistory[windowedHistory.length - 1]?.content || '...';

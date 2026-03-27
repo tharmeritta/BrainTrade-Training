@@ -49,6 +49,13 @@ export default function AiEvaluation() {
 
   // ── Helpers ──
 
+  // Clear the auto-dismiss timer on unmount to avoid setState on an unmounted component
+  useEffect(() => {
+    return () => {
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+    };
+  }, []);
+
   const showError = useCallback((msg: string) => {
     setError(msg);
     if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
@@ -107,12 +114,14 @@ export default function AiEvaluation() {
         }
         if (s.status === 'passed') setPassed(true);
         if (s.status === 'failed') setFailed(true);
-        // Restore the effective IDs so sendMessage works on page reload
+        // Restore the effective IDs so sendMessage works on page reload.
+        // s.agentName is authoritative — it was written by the server when the session started.
         setEffectiveAgentId(agentId);
-        setEffectiveAgentName(s.agentName || agentName);
+        setEffectiveAgentName(s.agentName);
         setStep('chat');
-      });
-  }, [agentId, agentName]);
+      })
+      .catch(err => console.error('[AiEval] Failed to restore active session:', err));
+  }, [agentId]);
 
   // ── Auto-scroll on new messages ──
 
