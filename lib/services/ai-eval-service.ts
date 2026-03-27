@@ -216,7 +216,7 @@ export class AiEvalService {
 [EVALUATION RULES]
 - ประเมินพนักงานขายชื่อ: ${session.agentName}
 - เกณฑ์การผ่าน: ${scenario.passThreshold}/10
-- Criteria ที่ต้องประเมิน: ${scenario.requiredCriteria.join(', ')}
+- Criteria ที่ต้องประเมิน: ${(scenario.requiredCriteria || ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness']).join(', ')}
 - ${scenario.evaluatorInstructions || ''}
 
 [DECISION LOGIC - Intent]
@@ -232,7 +232,7 @@ export class AiEvalService {
   "objectiveState": "ความคืบหน้าของวัตถุประสงค์ลูกค้า",
   "intent": "continue | buy | hang_up",
   "score": (คะแนนรวม 1-10),
-  "criteria": { ${scenario.requiredCriteria.map(c => `"${c}": 1-10`).join(', ')} },
+  "criteria": { ${(scenario.requiredCriteria || ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness']).map(c => `"${c}": 1-10`).join(', ')} },
   "strengths": "จุดเด่นของเซลล์ในรอบนี้",
   "improvements": "สิ่งที่ควรปรับปรุง",
   "coachingScript": "ประโยคตัวอย่างที่เซลล์ควรพูด (Actionable)",

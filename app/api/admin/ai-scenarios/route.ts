@@ -47,7 +47,9 @@ export async function POST(req: NextRequest) {
           isActive: item.isActive ?? true,
           difficulty: item.difficulty || 'beginner',
           maxTurns: item.maxTurns || 12,
-          passThreshold: item.passThreshold || 7
+          passThreshold: item.passThreshold || 7,
+          requiredCriteria: item.requiredCriteria?.length ? item.requiredCriteria : ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
+          description: item.description || item.customerPersona || '',
         };
         await fsSet(COLLECTION, id, scenario);
         results.push(scenario);
@@ -62,7 +64,9 @@ export async function POST(req: NextRequest) {
       id,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      isActive: body.isActive ?? true
+      isActive: body.isActive ?? true,
+      requiredCriteria: body.requiredCriteria?.length ? body.requiredCriteria : ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
+      description: body.description || body.customerPersona || '',
     };
 
     await fsSet(COLLECTION, id, scenario);
