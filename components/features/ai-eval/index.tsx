@@ -75,6 +75,9 @@ export default function AiEvaluation() {
       setAgentId(session.id);
       setAgentName(session.name);
       fetchConfig(session.id);
+    } else {
+      // For staff or first-time users, still fetch scenarios
+      fetchConfig(null);
     }
   }, [fetchConfig]);
 
@@ -111,20 +114,33 @@ export default function AiEvaluation() {
   // ── Session handlers ──
 
   const startSession = useCallback(async (scenarioId: string) => {
-    if (!agentId) return;
+    // If no agentId (e.g. Staff member), use a mockup ID so they can still test it
+    const effectiveId = agentId || 'staff-test-user';
+    const effectiveName = agentName || 'Staff Tester';
+    
     setLoading(true);
     setError(null);
     try {
       const res = await fetch('/api/ai-eval', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agentId, agentName, isStart: true, scenarioId }),
+        body: JSON.stringify({ agentId: effectiveId, agentName: effectiveName, isStart: true, scenarioId }),
       });
-      if (!res.ok) throw new Error('Start failed');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.details || errData.error || 'Start failed');
+      }
       const data = await res.json();
       setMessages(data.messages || []);
       setCustomerProfile(data.customerProfile || null);
-      setCoaching(new Map());
+      
+      // Initialize coaching map with the first turn's data
+      const newCoaching = new Map<number, CoachingData>();
+      if (data.coaching && data.messages?.length > 0) {
+        newCoaching.set(data.messages.length - 1, data.coaching);
+      }
+      setCoaching(newCoaching);
+      
       setPassed(false);
       setFailed(false);
       setStep('chat');
@@ -205,6 +221,9 @@ export default function AiEvaluation() {
             onSelect={startSession}
             onBack={() => setStep('intro')}
             agentName={agentName}
+            error={error}
+            loading={loading}
+            onClearError={() => setError(null)}
           />
         </motion.div>
       )}

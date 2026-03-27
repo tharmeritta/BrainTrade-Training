@@ -1,6 +1,7 @@
 import { getOpenAI } from '@/lib/openai';
 import { getGeminiModel } from '@/lib/gemini';
 import { fsGet, fsSet, fsDelete, fsAdd } from '@/lib/firestore-db';
+import crypto from 'crypto';
 import { 
   AiEvalScenario, 
   AiEvalSession, 

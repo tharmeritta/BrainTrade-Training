@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft, Trophy, Target, Lock, CheckCircle2,
   Play, Smile, RotateCcw, ShieldCheck,
@@ -25,10 +25,14 @@ interface ScenarioPickerProps {
   onSelect: (id: string) => void;
   onBack: () => void;
   agentName: string | null;
+  error?: string | null;
+  loading?: boolean;
+  onClearError?: () => void;
 }
 
 export const ScenarioPicker = memo(({
   scenarios, completedLevels, passedScenarios, unlockMode, onSelect, onBack, agentName,
+  error, loading, onClearError,
 }: ScenarioPickerProps) => {
   const t = useTranslations('aiEval');
 
@@ -54,12 +58,35 @@ export const ScenarioPicker = memo(({
 
   return (
     <div className="max-w-5xl mx-auto py-8 px-4 space-y-10">
+      {/* Error Message */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-2xl p-4 flex items-center justify-between gap-4 text-rose-700 dark:text-rose-400 text-sm font-bold"
+          >
+            <div className="flex items-center gap-3">
+              <Lock size={18} className="shrink-0" />
+              <span>{error}</span>
+            </div>
+            {onClearError && (
+              <button onClick={onClearError} className="p-1 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-lg transition-colors">
+                <ChevronLeft size={18} className="rotate-90" />
+              </button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-4 flex-1">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary transition-all group"
+            disabled={loading}
+            className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary transition-all group disabled:opacity-50"
           >
             <div className="p-1.5 rounded-lg group-hover:bg-primary/10 transition-colors">
               <ChevronLeft size={18} />
@@ -74,7 +101,7 @@ export const ScenarioPicker = memo(({
               Complete each level to unlock more challenging scenarios.
             </p>
           </div>
-
+          
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-xl border border-primary/10 shadow-sm">
               {unlockMode === 'flexible' ? (
@@ -99,7 +126,7 @@ export const ScenarioPicker = memo(({
         </div>
 
         <div className="flex flex-col items-end gap-4 shrink-0">
-          <ActiveAgentUI agentName={agentName} />
+          <ActiveAgentUI agentName={agentName || 'Guest Mode'} />
           <div className="w-48 space-y-1.5">
             <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
               <span>Overall Progress</span>
@@ -117,7 +144,7 @@ export const ScenarioPicker = memo(({
       </div>
 
       {/* Levels */}
-      <div className="space-y-12 relative">
+      <div className={`space-y-12 relative ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
         <div className="absolute left-8 top-10 bottom-10 w-0.5 bg-gradient-to-b from-primary/20 via-primary/5 to-transparent hidden md:block" />
 
         {levels.map((levelGroup) => {
@@ -173,14 +200,14 @@ export const ScenarioPicker = memo(({
                       whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
                       transition={{ delay: idx * 0.1 }}
-                      onClick={() => !isLocked && onSelect(s.id)}
+                      onClick={() => !isLocked && !loading && onSelect(s.id)}
                       className={`group relative bg-card border-2 rounded-[2rem] p-6 transition-all duration-500 ${
                         isLocked
                           ? 'opacity-60 grayscale cursor-not-allowed border-transparent bg-secondary/30'
                           : isCompleted
                           ? 'cursor-pointer border-emerald-500/20 hover:border-emerald-500/40 bg-emerald-500/[0.02]'
                           : 'cursor-pointer border-black/5 dark:border-white/10 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5'
-                      }`}
+                      } ${loading ? 'cursor-wait' : ''}`}
                     >
                       {isCompleted && (
                         <div className="absolute top-4 right-4 bg-emerald-500 text-white p-1.5 rounded-full shadow-lg shadow-emerald-500/30 z-20">
