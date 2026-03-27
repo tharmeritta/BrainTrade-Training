@@ -4,9 +4,12 @@ export function getGeminiModel(params?: Partial<ModelParams>): GenerativeModel |
   if (!process.env.GEMINI_API_KEY) {
     return null;
   }
+  
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  
+  // Using v1beta as requested for Gemini 2.5 Flash
   return genAI.getGenerativeModel({ 
-    model: 'gemini-1.5-flash', 
+    model: 'gemini-2.5-flash', 
     ...params 
-  });
+  }, { apiVersion: 'v1beta' });
 }
