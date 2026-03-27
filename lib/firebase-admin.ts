@@ -13,7 +13,8 @@ function cleanValue(val: string | undefined): string {
   while ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
     s = s.substring(1, s.length - 1).trim();
   }
-  return s;
+  // Handle literal escaped newlines (common in CI/Cloud secrets)
+  return s.replace(/\\n/g, '\n');
 }
 
 const cleanId = (s: string) => s.replace(/[^a-zA-Z0-9-]/g, '').trim();

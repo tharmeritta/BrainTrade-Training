@@ -68,12 +68,20 @@ export class AiEvalService {
     agentName?: string,
     scenarioId?: string
   ): Promise<{ session: AiEvalSession; turn: AiEvalTurnResponse }> {
+    console.log(`[AiEvalService] processTurn - agentId: ${agentId}, isStart: ${isStart}, scenarioId: ${scenarioId}`);
 
     // a. Load current active session
-    let session = await fsGet<AiEvalSession>(this.COLLECTION_SESSIONS, agentId);
+    let session: AiEvalSession | null = null;
+    try {
+      session = await fsGet<AiEvalSession>(this.COLLECTION_SESSIONS, agentId);
+    } catch (err) {
+      console.error('[AiEvalService] Failed to load session from Firestore:', err);
+      // Don't throw yet, we might be starting fresh
+    }
 
     // When starting fresh, always discard any existing session so we get a clean slate
     if (isStart && session) {
+      console.log('[AiEvalService] Discarding existing session for fresh start');
       await fsDelete(this.COLLECTION_SESSIONS, agentId);
       session = null;
     }
@@ -83,11 +91,23 @@ export class AiEvalService {
       ? scenarioId
       : (session?.scenarioId || 'default');
 
-    const scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, actualScenarioId)
-                     || await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, 'default')
-                     || await this.seedDefaultScenario();
+    console.log(`[AiEvalService] Using scenarioId: ${actualScenarioId}`);
+
+    let scenario: AiEvalScenario | null = null;
+    try {
+      scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, actualScenarioId)
+                 || await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, 'default');
+    } catch (err) {
+      console.error('[AiEvalService] Firestore error fetching scenario:', err);
+    }
+
+    if (!scenario) {
+      console.log('[AiEvalService] Scenario not found, seeding default');
+      scenario = await this.seedDefaultScenario();
+    }
 
     if (!session) {
+      console.log('[AiEvalService] Initializing new session');
       session = await this.startSession(agentId, agentName || 'Agent', actualScenarioId);
     }
 
@@ -102,7 +122,9 @@ export class AiEvalService {
     }
 
     // d. Build LLM Orchestration
+    console.log('[AiEvalService] Calling AI...');
     const turn = await this.callAI(session, scenario, isStart);
+    console.log('[AiEvalService] AI returned dialogue:', turn.dialogue.substring(0, 30) + '...');
     
     // e. Update Session State
     session.messages.push({
@@ -116,18 +138,24 @@ export class AiEvalService {
 
     // Check Win/Fail Conditions
     if (turn.intent === 'buy' || (turn.score >= scenario.passThreshold && session.turnCount >= (scenario.minTurnsToWin ?? 5))) {
+      console.log('[AiEvalService] Status: PASSED');
       session.status = 'passed';
       await this.logCompletion(session, true);
     } else if (turn.intent === 'hang_up' || session.turnCount >= scenario.maxTurns) {
+      console.log('[AiEvalService] Status: FAILED');
       session.status = 'failed';
       await this.logCompletion(session, false);
     }
 
     // f. Save/Clean Session
-    if (session.status === 'active') {
-      await fsSet(this.COLLECTION_SESSIONS, agentId, session);
-    } else {
-      await fsDelete(this.COLLECTION_SESSIONS, agentId);
+    try {
+      if (session.status === 'active') {
+        await fsSet(this.COLLECTION_SESSIONS, agentId, session);
+      } else {
+        await fsDelete(this.COLLECTION_SESSIONS, agentId);
+      }
+    } catch (err) {
+      console.error('[AiEvalService] Failed to save/delete session in Firestore:', err);
     }
 
     return { session, turn };
@@ -144,9 +172,16 @@ export class AiEvalService {
   ): Promise<AiEvalTurnResponse> {
     
     // Fetch global config to check provider override
-    const config = await fsGet<any>('module_config', 'ai_eval');
+    let config: any = null;
+    try {
+      config = await fsGet<any>('module_config', 'ai_eval');
+    } catch (err) {
+      console.warn('[AiEvalService] Failed to fetch module_config, using auto provider');
+    }
+
     const providerSetting = config?.provider || 'auto';
     const provider = providerSetting === 'auto' ? this.determineProvider(session.messages, scenario) : providerSetting;
+    console.log(`[AiEvalService] LLM Provider: ${provider}`);
     
     const systemPrompt = this.buildSystemPrompt(session, scenario, isStart);
     
@@ -159,39 +194,51 @@ export class AiEvalService {
       windowedHistory.push({ role: 'user', content: '[ลูกค้ารับสาย]' });
     }
 
-    let raw: string;
-    if (provider === 'gemini') {
-      const model = getGeminiModel();
-      if (!model) throw new Error('Gemini API Missing');
-      const chat = model.startChat({
-        history: windowedHistory.slice(0, -1).map(m => ({
-          role: m.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: m.content }],
-        })),
-        systemInstruction: systemPrompt,
-        generationConfig: { responseMimeType: 'application/json', temperature: 0.7 }
-      });
-      const last = windowedHistory[windowedHistory.length - 1]?.content || '...';
-      const res = await chat.sendMessage(last);
-      raw = res.response.text();
-    } else {
-      const openai = getOpenAI();
-      if (!openai) throw new Error('OpenAI API Missing');
-      const res = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'system', content: systemPrompt }, ...windowedHistory],
-        response_format: { type: 'json_object' },
-        temperature: 0.7
-      });
-      raw = res.choices[0].message.content || '{}';
+    let raw = '';
+    try {
+      if (provider === 'gemini') {
+        const model = getGeminiModel();
+        if (!model) {
+          console.error('[AiEvalService] Gemini Model Initialization Failed (API Key missing?)');
+          throw new Error('Gemini API Missing or Invalid');
+        }
+        const chat = model.startChat({
+          history: windowedHistory.slice(0, -1).map(m => ({
+            role: m.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: m.content }],
+          })),
+          systemInstruction: systemPrompt,
+          generationConfig: { responseMimeType: 'application/json', temperature: 0.7 }
+        });
+        const last = windowedHistory[windowedHistory.length - 1]?.content || '...';
+        const res = await chat.sendMessage(last);
+        raw = res.response.text();
+      } else {
+        const openai = getOpenAI();
+        if (!openai) {
+          console.error('[AiEvalService] OpenAI Initialization Failed (API Key missing?)');
+          throw new Error('OpenAI API Missing or Invalid');
+        }
+        const res = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'system', content: systemPrompt }, ...windowedHistory],
+          response_format: { type: 'json_object' },
+          temperature: 0.7
+        });
+        raw = res.choices[0].message.content || '{}';
+      }
+    } catch (err: any) {
+      console.error('[AiEvalService] LLM API Call Error:', err);
+      throw new Error(`AI Provider Error: ${err.message}`);
     }
 
     // Parse and Validate with Zod
     try {
-      const parsed = JSON.parse(this.cleanJson(raw));
+      const cleaned = this.cleanJson(raw);
+      const parsed = JSON.parse(cleaned);
       return AiEvalTurnResponseSchema.parse(parsed);
     } catch (err) {
-      console.error('AI Response Validation Failed:', err, raw);
+      console.error('[AiEvalService] AI Response Validation/Parsing Failed:', err, '\nRaw Output:', raw);
       // Fallback recovery object
       return {
         dialogue: "ขอโทษทีครับ พอดีสัญญาณไม่ค่อยดี คุณว่ายังไงนะ?",
