@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { ActiveAgentUI } from '@/components/ui/ActiveAgentUI';
+import { StepProgress } from './StepProgress';
 import type { EvalScenario } from './types';
 
 const DIFFICULTY_MAP: Record<string, number> = {
@@ -27,12 +28,13 @@ interface ScenarioPickerProps {
   agentName: string | null;
   error?: string | null;
   loading?: boolean;
+  configLoading?: boolean;
   onClearError?: () => void;
 }
 
 export const ScenarioPicker = memo(({
   scenarios, completedLevels, passedScenarios, unlockMode, onSelect, onBack, agentName,
-  error, loading, onClearError,
+  error, loading, configLoading, onClearError,
 }: ScenarioPickerProps) => {
   const t = useTranslations('aiEval');
 
@@ -126,7 +128,10 @@ export const ScenarioPicker = memo(({
         </div>
 
         <div className="flex flex-col items-end gap-4 shrink-0">
-          <ActiveAgentUI agentName={agentName || 'Guest Mode'} />
+          <div className="flex items-center gap-3">
+            <StepProgress current={2} />
+            <ActiveAgentUI agentName={agentName || 'Guest Mode'} />
+          </div>
           <div className="w-48 space-y-1.5">
             <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
               <span>Overall Progress</span>
@@ -149,7 +154,8 @@ export const ScenarioPicker = memo(({
 
         {levels.map((levelGroup) => {
           const prevLevelExists  = levels.some(l => l.level === levelGroup.level - 1);
-          const isLevelLocked    = levelGroup.level > 1 && prevLevelExists && !completedLevels.includes(levelGroup.level - 1);
+          // Don't evaluate lock state until config (completedLevels) has loaded to prevent flash
+          const isLevelLocked    = !configLoading && levelGroup.level > 1 && prevLevelExists && !completedLevels.includes(levelGroup.level - 1);
           const isLevelPassed    = completedLevels.includes(levelGroup.level);
 
           return (

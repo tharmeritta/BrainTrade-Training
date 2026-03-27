@@ -80,6 +80,7 @@ export interface AiEvalSession {
     name: string;
     occupation: string;
     age: number;
+    mood?: string;
     objective: string;
   };
   

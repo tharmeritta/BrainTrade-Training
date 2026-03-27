@@ -25,8 +25,12 @@ export default function AiEvaluation() {
   const [unlockMode,      setUnlockMode]      = useState<'sequential' | 'flexible'>('sequential');
 
   // ── Agent identity ──
-  const [agentId,   setAgentId]   = useState<string | null>(null);
-  const [agentName, setAgentName] = useState<string | null>(null);
+  const [agentId,            setAgentId]            = useState<string | null>(null);
+  const [agentName,          setAgentName]          = useState<string | null>(null);
+  // effectiveAgentId/Name track the actual ID used for the active session —
+  // may differ from agentId when a staff user tests without a real agent session.
+  const [effectiveAgentId,   setEffectiveAgentId]   = useState<string | null>(null);
+  const [effectiveAgentName, setEffectiveAgentName] = useState<string | null>(null);
 
   // ── Chat session ──
   const [messages,         setMessages]         = useState<PitchMessage[]>([]);
@@ -34,6 +38,7 @@ export default function AiEvaluation() {
   const [customerProfile,  setCustomerProfile]  = useState<CustomerProfile | null>(null);
   const [input,            setInput]            = useState('');
   const [loading,          setLoading]          = useState(false);
+  const [configLoading,    setConfigLoading]    = useState(false);
   const [passed,           setPassed]           = useState(false);
   const [failed,           setFailed]           = useState(false);
   const [error,            setError]            = useState<string | null>(null);
@@ -51,6 +56,7 @@ export default function AiEvaluation() {
   }, []);
 
   const fetchConfig = useCallback(async (id: string | null) => {
+    setConfigLoading(true);
     try {
       const url = id ? `/api/ai-eval/config?agentId=${id}` : '/api/ai-eval/config';
       const res = await fetch(url, { cache: 'no-store' });
@@ -64,6 +70,8 @@ export default function AiEvaluation() {
       if (data.unlockMode)      setUnlockMode(data.unlockMode);
     } catch (err) {
       console.error('Failed to fetch AI Eval Config', err);
+    } finally {
+      setConfigLoading(false);
     }
   }, []);
 
@@ -99,9 +107,12 @@ export default function AiEvaluation() {
         }
         if (s.status === 'passed') setPassed(true);
         if (s.status === 'failed') setFailed(true);
+        // Restore the effective IDs so sendMessage works on page reload
+        setEffectiveAgentId(agentId);
+        setEffectiveAgentName(s.agentName || agentName);
         setStep('chat');
       });
-  }, [agentId]);
+  }, [agentId, agentName]);
 
   // ── Auto-scroll on new messages ──
 
@@ -117,7 +128,10 @@ export default function AiEvaluation() {
     // If no agentId (e.g. Staff member), use a mockup ID so they can still test it
     const effectiveId = agentId || 'staff-test-user';
     const effectiveName = agentName || 'Staff Tester';
-    
+    // Persist effective identity so sendMessage and handleReset can use them
+    setEffectiveAgentId(effectiveId);
+    setEffectiveAgentName(effectiveName);
+
     setLoading(true);
     setError(null);
     try {
@@ -152,7 +166,7 @@ export default function AiEvaluation() {
   }, [agentId, agentName, showError]);
 
   const sendMessage = useCallback(async () => {
-    if (!input.trim() || !agentId || loading || passed || failed) return;
+    if (!input.trim() || !effectiveAgentId || loading || passed || failed) return;
     const userMsgContent = input;
     setInput('');
     setLoading(true);
@@ -161,7 +175,7 @@ export default function AiEvaluation() {
       const res = await fetch('/api/ai-eval', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agentId, agentName, message: userMsgContent }),
+        body: JSON.stringify({ agentId: effectiveAgentId, agentName: effectiveAgentName, message: userMsgContent }),
       });
       if (!res.ok) throw new Error('Connection failure');
       const data = await res.json();
@@ -174,6 +188,7 @@ export default function AiEvaluation() {
           return next;
         });
       }
+      // Use real agentId for progress fetch (staff progress is not tracked)
       if (data.passed) { setPassed(true); fetchConfig(agentId); }
       if (data.failed) setFailed(true);
     } catch (err: any) {
@@ -181,7 +196,7 @@ export default function AiEvaluation() {
     } finally {
       setLoading(false);
     }
-  }, [input, agentId, agentName, loading, passed, failed, showError, fetchConfig]);
+  }, [input, effectiveAgentId, effectiveAgentName, loading, passed, failed, showError, fetchConfig, agentId]);
 
   const handleUseScript = useCallback((text: string) => {
     setInput(text);
@@ -190,10 +205,12 @@ export default function AiEvaluation() {
 
   const handleReset = useCallback((clearHistory: boolean) => {
     setStep('scenarios');
-    if (clearHistory && agentId) {
-      fetch(`/api/ai-eval/active?agentId=${agentId}`, { method: 'DELETE' });
+    if (clearHistory && effectiveAgentId) {
+      fetch(`/api/ai-eval/active?agentId=${effectiveAgentId}`, { method: 'DELETE' });
     }
-  }, [agentId]);
+    setEffectiveAgentId(null);
+    setEffectiveAgentName(null);
+  }, [effectiveAgentId]);
 
   // ── Render ──
 
@@ -223,6 +240,7 @@ export default function AiEvaluation() {
             agentName={agentName}
             error={error}
             loading={loading}
+            configLoading={configLoading}
             onClearError={() => setError(null)}
           />
         </motion.div>

@@ -134,6 +134,7 @@ export class AiEvalService {
     });
     session.coaching[session.messages.length - 1] = turn;
     session.currentMood = turn.mood;
+    session.customerProfile.mood = turn.mood;  // keep customerProfile in sync for ChatView emoji
     session.lastUpdate = new Date().toISOString();
 
     // Check Win/Fail Conditions
