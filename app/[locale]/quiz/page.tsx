@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
+import { AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Settings, CreditCard, ChevronRight, ClipboardList,
   Lock, GraduationCap, Briefcase, CheckCircle2, ArrowDown,
@@ -199,9 +200,9 @@ export default function QuizIndexPage() {
   const locale   = pathname.split('/')[1] ?? 'th';
   const lang     = (locale === 'en' ? 'en' : 'th') as Language;
 
-  const [passedModules, setPassedModules] = useState<Set<string>>(new Set());
-  const [quizConfigs,   setQuizConfigs]   = useState<Record<string, QuizDefinition>>(MODULE_QUIZ_MAP);
-  const [isLocked,      setIsLocked]      = useState(false);
+  const [passedModules,    setPassedModules]    = useState<Set<string>>(new Set());
+  const [quizConfigs,      setQuizConfigs]      = useState<Record<string, QuizDefinition>>(MODULE_QUIZ_MAP);
+  const [showLockedModal,  setShowLockedModal]  = useState(false);
 
   useEffect(() => {
     fetch('/api/quiz/config')
@@ -221,16 +222,12 @@ export default function QuizIndexPage() {
     const session = getAgentSession();
     if (!session) return;
 
-    // 1. Check learned modules to see if entire quiz module is locked
+    // 1. Check learned modules — show prompt if none completed yet
     fetch(`/api/agent/progress?agentId=${encodeURIComponent(session.id)}`)
       .then(r => r.json())
       .then(d => {
         const learned = d.stats?.learnedModules ?? [];
-        if (learned.length === 0) {
-          setIsLocked(true);
-          // Redirect back to dashboard after a short delay if locked
-          setTimeout(() => router.replace(`/${locale}/dashboard`), 2000);
-        }
+        if (learned.length === 0) setShowLockedModal(true);
       })
       .catch(() => {});
 
@@ -240,21 +237,6 @@ export default function QuizIndexPage() {
       .then(({ passed }: { passed: string[] }) => setPassedModules(new Set(passed)))
       .catch(() => {});
   }, [locale, router]);
-
-  if (isLocked) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
-          <Lock size={32} />
-        </div>
-        <h2 className="text-xl font-bold">Quiz Module Locked</h2>
-        <p className="text-muted-foreground text-center max-w-xs">
-          Please complete at least one learning module before starting the quiz.
-        </p>
-        <p className="text-xs text-muted-foreground animate-pulse mt-4">Redirecting to dashboard...</p>
-      </div>
-    );
-  }
 
   const allModules      = [...SECTION_1, ...SECTION_2];
   const completedCount  = allModules.filter(m => passedModules.has(m.id)).length;
@@ -362,6 +344,53 @@ export default function QuizIndexPage() {
           })}
         </div>
       </motion.div>
+
+      {/* ── Learn-first prompt modal ─────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showLockedModal && (
+          <motion.div
+            key="locked-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+            onClick={() => setShowLockedModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.94, opacity: 0, y: 12 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.94, opacity: 0, y: 12 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+              className="bg-card border border-border rounded-3xl p-7 w-full max-w-sm shadow-2xl shadow-black/20 text-center"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-500/15 flex items-center justify-center mx-auto mb-4">
+                <BookOpen size={26} className="text-amber-600 dark:text-amber-400" />
+              </div>
+              <h2 className="text-lg font-black text-foreground mb-2 tracking-tight">
+                Complete a lesson first
+              </h2>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+                You need to finish at least one learning module before taking a quiz. Head to the <strong className="text-foreground">Learn</strong> section to get started.
+              </p>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => router.push(`/${locale}/learn`)}
+                  className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-black hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95"
+                >
+                  Go to Learn
+                </button>
+                <button
+                  onClick={() => setShowLockedModal(false)}
+                  className="w-full py-2.5 rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                >
+                  Maybe Later
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

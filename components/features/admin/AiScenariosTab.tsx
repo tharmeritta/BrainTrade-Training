@@ -4,8 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Edit2, Trash2, Save, Zap,
-  Target, MessageSquare, Activity, Shield, FileUp, Settings,
-  RotateCcw, ChevronDown, X, Users, TrendingUp, Lock, Unlock
+  Target, Shield, FileUp, Settings,
+  RotateCcw, ChevronDown, X, TrendingUp, Lock, Unlock, CheckSquare, Square
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { AiEvalScenario } from '@/types/ai-eval';
@@ -163,12 +163,16 @@ function ScenarioForm({
 function ScenarioCard({
   s,
   readOnly,
+  selected,
+  onToggleSelect,
   onEdit,
   onDelete,
   onToggleActive,
 }: {
   s: AiEvalScenario;
   readOnly?: boolean;
+  selected?: boolean;
+  onToggleSelect?: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onToggleActive: () => void;
@@ -181,9 +185,23 @@ function ScenarioCard({
       initial={{ opacity: 0, x: -4 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -4 }}
-      className={`group relative bg-card border border-border/50 border-l-4 ${diff.border} rounded-xl hover:border-border/80 hover:shadow-sm transition-all`}
+      className={`group relative bg-card border border-l-4 ${diff.border} rounded-xl hover:shadow-sm transition-all ${
+        selected ? 'border-primary/40 bg-primary/[0.02]' : 'border-border/50 hover:border-border/80'
+      }`}
     >
-      <div className="flex items-center gap-4 px-4 py-3.5">
+      <div className="flex items-center gap-3 px-4 py-3.5">
+        {/* Checkbox */}
+        {!readOnly && (
+          <button
+            onClick={onToggleSelect}
+            className="shrink-0 text-muted-foreground/40 hover:text-primary transition-colors"
+          >
+            {selected
+              ? <CheckSquare size={16} className="text-primary" />
+              : <Square size={16} className="group-hover:text-muted-foreground/70" />}
+          </button>
+        )}
+
         {/* Icon */}
         <div className={`p-2 rounded-lg shrink-0 ${diff.bg}`}>
           <Target size={15} className={diff.text} />
@@ -247,6 +265,9 @@ function DifficultySection({
   difficulty,
   scenarios,
   readOnly,
+  selectedIds,
+  onToggleSelect,
+  onSelectAll,
   onEdit,
   onDelete,
   onToggleActive,
@@ -254,6 +275,9 @@ function DifficultySection({
   difficulty: keyof typeof DIFF;
   scenarios: AiEvalScenario[];
   readOnly?: boolean;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string) => void;
+  onSelectAll: (ids: string[], select: boolean) => void;
   onEdit: (s: AiEvalScenario) => void;
   onDelete: (id: string) => void;
   onToggleActive: (s: AiEvalScenario) => void;
@@ -261,22 +285,40 @@ function DifficultySection({
   const [collapsed, setCollapsed] = useState(false);
   const diff = DIFF[difficulty];
   const activeCount = scenarios.filter(s => s.isActive).length;
+  const ids = scenarios.map(s => s.id);
+  const allSelected = ids.length > 0 && ids.every(id => selectedIds.has(id));
+  const someSelected = ids.some(id => selectedIds.has(id));
 
   return (
     <div>
       {/* Section header */}
-      <button
-        onClick={() => setCollapsed(c => !c)}
-        className="w-full flex items-center gap-3 mb-2 group/header"
-      >
-        <div className={`w-2 h-2 rounded-full ${diff.bg} border-2 ${diff.border.replace('border-l-', 'border-')}`} />
-        <span className={`text-xs font-black uppercase tracking-widest ${diff.text}`}>{diff.label}</span>
-        <span className="text-[10px] font-bold text-muted-foreground">
-          {activeCount}/{scenarios.length} active
-        </span>
-        <div className="flex-1 h-px bg-border/40" />
-        <ChevronDown size={14} className={`text-muted-foreground/50 transition-transform ${collapsed ? '-rotate-90' : ''}`} />
-      </button>
+      <div className="flex items-center gap-3 mb-2">
+        {!readOnly && (
+          <button
+            onClick={() => onSelectAll(ids, !allSelected)}
+            className="shrink-0 text-muted-foreground/40 hover:text-primary transition-colors"
+            title={allSelected ? 'Deselect all in level' : 'Select all in level'}
+          >
+            {allSelected
+              ? <CheckSquare size={14} className="text-primary" />
+              : someSelected
+              ? <CheckSquare size={14} className="text-primary/50" />
+              : <Square size={14} />}
+          </button>
+        )}
+        <button
+          onClick={() => setCollapsed(c => !c)}
+          className="flex-1 flex items-center gap-3 group/header"
+        >
+          <div className={`w-2 h-2 rounded-full ${diff.bg} border-2 ${diff.border.replace('border-l-', 'border-')}`} />
+          <span className={`text-xs font-black uppercase tracking-widest ${diff.text}`}>{diff.label}</span>
+          <span className="text-[10px] font-bold text-muted-foreground">
+            {activeCount}/{scenarios.length} active
+          </span>
+          <div className="flex-1 h-px bg-border/40" />
+          <ChevronDown size={14} className={`text-muted-foreground/50 transition-transform ${collapsed ? '-rotate-90' : ''}`} />
+        </button>
+      </div>
 
       <AnimatePresence initial={false}>
         {!collapsed && (
@@ -293,6 +335,8 @@ function DifficultySection({
                   key={s.id}
                   s={s}
                   readOnly={readOnly}
+                  selected={selectedIds.has(s.id)}
+                  onToggleSelect={() => onToggleSelect(s.id)}
                   onEdit={() => onEdit(s)}
                   onDelete={() => onDelete(s.id)}
                   onToggleActive={() => onToggleActive(s)}
@@ -313,6 +357,8 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<AiEvalScenario>>({});
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [globalConfig, setGlobalConfig] = useState<{ unlockMode: 'sequential' | 'flexible' }>({ unlockMode: 'sequential' });
@@ -418,6 +464,43 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
       body: JSON.stringify({ id: s.id, data: { isActive: !s.isActive } }),
     });
     if (res.ok) fetchScenarios();
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const selectAll = (ids: string[], select: boolean) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      ids.forEach(id => select ? next.add(id) : next.delete(id));
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const handleBulkDelete = async () => {
+    const count = selectedIds.size;
+    if (!confirm(`Delete ${count} scenario${count > 1 ? 's' : ''}? This cannot be undone.`)) return;
+    setBulkDeleting(true);
+    try {
+      await Promise.all(
+        Array.from(selectedIds).map(id =>
+          fetch(`/api/admin/ai-scenarios?id=${id}`, { method: 'DELETE' })
+        )
+      );
+      clearSelection();
+      fetchScenarios();
+    } catch {
+      alert('Some deletions failed. Please try again.');
+    } finally {
+      setBulkDeleting(false);
+    }
   };
 
   const handleEdit = (s: AiEvalScenario) => {
@@ -564,7 +647,6 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
           {DIFF_ORDER.map(d => {
             const list = grouped[d];
             if (list.length === 0) return null;
-            // Filter out the one currently being edited (shown in form above)
             const visible = list.filter(s => s.id !== editingId);
             return (
               <DifficultySection
@@ -572,6 +654,9 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
                 difficulty={d}
                 scenarios={visible}
                 readOnly={readOnly}
+                selectedIds={selectedIds}
+                onToggleSelect={toggleSelect}
+                onSelectAll={selectAll}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onToggleActive={handleToggleActive}
@@ -580,6 +665,36 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
           })}
         </div>
       )}
+
+      {/* ── Bulk action bar ── */}
+      <AnimatePresence>
+        {selectedIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-foreground text-background px-5 py-3 rounded-2xl shadow-2xl shadow-black/30"
+          >
+            <span className="text-sm font-black">{selectedIds.size} selected</span>
+            <div className="w-px h-4 bg-background/20" />
+            <button
+              onClick={clearSelection}
+              className="text-xs font-bold text-background/60 hover:text-background transition-colors"
+            >
+              Clear
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+              className="flex items-center gap-1.5 bg-rose-500 text-white text-xs font-black px-3.5 py-1.5 rounded-xl hover:bg-rose-600 active:scale-95 transition-all disabled:opacity-50"
+            >
+              <Trash2 size={13} />
+              {bulkDeleting ? 'Deleting…' : `Delete ${selectedIds.size}`}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

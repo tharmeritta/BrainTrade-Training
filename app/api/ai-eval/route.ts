@@ -13,7 +13,9 @@ export async function POST(req: NextRequest) {
     const { session, turn } = await AiEvalService.processTurn(
       agentId,
       userMessageContent,
-      isStart
+      isStart,
+      agentName,
+      scenarioId
     );
 
     return NextResponse.json({

@@ -22,9 +22,10 @@ export const AiEvalScenarioSchema = z.object({
   // Pass/Fail Logic
   passThreshold: z.number().default(7),
   requiredCriteria: z.array(z.string()).default(['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness']),
-  
+
   // State Machine Transitions
   maxTurns: z.number().default(15),
+  minTurnsToWin: z.number().default(5), // Minimum turns before score-based win can trigger
   winCondition: z.string().optional(), // Text hint for when to trigger "passed"
   failCondition: z.string().optional(), // Text hint for when to "hang up"
   

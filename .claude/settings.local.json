@@ -38,7 +38,8 @@
       "Bash(firebase deploy:*)",
       "Bash(npx firebase-tools:*)",
       "Bash(npm:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(Get-ChildItem:*)"
     ]
   }
 }

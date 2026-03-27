@@ -63,23 +63,31 @@ export class AiEvalService {
   static async processTurn(
     agentId: string,
     userMessage?: string,
-    isStart: boolean = false
+    isStart: boolean = false,
+    agentName?: string,
+    scenarioId?: string
   ): Promise<{ session: AiEvalSession; turn: AiEvalTurnResponse }> {
-    
+
     // a. Load current active session
     let session = await fsGet<AiEvalSession>(this.COLLECTION_SESSIONS, agentId);
-    
-    // b. Load Scenario
-    const scenarioIdFromReq = session?.scenarioId || (isStart ? (userMessage && userMessage.length < 50 ? userMessage : 'default') : 'default');
-    // Note: If isStart is true, the 'userMessage' field might actually contain the scenarioId from the client
-    const actualScenarioId = (isStart && userMessage && !userMessage.includes(' ')) ? userMessage : scenarioIdFromReq;
 
-    const scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, actualScenarioId) 
+    // When starting fresh, always discard any existing session so we get a clean slate
+    if (isStart && session) {
+      await fsDelete(this.COLLECTION_SESSIONS, agentId);
+      session = null;
+    }
+
+    // b. Resolve scenario ID — explicit param takes priority, then existing session, then default
+    const actualScenarioId = (isStart && scenarioId)
+      ? scenarioId
+      : (session?.scenarioId || 'default');
+
+    const scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, actualScenarioId)
                      || await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, 'default')
                      || await this.seedDefaultScenario();
 
     if (!session) {
-      session = await this.startSession(agentId, 'Agent', actualScenarioId);
+      session = await this.startSession(agentId, agentName || 'Agent', actualScenarioId);
     }
 
     // c. Add user message
@@ -106,7 +114,7 @@ export class AiEvalService {
     session.lastUpdate = new Date().toISOString();
 
     // Check Win/Fail Conditions
-    if (turn.intent === 'buy' || (turn.score >= scenario.passThreshold && session.turnCount >= 5)) {
+    if (turn.intent === 'buy' || (turn.score >= scenario.passThreshold && session.turnCount >= (scenario.minTurnsToWin ?? 5))) {
       session.status = 'passed';
       await this.logCompletion(session, true);
     } else if (turn.intent === 'hang_up' || session.turnCount >= scenario.maxTurns) {
@@ -299,6 +307,7 @@ export class AiEvalService {
       passThreshold: 7,
       requiredCriteria: ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
       maxTurns: 12,
+      minTurnsToWin: 5,
       winCondition: 'เมื่อเซลล์อธิบายเรื่องโค้ชส่วนตัว 1:1 ได้อย่างชัดเจนและจริงใจ',
       failCondition: 'เมื่อเซลล์พูดจาเป็นหุ่นยนต์ หรือไม่ตอบคำถามเรื่องความปลอดภัย',
       isActive: true,
