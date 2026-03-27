@@ -1,19 +1,19 @@
 'use client';
 
-import React, { useMemo, memo, useState } from 'react';
+import React, { useMemo, memo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import {
-  CheckCircle2, XCircle, Lock, GraduationCap, ClipboardList, Mic, PlayCircle,
-  Trophy, RotateCcw, ArrowRight, LogOut, Zap, Eye, EyeOff
+  CheckCircle2, XCircle, Lock, GraduationCap, ClipboardList, Mic,
+  Trophy, RotateCcw, ArrowRight, LogOut, Zap
 } from 'lucide-react';
 
 import type { AgentStats } from '@/types';
 import { ScoreRing } from '@/components/ui/ScoreRing';
 import { EASE, TRANSITION, FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
-import { isMockupAgent } from '@/lib/agent-session';
+
 
 // ─── Constants & Types ────────────────────────────────────────────────────────
 
@@ -68,9 +68,6 @@ interface ProfileSidebarProps {
   badgeCfg: typeof BADGE[BadgeType];
   pct: number;
   derived: Record<StepId, StepState>;
-  isMockup?: boolean;
-  bypassLock?: boolean;
-  onToggleBypass?: () => void;
   onLogout: () => void;
 }
 
@@ -97,9 +94,9 @@ function deriveSteps(stats: AgentStats | null): Record<StepId, StepState> {
   const avgQ = qs.length ? Math.round(qs.reduce((a, b) => a + b, 0) / qs.length) : undefined;
 
   return {
-    learn:     { locked: false,         passed: isLearnPassed, score: stats?.quiz?.product?.bestScore },
-    quiz:      { locked: !isLearnPassed, passed: allQ,          score: avgQ },
-    'ai-eval': { locked: !anyQ,         passed: aiOk,           score: stats?.aiEval ? Math.round(stats.aiEval.avgScore) : undefined },
+    learn:     { locked: false, passed: isLearnPassed, score: stats?.quiz?.product?.bestScore },
+    quiz:      { locked: false, passed: allQ,          score: avgQ },
+    'ai-eval': { locked: false, passed: aiOk,          score: stats?.aiEval ? Math.round(stats.aiEval.avgScore) : undefined },
   };
 }
 
@@ -322,9 +319,6 @@ const ProfileSidebar = memo(({
   badgeCfg,
   pct,
   derived,
-  isMockup,
-  bypassLock,
-  onToggleBypass,
   onLogout
 }: ProfileSidebarProps) => {
   const t = useTranslations('trainingHub');
@@ -444,39 +438,6 @@ const ProfileSidebar = memo(({
       </div>
 
       <div className="mt-auto w-full pt-8 flex flex-col gap-3 items-center">
-        {isMockup && onToggleBypass && (
-          <button
-            onClick={onToggleBypass}
-            className="group relative flex items-center gap-2 px-4 py-2.5 rounded-2xl w-full justify-center border transition-all duration-300 overflow-hidden"
-            style={{ 
-              background: bypassLock ? 'rgba(96,165,250,0.12)' : 'var(--hub-locked-bg)', 
-              borderColor: bypassLock ? 'rgba(96,165,250,0.4)' : 'var(--hub-border)'
-            }}
-          >
-            {bypassLock ? (
-              <>
-                <Eye size={14} className="text-blue-500" />
-                <span className="text-[11px] font-black text-blue-500 uppercase tracking-wider">{t('unlockAll')}</span>
-              </>
-            ) : (
-              <>
-                <EyeOff size={14} className="opacity-40" />
-                <span className="text-[11px] font-black opacity-40 uppercase tracking-wider">{t('standardView')}</span>
-              </>
-            )}
-            
-            {/* Gloss effect for active state */}
-            {bypassLock && (
-              <motion.div 
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none"
-                initial={{ x: '-100%' }}
-                animate={{ x: '100%' }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-              />
-            )}
-          </button>
-        )}
-
         <button
           onClick={onLogout}
           className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-medium transition-all
@@ -534,20 +495,7 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
   const pathname  = usePathname();
   const locale    = pathname.split('/')[1] ?? 'th';
   
-  const [bypassLock, setBypassLock] = useState(false);
-  const isMockup = isMockupAgent(agentId);
-
-  const derived = useMemo(() => {
-    const base = deriveSteps(stats);
-    if (bypassLock) {
-      return {
-        learn:     { ...base.learn,     locked: false },
-        quiz:      { ...base.quiz,      locked: false },
-        'ai-eval': { ...base['ai-eval'], locked: false },
-      };
-    }
-    return base;
-  }, [stats, bypassLock]);
+  const derived = useMemo(() => deriveSteps(stats), [stats]);
 
   const hrefs: Record<StepId, string> = useMemo(() => ({
     learn:     `/${locale}/learn`,
@@ -588,9 +536,6 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
         badgeCfg={badgeCfg}
         pct={pct}
         derived={derived}
-        isMockup={isMockup}
-        bypassLock={bypassLock}
-        onToggleBypass={() => setBypassLock(!bypassLock)}
         onLogout={onLogout}
       />
 
