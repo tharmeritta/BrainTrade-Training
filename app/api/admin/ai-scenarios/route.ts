@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerUser, requireAdminOrManager } from '@/lib/session';
 import { fsGet, fsSet, fsDelete, fsGetAll } from '@/lib/firestore-db';
 import { AiEvalScenario } from '@/types/ai-eval';
-import { AiEvalService } from '@/lib/services/ai-eval-service';
 import { createApprovalRequest } from '@/lib/services/approval-service';
 
 const COLLECTION = 'aiev_scenarios';
@@ -11,14 +10,6 @@ export async function GET(req: NextRequest) {
   try {
     await requireAdminOrManager();
     const scenarios = await fsGetAll<AiEvalScenario>(COLLECTION);
-    
-    // Ensure at least the default scenario exists
-    if (scenarios.length === 0) {
-      await AiEvalService.startSession('internal', 'System', 'default');
-      const refreshed = await fsGetAll<AiEvalScenario>(COLLECTION);
-      return NextResponse.json({ scenarios: refreshed });
-    }
-
     return NextResponse.json({ scenarios });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: err.message === 'Forbidden' ? 403 : 500 });

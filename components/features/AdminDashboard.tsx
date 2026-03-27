@@ -46,7 +46,7 @@ export default function AdminDashboard({ role, uid, name, passwordChanged, inter
     isReadOnlyRole && interactiveAccessUntil && new Date(interactiveAccessUntil) > new Date()
   );
 
-  const TABS: { id: Tab; labelKey: string; icon: React.ElementType; adminOnly?: boolean; hideForTrainer?: boolean; group?: string }[] = [
+  const TABS: { id: Tab; labelKey: string; icon: React.ElementType; adminOnly?: boolean; hideForTrainer?: boolean; hideForIT?: boolean; group?: string }[] = [
     { id: 'overview',    labelKey: 'overview',       icon: LayoutDashboard,  group: 'main' },
     { id: 'agents',      labelKey: 'agents',         icon: Users,            group: 'main' },
     { id: 'training',    labelKey: 'training',       icon: GraduationCap,    group: 'main' },
@@ -54,11 +54,12 @@ export default function AdminDashboard({ role, uid, name, passwordChanged, inter
     { id: 'reports',     labelKey: 'reports',        icon: FileSpreadsheet,  hideForTrainer: true, group: 'main' },
     { id: 'approvals',   labelKey: isReadOnlyRole ? 'requestStatus' : 'approvals', icon: Clock, adminOnly: true, group: 'admin' },
     { id: 'staff',       labelKey: 'staff',          icon: ShieldCheck,      adminOnly: true, group: 'admin' },
-    { id: 'aiscenarios', labelKey: 'aiscenarios',    icon: Zap,              adminOnly: true, group: 'admin' },
-    { id: 'adjustments', labelKey: 'adjustments',    icon: Edit3,            adminOnly: true, group: 'admin' },
+    { id: 'aiscenarios', labelKey: 'aiscenarios',    icon: Zap,              adminOnly: true, hideForIT: true, group: 'admin' },
+    { id: 'adjustments', labelKey: 'adjustments',    icon: Edit3,            adminOnly: true, hideForIT: true, group: 'admin' },
   ];
 
   const visibleTabs = TABS.filter(t => {
+    if (t.hideForIT && role === 'it') return false;
     if (isReadOnlyRole) {
       // IT and Manager can see all menus but interaction is restricted
       return true;

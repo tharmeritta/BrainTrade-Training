@@ -409,7 +409,8 @@ const ScenarioPicker = memo(({ scenarios, completedLevels, passedScenarios, unlo
         <div className="absolute left-8 top-10 bottom-10 w-0.5 bg-gradient-to-b from-primary/20 via-primary/5 to-transparent hidden md:block" />
 
         {levels.map((levelGroup) => {
-          const isLevelLocked = levelGroup.level > 1 && !completedLevels.includes(levelGroup.level - 1);
+          const prevLevelExists = levels.some(l => l.level === levelGroup.level - 1);
+          const isLevelLocked = levelGroup.level > 1 && prevLevelExists && !completedLevels.includes(levelGroup.level - 1);
           const isLevelPassed = completedLevels.includes(levelGroup.level);
 
           return (
