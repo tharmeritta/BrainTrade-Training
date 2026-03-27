@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkles, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { getAgentSession } from '@/lib/agent-session';
 import { TRANSITION } from '@/lib/animations';
 import type { PitchMessage } from '@/types';
@@ -13,6 +15,7 @@ import type { EvalStep, CustomerProfile, CoachingData, EvalScenario } from './ty
 const DEFAULT_CRITERIA = ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'];
 
 export default function AiEvaluation() {
+  const t = useTranslations('aiEval');
   // ── Step / navigation ──
   const [step, setStep] = useState<EvalStep>('intro');
 
@@ -141,6 +144,7 @@ export default function AiEvaluation() {
     setEffectiveAgentId(effectiveId);
     setEffectiveAgentName(effectiveName);
 
+    setStep('loading'); // Switch to loading step immediately
     setLoading(true);
     setError(null);
     try {
@@ -169,6 +173,7 @@ export default function AiEvaluation() {
       setStep('chat');
     } catch (err: any) {
       showError(err.message);
+      setStep('scenarios'); // Go back on error
     } finally {
       setLoading(false);
     }
@@ -252,6 +257,49 @@ export default function AiEvaluation() {
             configLoading={configLoading}
             onClearError={() => setError(null)}
           />
+        </motion.div>
+      )}
+
+      {step === 'loading' && (
+        <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={TRANSITION.base}>
+          <div className="flex flex-col items-center justify-center min-h-[500px] text-center p-8">
+            <div className="relative mb-8">
+              <motion.div 
+                className="absolute inset-0 bg-primary/20 blur-3xl rounded-full"
+                animate={{ 
+                  scale: [1, 1.5, 1],
+                  opacity: [0.3, 0.6, 0.3]
+                }}
+                transition={{ duration: 3, repeat: Infinity }}
+              />
+              <div className="relative bg-card border-2 border-primary/20 p-6 rounded-3xl shadow-2xl">
+                <Loader2 className="w-12 h-12 text-primary animate-spin" />
+              </div>
+              <motion.div 
+                className="absolute -top-2 -right-2 bg-amber-500 p-2 rounded-xl shadow-lg border-2 border-background"
+                animate={{ y: [0, -4, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <Sparkles className="w-4 h-4 text-white" />
+              </motion.div>
+            </div>
+            
+            <h2 className="text-2xl font-black tracking-tight mb-3">{t('loadingTitle')}</h2>
+            <p className="text-muted-foreground max-w-xs text-sm font-medium leading-relaxed">
+              {t('loadingDesc')}
+            </p>
+            
+            <div className="mt-12 flex gap-1.5">
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  className="w-2 h-2 rounded-full bg-primary/30"
+                  animate={{ opacity: [0.3, 1, 0.3] }}
+                  transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                />
+              ))}
+            </div>
+          </div>
         </motion.div>
       )}
 

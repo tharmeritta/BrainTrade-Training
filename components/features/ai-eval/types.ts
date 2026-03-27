@@ -6,7 +6,7 @@ import type { PitchMessage } from '@/types';
 export type EvalScenario = AiEvalScenario;
 export type CoachingData = AiEvalTurnResponse;
 
-export type EvalStep = 'intro' | 'scenarios' | 'chat';
+export type EvalStep = 'intro' | 'scenarios' | 'loading' | 'chat';
 
 export interface CustomerProfile {
   name: string;

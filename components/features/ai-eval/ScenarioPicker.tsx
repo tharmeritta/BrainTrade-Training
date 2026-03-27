@@ -40,10 +40,10 @@ export const ScenarioPicker = memo(({
 
   const levels = useMemo(() => {
     const groups: Record<number, { name: string; scenarios: EvalScenario[] }> = {
-      1: { name: 'Level 1: Beginner',     scenarios: [] },
-      2: { name: 'Level 2: Intermediate', scenarios: [] },
-      3: { name: 'Level 3: Advanced',     scenarios: [] },
-      4: { name: 'Level 4: Expert',       scenarios: [] },
+      1: { name: t('levelLabel', { n: 1 }), scenarios: [] },
+      2: { name: t('levelLabel', { n: 2 }), scenarios: [] },
+      3: { name: t('levelLabel', { n: 3 }), scenarios: [] },
+      4: { name: t('levelLabel', { n: 4 }), scenarios: [] },
     };
     scenarios.forEach(s => {
       const lv = DIFFICULTY_MAP[s.difficulty] || 1;
@@ -52,7 +52,7 @@ export const ScenarioPicker = memo(({
     return Object.entries(groups)
       .filter(([, group]) => group.scenarios.length > 0)
       .map(([lv, group]) => ({ level: parseInt(lv), ...group }));
-  }, [scenarios]);
+  }, [scenarios, t]);
 
   const passedCount      = passedScenarios.length;
   const totalScenarios   = scenarios.length;
@@ -97,10 +97,9 @@ export const ScenarioPicker = memo(({
           </button>
 
           <div>
-            <h2 className="text-3xl font-black tracking-tight text-foreground mb-2">Training Roadmap</h2>
+            <h2 className="text-3xl font-black tracking-tight text-foreground mb-2">{t('roadmapTitle')}</h2>
             <p className="text-muted-foreground text-sm font-medium max-w-lg">
-              Master the art of Thai sales through progressive AI simulations.
-              Complete each level to unlock more challenging scenarios.
+              {t('roadmapDesc')}
             </p>
           </div>
           
@@ -109,19 +108,19 @@ export const ScenarioPicker = memo(({
               {unlockMode === 'flexible' ? (
                 <>
                   <RotateCcw size={14} className="text-primary" />
-                  <span className="text-[10px] font-black uppercase tracking-tight text-primary">Flexible Unlock</span>
+                  <span className="text-[10px] font-black uppercase tracking-tight text-primary">{t('flexibleUnlock')}</span>
                 </>
               ) : (
                 <>
                   <ShieldCheck size={14} className="text-primary" />
-                  <span className="text-[10px] font-black uppercase tracking-tight text-primary">Sequential Unlock</span>
+                  <span className="text-[10px] font-black uppercase tracking-tight text-primary">{t('sequentialUnlock')}</span>
                 </>
               )}
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/5 rounded-xl border border-emerald-500/10 shadow-sm">
               <Trophy size={14} className="text-emerald-500" />
               <span className="text-[10px] font-black uppercase tracking-tight text-emerald-500">
-                {passedCount}/{totalScenarios} Completed
+                {t('completedCount', { passed: passedCount, total: totalScenarios })}
               </span>
             </div>
           </div>
@@ -134,7 +133,7 @@ export const ScenarioPicker = memo(({
           </div>
           <div className="w-48 space-y-1.5">
             <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-              <span>Overall Progress</span>
+              <span>{t('overallProgress')}</span>
               <span>{Math.round(progressPercent)}%</span>
             </div>
             <div className="h-2 w-full bg-secondary/50 rounded-full overflow-hidden border border-black/5 dark:border-white/5">
@@ -181,12 +180,12 @@ export const ScenarioPicker = memo(({
                   </h3>
                   <div className="flex items-center gap-2">
                     <span className={`text-[10px] font-black uppercase tracking-widest ${isLevelLocked ? 'text-muted-foreground/60' : 'text-primary'}`}>
-                      {levelGroup.scenarios.length} Scenarios
+                      {t('scenariosCount', { count: levelGroup.scenarios.length })}
                     </span>
                     {isLevelPassed && (
                       <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-emerald-500">
                         <span className="w-1 h-1 rounded-full bg-emerald-500" />
-                        Level Completed
+                        {t('levelCompleted')}
                       </span>
                     )}
                   </div>
@@ -229,10 +228,10 @@ export const ScenarioPicker = memo(({
                             s.difficulty === 'advanced'     ? 'bg-rose-500/10 text-rose-600'       :
                                                               'bg-purple-500/10 text-purple-600'
                           }`}>
-                            {s.difficulty}
+                            {t(`difficultyLabel.${s.difficulty}`)}
                           </div>
                           <div className="text-[10px] font-black text-muted-foreground bg-secondary/50 px-2 py-1 rounded-md">
-                            Min: {s.passThreshold}/10
+                            {t('minThreshold', { score: s.passThreshold })}
                           </div>
                         </div>
 
@@ -263,7 +262,7 @@ export const ScenarioPicker = memo(({
                         {!isLocked && (
                           <div className="pt-4 mt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
                             <span className="text-[10px] font-black uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                              {isCompleted ? 'Re-train' : 'Start Simulation'}
+                              {isCompleted ? t('retrainBtn') : t('startSimBtn')}
                             </span>
                             <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-300 ${
                               isCompleted
@@ -280,7 +279,7 @@ export const ScenarioPicker = memo(({
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/20 backdrop-blur-[1px] rounded-[2rem] z-10">
                           <div className="bg-white/90 dark:bg-card/90 p-3 rounded-2xl shadow-xl border border-black/5 flex items-center gap-3">
                             <Lock size={16} className="text-muted-foreground" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Locked</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('locked')}</span>
                           </div>
                         </div>
                       )}
