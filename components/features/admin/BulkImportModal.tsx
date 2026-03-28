@@ -4,7 +4,6 @@ import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { X, Upload, FileDown, CheckCircle2, AlertCircle } from 'lucide-react';
-import * as XLSX from 'xlsx';
 
 interface BulkImportModalProps {
   onClose: () => void;
@@ -36,7 +35,8 @@ export default function BulkImportModal({ onClose, onSuccess }: BulkImportModalP
     }
   };
 
-  const downloadTemplate = () => {
+  const downloadTemplate = async () => {
+    const XLSX = await import('xlsx');
     const ws = XLSX.utils.json_to_sheet([
       { Name: 'John Doe', 'Stage Name': 'The Closer' },
       { Name: 'Jane Smith', 'Stage Name': 'Sales Queen' },
@@ -52,6 +52,7 @@ export default function BulkImportModal({ onClose, onSuccess }: BulkImportModalP
     setError('');
 
     try {
+      const XLSX = await import('xlsx');
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data);
       const sheetName = workbook.SheetNames[0];

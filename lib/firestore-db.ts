@@ -44,6 +44,14 @@ export async function fsGet<T>(collection: string, id: string): Promise<T | null
   return snap.exists ? (snap.data() as T) : null;
 }
 
+// ── Get docs by field (query) ──────────────────────────────────────────────
+
+export async function fsGetWhere<T>(collection: string, field: string, value: any): Promise<T[]> {
+  const db   = getAdminDb();
+  const snap = await db.collection(collection).where(field, '==', value).get();
+  return snap.docs.map(d => ({ id: d.id, ...d.data() } as T));
+}
+
 // ── Partial update (patch) ─────────────────────────────────────────────────
 
 export async function fsUpdate<T extends object>(

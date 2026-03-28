@@ -4,7 +4,6 @@ import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { X, Upload, FileDown, CheckCircle2, AlertCircle } from 'lucide-react';
-import * as XLSX from 'xlsx';
 
 interface AiScenarioImportModalProps {
   onClose: () => void;
@@ -35,7 +34,8 @@ export default function AiScenarioImportModal({ onClose, onSuccess }: AiScenario
     }
   };
 
-  const downloadTemplate = () => {
+  const downloadTemplate = async () => {
+    const XLSX = await import('xlsx');
     const DEFAULT_CRITERIA = 'rapport,objectionHandling,credibility,closing,naturalness';
     const template = [
       {
@@ -76,6 +76,7 @@ export default function AiScenarioImportModal({ onClose, onSuccess }: AiScenario
     setError('');
 
     try {
+      const XLSX = await import('xlsx');
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data);
       const sheetName = workbook.SheetNames[0];

@@ -1,4 +1,4 @@
-import { fsGet as gcsGet, fsGetAll as gcsGetAll } from './firestore-db';
+import { fsGet as gcsGet, fsGetAll as gcsGetAll, fsGetWhere as gcsGetWhere } from './firestore-db';
 import type { Agent, AgentStats, ModuleStat, AgentEvaluation } from '@/types';
 import { MOCKUP_AGENT_ID } from './agent-session';
 
@@ -56,18 +56,20 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
     return mockStats;
   }
 
+  // Optimize: Only fetch records belonging to THIS agent.
+  // This prevents loading thousands of records into RAM to find a few.
   const [quizDocs, evalDocs, progressDoc, humanEvals, scenariosSnap] = await Promise.all([
-    gcsGetAll<QuizRecord>('quiz_results'),
-    gcsGetAll<EvalRecord>('ai_eval_logs'),
+    gcsGetWhere<QuizRecord>('quiz_results', 'agentId', agentId),
+    gcsGetWhere<EvalRecord>('ai_eval_logs', 'agentId', agentId),
     gcsGet<ProgressRecord>('agent_progress', agentId).catch(() => null),
-    gcsGetAll<AgentEvaluation>('agent_evaluations'),
-    gcsGetAll<{ isActive: boolean }>('aiev_scenarios'),
+    gcsGetWhere<AgentEvaluation>('agent_evaluations', 'agentId', agentId),
+    gcsGetAll<{ isActive: boolean }>('aiev_scenarios'), // Small collection, okay to getAll
   ]);
 
   // Quiz per module
   const quiz: AgentStats['quiz'] = {};
   for (const mod of MODULES) {
-    const results = quizDocs.filter(r => r.agentId === agentId && r.moduleId === mod);
+    const results = quizDocs.filter(r => r.moduleId === mod);
     if (results.length > 0) {
       quiz[mod] = {
         bestScore: Math.max(...results.map(r => Math.round((r.score / r.totalQuestions) * 100))),
@@ -79,18 +81,17 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
   }
 
   // AI Eval
-  const evals  = evalDocs.filter(e => e.agentId === agentId);
-  const aiEval = buildAiEval(evals);
+  const aiEval = buildAiEval(evalDocs);
 
   const evalCompleted  = progressDoc?.evalCompletedLevels ?? [];
   const passedScenarios = progressDoc?.evalPassedScenarios ?? [];
   const activeScenariosCount = scenariosSnap.filter(s => s.isActive).length;
   const learnedModules = progressDoc?.learnedModules ?? [];
-  const myHumanEvals   = humanEvals.filter(h => h.agentId === agentId).sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
+  const myHumanEvals   = [...humanEvals].sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
 
   const lastActive = [
-    ...quizDocs.filter(r => r.agentId === agentId),
-    ...evalDocs.filter(e => e.agentId === agentId),
+    ...quizDocs,
+    ...evalDocs,
   ].map(r => r.timestamp).filter(Boolean).sort().at(-1) ?? null;
 
   const agent: Agent = { id: agentId, name: agentName, active: true, createdAt: new Date() };
@@ -110,21 +111,49 @@ type LevelData = { attempts: number; avgScore: number; bestScore: number; passed
 function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
   if (evals.length === 0) return null;
 
-  const sorted = [...evals].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+  const levels: Record<number, LevelData> = {};
+  let totalScore = 0;
+
+  // Single pass to aggregate stats by level
+  for (const e of evals) {
+    totalScore += e.score;
+    const lvl = e.level || 1;
+    
+    if (!levels[lvl]) {
+      levels[lvl] = {
+        attempts: 0,
+        avgScore: 0,
+        bestScore: 0,
+        passed: false,
+        lastTimestamp: e.timestamp
+      };
+    }
+
+    const l = levels[lvl];
+    l.attempts++;
+    if (e.score > l.bestScore) l.bestScore = e.score;
+    if (e.passed) l.passed = true;
+    if (e.timestamp > l.lastTimestamp) l.lastTimestamp = e.timestamp;
+    // We'll calculate avgScore in a second pass or at the end
+  }
+
+  // Calculate averages
+  for (const lvl in levels) {
+    const l = levels[lvl];
+    const levelEvals = evals.filter(e => (e.level || 1) === Number(lvl));
+    l.avgScore = Math.round(levelEvals.reduce((sum, e) => sum + e.score, 0) / l.attempts);
+  }
 
   return {
-    avgScore: Math.round(evals.reduce((s, e) => s + e.score, 0) / evals.length),
+    avgScore: Math.round(totalScore / evals.length),
     count:    evals.length,
-    history:  evals.map(e => ({ score: e.score, level: e.level || 1, passed: e.passed || false, timestamp: e.timestamp })),
-    levels: {
-      1: {
-        attempts:      evals.length,
-        avgScore:      Math.round(evals.reduce((s, e) => s + e.score, 0) / evals.length),
-        bestScore:     Math.max(...evals.map(e => e.score)),
-        passed:        evals.some(e => e.passed),
-        lastTimestamp: sorted[sorted.length - 1].timestamp,
-      }
-    },
+    history:  evals.map(e => ({ 
+      score: e.score, 
+      level: e.level || 1, 
+      passed: e.passed || false, 
+      timestamp: e.timestamp 
+    })).sort((a, b) => b.timestamp.localeCompare(a.timestamp)),
+    levels,
   };
 }
 
@@ -143,45 +172,78 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
   const activeAgents = agents.filter(a => a.active);
   const activeScenariosCount = scenariosSnap.filter(s => s.isActive).length;
 
-  return activeAgents.map(agent => {
+  // Efficiency: Use Map for O(1) lookup
+  const quizMap = new Map<string, QuizRecord[]>();
+  for (const r of quizDocs) {
+    if (!quizMap.has(r.agentId)) quizMap.set(r.agentId, []);
+    quizMap.get(r.agentId)!.push(r);
+  }
+
+  const evalMap = new Map<string, EvalRecord[]>();
+  for (const e of evalDocs) {
+    if (!evalMap.has(e.agentId)) evalMap.set(e.agentId, []);
+    evalMap.get(e.agentId)!.push(e);
+  }
+
+  const humanMap = new Map<string, AgentEvaluation[]>();
+  for (const h of humanEvals) {
+    if (!humanMap.has(h.agentId)) humanMap.set(h.agentId, []);
+    humanMap.get(h.agentId)!.push(h);
+  }
+
+  const progressMap = new Map<string, ProgressRecord>();
+  for (const p of progressDocs) {
+    progressMap.set(p.agentId, p);
+  }
+
+  const results: AgentStats[] = [];
+  
+  for (const agent of activeAgents) {
+    const myQuizzes = quizMap.get(agent.id) ?? [];
+    const myEvals   = evalMap.get(agent.id) ?? [];
+    const myHuman   = humanMap.get(agent.id) ?? [];
+    const progress  = progressMap.get(agent.id);
+
     // Quiz per module
     const quiz: AgentStats['quiz'] = {};
     for (const mod of MODULES) {
-      const results = quizDocs.filter(r => r.agentId === agent.id && r.moduleId === mod);
-      if (results.length > 0) {
+      const modResults = myQuizzes.filter(r => r.moduleId === mod);
+      if (modResults.length > 0) {
         quiz[mod] = {
-          bestScore: Math.max(...results.map(r => Math.round((r.score / r.totalQuestions) * 100))),
-          passed:    results.some(r => r.passed),
-          attempts:  results.length,
-          history:   results.map(r => ({ score: r.score, total: r.totalQuestions, passed: r.passed, timestamp: r.timestamp })),
+          bestScore: Math.max(...modResults.map(r => Math.round((r.score / r.totalQuestions) * 100))),
+          passed:    modResults.some(r => r.passed),
+          attempts:  modResults.length,
+          history:   modResults.map(r => ({ score: r.score, total: r.totalQuestions, passed: r.passed, timestamp: r.timestamp })),
         };
       }
     }
 
-    // AI Eval
-    const evals  = evalDocs.filter(e => e.agentId === agent.id);
-    const aiEval = buildAiEval(evals);
+    const aiEval = buildAiEval(myEvals);
+    const sortedHuman = myHuman.length > 0 
+      ? [...myHuman].sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt))
+      : [];
 
-    // AI Eval completed levels (from agent_progress)
-    const progress       = progressDocs.find(p => p.agentId === agent.id);
-    const evalCompleted  = progress?.evalCompletedLevels ?? [];
-    const passedScenarios = progress?.evalPassedScenarios ?? [];
-    const learnedModules = progress?.learnedModules ?? [];
+    // Optimize last active calculation
+    let lastActive: string | null = null;
+    for (const q of myQuizzes) if (!lastActive || q.timestamp > lastActive) lastActive = q.timestamp;
+    for (const e of myEvals) if (!lastActive || e.timestamp > lastActive) lastActive = e.timestamp;
+
+    const partial = { 
+      agent, 
+      quiz, 
+      aiEval, 
+      lastActive, 
+      evalCompletedLevels: progress?.evalCompletedLevels ?? [], 
+      evalPassedScenarios: progress?.evalPassedScenarios ?? [], 
+      learnedModules: progress?.learnedModules ?? [], 
+      humanEvaluations: sortedHuman 
+    };
     
-    // Human Evaluations
-    const myHumanEvals = humanEvals.filter(h => h.agentId === agent.id).sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
-
-    // Last active
-    const allTimes = [
-      ...quizDocs.filter(r => r.agentId === agent.id),
-      ...evalDocs.filter(e => e.agentId === agent.id),
-    ].map(r => r.timestamp).filter(Boolean).sort();
-    const lastActive = allTimes.length > 0 ? allTimes[allTimes.length - 1] : null;
-
-    const partial      = { agent, quiz, aiEval, lastActive, evalCompletedLevels: evalCompleted, evalPassedScenarios: passedScenarios, learnedModules, humanEvaluations: myHumanEvals };
     const overallScore = computeOverallScore({ ...partial, activeScenariosCount });
-    return { ...partial, overallScore, badge: computeBadge(overallScore) };
-  });
+    results.push({ ...partial, overallScore, badge: computeBadge(overallScore) });
+  }
+
+  return results;
 }
 
 export async function getModuleStats(): Promise<ModuleStat[]> {
@@ -195,7 +257,6 @@ export async function getModuleStats(): Promise<ModuleStat[]> {
 
   const active = agents.filter((a: Agent & { id: string }) => a.active);
   const total  = active.length;
-  const activeScenariosCount = scenariosSnap.filter(s => s.isActive).length;
 
   if (total === 0) {
     return [
@@ -205,27 +266,33 @@ export async function getModuleStats(): Promise<ModuleStat[]> {
     ];
   }
 
+  // Pre-calculate sets and maps for O(1) lookups
+  const quizPassedMap: Record<string, Set<string>> = {};
+  quizDocs.filter(q => q.passed).forEach(q => {
+    if (!quizPassedMap[q.agentId]) quizPassedMap[q.agentId] = new Set();
+    quizPassedMap[q.agentId].add(q.moduleId);
+  });
+
+  const progressMap: Record<string, ProgressRecord> = {};
+  progressDocs.forEach(p => {
+    progressMap[p.agentId] = p;
+  });
+
   const pct = (n: number) => Math.round((n / total) * 100);
 
-  // Learn — all 3 required modules (Product, KYC, Website)
-  const learnCount = active.filter(a => {
-    const p = progressDocs.find(pd => pd.agentId === a.id);
-    return (p?.learnedModules?.length ?? 0) >= 3;
+  // Learn — all 3 required modules
+  const learnCount = active.filter(a => (progressMap[a.id]?.learnedModules?.length ?? 0) >= 3).length;
+
+  // Quiz — passed all 4 modules
+  const quizCount = active.filter(a => {
+    const passed = quizPassedMap[a.id];
+    return passed && MODULES.every(m => passed.has(m));
   }).length;
 
-  // Quiz — passed all 4 modules (Foundation, Product, Process, Payment)
-  const quizCount = active.filter(a =>
-    MODULES.every(m =>
-      quizDocs.filter(q => q.agentId === a.id && q.moduleId === m).some(q => q.passed)
-    )
-  ).length;
-
-  // AI Eval — completed Level 4 (highest level)
+  // AI Eval — completed Level 4
   const evalCount = active.filter(a => {
-    const p = progressDocs.find(pd => pd.agentId === a.id);
-    const levels = p?.evalCompletedLevels ?? [];
-    const maxL = levels.length > 0 ? Math.max(...levels) : 0;
-    return maxL >= 4;
+    const levels = progressMap[a.id]?.evalCompletedLevels ?? [];
+    return levels.length > 0 && Math.max(...levels) >= 4;
   }).length;
 
   return [

@@ -186,7 +186,8 @@ export class AiEvalService {
     
     const systemPrompt = this.buildSystemPrompt(session, scenario, isStart);
     
-    const windowedHistory = session.messages.slice(-12).map(m => ({
+    // Optimized Window: Last 10 messages + System Instruction
+    const windowedHistory = session.messages.slice(-10).map(m => ({
       role: m.role as 'user' | 'assistant',
       content: m.content
     }));

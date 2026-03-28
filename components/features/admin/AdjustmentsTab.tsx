@@ -11,7 +11,6 @@ import {
   ArrowUp, ArrowDown, MoveUp, MoveDown, Layers, FileText, ShieldCheck,
   Settings
 } from 'lucide-react';
-import * as XLSX from 'xlsx';
 import { storage, auth } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { signInWithCustomToken } from 'firebase/auth';
@@ -351,7 +350,8 @@ function QuizzesEditor({ data, onSave, onChange, saving, readOnly }: { data: Qui
     onChange();
   };
 
-  const downloadTemplate = () => {
+  const downloadTemplate = async () => {
+    const XLSX = await import('xlsx');
     const template = [{
       question_en: "What is Forex?",
       question_th: "Forex คืออะไร?",
@@ -384,11 +384,12 @@ function QuizzesEditor({ data, onSave, onChange, saving, readOnly }: { data: Qui
     URL.revokeObjectURL(url);
   };
 
-  const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !selectedQuiz) return;
     setImporting(true);
     setImportError('');
+    const XLSX = await import('xlsx');
     const reader = new FileReader();
     reader.onload = (evt) => {
       try {

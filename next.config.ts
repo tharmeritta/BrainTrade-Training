@@ -23,6 +23,12 @@ const nextConfig: NextConfig = {
       allowedOrigins: ['localhost:3000', 'braintrade-training-cb55d.web.app', 'braintrade-training-cb55d.firebaseapp.com'],
     },
   },
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
+      { protocol: 'https', hostname: 'storage.googleapis.com' },
+    ],
+  },
 };
 
 export default withNextIntl(nextConfig);

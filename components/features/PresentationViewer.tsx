@@ -114,6 +114,7 @@ export default function PresentationViewer({
   useEffect(() => {
     setIsLoaded(false);
     setLoadError(false);
+    setPreloadedSlides(new Set()); // Clear memory on presentation change
   }, [slideUrls, presentationId, lang]);
 
   useEffect(() => {
@@ -145,73 +146,76 @@ export default function PresentationViewer({
     }
   }, [slide, total, isLoaded, agentId, agentName, module.id, isTrainer]);
 
-  // ── Preloading Logic ──────────────────────────────────────────────────────
+  // ── Preloading Logic (Sliding Window) ─────────────────────────────────────
 
   useEffect(() => {
     if (!hasContent) return;
     let active = true;
-    setPreloadedSlides(new Set()); // Reset on presentation change
 
-    const preloadAll = async () => {
-      setIsPreloading(true);
-      setPreloadingProgress(0);
-
+    const preloadWindow = async () => {
       const count = total || (slideUrls?.length ?? 0);
-      if (count === 0) {
-        setIsPreloading(false);
-        return;
+      if (count === 0) return;
+
+      // Sliding Window: 5 ahead, 2 behind
+      const WINDOW_AHEAD = 5;
+      const WINDOW_BEHIND = 2;
+      
+      const priority: number[] = [];
+      // Current slide first
+      if (!preloadedSlides.has(slide)) priority.push(slide);
+      
+      // Then ahead
+      for (let i = 1; i <= WINDOW_AHEAD; i++) {
+        const n = slide + i;
+        if (n <= count && !preloadedSlides.has(n)) priority.push(n);
+      }
+      
+      // Then behind (for quick back navigation)
+      for (let i = 1; i <= WINDOW_BEHIND; i++) {
+        const n = slide - i;
+        if (n >= 1 && !preloadedSlides.has(n)) priority.push(n);
       }
 
-      let loadedCount = 0;
-      const currentPreloaded = new Set<number>();
+      if (priority.length === 0) return;
 
-      // Priority: Preload current slide first, then next 10, then the rest
-      const priority: number[] = [slideRef.current];
-      for (let i = 1; i <= 10; i++) {
-        const next = slideRef.current + i;
-        if (next <= count && !priority.includes(next)) priority.push(next);
-      }
-      for (let i = 1; i <= count; i++) {
-        if (!priority.includes(i)) priority.push(i);
+      // Only show global preloading state if the current slide isn't ready
+      const currentReady = preloadedSlides.has(slide);
+      if (!currentReady) {
+        setIsPreloading(true);
+        setPreloadingProgress(0);
       }
 
-      // Load in batches
-      const BATCH_SIZE = 4;
-      for (let i = 0; i < priority.length; i += BATCH_SIZE) {
+      let loadedInBatch = 0;
+      for (const n of priority) {
         if (!active) break;
-        const batch = priority.slice(i, i + BATCH_SIZE);
-        await Promise.all(batch.map(n => {
-          return new Promise((resolve) => {
-            const img = new Image();
-            const storageUrl = slideUrls?.[n - 1];
-            const vParam = cacheKey ? `&v=${encodeURIComponent(cacheKey)}` : '';
-            img.src = storageUrl ?? `/api/slide?id=${presentationId}&page=${n}${vParam}`;
-            img.onload = () => {
-              if (!active) return resolve(null);
-              loadedCount++;
-              currentPreloaded.add(n);
-              setPreloadingProgress(Math.round((loadedCount / count) * 100));
-              // Update state every few slides to avoid excessive re-renders
-              if (loadedCount % 5 === 0 || loadedCount === count) {
-                setPreloadedSlides(new Set(currentPreloaded));
-              }
-              resolve(null);
-            };
-            img.onerror = () => {
-              if (!active) return resolve(null);
-              loadedCount++;
-              setPreloadingProgress(Math.round((loadedCount / count) * 100));
-              resolve(null);
-            };
-          });
-        }));
+        
+        await new Promise((resolve) => {
+          const img = new Image();
+          const storageUrl = slideUrls?.[n - 1];
+          const vParam = cacheKey ? `&v=${encodeURIComponent(cacheKey)}` : '';
+          img.src = storageUrl ?? `/api/slide?id=${presentationId}&page=${n}${vParam}`;
+          
+          img.onload = () => {
+            if (!active) return resolve(null);
+            setPreloadedSlides(prev => new Set(prev).add(n));
+            loadedInBatch++;
+            setPreloadingProgress(Math.round((loadedInBatch / priority.length) * 100));
+            resolve(null);
+          };
+          img.onerror = () => {
+            if (!active) return resolve(null);
+            loadedInBatch++;
+            resolve(null);
+          };
+        });
       }
+      
       if (active) setIsPreloading(false);
     };
 
-    preloadAll();
+    preloadWindow();
     return () => { active = false; };
-  }, [presentationId, total, cacheKey, slideUrls, hasContent]);
+  }, [slide, presentationId, total, cacheKey, slideUrls, hasContent]);
 
   // ── Sync Listener ──────────────────────────────────────────────────────────
 
@@ -727,7 +731,6 @@ export default function PresentationViewer({
                     }}
                     onError={() => setLoadError(true)}
                     alt={`Slide ${slide}`}
-                    unoptimized
                     priority
                   />
                 </motion.div>

@@ -9,6 +9,7 @@ import { KpiCard, DonutChart, ModuleBar, BadgePill, StatusPipeline } from './Adm
 import { scoreColor, scoreBg, timeAgo } from './AdminHelpers';
 import LiveFeed from './LiveFeed';
 import { getCompletionStatus, type CompletionStatus } from '@/lib/completion';
+import { fetchWithCache } from '@/lib/fetcher';
 
 export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
   const t = useTranslations('admin');
@@ -19,35 +20,15 @@ export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      console.log('[Overview] Starting fetch...');
-      const [ovRes, feedRes] = await Promise.all([
-        fetch('/api/admin/overview').catch(e => {
-          console.error('[Overview] /api/admin/overview fetch failed:', e);
-          throw e;
-        }),
-        fetch('/api/admin/live-feed').catch(e => {
-          console.error('[Overview] /api/admin/live-feed fetch failed:', e);
-          throw e;
-        })
+      const [ovData, feedData] = await Promise.all([
+        fetchWithCache<AdminOverviewData>('/api/admin/overview'),
+        fetchWithCache<{ feed: any[] }>('/api/admin/live-feed')
       ]);
       
-      console.log('[Overview] Fetch responses received:', ovRes.status, feedRes.status);
-
-      if (ovRes.ok) {
-        const ovData = await ovRes.json();
-        setData(ovData);
-      } else {
-        console.warn('[Overview] /api/admin/overview returned non-ok status:', ovRes.status);
-      }
-      
-      if (feedRes.ok) {
-        const feedData = await feedRes.json();
-        setFeed(feedData.feed || []);
-      } else {
-        console.warn('[Overview] /api/admin/live-feed returned non-ok status:', feedRes.status);
-      }
+      setData(ovData);
+      setFeed(feedData.feed || []);
     } catch (err) {
-      console.error('Overview fetching error details:', err);
+      console.error('Overview fetching error:', err);
     } finally {
       setLoading(false);
     }
