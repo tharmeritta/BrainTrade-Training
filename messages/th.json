@@ -452,8 +452,23 @@
     "infrastructure": "BrainTrade Training Infrastructure",
     "proprietary": "Proprietary Material.",
     "loadingPreview": "กำลังโหลด...",
-    "trainingModule": "โมดูลการฝึกอบรม"
-  },
+    "trainingModules": "โมดูลการฝึกอบรม",
+    "viewCertificate": "ดูใบรับรอง",
+    "certificate": {
+      "title": "ประกาศนียบัตรการจบหลักสูตร",
+      "subtitle": "โปรแกรมการฝึกอบรมและความเชี่ยวชาญการขาย",
+      "awardedTo": "ขอมอบให้แก่",
+      "achievement": "เพื่อแสดงว่าบุคคลดังกล่าวได้สำเร็จหลักสูตรความพร้อมในการขายของ BrainTrade อย่างครบถ้วน โดยแสดงให้เห็นถึงความเชี่ยวชาญในด้านความรู้ผลิตภัณฑ์ กระบวนการภายใน และการจำลองการขายด้วย AI",
+      "issuedOn": "ออกให้เมื่อวันที่",
+      "certId": "รหัสใบรับรอง",
+      "foundational": "ความเชี่ยวชาญพื้นฐาน",
+      "product": "ความเชี่ยวชาญผลิตภัณฑ์",
+      "simulation": "ผลการจำลองการขาย AI",
+      "director": "ผู้อำนวยการฝึกอบรม",
+      "print": "ดาวน์โหลด / พิมพ์ใบรับรอง"
+    }
+    },
+
   "presentation": {
     "productKnowledge": "ความรู้ผลิตภัณฑ์",
     "syncingSlide": "กำลังซิงค์สไลด์ {slide}",

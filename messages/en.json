@@ -452,8 +452,23 @@
     "infrastructure": "BrainTrade Training Infrastructure",
     "proprietary": "Proprietary Material.",
     "loadingPreview": "Loading Preview...",
-    "trainingModule": "Training Module"
-  },
+    "trainingModules": "Training Modules",
+    "viewCertificate": "View Certificate",
+    "certificate": {
+      "title": "Certificate of Completion",
+      "subtitle": "Sales Training & Mastery Program",
+      "awardedTo": "Awarded to",
+      "achievement": "This is to certify that the above individual has successfully completed the comprehensive BrainTrade Sales Readiness Curriculum, demonstrating proficiency in product knowledge, internal processes, and AI-driven sales simulations.",
+      "issuedOn": "Issued on",
+      "certId": "Certificate ID",
+      "foundational": "Foundational Mastery",
+      "product": "Product Expertise",
+      "simulation": "AI Simulation Performance",
+      "director": "Training Director",
+      "print": "Download / Print Certificate"
+    }
+    },
+
   "presentation": {
     "productKnowledge": "Product Knowledge",
     "syncingSlide": "Syncing Slide {slide}",

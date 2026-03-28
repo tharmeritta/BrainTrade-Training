@@ -46,40 +46,51 @@ export default function DashboardPage() {
   // Falls back to localStorage cache if the server is unreachable.
   useEffect(() => {
     if (!agentId) return;
-    fetch(`/api/agent/progress?agentId=${agentId}&agentName=${encodeURIComponent(agentName ?? '')}`)
-      .then(r => r.json())
-      .then(d => {
-        const serverStats = d.stats ?? null;
-        setStats(serverStats);
-        // Mirror progress to localStorage so the browser has a copy
-        if (serverStats && agentId) {
-          saveProgress(agentId, {
-            agentId,
-            agentName: agentName ?? '',
-            evalCompletedLevels: serverStats.evalCompletedLevels ?? [],
-            learnedModules: serverStats.learnedModules ?? [],
-            updatedAt: new Date().toISOString(),
-          });
-        }
-      })
-      .catch(() => {
-        // Server unreachable — load from localStorage backup
-        const cached = agentId ? getProgress(agentId) : null;
-        if (cached) {
-          setStats({
-            agent: { id: agentId, name: agentName ?? '', active: true, createdAt: new Date() },
-            quiz: {},
-            aiEval: null,
-            lastActive: cached.updatedAt ?? null,
-            evalCompletedLevels: cached.evalCompletedLevels ?? [],
-            learnedModules: cached.learnedModules ?? [],
-            overallScore: 0,
-            badge: 'needs-work',
-          } as AgentStats);
-        } else {
-          setStats(null);
-        }
-      });
+    
+    const fetchStats = () => {
+      const simulate = localStorage.getItem('brainstrade_simulate_completion') === 'true';
+      fetch(`/api/agent/progress?agentId=${agentId}&agentName=${encodeURIComponent(agentName ?? '')}&simulate=${simulate}`)
+        .then(r => r.json())
+        .then(d => {
+          const serverStats = d.stats ?? null;
+          setStats(serverStats);
+          // Mirror progress to localStorage so the browser has a copy
+          if (serverStats && agentId) {
+            saveProgress(agentId, {
+              agentId,
+              agentName: agentName ?? '',
+              evalCompletedLevels: serverStats.evalCompletedLevels ?? [],
+              learnedModules: serverStats.learnedModules ?? [],
+              updatedAt: new Date().toISOString(),
+            });
+          }
+        })
+        .catch(() => {
+          // Server unreachable — load from localStorage backup
+          const cached = agentId ? getProgress(agentId) : null;
+          if (cached) {
+            setStats({
+              agent: { id: agentId, name: agentName ?? '', active: true, createdAt: new Date() },
+              quiz: {},
+              aiEval: null,
+              lastActive: cached.updatedAt ?? null,
+              evalCompletedLevels: cached.evalCompletedLevels ?? [],
+              learnedModules: cached.learnedModules ?? [],
+              overallScore: 0,
+              badge: 'needs-work',
+            } as AgentStats);
+          } else {
+            setStats(null);
+          }
+        });
+    };
+
+    fetchStats();
+
+    // Listen for custom event to refresh when mockup simulation toggles
+    const handleRefresh = () => fetchStats();
+    window.addEventListener('agent-stats-refresh', handleRefresh);
+    return () => window.removeEventListener('agent-stats-refresh', handleRefresh);
   }, [agentId, agentName]);
 
   function handleAgentSelected(id: string, name: string, stageName: string) {

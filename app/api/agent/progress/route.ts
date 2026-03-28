@@ -16,14 +16,15 @@ function defaults(agentId: string, agentName = ''): ProgressRecord {
   return { agentId, agentName, evalCompletedLevels: [], learnedModules: [], evalSavedLevel: null };
 }
 
-// GET /api/agent/progress?agentId=xxx&agentName=xxx
+// GET /api/agent/progress?agentId=xxx&agentName=xxx&simulate=true
 export async function GET(req: NextRequest) {
   const agentId   = req.nextUrl.searchParams.get('agentId');
   const agentName = req.nextUrl.searchParams.get('agentName') ?? '';
+  const simulate  = req.nextUrl.searchParams.get('simulate') === 'true';
   if (!agentId) return NextResponse.json({ error: 'agentId required' }, { status: 400 });
 
   try {
-    const stats = await getAgentStats(agentId, agentName);
+    const stats = await getAgentStats(agentId, agentName, simulate);
     return NextResponse.json({ stats });
   } catch {
     return NextResponse.json({ stats: null });

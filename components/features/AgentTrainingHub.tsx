@@ -7,16 +7,18 @@ import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import {
   CheckCircle2, XCircle, Lock, GraduationCap, ClipboardList, Mic,
-  Trophy, RotateCcw, ArrowRight, LogOut, Zap
+  Trophy, RotateCcw, ArrowRight, LogOut, Zap, Award
 } from 'lucide-react';
 
 import type { AgentStats } from '@/types';
 import { ScoreRing } from '@/components/ui/ScoreRing';
 import { EASE, TRANSITION, FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
 import { getCompletionStatus } from '@/lib/completion';
-
+import { CertificationModal } from './CertificationModal';
+import { isMockupAgent } from '@/lib/agent-session';
 
 // ─── Constants & Types ────────────────────────────────────────────────────────
+
 
 const STEPS = [
   { id: 'learn'   as const, step: 1, labelKey: 'learn',  sublabelKey: 'study',   descKey: 'productProcess', Icon: GraduationCap, color: '#818CF8', glow: 'rgba(129,140,248,0.18)' },
@@ -70,6 +72,7 @@ interface ProfileSidebarProps {
   pct: number;
   derived: Record<StepId, StepState>;
   onLogout: () => void;
+  onViewCert: () => void;
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -330,10 +333,19 @@ const ProfileSidebar = memo(({
   badgeCfg,
   pct,
   derived,
-  onLogout
+  onLogout,
+  onViewCert
 }: ProfileSidebarProps) => {
   const t = useTranslations('trainingHub');
   const navT = useTranslations('nav');
+
+  const isMock = isMockupAgent();
+
+  const handleSimulateToggle = () => {
+    const current = localStorage.getItem('brainstrade_simulate_completion') === 'true';
+    localStorage.setItem('brainstrade_simulate_completion', (!current).toString());
+    window.dispatchEvent(new Event('agent-stats-refresh'));
+  };
 
   return (
     <motion.div
@@ -394,6 +406,17 @@ const ProfileSidebar = memo(({
         </span>
       </div>
 
+      {isMock && (
+        <div className="w-full mt-6">
+           <button
+             onClick={handleSimulateToggle}
+             className="w-full py-2 px-4 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-500 text-[10px] font-black uppercase tracking-wider hover:bg-violet-500 hover:text-white transition-all active:scale-95"
+           >
+             Mockup: {allDone ? 'Reset Progress' : 'Simulate Completion'}
+           </button>
+        </div>
+      )}
+
       <SectionDivider label={t('progress')} />
 
       <div className="w-full max-w-[260px]">
@@ -438,13 +461,26 @@ const ProfileSidebar = memo(({
         </div>
 
         {allDone && (
-          <motion.div className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-2xl w-full justify-center border"
-            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-            transition={TRANSITION.spring}
-            style={{ background: 'rgba(251,191,36,0.08)', borderColor: 'rgba(251,191,36,0.22)' }}>
-            <Trophy size={14} style={{ color: '#FBBF24' }} />
-            <span className="text-[11px] font-black" style={{ color: '#FBBF24' }}>{t('allFinished')}</span>
-          </motion.div>
+          <div className="flex flex-col gap-2 mt-6">
+            <motion.div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl w-full justify-center border"
+              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+              transition={TRANSITION.spring}
+              style={{ background: 'rgba(251,191,36,0.08)', borderColor: 'rgba(251,191,36,0.22)' }}>
+              <Trophy size={14} style={{ color: '#FBBF24' }} />
+              <span className="text-[11px] font-black" style={{ color: '#FBBF24' }}>{t('allFinished')}</span>
+            </motion.div>
+            
+            <motion.button
+              onClick={onViewCert}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl w-full justify-center border border-amber-500/30 bg-amber-500 text-white text-[11px] font-black uppercase tracking-wider hover:bg-amber-600 transition-colors shadow-lg shadow-amber-500/20"
+            >
+              <Award size={14} />
+              <span>{t('viewCertificate')}</span>
+            </motion.button>
+          </div>
         )}
       </div>
 
@@ -506,6 +542,7 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
   const t         = useTranslations('trainingHub');
   const pathname  = usePathname();
   const locale    = pathname.split('/')[1] ?? 'th';
+  const [isCertOpen, setIsCertOpen] = React.useState(false);
   
   const derived = useMemo(() => deriveSteps(stats), [stats]);
 
@@ -555,6 +592,7 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
         pct={pct}
         derived={derived}
         onLogout={onLogout}
+        onViewCert={() => setIsCertOpen(true)}
       />
 
       {/* ══ RIGHT — Training Modules ══ */}
@@ -582,9 +620,19 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
                   {t('pendingEvalDesc')}
                 </p>
 
-                <div className="mt-8 flex items-center gap-3 px-6 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 relative z-10">
-                   <div className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-                   <span className="text-xs font-black uppercase tracking-widest text-amber-600">Waiting for Evaluator</span>
+                <div className="mt-8 flex flex-col sm:flex-row items-center gap-4 relative z-10">
+                  <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+                    <div className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                    <span className="text-xs font-black uppercase tracking-widest text-amber-600">Waiting for Evaluator</span>
+                  </div>
+
+                  <button
+                    onClick={() => setIsCertOpen(true)}
+                    className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-amber-500 text-white text-xs font-black uppercase tracking-widest hover:bg-amber-600 transition-all shadow-xl shadow-amber-500/25 active:scale-95"
+                  >
+                    <Award size={16} />
+                    {t('viewCertificate')}
+                  </button>
                 </div>
              </motion.div>
           )}
@@ -607,6 +655,14 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
           </motion.div>
         </div>
       </div>
+
+      <CertificationModal 
+        isOpen={isCertOpen}
+        onClose={() => setIsCertOpen(false)}
+        agentName={agentName}
+        agentId={agentId}
+        stats={stats}
+      />
     </div>
   );
 }
