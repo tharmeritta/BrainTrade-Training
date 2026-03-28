@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useMemo, memo } from 'react';
+import React, { useMemo, memo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import {
   CheckCircle2, XCircle, Lock, GraduationCap, ClipboardList, Mic,
-  Trophy, RotateCcw, ArrowRight, LogOut, Zap, Award
+  Trophy, RotateCcw, ArrowRight, LogOut, Zap, Award, Sparkles, Star
 } from 'lucide-react';
 
 import type { AgentStats } from '@/types';
@@ -504,53 +504,241 @@ const ModuleHeader = memo(({ doneCount }: { doneCount: number }) => {
 ModuleHeader.displayName = 'ModuleHeader';
 
 /**
- * Confetti: A simple celebratory animation using framer-motion.
+ * Confetti: A high-performance, physics-inspired celebratory animation.
  */
 const Confetti = memo(() => {
   const pieces = useMemo(() => {
-    return Array.from({ length: 50 }).map((_, i) => ({
+    return Array.from({ length: 80 }).map((_, i) => ({
       id: i,
-      x: Math.random() * 100, // percentage
+      x: Math.random() * 100,
       y: -20,
-      size: 8 + Math.random() * 10,
-      color: ['#818CF8', '#60A5FA', '#F472B6', '#FBBF24', '#34D399'][Math.floor(Math.random() * 5)],
-      duration: 2 + Math.random() * 3,
-      delay: Math.random() * 2,
-      rotation: Math.random() * 360,
+      size: 6 + Math.random() * 12,
+      color: ['#818CF8', '#60A5FA', '#F472B6', '#FBBF24', '#34D399', '#A78BFA'][Math.floor(Math.random() * 6)],
+      duration: 3 + Math.random() * 4,
+      delay: Math.random() * 3,
+      drift: (Math.random() - 0.5) * 150, // Horizontal movement
+      rotation: Math.random() * 720,
+      shape: i % 4 === 0 ? 'star' : i % 3 === 0 ? 'circle' : 'square',
     }));
   }, []);
 
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
-      {pieces.map((p) => (
-        <motion.div
-          key={p.id}
-          initial={{ y: '-10%', x: `${p.x}%`, rotate: 0, opacity: 1 }}
-          animate={{ 
-            y: '110%', 
-            rotate: p.rotation + 720,
-            opacity: [1, 1, 0]
-          }}
-          transition={{ 
-            duration: p.duration, 
-            delay: p.delay, 
-            ease: "linear",
-            repeat: Infinity 
-          }}
-          className="absolute"
-          style={{
-            width: p.size,
-            height: p.size,
-            backgroundColor: p.color,
-            borderRadius: p.id % 3 === 0 ? '50%' : '2px',
-          }}
-        />
-      ))}
+      <AnimatePresence>
+        {pieces.map((p) => (
+          <motion.div
+            key={p.id}
+            initial={{ y: '-10%', x: `${p.x}%`, rotate: 0, opacity: 0 }}
+            animate={{ 
+              y: '110%', 
+              x: `${p.x + (p.drift / 10)}%`,
+              rotate: p.rotation,
+              opacity: [0, 1, 1, 0]
+            }}
+            transition={{ 
+              duration: p.duration, 
+              delay: p.delay, 
+              ease: [0.23, 1, 0.32, 1],
+              repeat: Infinity 
+            }}
+            className="absolute flex items-center justify-center"
+            style={{ width: p.size, height: p.size }}
+          >
+            {p.shape === 'star' ? (
+              <Star size={p.size} fill={p.color} className="text-transparent" />
+            ) : p.shape === 'circle' ? (
+              <div className="w-full h-full rounded-full" style={{ backgroundColor: p.color }} />
+            ) : (
+              <div className="w-full h-full" style={{ backgroundColor: p.color, transform: `rotate(${p.id * 45}deg)` }} />
+            )}
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   );
 });
 
 Confetti.displayName = 'Confetti';
+
+/**
+ * TrophyHero: A centralized celebratory visual with light beams and floating motion.
+ */
+const TrophyHero = memo(() => (
+  <div className="relative mb-10 mt-4 group">
+    {/* Animated Beams */}
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+       {[...Array(8)].map((_, i) => (
+         <motion.div
+           key={i}
+           className="absolute w-1 h-[300px] origin-center opacity-20"
+           style={{ 
+             background: 'linear-gradient(to top, transparent, #FBBF24, transparent)',
+             rotate: `${i * 45}deg`
+           }}
+           animate={{ 
+             opacity: [0.1, 0.3, 0.1],
+             scaleY: [1, 1.2, 1],
+           }}
+           transition={{ 
+             duration: 4, 
+             repeat: Infinity, 
+             delay: i * 0.2,
+             ease: "easeInOut" 
+           }}
+         />
+       ))}
+    </div>
+
+    {/* Spinning Rays Background */}
+    <motion.div 
+      className="absolute inset-0 flex items-center justify-center opacity-30"
+      animate={{ rotate: 360 }}
+      transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+    >
+      <div className="w-[180px] h-[180px] rounded-full blur-[60px]" style={{ background: 'radial-gradient(circle, #FBBF24 0%, transparent 70%)' }} />
+    </motion.div>
+
+    {/* Floating Trophy Container */}
+    <motion.div 
+      className="w-28 h-28 rounded-[2.5rem] bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center relative z-10 border-4 border-white/30 shadow-[0_20px_50px_-10px_rgba(245,158,11,0.5)]"
+      animate={{ 
+        y: [0, -10, 0],
+        rotate: [0, 2, -2, 0]
+      }}
+      transition={{ 
+        duration: 5, 
+        repeat: Infinity, 
+        ease: "easeInOut" 
+      }}
+    >
+      <Trophy size={56} className="text-white drop-shadow-lg" />
+      <motion.div 
+        className="absolute -top-2 -right-2 bg-white text-amber-600 rounded-full p-2 shadow-lg border-2 border-amber-100"
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 1, type: "spring" }}
+      >
+        <Sparkles size={16} fill="currentColor" />
+      </motion.div>
+    </motion.div>
+  </div>
+));
+
+TrophyHero.displayName = 'TrophyHero';
+
+/**
+ * CongratulationsCard: The interactive, animated celebratory view.
+ */
+const CongratulationsCard = memo(({ t }: { t: any }) => {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const rotateX = useSpring(useTransform(mouseY, [-300, 300], [5, -5]), { stiffness: 100, damping: 30 });
+  const rotateY = useSpring(useTransform(mouseX, [-300, 300], [-5, 5]), { stiffness: 100, damping: 30 });
+
+  function handleMouseMove(e: React.MouseEvent) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    mouseX.set(x);
+    mouseY.set(y);
+  }
+
+  function handleMouseLeave() {
+    mouseX.set(0);
+    mouseY.set(0);
+  }
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      style={{ rotateX, rotateY, perspective: 1000 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="mb-12 p-1 relative group"
+    >
+      <div className="relative p-10 lg:p-14 rounded-[3.5rem] border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/15 via-white/5 to-transparent backdrop-blur-3xl flex flex-col items-center text-center overflow-hidden shadow-[0_40px_100px_-20px_rgba(245,158,11,0.2)]">
+        <Confetti />
+        
+        {/* Shimmer Overlay */}
+        <motion.div 
+          className="absolute inset-0 pointer-events-none"
+          animate={{ x: ['-100%', '100%'] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 5 }}
+          style={{
+            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)',
+          }}
+        />
+
+        <TrophyHero />
+        
+        <motion.div
+          variants={STAGGER_CONTAINER}
+          initial="initial"
+          animate="animate"
+          className="relative z-30"
+        >
+          <motion.h2 
+            variants={FADE_IN}
+            className="text-sm font-black text-amber-500 uppercase tracking-[0.4em] mb-4"
+          >
+             {t('allFinished')}
+          </motion.h2>
+
+          <motion.h3 
+            variants={{
+              initial: { opacity: 0, scale: 0.8 },
+              animate: { opacity: 1, scale: 1, transition: { type: 'spring', damping: 12, stiffness: 200 } }
+            }}
+            className="text-4xl lg:text-6xl font-black text-[color:var(--hub-text)] mb-6 tracking-tight leading-tight max-w-2xl bg-gradient-to-b from-[color:var(--hub-text)] to-[color:var(--hub-text)]/70 bg-clip-text text-transparent"
+          >
+            {t('congratsTitle')}
+          </motion.h3>
+          
+          <motion.p 
+            variants={FADE_IN}
+            className="text-xl text-[color:var(--hub-muted)] font-medium max-w-2xl leading-relaxed mb-10"
+          >
+            {t('congratsDesc')}
+          </motion.p>
+
+          <motion.div 
+            variants={FADE_IN}
+            className="w-full h-px bg-gradient-to-r from-transparent via-amber-500/40 to-transparent mb-10" 
+          />
+
+          <motion.div 
+            variants={FADE_IN}
+            className="flex flex-col items-center gap-6"
+          >
+            <div className="flex items-center gap-5 px-10 py-5 rounded-[2rem] bg-white/40 dark:bg-black/40 border border-amber-500/20 shadow-2xl backdrop-blur-sm group/badge hover:bg-white/60 transition-colors duration-500">
+              <div className="relative">
+                <div className="w-4 h-4 rounded-full bg-amber-500 animate-ping absolute inset-0 opacity-40" />
+                <div className="w-4 h-4 rounded-full bg-amber-500 relative z-10" />
+              </div>
+              <div className="flex flex-col items-start translate-y-[1px]">
+                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-600 mb-0.5">{t('pendingFinalEval')}</span>
+                <span className="text-base font-bold text-[color:var(--hub-text)]">{t('pendingEvalDesc')}</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2 text-xs font-bold text-[color:var(--hub-dim)] opacity-60">
+              <Award size={14} />
+              <span>Evaluation will be conducted by a supervisor shortly.</span>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Dynamic ambient orbs */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 blur-[100px] pointer-events-none -mr-32 -mt-32" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/5 blur-[100px] pointer-events-none -ml-32 -mb-32" />
+      </div>
+    </motion.div>
+  );
+});
+
+CongratulationsCard.displayName = 'CongratulationsCard';
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
 
@@ -614,55 +802,7 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
         <ModuleHeader doneCount={doneCount} />
 
         <div className="px-6 py-8 lg:px-10 lg:py-12">
-          {allDone && (
-             <motion.div 
-               initial={{ opacity: 0, scale: 0.95 }}
-               animate={{ opacity: 1, scale: 1 }}
-               className="mb-10 p-10 lg:p-14 rounded-[3rem] border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent flex flex-col items-center text-center relative overflow-hidden shadow-2xl shadow-amber-500/10"
-             >
-                <Confetti />
-
-                {/* Decorative background element */}
-                <div className="absolute top-0 left-0 w-full h-full opacity-[0.05] pointer-events-none"
-                     style={{ backgroundImage: `radial-gradient(circle at 50% 50%, #FBBF24 0%, transparent 70%)` }} />
-                
-                <div className="w-24 h-24 rounded-[2rem] bg-amber-500 flex items-center justify-center mb-8 border-4 border-white/20 shadow-xl shadow-amber-500/30 relative z-30">
-                  <Trophy size={48} className="text-white" />
-                </div>
-                
-                <h2 className="text-sm font-black text-amber-600 uppercase tracking-[0.3em] mb-4 relative z-30">
-                   {t('allFinished')}
-                </h2>
-
-                <h3 className="text-3xl lg:text-5xl font-black text-[color:var(--hub-text)] mb-6 relative z-30 tracking-tight leading-tight max-w-2xl">
-                  {t('congratsTitle')}
-                </h3>
-                
-                <p className="text-lg text-[color:var(--hub-muted)] font-medium max-w-2xl relative z-30 leading-relaxed mb-10">
-                  {t('congratsDesc')}
-                </p>
-
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent mb-10 relative z-30" />
-
-                <div className="flex flex-col items-center gap-6 relative z-30">
-                  <div className="flex items-center gap-4 px-8 py-4 rounded-3xl bg-white dark:bg-black/40 border border-amber-500/20 shadow-sm">
-                    <div className="w-3 h-3 rounded-full bg-amber-500 animate-ping" />
-                    <div className="flex flex-col items-start">
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600 mb-0.5">{t('pendingFinalEval')}</span>
-                      <span className="text-sm font-bold text-[color:var(--hub-text)]">{t('pendingEvalDesc')}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 text-xs font-bold text-[color:var(--hub-dim)] italic">
-                    <Award size={14} />
-                    <span>Evaluation will be conducted by a supervisor shortly.</span>
-                  </div>
-                </div>
-
-                {/* Bottom gloss effect */}
-                <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-white/10 to-transparent pointer-events-none" />
-             </motion.div>
-          )}
+          {allDone && <CongratulationsCard t={t} />}
 
           <motion.div 
             variants={STAGGER_CONTAINER}
