@@ -38,9 +38,9 @@ export async function getServerUser(): Promise<{ uid: string; name: string; role
     }
   }
 
-  if (role && uid && name && ['admin', 'manager', 'it', 'evaluator', 'agent', 'trainer'].includes(role)) {
+  if (role && uid && name && ['admin', 'manager', 'it', 'evaluator', 'agent', 'trainer', 'hr'].includes(role)) {
     let interactiveAccessUntil: string | undefined;
-    if (role === 'it' || role === 'manager') {
+    if (role === 'it' || role === 'manager' || role === 'hr') {
       const staff = await fsGet<StaffAccount>('staff_accounts', uid);
       interactiveAccessUntil = staff?.interactiveAccessUntil;
     }
@@ -67,6 +67,12 @@ export async function requireAdmin() {
   return user;
 }
 
+export async function requireHR() {
+  const user = await requireAuth();
+  if (user.role !== 'admin' && user.role !== 'hr') throw new Error('Forbidden');
+  return user;
+}
+
 export async function requireAdminOrIT() {
   const user = await requireAuth();
   if (user.role !== 'admin' && user.role !== 'it') throw new Error('Forbidden');
@@ -75,7 +81,7 @@ export async function requireAdminOrIT() {
 
 export async function requireAdminOrManager() {
   const user = await requireAuth();
-  if (user.role !== 'admin' && user.role !== 'manager' && user.role !== 'it') throw new Error('Forbidden');
+  if (user.role !== 'admin' && user.role !== 'manager' && user.role !== 'it' && user.role !== 'hr') throw new Error('Forbidden');
   return user;
 }
 
@@ -87,7 +93,7 @@ export async function requireEvaluator() {
 
 export async function requireAdminManagerOrTrainer() {
   const user = await requireAuth();
-  if (!['admin', 'manager', 'it', 'trainer'].includes(user.role)) throw new Error('Forbidden');
+  if (!['admin', 'manager', 'it', 'trainer', 'hr'].includes(user.role)) throw new Error('Forbidden');
   return user;
 }
 

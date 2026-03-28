@@ -1,11 +1,11 @@
-export type UserRole = 'admin' | 'manager' | 'it' | 'agent' | 'evaluator' | 'trainer';
+export type UserRole = 'admin' | 'manager' | 'it' | 'agent' | 'evaluator' | 'trainer' | 'hr';
 
 export interface StaffAccount {
   id: string;
   username: string;
   password: string;
   name: string;
-  role: 'admin' | 'manager' | 'it' | 'evaluator' | 'trainer';
+  role: 'admin' | 'manager' | 'it' | 'evaluator' | 'trainer' | 'hr';
   active: boolean;
   createdAt: string;
   passwordChanged?: boolean;
@@ -81,6 +81,18 @@ export interface AgentStats {
   evalPassedScenarios?: string[];
   /** Total count of active AI scenarios currently in the system */
   activeScenariosCount?: number;
+  /** Gamification: Current XP points */
+  xp: number;
+  /** Gamification: Current Level */
+  level: number;
+  /** Skill Matrix: 0-100 scores for different domains */
+  skills: {
+    foundation: number;
+    product: number;
+    process: number;
+    payment: number;
+    communication: number;
+  };
 }
 
 // ── Admin API response shapes ───────────────────────────────────────────────
@@ -204,6 +216,11 @@ export interface TrainingPeriod {
   trainerName: string;
   dayTopics?: Record<number, string>; // dayNumber -> topic
   active: boolean;
+  scoringWeights?: {
+    quiz: number;         // e.g. 0.4
+    human: number;        // e.g. 0.3
+    ai: number;           // e.g. 0.3
+  };
   createdAt: string;
   updatedAt?: string;
 }
@@ -233,6 +250,26 @@ export interface DisciplineRecord {
   date: string;           // YYYY-MM-DD
   type: DisciplineType;
   description: string;
+  createdAt: string;
+}
+
+export interface LiveSessionRecord {
+  id: string;
+  trainingPeriodId: string;
+  moduleId: string;
+  moduleTitle: string;
+  trainerId: string;
+  trainerName: string;
+  startTime: string; // ISO
+  endTime: string;   // ISO
+  durationSecs: number;
+  agentCount: number;
+  notes: string;
+  engagement: {
+    heart: number;
+    hand: number;
+    smile: number;
+  };
   createdAt: string;
 }
 

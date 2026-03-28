@@ -23,6 +23,15 @@ import {
   ShieldCheck,
   Power,
   Zap,
+  MessageSquare,
+  Heart,
+  Hand,
+  Smile,
+  Pencil,
+  Highlighter,
+  MousePointer2,
+  Eraser,
+  Trash2,
 } from 'lucide-react';
 import type { CourseModule, CourseLang } from '@/lib/courses';
 import { TRANSITION } from '@/lib/animations';
@@ -35,7 +44,10 @@ import {
   update, 
   onDisconnect, 
   serverTimestamp as rtdbTimestamp,
-  remove
+  remove,
+  push,
+  limitToLast,
+  query
 } from 'firebase/database';
 import type { UserRole } from '@/types';
 
@@ -97,13 +109,174 @@ export default function PresentationViewer({
   const [syncActive, setSyncActive] = useState(false);
   const [syncedBy, setSyncedBy] = useState<string | null>(null);
   const [syncedById, setSyncedById] = useState<string | null>(null);
-  const [participants, setParticipants] = useState<{ id: string; name: string; role: string; inControl?: boolean }[]>([]);
+  const [participants, setParticipants] = useState<{ id: string; name: string; role: string; inControl?: boolean; isFocused?: boolean }[]>([]);
+  
+  // Live Interaction State
+  const [latestBroadcast, setLatestBroadcast] = useState<{ text: string; sender: string } | null>(null);
+  const [showBroadcast, setShowBroadcast] = useState(false);
+  const [isFocused, setIsFocused] = useState(true);
+  const lastBroadcastTs = useRef<number>(Date.now());
+
+  // Annotation State
+  const [activeTool, setActiveTool] = useState<'pen' | 'marker' | 'laser' | null>(null);
+  const [strokes, setStrokes] = useState<{ id: string; tool: string; points: { x: number; y: number }[] }[]>([]);
+  const [laserPos, setLaserPos] = useState<{ x: number; y: number } | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const isDrawing = useRef(false);
+  const currentStroke = useRef<{ x: number; y: number }[]>([]);
+  const lastLaserSync = useRef(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
   const slideRef = useRef(slide);
   const touchStartX = useRef<number | null>(null);
   const isTrainer = user && ['admin', 'manager', 'it', 'trainer'].includes(user.role);
   const amInControl = syncActive && syncedById === (user?.uid || agentId);
+
+  // ── Sync Drawing & Laser ─────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!module.id || !slide) return;
+
+    // Listen for strokes on current slide
+    const strokesRef = ref(rtdb, `presentation_sync/${module.id}/annotations/${slide}`);
+    const unsubStrokes = onValue(strokesRef, (snap) => {
+      if (snap.exists()) {
+        setStrokes(Object.entries(snap.val()).map(([id, val]: [string, any]) => ({ id, ...val })));
+      } else {
+        setStrokes([]);
+      }
+    });
+
+    // Listen for laser pointer
+    const laserRef = ref(rtdb, `presentation_sync/${module.id}/laser`);
+    const unsubLaser = onValue(laserRef, (snap) => {
+      if (snap.exists()) {
+        const data = snap.val();
+        if (data.controlledById !== (user?.uid || agentId)) {
+          setLaserPos(data.pos);
+        }
+      } else {
+        setLaserPos(null);
+      }
+    });
+
+    return () => {
+      unsubStrokes();
+      unsubLaser();
+    };
+  }, [module.id, slide, user?.uid, agentId]);
+
+  // Clear laser on unmount or slide change
+  useEffect(() => {
+    setLaserPos(null);
+    if (amInControl) {
+      remove(ref(rtdb, `presentation_sync/${module.id}/laser`));
+    }
+  }, [slide, amInControl, module.id]);
+
+  // Canvas Drawing Logic
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Resize canvas to match frame
+    const resize = () => {
+      const parent = canvas.parentElement;
+      if (parent) {
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight;
+      }
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      strokes.forEach(s => {
+        if (s.points.length < 2) return;
+        ctx.beginPath();
+        ctx.strokeStyle = s.tool === 'marker' ? 'rgba(255, 230, 0, 0.4)' : '#EF4444';
+        ctx.lineWidth = s.tool === 'marker' ? 20 : 3;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        ctx.moveTo(s.points[0].x * canvas.width, s.points[0].y * canvas.height);
+        for (let i = 1; i < s.points.length; i++) {
+          ctx.lineTo(s.points[i].x * canvas.width, s.points[i].y * canvas.height);
+        }
+        ctx.stroke();
+      });
+    };
+    render();
+
+    return () => window.removeEventListener('resize', resize);
+  }, [strokes]);
+
+  const handleCanvasMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!amInControl || !activeTool || activeTool === 'laser') return;
+    isDrawing.current = true;
+    const rect = canvasRef.current!.getBoundingClientRect();
+    const x = (('touches' in e ? e.touches[0].clientX : e.clientX) - rect.left) / rect.width;
+    const y = (('touches' in e ? e.touches[0].clientY : e.clientY) - rect.top) / rect.height;
+    currentStroke.current = [{ x, y }];
+  };
+
+  const handleCanvasMouseMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!amInControl || !activeTool) return;
+    const rect = canvasRef.current!.getBoundingClientRect();
+    const x = (('touches' in e ? e.touches[0].clientX : e.clientX) - rect.left) / rect.width;
+    const y = (('touches' in e ? e.touches[0].clientY : e.clientY) - rect.top) / rect.height;
+
+    if (activeTool === 'laser') {
+      const now = Date.now();
+      if (now - lastLaserSync.current > 50) { // Throttled laser sync
+        set(ref(rtdb, `presentation_sync/${module.id}/laser`), {
+          pos: { x, y },
+          controlledById: user?.uid || agentId,
+          timestamp: rtdbTimestamp()
+        });
+        lastLaserSync.current = now;
+      }
+      return;
+    }
+
+    if (isDrawing.current) {
+      currentStroke.current.push({ x, y });
+      // Local preview
+      const canvas = canvasRef.current!;
+      const ctx = canvas.getContext('2d')!;
+      ctx.beginPath();
+      ctx.strokeStyle = activeTool === 'marker' ? 'rgba(255, 230, 0, 0.4)' : '#EF4444';
+      ctx.lineWidth = activeTool === 'marker' ? 20 : 3;
+      ctx.lineCap = 'round';
+      ctx.moveTo(currentStroke.current[currentStroke.current.length - 2].x * canvas.width, currentStroke.current[currentStroke.current.length - 2].y * canvas.height);
+      ctx.lineTo(x * canvas.width, y * canvas.height);
+      ctx.stroke();
+    }
+  };
+
+  const handleCanvasMouseUp = async () => {
+    if (!amInControl || !isDrawing.current) return;
+    isDrawing.current = false;
+    if (currentStroke.current.length > 1) {
+      const strokesRef = ref(rtdb, `presentation_sync/${module.id}/annotations/${slide}`);
+      await push(strokesRef, {
+        tool: activeTool,
+        points: currentStroke.current,
+        timestamp: rtdbTimestamp()
+      });
+    }
+    currentStroke.current = [];
+  };
+
+  const clearAnnotations = async () => {
+    if (!amInControl) return;
+    await remove(ref(rtdb, `presentation_sync/${module.id}/annotations/${slide}`));
+  };
 
   const { presentationId, totalSlides: total, cacheKey, slideUrls } = module.presentations[lang];
 
@@ -253,13 +426,45 @@ export default function PresentationViewer({
     return () => unsub();
   }, [module.id, user?.uid, agentId, lang, preloadedSlides]);
 
-  // ... (Presence Tracking and Sync Actions remain unchanged)
+  // ── Broadcast Listener ─────────────────────────────────────────────────────
+  
+  useEffect(() => {
+    if (!module.id || isTrainer) return; // Only agents listen for broadcasts here
+
+    const broadcastQuery = query(ref(rtdb, `presentation_sync/${module.id}/broadcasts`), limitToLast(1));
+    const unsub = onValue(broadcastQuery, (snap) => {
+      if (snap.exists()) {
+        const data = snap.val();
+        const [id, msg] = Object.entries(data)[0] as [string, any];
+        
+        // Only show if it's new (timestamp after component mount or previous seen)
+        if (msg.timestamp > lastBroadcastTs.current) {
+          setLatestBroadcast(msg);
+          setShowBroadcast(true);
+          lastBroadcastTs.current = msg.timestamp;
+          
+          // Auto-hide after 10 seconds
+          const timer = setTimeout(() => setShowBroadcast(false), 10000);
+          return () => clearTimeout(timer);
+        }
+      }
+    });
+
+    return () => unsub();
+  }, [module.id, isTrainer]);
 
   // ── Presence Tracking & Participants ──────────────────────────────────────
 
   const myId = user?.uid || agentId;
   const myName = user?.name || agentName;
   const myRole = user?.role || 'agent';
+
+  // 0. Focus Tracking
+  useEffect(() => {
+    const handleVisibility = () => setIsFocused(!document.hidden);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
 
   // 1. Core Presence (set on mount, remove on unmount)
   useEffect(() => {
@@ -273,6 +478,7 @@ export default function PresentationViewer({
       name: myName,
       role: myRole,
       inControl: amInControl,
+      isFocused,
       updatedAt: rtdbTimestamp(),
     }).then(() => {
       // Automatically remove from RTDB when user disconnects
@@ -287,15 +493,16 @@ export default function PresentationViewer({
     };
   }, [module.id, myId, myName, myRole, amInControl]);
 
-  // 2. Update status fields (inControl) without removing/re-adding presence
+  // 2. Update status fields (inControl, isFocused) without removing/re-adding presence
   useEffect(() => {
     if (!myId || !module.id) return;
     const myPresenceRef = ref(rtdb, `presentation_sync/${module.id}/participants/${myId}`);
     update(myPresenceRef, { 
       inControl: amInControl,
+      isFocused,
       updatedAt: rtdbTimestamp() 
     }).catch(() => {});
-  }, [amInControl, myId, module.id]);
+  }, [amInControl, isFocused, myId, module.id]);
 
   // 3. Listen for all participants
   useEffect(() => {
@@ -355,6 +562,18 @@ export default function PresentationViewer({
     });
   }, [amInControl, module.id]);
 
+  // ── Reaction Action ───────────────────────────────────────────────────────
+  
+  const sendReaction = async (type: string) => {
+    if (!module.id || !myName) return;
+    const reactionsRef = ref(rtdb, `presentation_sync/${module.id}/reactions`);
+    await push(reactionsRef, {
+      type,
+      senderName: myName,
+      timestamp: rtdbTimestamp(),
+    });
+  };
+
   // ─── Standard Handlers ─────────────────────────────────────────────────────
 
   const title = lang === 'th' ? module.titleTh : module.title;
@@ -381,6 +600,13 @@ export default function PresentationViewer({
       updateSyncSlide(slide);
     }
   }, [amInControl, syncActive, lang, slide, updateSyncLang, updateSyncSlide]);
+
+  // Auto-take control for trainer if embedded and no one is in control
+  useEffect(() => {
+    if (embedded && isTrainer && !syncActive && hasContent) {
+      takeControl();
+    }
+  }, [embedded, isTrainer, syncActive, hasContent]);
 
   // Loading timeout
   useEffect(() => {
@@ -575,7 +801,39 @@ export default function PresentationViewer({
             </div>
           </div>
         </div>
-      )}
+        )}
+
+        {/* ── Broadcast Toast Overlay ───────────────────────── */}
+        <AnimatePresence>
+          {showBroadcast && latestBroadcast && (
+            <motion.div
+              initial={{ opacity: 0, y: -40, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="absolute left-1/2 top-20 z-[60] -translate-x-1/2 w-[90%] max-w-md pointer-events-auto"
+            >
+              <div className="rounded-2xl border border-primary/30 bg-primary/10 backdrop-blur-xl p-4 shadow-2xl flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20">
+                  <MessageSquare size={20} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-primary/80 mb-0.5">
+                    {t('broadcastFrom', { sender: latestBroadcast.sender })}
+                  </p>
+                  <p className="text-sm font-bold text-foreground leading-relaxed italic">
+                    &ldquo;{latestBroadcast.text}&rdquo;
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setShowBroadcast(false)}
+                  className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-muted-foreground"
+                >
+                  <AlertCircle size={16} className="rotate-45" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ── Left nav arrow (agent only — trainer uses bottom bar) ── */}
         {!isTrainer && (
@@ -594,11 +852,80 @@ export default function PresentationViewer({
 
           {/* The Frame — width-primary on mobile, height-primary on desktop */}
           <motion.div
+            ref={frameRef}
             className="relative aspect-video w-full max-w-full overflow-hidden rounded-xl border border-border/40 bg-black shadow-2xl sm:w-auto sm:h-full sm:rounded-3xl"
             initial={{ scale: 0.96, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             transition={TRANSITION.base}
           >
+            {/* Annotation Canvas Layer */}
+            {hasContent && (
+              <div className="absolute inset-0 z-[35] pointer-events-none">
+                <canvas 
+                  ref={canvasRef}
+                  className={`w-full h-full ${activeTool ? 'pointer-events-auto cursor-crosshair' : ''}`}
+                  onMouseDown={handleCanvasMouseDown}
+                  onMouseMove={handleCanvasMouseMove}
+                  onMouseUp={handleCanvasMouseUp}
+                  onMouseLeave={handleCanvasMouseUp}
+                  onTouchStart={handleCanvasMouseDown}
+                  onTouchMove={handleCanvasMouseMove}
+                  onTouchEnd={handleCanvasMouseUp}
+                />
+                {laserPos && (
+                  <motion.div 
+                    className="absolute w-4 h-4 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] z-50"
+                    animate={{ left: `${laserPos.x * 100}%`, top: `${laserPos.y * 100}%` }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                  >
+                    <div className="absolute inset-0 animate-ping rounded-full bg-red-400 opacity-50" />
+                  </motion.div>
+                )}
+              </div>
+            )}
+
+            {/* Trainer Drawing Toolbar */}
+            <AnimatePresence>
+              {amInControl && (
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-[40] flex flex-col gap-2 p-1.5 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 shadow-2xl"
+                >
+                  <button 
+                    onClick={() => setActiveTool(activeTool === 'pen' ? null : 'pen')}
+                    className={`p-2.5 rounded-xl transition-all ${activeTool === 'pen' ? 'bg-primary text-white' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                    title="Pen"
+                  >
+                    <Pencil size={18} />
+                  </button>
+                  <button 
+                    onClick={() => setActiveTool(activeTool === 'marker' ? null : 'marker')}
+                    className={`p-2.5 rounded-xl transition-all ${activeTool === 'marker' ? 'bg-amber-400 text-black' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                    title="Highlighter"
+                  >
+                    <Highlighter size={18} />
+                  </button>
+                  <button 
+                    onClick={() => setActiveTool(activeTool === 'laser' ? null : 'laser')}
+                    className={`p-2.5 rounded-xl transition-all ${activeTool === 'laser' ? 'bg-red-500 text-white' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                    title="Laser Pointer"
+                  >
+                    <MousePointer2 size={18} />
+                  </button>
+                  <div className="h-px w-full bg-white/10 my-1" />
+                  <button 
+                    onClick={clearAnnotations}
+                    className="p-2.5 rounded-xl text-white/40 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                    title="Clear All"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Empty State Overlay */}
             {!hasContent && (
               <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-4 bg-muted/20 backdrop-blur-sm">
@@ -811,10 +1138,13 @@ export default function PresentationViewer({
                   <div className="max-h-52 overflow-y-auto">
                     {participants.map(p => (
                       <div key={p.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors">
-                        <div className={`h-2 w-2 shrink-0 rounded-full ${p.inControl ? 'bg-primary' : 'bg-muted-foreground/25'}`} />
-                        <span className="truncate text-[11px] font-bold">{p.name}</span>
+                        <div className={`h-2 w-2 shrink-0 rounded-full ${p.inControl ? 'bg-primary' : (p.isFocused === false ? 'bg-amber-400' : 'bg-muted-foreground/25')}`} />
+                        <span className={`truncate text-[11px] font-bold ${p.isFocused === false ? 'text-muted-foreground' : ''}`}>{p.name}</span>
+                        {p.isFocused === false && (
+                          <span className="text-[8px] font-black uppercase text-amber-500/80 tracking-tighter ml-auto">Away</span>
+                        )}
                         {p.role !== 'agent' && (
-                          <span className="ml-auto text-[8px] font-black uppercase tracking-tighter text-primary/60">{p.role}</span>
+                          <span className={`${p.isFocused === false ? '' : 'ml-auto'} text-[8px] font-black uppercase tracking-tighter text-primary/60`}>{p.role}</span>
                         )}
                       </div>
                     ))}
@@ -863,7 +1193,7 @@ export default function PresentationViewer({
           </div>
 
         ) : (
-          /* ── Agent Bottom Strip (unchanged) ──────────────────────── */
+          /* ── Agent Bottom Strip ──────────────────────── */
           <div className="flex items-center justify-between border-t border-border/50 bg-background/80 px-4 py-2 backdrop-blur-xl sm:px-5">
             {/* Slide counter + participant count */}
             <div className="flex items-center gap-4">
@@ -890,10 +1220,13 @@ export default function PresentationViewer({
                     <div className="max-h-48 overflow-y-auto pr-1 custom-scrollbar">
                       {participants.map(p => (
                         <div key={p.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/50">
-                          <div className={`h-1.5 w-1.5 shrink-0 rounded-full ${p.inControl ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
-                          <span className="truncate text-[11px] font-bold">{p.name}</span>
+                          <div className={`h-1.5 w-1.5 shrink-0 rounded-full ${p.inControl ? 'bg-primary' : (p.isFocused === false ? 'bg-amber-400' : 'bg-muted-foreground/30')}`} />
+                          <span className={`truncate text-[11px] font-bold ${p.isFocused === false ? 'text-muted-foreground' : ''}`}>{p.name}</span>
+                          {p.isFocused === false && (
+                             <span className="text-[8px] font-black uppercase text-amber-500/80 tracking-tighter ml-auto">Away</span>
+                          )}
                           {p.role !== 'agent' && (
-                            <span className="ml-auto text-[8px] font-black uppercase tracking-tighter text-primary/60">{p.role}</span>
+                            <span className={`${p.isFocused === false ? '' : 'ml-auto'} text-[8px] font-black uppercase tracking-tighter text-primary/60`}>{p.role}</span>
                           )}
                         </div>
                       ))}
@@ -904,6 +1237,19 @@ export default function PresentationViewer({
             </div>
 
             <div className="flex items-center gap-3">
+              {/* Agent Reaction Tools */}
+              <div className="flex items-center gap-1 rounded-xl bg-black/5 p-1 dark:bg-white/5">
+                <button onClick={() => sendReaction('heart')} className="p-1.5 rounded-lg hover:bg-pink-500/10 text-pink-500 transition-all active:scale-90" title="Love">
+                  <Heart size={16} />
+                </button>
+                <button onClick={() => sendReaction('hand')} className="p-1.5 rounded-lg hover:bg-amber-500/10 text-amber-500 transition-all active:scale-90" title="Raise Hand">
+                  <Hand size={16} />
+                </button>
+                <button onClick={() => sendReaction('smile')} className="p-1.5 rounded-lg hover:bg-emerald-500/10 text-emerald-500 transition-all active:scale-90" title="Smile">
+                  <Smile size={16} />
+                </button>
+              </div>
+
               {!syncActive && (
                 <div className="hidden items-center gap-1.5 rounded-lg bg-black/5 px-3 py-1 text-[10px] font-bold text-muted-foreground opacity-50 sm:flex dark:bg-white/5">
                   <Keyboard size={11} />

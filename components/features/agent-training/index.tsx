@@ -17,6 +17,7 @@ import { BackgroundEffects } from './BackgroundEffects';
 import { ProfileSidebar } from './ProfileSidebar';
 import { ModuleHeader } from './ModuleHeader';
 import { ModuleCard } from './ModuleCard';
+import { StepTimeline } from './StepTimeline';
 
 // Lazy-load celebration UI for performance
 const CongratulationsCard = dynamic(
@@ -84,23 +85,28 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
         currentStep={currentStep}
         badgeCfg={badgeCfg}
         pct={pct}
+        xp={stats?.xp ?? 0}
+        level={stats?.level ?? 1}
+        skills={stats?.skills ?? { foundation: 0, product: 0, process: 0, payment: 0, communication: 0 }}
         derived={derived}
         onLogout={onLogout}
         t={t}
         navT={navT}
+        locale={locale}
       />
 
       <div className="relative z-10 flex-1 flex flex-col lg:overflow-y-auto">
-        <ModuleHeader doneCount={doneCount} t={t} />
+        <ModuleHeader doneCount={doneCount} stats={stats} t={t} />
 
         <div className="px-6 py-8 lg:px-10 lg:py-12">
           {allDone && <CongratulationsCard t={t} />}
 
+          {/* Desktop Grid Layout */}
           <motion.div 
             variants={STAGGER_CONTAINER}
             initial="initial"
             animate="animate"
-            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8 pb-10"
+            className="hidden md:grid grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8 pb-10"
           >
             {STEPS.map((step) => (
               <ModuleCard
@@ -113,6 +119,17 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
               />
             ))}
           </motion.div>
+
+          {/* Mobile Timeline Layout */}
+          <div className="md:hidden pb-10">
+            <StepTimeline
+              steps={STEPS}
+              derived={derived}
+              hrefs={hrefs}
+              t={t}
+              navT={navT}
+            />
+          </div>
         </div>
       </div>
     </div>

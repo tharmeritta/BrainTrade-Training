@@ -3,6 +3,7 @@
 /**
  * EvaluatorDashboard — Sales Simulation evaluation interface.
  * Fully theme-aware (light/dark) and bilingual (TH/EN) using next-intl.
+ * Added: Keyboard shortcuts for rapid scoring.
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -13,7 +14,7 @@ import {
   ChevronDown, Loader2, Star, BarChart3, Activity, TrendingUp,
   BookOpen, Target, ArrowLeft, CheckCircle2, Circle, Zap,
   AlertTriangle, LogOut, ChevronRight, ShieldCheck, AlertCircle,
-  Flag,
+  Flag, Keyboard,
 } from 'lucide-react';
 
 import ThemeToggle from '@/components/ui/ThemeToggle';
@@ -92,6 +93,47 @@ function timeAgo(iso: string | null | undefined, t: (key: string, p?: any) => st
   const h = Math.floor(m / 60);
   if (h < 24) return t('hourAgo', { h });
   return t('dayAgo', { d: Math.floor(h / 24) });
+}
+
+// --- Keyboard Shortcuts ---
+
+function useKeyboardShortcuts(
+  isEnabled: boolean,
+  onTogglePerf: (idx: number) => void,
+  onToggleRedFlag: (idx: number) => void,
+  onToggleResult: () => void,
+  onSave: () => void
+) {
+  useEffect(() => {
+    if (!isEnabled) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return;
+      
+      // Keys 1-4 for Performance
+      if (['1', '2', '3', '4'].includes(e.key)) {
+        e.preventDefault();
+        onTogglePerf(parseInt(e.key) - 1);
+      }
+      // Keys Q, W, E, R for Red Flags
+      const rfKeys: Record<string, number> = { q: 0, w: 1, e: 2, r: 3, Q: 0, W: 1, E: 2, R: 3 };
+      if (rfKeys[e.key] !== undefined) {
+        e.preventDefault();
+        onToggleRedFlag(rfKeys[e.key]);
+      }
+      // Space to toggle Pass/Fail
+      if (e.key === ' ') {
+        e.preventDefault();
+        onToggleResult();
+      }
+      // Enter to save (if cmd/ctrl is pressed)
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        onSave();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isEnabled, onTogglePerf, onToggleRedFlag, onToggleResult, onSave]);
 }
 
 // --- ScoreRing ---
@@ -464,7 +506,7 @@ const EvalForm = ({
           })()}
         </div>
         <div className="p-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {PERFORMANCE_KEYS.map((key) => {
+          {PERFORMANCE_KEYS.map((key, idx) => {
             const perf = criteria.performance[key];
             const isUnhandled = key === 'unhandledQuestions';
             const isActive = perf.agentInvolve;
@@ -479,9 +521,12 @@ const EvalForm = ({
                 className={`rounded-xl border p-3 space-y-2 transition-colors ${isActive ? `${activeBorder} ${activeBg}` : 'border-border bg-card'}`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className={`text-xs font-semibold leading-snug ${isActive ? activeText : 'text-foreground'}`}>
-                    {t(`performanceItems.${key}`)}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-secondary flex items-center justify-center text-[10px] font-black text-muted-foreground/60 border border-border">{idx + 1}</div>
+                    <span className={`text-xs font-semibold leading-snug ${isActive ? activeText : 'text-foreground'}`}>
+                      {t(`performanceItems.${key}`)}
+                    </span>
+                  </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <span className={`text-[10px] font-black ${isActive ? activeText : 'text-muted-foreground/50'}`}>
                       {isActive ? t('yLabel') : t('nLabel')}
@@ -577,12 +622,13 @@ const EvalForm = ({
         <div>
           {RED_FLAG_KEYS.map((key, i) => {
             const checked = criteria.redFlags[key];
+            const shortcutKey = ['Q', 'W', 'E', 'R'][i];
             return (
               <div key={key} className={`px-4 py-3 ${checked ? 'bg-red-500/5' : i % 2 === 0 ? 'bg-card' : 'bg-secondary/20'} ${i < RED_FLAG_KEYS.length - 1 ? 'border-b border-border' : ''}`}>
                 <div className="flex items-start gap-3">
                   <button onClick={() => setRedFlag(key, !checked)}
                     className={`mt-0.5 w-4 h-4 rounded flex items-center justify-center border shrink-0 ${checked ? 'bg-red-500/30 border-red-500/70' : 'bg-secondary border-border'}`}>
-                    {checked && <X size={9} className="text-red-400" />}
+                    {checked ? <X size={9} className="text-red-400" /> : <span className="text-[8px] font-black text-muted-foreground/40">{shortcutKey}</span>}
                   </button>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -605,6 +651,7 @@ const EvalForm = ({
       <motion.div variants={STAGGER_ITEM} className="rounded-2xl overflow-hidden border border-border bg-card shadow-sm">
         <div className="px-4 py-3 bg-primary/5 border-b border-border flex items-center justify-between">
           <span className="text-xs font-black text-foreground uppercase tracking-wider">{t('finalResultHeader')}</span>
+          <span className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest">[Space] to toggle</span>
         </div>
         <div className="p-3 space-y-3">
           <div className="flex gap-2">
@@ -1064,6 +1111,37 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
     } finally { setSaving(false); }
   };
 
+  // Keyboard Handlers
+  const togglePerf = useCallback((idx: number) => {
+    const key = PERFORMANCE_KEYS[idx];
+    if (!key) return;
+    setCriteria(prev => ({
+      ...prev,
+      performance: {
+        ...prev.performance,
+        [key]: { ...prev.performance[key], agentInvolve: !prev.performance[key].agentInvolve }
+      }
+    }));
+  }, []);
+
+  const toggleRedFlag = useCallback((idx: number) => {
+    const key = RED_FLAG_KEYS[idx];
+    if (!key) return;
+    setCriteria(prev => ({
+      ...prev,
+      redFlags: { ...prev.redFlags, [key]: !prev.redFlags[key] }
+    }));
+  }, []);
+
+  const toggleResult = useCallback(() => {
+    setCriteria(prev => ({
+      ...prev,
+      finalResult: prev.finalResult === 'passed' ? 'failed' : 'passed'
+    }));
+  }, []);
+
+  useKeyboardShortcuts(!!selectedAgent && tab === 'new', togglePerf, toggleRedFlag, toggleResult, handleSave);
+
   // Sidebar agent list — filtered + sorted by priority
   const filteredAgents = agents
     .map(a => {
@@ -1084,6 +1162,34 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
   return (
     <div className="min-h-screen bg-background relative selection:bg-primary/20" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <ChangePasswordModal isOpen={isPwModalOpen} onClose={() => setIsPwModalOpen(false)} />
+
+      {/* Keyboard Shortcuts Help */}
+      <div className="fixed bottom-24 right-6 z-50 group">
+        <div className="bg-card/80 backdrop-blur-xl border border-border rounded-full p-2.5 shadow-lg text-muted-foreground hover:text-foreground transition-all cursor-help">
+          <Keyboard size={20} />
+        </div>
+        <div className="absolute bottom-full right-0 mb-3 w-64 bg-card border border-border rounded-2xl shadow-2xl p-4 opacity-0 group-hover:opacity-100 pointer-events-none transition-all translate-y-2 group-hover:translate-y-0">
+          <p className="text-xs font-black uppercase tracking-widest text-primary mb-3">Evaluator Hotkeys</p>
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-medium">Performance (1-4)</span>
+              <kbd className="px-1.5 py-0.5 rounded bg-secondary border border-border font-bold">1-4</kbd>
+            </div>
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-medium">Red Flags (Q-R)</span>
+              <kbd className="px-1.5 py-0.5 rounded bg-secondary border border-border font-bold">Q-R</kbd>
+            </div>
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-medium">Toggle Pass/Fail</span>
+              <kbd className="px-1.5 py-0.5 rounded bg-secondary border border-border font-bold">Space</kbd>
+            </div>
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-medium">Save Evaluation</span>
+              <kbd className="px-1.5 py-0.5 rounded bg-secondary border border-border font-bold">⌘ + Enter</kbd>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Ambient background glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">

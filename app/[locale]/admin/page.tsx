@@ -17,7 +17,7 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
 
     return (
       <AdminDashboard
-        role={user.role as 'admin' | 'manager' | 'it' | 'trainer'}
+        role={user.role as 'admin' | 'manager' | 'it' | 'trainer' | 'hr'}
         uid={user.uid}
         name={user.name}
         passwordChanged={user.passwordChanged}

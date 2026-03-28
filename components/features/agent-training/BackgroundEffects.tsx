@@ -11,14 +11,20 @@ export const BackgroundEffects = memo(({ badgeColor }: { badgeColor: string }) =
     />
 
     <motion.div 
-      className="absolute w-[800px] h-[800px] -top-[200px] -left-[200px] rounded-full"
-      style={{ background: `radial-gradient(circle, ${badgeColor}0A 0%, transparent 70%)` }}
+      className="absolute w-[800px] h-[800px] -top-[200px] -left-[200px] rounded-full will-change-transform"
+      style={{ 
+        background: `radial-gradient(circle, ${badgeColor}0A 0%, transparent 70%)`,
+        filter: 'blur(60px)' 
+      }}
       animate={{ x: [0, 40, 0], y: [0, 60, 0], scale: [1, 1.1, 1] }}
       transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
     />
     <motion.div 
-      className="absolute w-[600px] h-[600px] bottom-[-100px] right-[-100px] rounded-full"
-      style={{ background: `radial-gradient(circle, rgba(96,165,250,0.08) 0%, transparent 75%)` }}
+      className="absolute w-[600px] h-[600px] bottom-[-100px] right-[-100px] rounded-full will-change-transform"
+      style={{ 
+        background: `radial-gradient(circle, rgba(96,165,250,0.08) 0%, transparent 75%)`,
+        filter: 'blur(40px)'
+      }}
       animate={{ x: [0, -30, 0], y: [0, -50, 0], scale: [1, 1.05, 1] }}
       transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
     />

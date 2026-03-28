@@ -1,10 +1,50 @@
 import { fsGet as gcsGet, fsGetAll as gcsGetAll, fsGetWhere as gcsGetWhere } from './firestore-db';
-import type { Agent, AgentStats, ModuleStat, AgentEvaluation } from '@/types';
+import type { Agent, AgentStats, ModuleStat, AgentEvaluation, TrainingPeriod } from '@/types';
 import { MOCKUP_AGENT_ID } from './agent-session';
 
 const MODULES = ['foundation', 'product', 'process', 'payment'] as const;
 
 // ── Score helpers ─────────────────────────────────────────────────────────
+
+export function calculateXpAndLevel(stats: Omit<AgentStats, 'xp' | 'level' | 'skills' | 'overallScore' | 'badge'>): { xp: number; level: number } {
+  let xp = 0;
+  
+  // 50 XP per learned module
+  xp += (stats.learnedModules?.length ?? 0) * 50;
+  
+  // 100 XP per passed quiz
+  for (const m in stats.quiz) {
+    if (stats.quiz[m].passed) xp += 100;
+  }
+  
+  // AI Eval XP: 10 XP per attempt + 50 XP per passed scenario
+  if (stats.aiEval) {
+    xp += stats.aiEval.count * 10;
+  }
+  xp += (stats.evalPassedScenarios?.length ?? 0) * 50;
+  
+  // Level formula: Level = floor(sqrt(XP / 50)) + 1
+  // lvl 1: 0 XP
+  // lvl 2: 50 XP
+  // lvl 3: 200 XP
+  // lvl 4: 450 XP
+  // lvl 5: 800 XP
+  const level = Math.floor(Math.sqrt(xp / 50)) + 1;
+  
+  return { xp, level };
+}
+
+export function calculateSkills(stats: Omit<AgentStats, 'xp' | 'level' | 'skills' | 'overallScore' | 'badge'>): AgentStats['skills'] {
+  const getScore = (mod: string) => stats.quiz[mod]?.bestScore ?? 0;
+  
+  return {
+    foundation:    getScore('foundation'),
+    product:       getScore('product'),
+    process:       getScore('process'),
+    payment:       getScore('payment'),
+    communication: stats.aiEval?.avgScore ?? 0,
+  };
+}
 
 export function computeBadge(score: number): AgentStats['badge'] {
   if (score >= 85) return 'elite';
@@ -13,19 +53,33 @@ export function computeBadge(score: number): AgentStats['badge'] {
   return 'needs-work';
 }
 
-export function computeOverallScore(stats: Omit<AgentStats, 'overallScore' | 'badge'> & { evalCompletedLevels?: number[]; evalPassedScenarios?: string[]; activeScenariosCount?: number }): number {
+export function computeOverallScore(
+  stats: Omit<AgentStats, 'overallScore' | 'badge' | 'xp' | 'level' | 'skills'> & { 
+    evalCompletedLevels?: number[]; 
+    evalPassedScenarios?: string[]; 
+    activeScenariosCount?: number 
+  },
+  weights?: { quiz: number; human: number; ai: number }
+): number {
+  const w = weights ?? { quiz: 0.4, human: 0.3, ai: 0.3 };
+  
   const quizScores    = MODULES.map(m => stats.quiz[m]?.bestScore ?? 0);
   const avgQuiz       = quizScores.reduce((a, b) => a + b, 0) / MODULES.length;
   const aiEval        = stats.aiEval?.avgScore ?? 0;
   
-  // Eval progress: 25% per level reached (up to Level 4)
+  // Human/Simulation Eval progress: 25% per level reached (up to Level 4)
   const levels        = stats.evalCompletedLevels ?? [];
   const maxL          = levels.length > 0 ? Math.max(...levels) : 0;
-  const evalScore     = maxL >= 4 ? 100 : Math.min(aiEval, maxL * 25);
   
-  // New Weighting: Quiz 40%, Human Eval 30%, AI Eval 30%
-  // Note: For training progress before human evaluation, we use evalScore (the simulated simulation progress)
-  return Math.round(avgQuiz * 0.4 + evalScore * 0.3 + aiEval * 0.3);
+  // If we have actual human evaluations, we could use those. 
+  // For now, we simulate with max level progress if no human evaluations exist.
+  const hasHumanEvals = stats.humanEvaluations && stats.humanEvaluations.length > 0;
+  const humanScore    = hasHumanEvals 
+    ? stats.humanEvaluations[0].totalScore 
+    : (maxL >= 4 ? 100 : Math.min(aiEval, maxL * 25));
+  
+  // Apply Weights
+  return Math.round(avgQuiz * w.quiz + humanScore * w.human + aiEval * w.ai);
 }
 
 // ── Single-agent stats (used by /api/agent/progress GET) ──────────────────
@@ -48,23 +102,34 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
     };
     
     const overallScore = computeOverallScore(partialMock);
+    const { xp, level } = calculateXpAndLevel(partialMock);
+    const skills = calculateSkills(partialMock);
+
     const mockStats: AgentStats = {
       ...partialMock,
       overallScore,
-      badge: computeBadge(overallScore)
+      badge: computeBadge(overallScore),
+      xp,
+      level,
+      skills
     };
     return mockStats;
   }
 
   // Optimize: Only fetch records belonging to THIS agent.
   // This prevents loading thousands of records into RAM to find a few.
-  const [quizDocs, evalDocs, progressDoc, humanEvals, scenariosSnap] = await Promise.all([
+  const [quizDocs, evalDocs, progressDoc, humanEvals, scenariosSnap, periodsSnap] = await Promise.all([
     gcsGetWhere<QuizRecord>('quiz_results', 'agentId', agentId),
     gcsGetWhere<EvalRecord>('ai_eval_logs', 'agentId', agentId),
     gcsGet<ProgressRecord>('agent_progress', agentId).catch(() => null),
     gcsGetWhere<AgentEvaluation>('agent_evaluations', 'agentId', agentId),
     gcsGetAll<{ isActive: boolean }>('aiev_scenarios'), // Small collection, okay to getAll
+    gcsGetAll<TrainingPeriod>('training_periods'),       // Find weights from the period
   ]);
+
+  // Find the active period this agent belongs to
+  const myPeriod = periodsSnap.find(p => p.active && p.agentIds.includes(agentId));
+  const weights = myPeriod?.scoringWeights;
 
   // Quiz per module
   const quiz: AgentStats['quiz'] = {};
@@ -95,9 +160,13 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
   ].map(r => r.timestamp).filter(Boolean).sort().at(-1) ?? null;
 
   const agent: Agent = { id: agentId, name: agentName, active: true, createdAt: new Date() };
-  const partial      = { agent, quiz, aiEval, lastActive, evalCompletedLevels: evalCompleted, evalPassedScenarios: passedScenarios, learnedModules, humanEvaluations: myHumanEvals };
-  const overallScore = computeOverallScore({ ...partial, activeScenariosCount });
-  return { ...partial, overallScore, badge: computeBadge(overallScore) };
+  const partial      = { agent, quiz, aiEval, lastActive, evalCompletedLevels: evalCompleted, evalPassedScenarios: passedScenarios, learnedModules, humanEvaluations: myHumanEvals, activeScenariosCount };
+  
+  const overallScore = computeOverallScore(partial, weights);
+  const { xp, level } = calculateXpAndLevel(partial);
+  const skills = calculateSkills(partial);
+
+  return { ...partial, overallScore, badge: computeBadge(overallScore), xp, level, skills };
 }
 
 // ── Data types matching GCS records ───────────────────────────────────────
@@ -160,13 +229,14 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
 // ── Analytics ─────────────────────────────────────────────────────────────
 
 export async function getAllAgentStats(): Promise<AgentStats[]> {
-  const [agents, quizDocs, evalDocs, progressDocs, humanEvals, scenariosSnap] = await Promise.all([
+  const [agents, quizDocs, evalDocs, progressDocs, humanEvals, scenariosSnap, periodsSnap] = await Promise.all([
     gcsGetAll<Agent & { id: string }>('agents'),
     gcsGetAll<QuizRecord>('quiz_results'),
     gcsGetAll<EvalRecord>('ai_eval_logs'),
     gcsGetAll<ProgressRecord>('agent_progress'),
     gcsGetAll<AgentEvaluation>('agent_evaluations'),
     gcsGetAll<{ isActive: boolean }>('aiev_scenarios'),
+    gcsGetAll<TrainingPeriod>('training_periods'),
   ]);
 
   const activeAgents = agents.filter(a => a.active);
@@ -196,6 +266,17 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
     progressMap.set(p.agentId, p);
   }
 
+  // Pre-calculate weights map for active agents
+  const weightMap = new Map<string, { quiz: number; human: number; ai: number }>();
+  const activePeriods = periodsSnap.filter(p => p.active);
+  for (const p of activePeriods) {
+    if (p.scoringWeights) {
+      for (const aid of p.agentIds) {
+        weightMap.set(aid, p.scoringWeights);
+      }
+    }
+  }
+
   const results: AgentStats[] = [];
   
   for (const agent of activeAgents) {
@@ -203,6 +284,7 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
     const myEvals   = evalMap.get(agent.id) ?? [];
     const myHuman   = humanMap.get(agent.id) ?? [];
     const progress  = progressMap.get(agent.id);
+    const weights   = weightMap.get(agent.id);
 
     // Quiz per module
     const quiz: AgentStats['quiz'] = {};
@@ -236,11 +318,15 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
       evalCompletedLevels: progress?.evalCompletedLevels ?? [], 
       evalPassedScenarios: progress?.evalPassedScenarios ?? [], 
       learnedModules: progress?.learnedModules ?? [], 
-      humanEvaluations: sortedHuman 
+      humanEvaluations: sortedHuman,
+      activeScenariosCount
     };
     
-    const overallScore = computeOverallScore({ ...partial, activeScenariosCount });
-    results.push({ ...partial, overallScore, badge: computeBadge(overallScore) });
+    const overallScore = computeOverallScore(partial, weights);
+    const { xp, level } = calculateXpAndLevel(partial);
+    const skills = calculateSkills(partial);
+
+    results.push({ ...partial, overallScore, badge: computeBadge(overallScore), xp, level, skills });
   }
 
   return results;

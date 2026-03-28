@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdminManagerOrTrainer } from '@/lib/session';
 import { fsGetAll } from '@/lib/firestore-db';
-import { computeOverallScore, computeBadge } from '@/lib/agents';
+import { computeOverallScore, computeBadge, calculateXpAndLevel, calculateSkills } from '@/lib/agents';
 import type { AdminOverviewData, Agent, AgentStats, ModuleStat, AgentEvaluation } from '@/types';
 
 const EMPTY: AdminOverviewData = {
@@ -10,7 +10,6 @@ const EMPTY: AdminOverviewData = {
   moduleStats: [
     { moduleId: 'learn',   label: 'Learn',   avgScore: 0, passCount: 0, totalAttempts: 0 },
     { moduleId: 'quiz',    label: 'Quiz',    avgScore: 0, passCount: 0, totalAttempts: 0 },
-    { moduleId: 'ai-eval', label: 'AI Eval', avgScore: 0, passCount: 0, totalAttempts: 0 },
     { moduleId: 'ai-eval', label: 'AI Eval', avgScore: 0, passCount: 0, totalAttempts: 0 },
   ],
   leaderboard: [], passFail: { passed: 0, failed: 0 },
@@ -27,16 +26,18 @@ export async function GET() {
 
   try {
     // Single fetch for all data to avoid redundant Firestore calls
-    const [agents, quizDocs, evalDocs, progressDocs, humanEvals] = await Promise.all([
+    const [agents, quizDocs, evalDocs, progressDocs, humanEvals, scenariosDocs] = await Promise.all([
       fsGetAll<Agent & { id: string }>('agents'),
       fsGetAll<{ id: string; agentId: string; moduleId: string; score: number; totalQuestions: number; passed: boolean; timestamp: string }>('quiz_results'),
-      fsGetAll<{ id: string; agentId: string; score: number; timestamp: string }>('ai_eval_logs'),
-      fsGetAll<{ agentId: string; evalCompletedLevels: number[]; learnedModules?: string[]; updatedAt: string }>('agent_progress'),
+      fsGetAll<{ id: string; agentId: string; score: number; level?: number; passed?: boolean; timestamp: string }>('ai_eval_logs'),
+      fsGetAll<{ agentId: string; evalCompletedLevels: number[]; evalPassedScenarios?: string[]; learnedModules?: string[]; updatedAt: string }>('agent_progress'),
       fsGetAll<AgentEvaluation>('agent_evaluations'),
+      fsGetAll<{ isActive: boolean }>('aiev_scenarios'),
     ]);
 
     const activeAgents = agents.filter(a => a.active);
     const totalAgents  = activeAgents.length;
+    const activeScenariosCount = scenariosDocs.filter(s => s.isActive).length;
 
     if (totalAgents === 0) return NextResponse.json(EMPTY);
 
@@ -60,7 +61,7 @@ export async function GET() {
       const evals  = evalDocs.filter(e => e.agentId === agent.id);
       const levels: Record<number, { attempts: number; avgScore: number; bestScore: number; passed: boolean; lastTimestamp: string }> = {};
       for (const lv of [1, 2, 3, 4]) {
-        const lvEvals = evals.filter(e => ((e as any).level || 1) === lv);
+        const lvEvals = evals.filter(e => (e.level || 1) === lv);
         if (lvEvals.length === 0) continue;
         const sorted = [...lvEvals].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
         levels[lv] = {
@@ -75,13 +76,14 @@ export async function GET() {
         ? {
             avgScore: Math.round(evals.reduce((s, e) => s + e.score, 0) / evals.length),
             count:    evals.length,
-            history:  evals.map(e => ({ score: e.score, level: (e as any).level || 1, passed: (e as any).passed || false, timestamp: e.timestamp })),
+            history:  evals.map(e => ({ score: e.score, level: e.level || 1, passed: e.passed || false, timestamp: e.timestamp })),
             levels,
           }
         : null;
 
       const progress       = progressDocs.find(p => p.agentId === agent.id);
       const evalCompleted  = progress?.evalCompletedLevels ?? [];
+      const evalPassedScenarios = progress?.evalPassedScenarios ?? [];
       const learnedModules = progress?.learnedModules ?? [];
       const myHumanEvals   = humanEvals.filter(h => h.agentId === agent.id).sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
 
@@ -91,9 +93,20 @@ export async function GET() {
       ].map(r => r.timestamp).filter(Boolean).sort();
       const lastActive = allTimes.length > 0 ? allTimes[allTimes.length - 1] : null;
 
-      const partial      = { agent, quiz, aiEval, lastActive, evalCompletedLevels: evalCompleted, learnedModules, humanEvaluations: myHumanEvals };
+      const partial      = { 
+        agent, quiz, aiEval, lastActive, 
+        evalCompletedLevels: evalCompleted, 
+        evalPassedScenarios,
+        learnedModules, 
+        humanEvaluations: myHumanEvals,
+        activeScenariosCount
+      };
+      
       const overallScore = computeOverallScore(partial);
-      return { ...partial, overallScore, badge: computeBadge(overallScore) };
+      const { xp, level } = calculateXpAndLevel(partial);
+      const skills = calculateSkills(partial);
+
+      return { ...partial, overallScore, badge: computeBadge(overallScore), xp, level, skills };
     });
 
     // Module stats

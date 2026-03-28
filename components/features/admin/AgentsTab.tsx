@@ -13,7 +13,7 @@ import AgentDetailModal from './AgentDetailModal';
 import BulkImportModal from './BulkImportModal';
 import { useRouter } from 'next/navigation';
 
-export default function AgentsTab({ role, readOnly }: { role: 'admin' | 'manager' | 'it' | 'trainer'; readOnly?: boolean }) {
+export default function AgentsTab({ role, readOnly }: { role: 'admin' | 'manager' | 'it' | 'trainer' | 'hr'; readOnly?: boolean }) {
   const t = useTranslations('admin');
   const router = useRouter();
   const [agents,       setAgents]       = useState<AgentStats[]>([]);

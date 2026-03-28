@@ -180,6 +180,7 @@
     "signOut": "Sign out",
     "tabs": {
       "overview": "Overview",
+      "hranalytics": "HR Analytics",
       "agents": "Agents",
       "training": "Training",
       "evaluations": "Evaluations",
@@ -224,7 +225,8 @@
       "manager": "Manager",
       "it": "IT Support",
       "trainer": "Trainer",
-      "evaluator": "Evaluator"
+      "evaluator": "Evaluator",
+      "hr": "HR Recruiter"
     },
     "staff": {
       "title": "Staff Accounts",
@@ -238,7 +240,8 @@
         "manager": "Manager",
         "it": "IT Support",
         "evaluator": "Evaluator",
-        "trainer": "Trainer"
+        "trainer": "Trainer",
+        "hr": "HR Recruiter"
       },
       "username": "Username",
       "password": "Password",
@@ -266,6 +269,7 @@
       "aboutIT": "IT Support has the same authority as Managers, plus access to staff management.",
       "aboutTrainer": "Trainers focus on daily logs, attendance, and discipline.",
       "aboutEvaluator": "Evaluators score agents in the Sales Simulation panel.",
+      "aboutHR": "HR Recruiters track agent progress and review final evaluations for hiring.",
       "aboutAdmin": "Administrators (you) have full access including staff management."
     },
     "overview": {
@@ -598,6 +602,7 @@
     "keepGoing": "Keep Going",
     "reopenPresenter": "Reopen Presenter Window",
     "agentsInBatch": "Agents in Batch",
+    "liveParticipants": "Live Participants",
     "broadcastMessage": "Broadcast to Agents",
     "broadcastPlaceholder": "Type a message to send to all agents...",
     "sendBroadcast": "Send to All",
@@ -862,6 +867,10 @@
       "evaluator": {
         "label": "Evaluator",
         "desc": "Sales Simulation · Evaluate agents based on criteria"
+      },
+      "hr": {
+        "label": "HR Recruiter",
+        "desc": "HR Recruiter · Track agent progress and review final evaluations for hiring"
       }
     }
   },

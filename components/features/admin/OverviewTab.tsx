@@ -5,28 +5,21 @@ import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { Users, Target, Award, Activity, TrendingUp, BookOpen, Zap, Loader2, CheckCircle2, Clock, AlertCircle, ShieldCheck, type LucideIcon } from 'lucide-react';
 import type { AdminOverviewData } from '@/types';
-import { KpiCard, DonutChart, ModuleBar, BadgePill, StatusPipeline } from './AdminComponents';
+import { KpiCard, DonutChart, ModuleBar, BadgePill, StatusPipeline, LivePulse } from './AdminComponents';
 import { scoreColor, scoreBg, timeAgo } from './AdminHelpers';
-import LiveFeed from './LiveFeed';
 import { getCompletionStatus, type CompletionStatus } from '@/lib/completion';
 import { fetchWithCache } from '@/lib/fetcher';
 
 export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
   const t = useTranslations('admin');
   const [data,    setData]    = useState<AdminOverviewData | null>(null);
-  const [feed,    setFeed]    = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [ovData, feedData] = await Promise.all([
-        fetchWithCache<AdminOverviewData>('/api/admin/overview'),
-        fetchWithCache<{ feed: any[] }>('/api/admin/live-feed')
-      ]);
-      
+      const ovData = await fetchWithCache<AdminOverviewData>('/api/admin/overview');
       setData(ovData);
-      setFeed(feedData.feed || []);
     } catch (err) {
       console.error('Overview fetching error:', err);
     } finally {
@@ -55,106 +48,145 @@ export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
     </div>
   );
 
-
-
   // Roster: agents who have started (in-progress or beyond), sorted by status priority
   const STATUS_ORDER: Record<CompletionStatus, number> = { cleared: 0, 'needs-eval': 1, 'in-progress': 2, 'not-started': 3 };
   const rosterAgents = data.leaderboard
     .map(a => ({ ...a, completion: getCompletionStatus(a) }))
     .sort((a, b) => STATUS_ORDER[a.completion.status] - STATUS_ORDER[b.completion.status]);
 
+  // Extract agent mapping for LivePulse
+  const agentIds = data.leaderboard.map(a => a.agent.id);
+  const agentNames: Record<string, string> = {};
+  data.leaderboard.forEach(a => agentNames[a.agent.id] = a.agent.name);
+
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label={t('overview.totalAgents')} value={data.totalAgents} sub={t('overview.activeWeekly', { count: data.activeAgents })} icon={Users} themeColor="blue" />
-        <KpiCard label={t('overview.quizPassRate')} value={`${data.overallPassRate}%`} sub={t('overview.allModules')} icon={Target} themeColor="blue" />
-        <KpiCard label={t('overview.aiEvalAvg')} value={`${data.avgAiEvalScore}/100`} sub={t('overview.speechEval')} icon={Award} themeColor="purple" />
-        <KpiCard label={t('overview.sessionsWeekly')} value={data.weekSessions} sub={t('overview.sessionsDesc')} icon={Activity} themeColor="orange" />
+        <KpiCard 
+          label={t('overview.totalAgents')} 
+          value={data.totalAgents} 
+          sub={t('overview.activeWeekly', { count: data.activeAgents })} 
+          icon={Users} 
+          themeColor="blue" 
+          trend={{ value: 12, isUp: true }}
+        />
+        <KpiCard 
+          label={t('overview.quizPassRate')} 
+          value={`${data.overallPassRate}%`} 
+          sub={t('overview.allModules')} 
+          icon={Target} 
+          themeColor="blue" 
+          trend={{ value: 5, isUp: true }}
+        />
+        <KpiCard 
+          label={t('overview.aiEvalAvg')} 
+          value={`${data.avgAiEvalScore}/100`} 
+          sub={t('overview.speechEval')} 
+          icon={Award} 
+          themeColor="purple" 
+          trend={{ value: 2, isUp: false }}
+        />
+        <KpiCard 
+          label={t('overview.sessionsWeekly')} 
+          value={data.weekSessions} 
+          sub={t('overview.sessionsDesc')} 
+          icon={Activity} 
+          themeColor="orange" 
+          trend={{ value: 8, isUp: true }}
+        />
       </div>
 
-      {/* ── Training Pipeline ─────────────────────────────────────── */}
-      <div className="bg-card rounded-2xl border border-border p-6 shadow-sm space-y-5">
-        <div>
-          <h3 className="font-bold text-lg flex items-center gap-2">
-            <ShieldCheck size={20} className="text-primary" /> {t('overview.pipeline')}
-          </h3>
-          <p className="text-xs text-muted-foreground mt-0.5">{t('overview.pipelineDesc')}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3">
+          {/* ── Training Pipeline ─────────────────────────────────────── */}
+          <div className="bg-card rounded-2xl border border-border p-6 shadow-sm space-y-5 h-full">
+            <div>
+              <h3 className="font-bold text-lg flex items-center gap-2">
+                <ShieldCheck size={20} className="text-primary" /> {t('overview.pipeline')}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">{t('overview.pipelineDesc')}</p>
+            </div>
+
+            <StatusPipeline stats={data.leaderboard} totalCount={data.totalAgents} />
+
+            {/* Graduation Roster */}
+            <div className="pt-4">
+              <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                {t('overview.graduationRoster')}
+                <span className="text-xs font-normal text-muted-foreground">({rosterAgents.length})</span>
+              </h4>
+              {rosterAgents.length === 0 ? (
+                <p className="text-xs text-muted-foreground italic py-4 text-center">{t('overview.noRosterData')}</p>
+              ) : (
+                <div className="overflow-x-auto rounded-xl border border-border">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border bg-secondary/30 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                        <th className="text-left px-4 py-2.5">{t('overview.rosterAgent')}</th>
+                        <th className="text-center px-3 py-2.5">{t('overview.rosterTraining')}</th>
+                        <th className="text-center px-3 py-2.5">Quiz</th>
+                        <th className="text-center px-3 py-2.5">AI Eval</th>
+                        <th className="text-center px-3 py-2.5">{t('overview.rosterEvalScore')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {rosterAgents.slice(0, 10).map(a => {
+                        const { status, quizComplete } = a.completion;
+                        const statusCfg = {
+                          cleared:       { pill: 'bg-emerald-500/15 text-emerald-400', label: t('overview.statusCleared') },
+                          'needs-eval':  { pill: 'bg-amber-500/15 text-amber-400',     label: t('overview.statusNeedsEval') },
+                          'in-progress': { pill: 'bg-blue-500/15 text-blue-400',       label: t('overview.statusInProgress') },
+                          'not-started': { pill: 'bg-secondary text-muted-foreground', label: t('overview.statusNotStarted') },
+                        }[status];
+                        return (
+                          <tr key={a.agent.id} className="hover:bg-secondary/20 transition-colors">
+                            <td className="px-4 py-3">
+                              <div className="font-semibold text-foreground text-xs">{a.agent.name}</div>
+                              {a.agent.stageName && <div className="text-[10px] text-primary/60">&quot;{a.agent.stageName}&quot;</div>}
+                            </td>
+                            <td className="px-3 py-3 text-center">
+                              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${statusCfg.pill}`}>
+                                {statusCfg.label}
+                              </span>
+                            </td>
+                            <td className="px-3 py-3 text-center">
+                              <span className={`text-sm font-bold ${quizComplete ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {quizComplete ? '✓' : '✗'}
+                              </span>
+                            </td>
+                            <td className="px-3 py-3 text-center">
+                              {a.aiEval
+                                ? <span className={`text-xs font-bold ${scoreColor(a.aiEval.avgScore)}`}>{a.aiEval.avgScore}%</span>
+                                : <span className="text-muted-foreground/40 text-xs">–</span>}
+                            </td>
+                            <td className="px-3 py-3 text-center">
+                              {status === 'cleared' && (
+                                <span className="text-[10px] text-emerald-400 font-semibold">✓ {t('overview.actionCleared')}</span>
+                              )}
+                              {status === 'needs-eval' && (
+                                <span className="text-[10px] text-amber-400 font-semibold">{t('overview.actionNeedsEval')}</span>
+                              )}
+                              {status === 'in-progress' && (
+                                <span className="text-[10px] text-muted-foreground">{t('overview.actionInProgress')}</span>
+                              )}
+                              {status === 'not-started' && (
+                                <span className="text-[10px] text-muted-foreground/40">{t('overview.actionNotStarted')}</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        <StatusPipeline stats={data.leaderboard} totalCount={data.totalAgents} />
-
-        {/* Graduation Roster */}
-        <div>
-          <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-            {t('overview.graduationRoster')}
-            <span className="text-xs font-normal text-muted-foreground">({rosterAgents.length})</span>
-          </h4>
-          {rosterAgents.length === 0 ? (
-            <p className="text-xs text-muted-foreground italic py-4 text-center">{t('overview.noRosterData')}</p>
-          ) : (
-            <div className="overflow-x-auto rounded-xl border border-border">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-secondary/30 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                    <th className="text-left px-4 py-2.5">{t('overview.rosterAgent')}</th>
-                    <th className="text-center px-3 py-2.5">{t('overview.rosterTraining')}</th>
-                    <th className="text-center px-3 py-2.5">Quiz</th>
-                    <th className="text-center px-3 py-2.5">AI Eval</th>
-                    <th className="text-center px-3 py-2.5">{t('overview.rosterEvalScore')}</th>
-                    <th className="text-center px-3 py-2.5">{t('overview.rosterAction')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {rosterAgents.map(a => {
-                    const { status, quizComplete, latestEvalScore } = a.completion;
-                    const statusCfg = {
-                      cleared:       { pill: 'bg-emerald-500/15 text-emerald-400', label: t('overview.statusCleared') },
-                      'needs-eval':  { pill: 'bg-amber-500/15 text-amber-400',     label: t('overview.statusNeedsEval') },
-                      'in-progress': { pill: 'bg-blue-500/15 text-blue-400',       label: t('overview.statusInProgress') },
-                      'not-started': { pill: 'bg-secondary text-muted-foreground', label: t('overview.statusNotStarted') },
-                    }[status];
-                    return (
-                      <tr key={a.agent.id} className="hover:bg-secondary/20 transition-colors">
-                        <td className="px-4 py-3">
-                          <div className="font-semibold text-foreground text-xs">{a.agent.name}</div>
-                          {a.agent.stageName && <div className="text-[10px] text-primary/60">&quot;{a.agent.stageName}&quot;</div>}
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${statusCfg.pill}`}>
-                            {statusCfg.label}
-                          </span>
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <span className={`text-sm font-bold ${quizComplete ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {quizComplete ? '✓' : '✗'}
-                          </span>
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          {a.aiEval
-                            ? <span className={`text-xs font-bold ${scoreColor(a.aiEval.avgScore)}`}>{a.aiEval.avgScore}%</span>
-                            : <span className="text-muted-foreground/40 text-xs">–</span>}
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          {status === 'cleared' && (
-                            <span className="text-[10px] text-emerald-400 font-semibold">✓ {t('overview.actionCleared')}</span>
-                          )}
-                          {status === 'needs-eval' && (
-                            <span className="text-[10px] text-amber-400 font-semibold">{t('overview.actionNeedsEval')}</span>
-                          )}
-                          {status === 'in-progress' && (
-                            <span className="text-[10px] text-muted-foreground">{t('overview.actionInProgress')}</span>
-                          )}
-                          {status === 'not-started' && (
-                            <span className="text-[10px] text-muted-foreground/40">{t('overview.actionNotStarted')}</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+        {/* ── Live Pulse (1/4 width) ─────────────────────────────── */}
+        <div className="lg:col-span-1">
+          <LivePulse agentIds={agentIds} agentNames={agentNames} />
         </div>
       </div>
 
@@ -274,9 +306,22 @@ export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
           </div>
         </div>
 
-        {/* ── Live Feed (1/4 width) ─────────────────────────────── */}
-        <div className="lg:col-span-1">
-          <LiveFeed feed={feed} />
+        {/* ── Secondary leaderboard / small stats Column ── */}
+        <div className="lg:col-span-1 space-y-6">
+           <div className="bg-card rounded-2xl border border-border p-5 shadow-sm">
+              <h3 className="font-bold text-xs uppercase tracking-wider text-muted-foreground mb-4">{t('overview.topPerformers')}</h3>
+              <div className="space-y-3">
+                {data.leaderboard.slice(0, 3).map((a, i) => (
+                  <div key={a.agent.id} className="flex items-center gap-3">
+                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black ${i === 0 ? 'bg-amber-400 text-white' : 'bg-secondary text-muted-foreground'}`}>{i + 1}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold truncate text-foreground">{a.agent.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{a.overallScore}% Overall</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+           </div>
         </div>
       </div>
 

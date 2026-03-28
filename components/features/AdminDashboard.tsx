@@ -13,6 +13,7 @@ import ThemeToggle from '@/components/ui/ThemeToggle';
 import LangToggle  from '@/components/ui/LangToggle';
 
 import OverviewTab from './admin/OverviewTab';
+import HRAnalyticsTab from './admin/HRAnalyticsTab';
 import AgentsTab from './admin/AgentsTab';
 import ReportsTab from './admin/ReportsTab';
 import StaffTab from './admin/StaffTab';
@@ -22,17 +23,18 @@ import ApprovalsTab from './admin/ApprovalsTab';
 import AiScenariosTab from './admin/AiScenariosTab';
 import ChangePasswordModal from './admin/ChangePasswordModal';
 
-type Tab = 'overview' | 'agents' | 'reports' | 'staff' | 'evaluations' | 'training' | 'adjustments' | 'approvals' | 'aiscenarios';
+type Tab = 'overview' | 'hranalytics' | 'agents' | 'reports' | 'staff' | 'evaluations' | 'training' | 'adjustments' | 'approvals' | 'aiscenarios';
 
 function logout() {
   fetch('/api/auth/session', { method: 'DELETE' });
   window.location.replace('/login');
 }
 
-export default function AdminDashboard({ role, uid, name, passwordChanged, interactiveAccessUntil }: { role: 'admin' | 'manager' | 'it' | 'trainer'; uid: string; name: string; passwordChanged: boolean; interactiveAccessUntil?: string }) {
+export default function AdminDashboard({ role, uid, name, passwordChanged, interactiveAccessUntil }: { role: 'admin' | 'manager' | 'it' | 'trainer' | 'hr'; uid: string; name: string; passwordChanged: boolean; interactiveAccessUntil?: string }) {
   const t = useTranslations('admin');
   const [tab, setTab] = useState<Tab>(
     role === 'trainer' ? 'training' : 
+    role === 'hr' ? 'hranalytics' :
     role === 'it' ? 'staff' : 
     'overview'
   );
@@ -41,13 +43,14 @@ export default function AdminDashboard({ role, uid, name, passwordChanged, inter
   const [profileOpen, setProfileOpen] = useState(false);
   const [requestingAccess, setRequestingAccess] = useState(false);
 
-  const isReadOnlyRole = role === 'it' || role === 'manager';
+  const isReadOnlyRole = role === 'it' || role === 'manager' || role === 'hr';
   const isInteractive = role === 'admin' || role === 'trainer' || (
     isReadOnlyRole && interactiveAccessUntil && new Date(interactiveAccessUntil) > new Date()
   );
 
   const TABS: { id: Tab; labelKey: string; icon: React.ElementType; adminOnly?: boolean; hideForTrainer?: boolean; hideForIT?: boolean; group?: string }[] = [
     { id: 'overview',    labelKey: 'overview',       icon: LayoutDashboard,  group: 'main' },
+    { id: 'hranalytics', labelKey: 'hranalytics',    icon: Users,            group: 'main' },
     { id: 'agents',      labelKey: 'agents',         icon: Users,            group: 'main' },
     { id: 'training',    labelKey: 'training',       icon: GraduationCap,    group: 'main' },
     { id: 'evaluations', labelKey: 'evaluations',    icon: ClipboardCheck,   hideForTrainer: true, group: 'main' },
@@ -60,6 +63,7 @@ export default function AdminDashboard({ role, uid, name, passwordChanged, inter
 
   const visibleTabs = TABS.filter(t => {
     if (t.hideForIT && role === 'it') return false;
+    if (role === 'hr' && t.id !== 'hranalytics' && t.id !== 'overview' && t.id !== 'reports') return false;
     if (isReadOnlyRole) {
       // IT and Manager can see all menus but interaction is restricted
       return true;
@@ -336,6 +340,7 @@ export default function AdminDashboard({ role, uid, name, passwordChanged, inter
                 transition={{ duration: 0.2 }}
               >
                 {tab === 'overview'    && <OverviewTab readOnly={!isInteractive} />}
+                {tab === 'hranalytics' && <HRAnalyticsTab readOnly={!isInteractive} />}
                 {tab === 'agents'      && <AgentsTab role={role} readOnly={!isInteractive} />}
                 {tab === 'training'    && <TrainerPanel role={role} uid={uid} name={name} readOnly={!isInteractive} />}
                 {tab === 'evaluations' && <EvaluationsTab readOnly={!isInteractive} />}
