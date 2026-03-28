@@ -340,11 +340,20 @@ const ProfileSidebar = memo(({
   const navT = useTranslations('nav');
 
   const isMock = isMockupAgent();
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
 
   const handleSimulateToggle = () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    
     const current = localStorage.getItem('brainstrade_simulate_completion') === 'true';
     localStorage.setItem('brainstrade_simulate_completion', (!current).toString());
-    window.dispatchEvent(new Event('agent-stats-refresh'));
+    
+    // Give localstorage a moment to settle then trigger refresh
+    setTimeout(() => {
+      window.dispatchEvent(new Event('agent-stats-refresh'));
+      setTimeout(() => setIsRefreshing(false), 500);
+    }, 100);
   };
 
   return (
