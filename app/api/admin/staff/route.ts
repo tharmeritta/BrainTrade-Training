@@ -54,8 +54,8 @@ export async function POST(req: NextRequest) {
   if (!username?.trim() || !password?.trim() || !name?.trim()) {
     return NextResponse.json({ error: 'username, password, and name are required' }, { status: 400 });
   }
-  if (!['admin', 'manager', 'it', 'evaluator', 'trainer'].includes(role)) {
-    return NextResponse.json({ error: 'role must be admin, manager, it, evaluator, or trainer' }, { status: 400 });
+  if (!['admin', 'manager', 'it', 'evaluator', 'trainer', 'hr'].includes(role)) {
+    return NextResponse.json({ error: 'role must be admin, manager, hr, it, evaluator, or trainer' }, { status: 400 });
   }
 
   try {
