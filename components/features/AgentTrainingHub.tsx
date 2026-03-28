@@ -13,6 +13,7 @@ import {
 import type { AgentStats } from '@/types';
 import { ScoreRing } from '@/components/ui/ScoreRing';
 import { EASE, TRANSITION, FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
+import { getCompletionStatus } from '@/lib/completion';
 
 
 // ─── Constants & Types ────────────────────────────────────────────────────────
@@ -79,24 +80,34 @@ function scoreColor(n: number) {
 
 function deriveSteps(stats: AgentStats | null): Record<StepId, StepState> {
   const learnedCount = stats?.learnedModules?.length ?? 0;
-  const isLearnPassed = learnedCount > 0;
+  // product, kyc, website
+  const isLearnPassed = learnedCount >= 3;
   
-  const anyQ = !!(stats?.quiz?.foundation?.passed || stats?.quiz?.product?.passed || stats?.quiz?.process?.passed);
-  const allQ = !!(stats?.quiz?.foundation?.passed && stats?.quiz?.product?.passed && stats?.quiz?.process?.passed);
-  const aiOk = (stats?.aiEval?.count ?? 0) > 0;
+  const REQUIRED = ['foundation', 'product', 'process', 'payment'];
+  const allQ = REQUIRED.every(id => !!stats?.quiz?.[id]?.passed);
   
-  const qs = [
-    stats?.quiz?.foundation?.bestScore,
-    stats?.quiz?.product?.bestScore, 
-    stats?.quiz?.process?.bestScore
-  ].filter((s): s is number => s !== undefined);
+  // AI Eval is done if they have completed level 4
+  const completedLevels = stats?.evalCompletedLevels ?? [];
+  const maxL = completedLevels.length > 0 ? Math.max(...completedLevels) : 0;
+  // Step 3 is "passed" once they reach the max level (usually 4)
+  const aiOk = maxL >= 4;
+  
+  const qs = REQUIRED
+    .map(id => stats?.quiz?.[id]?.bestScore)
+    .filter((s): s is number => s !== undefined);
   
   const avgQ = qs.length ? Math.round(qs.reduce((a, b) => a + b, 0) / qs.length) : undefined;
 
+  // Level-based score: 25% per level, max 100%
+  let aiScore = stats?.aiEval ? Math.round(stats.aiEval.avgScore) : undefined;
+  if (completedLevels.length > 0) {
+     aiScore = Math.min(100, maxL * 25);
+  }
+
   return {
-    learn:     { locked: false, passed: isLearnPassed, score: stats?.quiz?.product?.bestScore },
+    learn:     { locked: false, passed: isLearnPassed, score: stats?.learnedModules && stats.learnedModules.length > 0 ? Math.round((stats.learnedModules.length / 3) * 100) : undefined },
     quiz:      { locked: false, passed: allQ,          score: avgQ },
-    'ai-eval': { locked: false, passed: aiOk,          score: stats?.aiEval ? Math.round(stats.aiEval.avgScore) : undefined },
+    'ai-eval': { locked: false, passed: aiOk,          score: aiScore },
   };
 }
 
@@ -364,7 +375,7 @@ const ProfileSidebar = memo(({
           }}>
           {allDone ? (
             <><CheckCircle2 size={10} style={{ color: '#FBBF24' }} />
-              <span className="text-[10px] font-black" style={{ color: '#FBBF24' }}>{t('allPassed')}</span></>
+              <span className="text-[10px] font-black uppercase tracking-tight" style={{ color: '#FBBF24' }}>{t('pendingFinalEval')}</span></>
           ) : currentStep ? (
             <><currentStep.Icon size={10} style={{ color: currentStep.color }} />
               <span className="text-[10px] font-medium text-[color:var(--hub-dim)]">{t('training')}</span>
@@ -492,6 +503,7 @@ ModuleHeader.displayName = 'ModuleHeader';
 // ─── Main Component ─────────────────────────────────────────────────────────────
 
 export default function AgentTrainingHub({ agentName, agentId, agentStageName, stats, onLogout }: Props) {
+  const t         = useTranslations('trainingHub');
   const pathname  = usePathname();
   const locale    = pathname.split('/')[1] ?? 'th';
   
@@ -514,7 +526,13 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
     if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }, [agentName]);
-  const allDone     = doneCount === STEPS.length;
+  
+  const allDone = useMemo(() => {
+    if (!stats) return false;
+    const { trainingComplete } = getCompletionStatus(stats, stats.activeScenariosCount);
+    return trainingComplete;
+  }, [stats]);
+
   const currentStep = useMemo(() => STEPS.find(s => !derived[s.id].passed && !derived[s.id].locked), [derived]);
 
   return (
@@ -544,6 +562,33 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
         <ModuleHeader doneCount={doneCount} />
 
         <div className="px-6 py-8 lg:px-10 lg:py-12">
+          {allDone && (
+             <motion.div 
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="mb-10 p-10 rounded-[2.5rem] border border-amber-500/30 bg-amber-500/5 flex flex-col items-center text-center relative overflow-hidden"
+             >
+                {/* Decorative background element */}
+                <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] pointer-events-none"
+                     style={{ backgroundImage: `radial-gradient(circle at 50% 50%, #FBBF24 0%, transparent 70%)` }} />
+                
+                <div className="w-20 h-20 rounded-3xl bg-amber-500/20 flex items-center justify-center mb-6 border border-amber-500/30 shadow-lg shadow-amber-500/10 relative z-10">
+                  <Trophy size={40} className="text-amber-500" />
+                </div>
+                <h3 className="text-2xl lg:text-3xl font-black text-amber-500 mb-3 relative z-10 tracking-tight">
+                  {t('pendingFinalEval')}
+                </h3>
+                <p className="text-base text-[color:var(--hub-muted)] font-bold max-w-lg relative z-10 leading-relaxed">
+                  {t('pendingEvalDesc')}
+                </p>
+
+                <div className="mt-8 flex items-center gap-3 px-6 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 relative z-10">
+                   <div className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                   <span className="text-xs font-black uppercase tracking-widest text-amber-600">Waiting for Evaluator</span>
+                </div>
+             </motion.div>
+          )}
+
           <motion.div 
             variants={STAGGER_CONTAINER}
             initial="initial"

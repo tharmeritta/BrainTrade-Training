@@ -152,6 +152,8 @@
     "progress": "Progress",
     "passedModules": "Passed Modules",
     "allFinished": "All Finished! 🎉",
+    "pendingFinalEval": "Pending Final Simulation",
+    "pendingEvalDesc": "Waiting for evaluator to conduct final simulation.",
     "trainingModules": "Training Modules",
     "modulesPassed": "{done} / {total} Passed"
   },

@@ -77,6 +77,10 @@ export interface AgentStats {
   learnedModules: string[];
   /** for backward compat/tracking if needed */
   evalCompletedLevels: number[];
+  /** IDs of passed AI scenarios */
+  evalPassedScenarios?: string[];
+  /** Total count of active AI scenarios currently in the system */
+  activeScenariosCount?: number;
 }
 
 // ── Admin API response shapes ───────────────────────────────────────────────

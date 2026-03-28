@@ -13,17 +13,18 @@ export function computeBadge(score: number): AgentStats['badge'] {
   return 'needs-work';
 }
 
-export function computeOverallScore(stats: Omit<AgentStats, 'overallScore' | 'badge'> & { evalCompletedLevels?: number[] }): number {
+export function computeOverallScore(stats: Omit<AgentStats, 'overallScore' | 'badge'> & { evalCompletedLevels?: number[]; evalPassedScenarios?: string[]; activeScenariosCount?: number }): number {
   const quizScores    = MODULES.map(m => stats.quiz[m]?.bestScore ?? 0);
   const avgQuiz       = quizScores.reduce((a, b) => a + b, 0) / MODULES.length;
   const aiEval        = stats.aiEval?.avgScore ?? 0;
   
-  // Eval: completed levels (Legacy 4-level or New 1-level)
-  const evalLevels    = stats.evalCompletedLevels ?? [];
-  // If they passed at least one level, we consider the evaluation as done (100%)
-  const evalScore     = evalLevels.length > 0 ? 100 : aiEval;
+  // Eval progress: 25% per level reached (up to Level 4)
+  const levels        = stats.evalCompletedLevels ?? [];
+  const maxL          = levels.length > 0 ? Math.max(...levels) : 0;
+  const evalScore     = maxL >= 4 ? 100 : Math.min(aiEval, maxL * 25);
   
   // New Weighting: Quiz 40%, Human Eval 30%, AI Eval 30%
+  // Note: For training progress before human evaluation, we use evalScore (the simulated simulation progress)
   return Math.round(avgQuiz * 0.4 + evalScore * 0.3 + aiEval * 0.3);
 }
 
@@ -53,11 +54,12 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
     return mockStats;
   }
 
-  const [quizDocs, evalDocs, progressDoc, humanEvals] = await Promise.all([
+  const [quizDocs, evalDocs, progressDoc, humanEvals, scenariosSnap] = await Promise.all([
     gcsGetAll<QuizRecord>('quiz_results'),
     gcsGetAll<EvalRecord>('ai_eval_logs'),
     gcsGet<ProgressRecord>('agent_progress', agentId).catch(() => null),
     gcsGetAll<AgentEvaluation>('agent_evaluations'),
+    gcsGetAll<{ isActive: boolean }>('aiev_scenarios'),
   ]);
 
   // Quiz per module
@@ -79,6 +81,8 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
   const aiEval = buildAiEval(evals);
 
   const evalCompleted  = progressDoc?.evalCompletedLevels ?? [];
+  const passedScenarios = progressDoc?.evalPassedScenarios ?? [];
+  const activeScenariosCount = scenariosSnap.filter(s => s.isActive).length;
   const learnedModules = progressDoc?.learnedModules ?? [];
   const myHumanEvals   = humanEvals.filter(h => h.agentId === agentId).sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
 
@@ -88,8 +92,8 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
   ].map(r => r.timestamp).filter(Boolean).sort().at(-1) ?? null;
 
   const agent: Agent = { id: agentId, name: agentName, active: true, createdAt: new Date() };
-  const partial      = { agent, quiz, aiEval, lastActive, evalCompletedLevels: evalCompleted, learnedModules, humanEvaluations: myHumanEvals };
-  const overallScore = computeOverallScore(partial);
+  const partial      = { agent, quiz, aiEval, lastActive, evalCompletedLevels: evalCompleted, evalPassedScenarios: passedScenarios, learnedModules, humanEvaluations: myHumanEvals };
+  const overallScore = computeOverallScore({ ...partial, activeScenariosCount });
   return { ...partial, overallScore, badge: computeBadge(overallScore) };
 }
 
@@ -97,7 +101,7 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
 
 interface QuizRecord     { id: string; agentId: string; moduleId: string; score: number; totalQuestions: number; passed: boolean; timestamp: string; }
 interface EvalRecord     { id: string; agentId: string; score: number; level: number; passed: boolean; timestamp: string; }
-interface ProgressRecord { agentId: string; evalCompletedLevels: number[]; learnedModules?: string[]; evalSavedLevel: number | null; updatedAt: string; }
+interface ProgressRecord { agentId: string; evalCompletedLevels: number[]; evalPassedScenarios?: string[]; learnedModules?: string[]; evalSavedLevel: number | null; updatedAt: string; }
 
 type LevelData = { attempts: number; avgScore: number; bestScore: number; passed: boolean; lastTimestamp: string };
 
@@ -125,15 +129,17 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
 // ── Analytics ─────────────────────────────────────────────────────────────
 
 export async function getAllAgentStats(): Promise<AgentStats[]> {
-  const [agents, quizDocs, evalDocs, progressDocs, humanEvals] = await Promise.all([
+  const [agents, quizDocs, evalDocs, progressDocs, humanEvals, scenariosSnap] = await Promise.all([
     gcsGetAll<Agent & { id: string }>('agents'),
     gcsGetAll<QuizRecord>('quiz_results'),
     gcsGetAll<EvalRecord>('ai_eval_logs'),
     gcsGetAll<ProgressRecord>('agent_progress'),
     gcsGetAll<AgentEvaluation>('agent_evaluations'),
+    gcsGetAll<{ isActive: boolean }>('aiev_scenarios'),
   ]);
 
   const activeAgents = agents.filter(a => a.active);
+  const activeScenariosCount = scenariosSnap.filter(s => s.isActive).length;
 
   return activeAgents.map(agent => {
     // Quiz per module
@@ -157,6 +163,7 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
     // AI Eval completed levels (from agent_progress)
     const progress       = progressDocs.find(p => p.agentId === agent.id);
     const evalCompleted  = progress?.evalCompletedLevels ?? [];
+    const passedScenarios = progress?.evalPassedScenarios ?? [];
     const learnedModules = progress?.learnedModules ?? [];
     
     // Human Evaluations
@@ -169,22 +176,24 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
     ].map(r => r.timestamp).filter(Boolean).sort();
     const lastActive = allTimes.length > 0 ? allTimes[allTimes.length - 1] : null;
 
-    const partial      = { agent, quiz, aiEval, lastActive, evalCompletedLevels: evalCompleted, learnedModules, humanEvaluations: myHumanEvals };
-    const overallScore = computeOverallScore(partial);
+    const partial      = { agent, quiz, aiEval, lastActive, evalCompletedLevels: evalCompleted, evalPassedScenarios: passedScenarios, learnedModules, humanEvaluations: myHumanEvals };
+    const overallScore = computeOverallScore({ ...partial, activeScenariosCount });
     return { ...partial, overallScore, badge: computeBadge(overallScore) };
   });
 }
 
 export async function getModuleStats(): Promise<ModuleStat[]> {
-  const [agents, quizDocs, evalDocs, progressDocs] = await Promise.all([
+  const [agents, quizDocs, evalDocs, progressDocs, scenariosSnap] = await Promise.all([
     gcsGetAll<Agent & { id: string }>('agents'),
     gcsGetAll<QuizRecord>('quiz_results'),
     gcsGetAll<EvalRecord>('ai_eval_logs'),
     gcsGetAll<ProgressRecord>('agent_progress'),
+    gcsGetAll<{ isActive: boolean }>('aiev_scenarios'),
   ]);
 
   const active = agents.filter((a: Agent & { id: string }) => a.active);
   const total  = active.length;
+  const activeScenariosCount = scenariosSnap.filter(s => s.isActive).length;
 
   if (total === 0) {
     return [
@@ -196,23 +205,26 @@ export async function getModuleStats(): Promise<ModuleStat[]> {
 
   const pct = (n: number) => Math.round((n / total) * 100);
 
-  // Learn — at least one learned module
+  // Learn — all 3 required modules (Product, KYC, Website)
   const learnCount = active.filter(a => {
     const p = progressDocs.find(pd => pd.agentId === a.id);
-    return (p?.learnedModules?.length ?? 0) > 0;
+    return (p?.learnedModules?.length ?? 0) >= 3;
   }).length;
 
-  // Quiz — passed all 3 modules (Product, Process, Payment)
+  // Quiz — passed all 4 modules (Foundation, Product, Process, Payment)
   const quizCount = active.filter(a =>
     MODULES.every(m =>
       quizDocs.filter(q => q.agentId === a.id && q.moduleId === m).some(q => q.passed)
     )
   ).length;
 
-  // AI Eval — completed at least one session
-  const evalCount = active.filter(a =>
-    evalDocs.some(e => e.agentId === a.id)
-  ).length;
+  // AI Eval — completed Level 4 (highest level)
+  const evalCount = active.filter(a => {
+    const p = progressDocs.find(pd => pd.agentId === a.id);
+    const levels = p?.evalCompletedLevels ?? [];
+    const maxL = levels.length > 0 ? Math.max(...levels) : 0;
+    return maxL >= 4;
+  }).length;
 
   return [
     { moduleId: 'learn',   label: 'Learn',   avgScore: pct(learnCount), passCount: learnCount, totalAttempts: total },
