@@ -10,7 +10,7 @@ import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword, signInWithCustomToken } from 'firebase/auth';
 import { BackgroundEffects } from '@/components/ui/BackgroundEffects';
 
-type Tab = 'admin' | 'trainer' | 'evaluator';
+type Tab = 'admin' | 'trainer' | 'evaluator' | 'hr';
 
 const CYAN = '#00B4D8';
 const PURPLE = '#7C3AED';
@@ -36,6 +36,14 @@ export default function LoginPage() {
       glow: 'rgba(0,180,216,0.12)',
       redirect: `/${locale}/admin`,
       desc: t('roles.manager.desc'),
+    },
+    hr: {
+      Icon: ClipboardCheck,
+      label: t('roles.hr.label'),
+      accent: '#8B5CF6',
+      glow: 'rgba(139,92,246,0.12)',
+      redirect: `/${locale}/admin`,
+      desc: t('roles.hr.desc'),
     },
     trainer: {
       Icon: GraduationCap,
@@ -86,7 +94,7 @@ export default function LoginPage() {
         }
       }
 
-      const redirect = (['manager', 'admin', 'trainer'].includes(data.role)) ? `/${locale}/admin` : cfg.redirect;
+      const redirect = (['manager', 'admin', 'trainer', 'hr', 'it'].includes(data.role)) ? `/${locale}/admin` : cfg.redirect;
       router.push(redirect);
     } catch {
       setError(t('invalid'));
@@ -153,7 +161,7 @@ export default function LoginPage() {
 
               <div className="flex gap-1.5 p-1.5 rounded-2xl mb-8"
                 style={{ background: 'var(--entry-input-bg)', border: '1px solid var(--hub-border)' }}>
-                {(['admin', 'trainer', 'evaluator'] as Tab[]).map(r => {
+                {(['admin', 'hr', 'trainer', 'evaluator'] as Tab[]).map(r => {
                   const c = TABS[r];
                   const Icon = c.Icon;
                   const active = role === r;

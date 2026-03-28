@@ -388,7 +388,7 @@ export default function PresentationViewer({
 
     preloadWindow();
     return () => { active = false; };
-  }, [slide, presentationId, total, cacheKey, slideUrls, hasContent]);
+  }, [slide, presentationId, total, cacheKey, slideUrls, hasContent, preloadedSlides]);
 
   // ── Sync Listener ──────────────────────────────────────────────────────────
 
@@ -491,7 +491,7 @@ export default function PresentationViewer({
     return () => {
       remove(myPresenceRef).catch(() => {});
     };
-  }, [module.id, myId, myName, myRole, amInControl]);
+  }, [module.id, myId, myName, myRole, amInControl, isFocused]);
 
   // 2. Update status fields (inControl, isFocused) without removing/re-adding presence
   useEffect(() => {
@@ -523,7 +523,7 @@ export default function PresentationViewer({
 
   // ── Sync Actions ────────────────────────────────────────────────────────────
 
-  const takeControl = async () => {
+  const takeControl = useCallback(async () => {
     if (!user && !agentId) return;
     const syncRef = ref(rtdb, `presentation_sync/${module.id}/state`);
     await set(syncRef, {
@@ -534,15 +534,15 @@ export default function PresentationViewer({
       currentLang: lang,
       updatedAt: rtdbTimestamp(),
     });
-  };
+  }, [user, agentId, module.id, agentName, slide, lang]);
 
-  const stopControl = async () => {
+  const stopControl = useCallback(async () => {
     const syncRef = ref(rtdb, `presentation_sync/${module.id}/state`);
     await update(syncRef, {
       active: false,
       updatedAt: rtdbTimestamp(),
     });
-  };
+  }, [module.id]);
 
   const updateSyncSlide = useCallback(async (n: number) => {
     if (!amInControl) return;
@@ -606,7 +606,7 @@ export default function PresentationViewer({
     if (embedded && isTrainer && !syncActive && hasContent) {
       takeControl();
     }
-  }, [embedded, isTrainer, syncActive, hasContent]);
+  }, [embedded, isTrainer, syncActive, hasContent, takeControl]);
 
   // Loading timeout
   useEffect(() => {

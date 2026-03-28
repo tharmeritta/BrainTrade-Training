@@ -18,6 +18,8 @@ export interface PresenceMap {
 export function useAgentPresence(agentIds: string[]) {
   const [presence, setPresence] = useState<PresenceMap>({});
 
+  const agentIdsKey = JSON.stringify(agentIds);
+
   useEffect(() => {
     if (!agentIds || agentIds.length === 0) return;
 
@@ -63,7 +65,7 @@ export function useAgentPresence(agentIds: string[]) {
     return () => {
       unsubs.forEach(unsub => unsub());
     };
-  }, [JSON.stringify(agentIds)]);
+  }, [agentIdsKey, setPresence, agentIds]);
 
   return presence;
 }
