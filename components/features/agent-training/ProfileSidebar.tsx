@@ -2,9 +2,8 @@
 
 import React, { memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { LogOut, CheckCircle2, Lock, Trophy, Zap, Target, ChevronRight, BarChart } from 'lucide-react';
+import { LogOut, CheckCircle2, Lock, Trophy, Target, ChevronRight } from 'lucide-react';
 import { ScoreRing } from '@/components/ui/ScoreRing';
-import { RadarChart } from '@/components/ui/RadarChart';
 import { FADE_IN, EASE, TRANSITION } from '@/lib/animations';
 import { StepState } from '@/lib/training';
 import { STEPS, BADGE, BadgeType } from '@/constants/training';
@@ -20,15 +19,6 @@ interface ProfileSidebarProps {
   currentStep?: typeof STEPS[number];
   badgeCfg: typeof BADGE[BadgeType];
   pct: number;
-  xp: number;
-  level: number;
-  skills: {
-    foundation: number;
-    product: number;
-    process: number;
-    payment: number;
-    communication: number;
-  };
   derived: Record<string, StepState>;
   onLogout: () => void;
   t: (key: string, values?: any) => string;
@@ -58,34 +48,12 @@ export const ProfileSidebar = memo(({
   currentStep,
   badgeCfg,
   pct,
-  xp,
-  level,
-  skills,
   derived,
   onLogout,
   t,
   navT,
   locale
 }: ProfileSidebarProps) => {
-  const { xpProgress, nextLevelXp } = useMemo(() => {
-    const currentLevelXp = Math.pow(level - 1, 2) * 50;
-    const nextLevelXp = Math.pow(level, 2) * 50;
-    const xpInCurrentLevel = xp - currentLevelXp;
-    const totalXpForNextLevel = nextLevelXp - currentLevelXp;
-    return {
-      xpProgress: Math.min(Math.round((xpInCurrentLevel / totalXpForNextLevel) * 100), 100),
-      nextLevelXp
-    };
-  }, [xp, level]);
-
-  const skillData = useMemo(() => [
-    { label: 'Found.', value: skills.foundation },
-    { label: 'Prod.',  value: skills.product },
-    { label: 'Proc.',  value: skills.process },
-    { label: 'Pay.',   value: skills.payment },
-    { label: 'Comm.',  value: skills.communication },
-  ], [skills]);
-
   return (
     <motion.div
       variants={FADE_IN}
@@ -165,54 +133,6 @@ export const ProfileSidebar = memo(({
           </Link>
         </div>
       )}
-
-      <SectionDivider label="Level & XP" />
-      
-      <div className="w-full max-w-[260px] bg-secondary/20 border border-border/40 rounded-2xl p-4">
-        <div className="flex justify-between items-end mb-3">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20">
-              <Zap size={20} fill="currentColor" />
-            </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-1">Level</p>
-              <p className="text-2xl font-black text-foreground leading-none">{level}</p>
-            </div>
-          </div>
-          <div className="text-right">
-             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground leading-none mb-1">Total XP</p>
-             <p className="text-sm font-black text-foreground leading-none">{xp.toLocaleString()}</p>
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-[10px] font-black uppercase tracking-tighter text-muted-foreground">
-            <span>Progress</span>
-            <span>{xp} / {nextLevelXp} XP</span>
-          </div>
-          <div className="h-2.5 rounded-full bg-secondary overflow-hidden p-0.5 border border-border/20">
-            <motion.div 
-              initial={{ width: 0 }}
-              animate={{ width: `${xpProgress}%` }}
-              className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]"
-            />
-          </div>
-        </div>
-      </div>
-
-      <SectionDivider label="Skill Matrix" />
-
-      <div className="w-full max-w-[260px] flex flex-col items-center">
-        <RadarChart data={skillData} size={220} color={ringColor} />
-        <div className="grid grid-cols-2 gap-2 w-full mt-2">
-           {skillData.map(s => (
-             <div key={s.label} className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-secondary/30 border border-border/20">
-               <span className="text-[9px] font-black uppercase tracking-tighter text-muted-foreground">{s.label}</span>
-               <span className="text-[10px] font-black">{s.value}%</span>
-             </div>
-           ))}
-        </div>
-      </div>
 
       <SectionDivider label={t('progress')} />
 

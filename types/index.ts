@@ -81,18 +81,6 @@ export interface AgentStats {
   evalPassedScenarios?: string[];
   /** Total count of active AI scenarios currently in the system */
   activeScenariosCount?: number;
-  /** Gamification: Current XP points */
-  xp: number;
-  /** Gamification: Current Level */
-  level: number;
-  /** Skill Matrix: 0-100 scores for different domains */
-  skills: {
-    foundation: number;
-    product: number;
-    process: number;
-    payment: number;
-    communication: number;
-  };
 }
 
 // ── Admin API response shapes ───────────────────────────────────────────────

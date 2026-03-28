@@ -85,9 +85,6 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
         currentStep={currentStep}
         badgeCfg={badgeCfg}
         pct={pct}
-        xp={stats?.xp ?? 0}
-        level={stats?.level ?? 1}
-        skills={stats?.skills ?? { foundation: 0, product: 0, process: 0, payment: 0, communication: 0 }}
         derived={derived}
         onLogout={onLogout}
         t={t}

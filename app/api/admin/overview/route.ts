@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdminManagerOrTrainer } from '@/lib/session';
 import { fsGetAll } from '@/lib/firestore-db';
-import { computeOverallScore, computeBadge, calculateXpAndLevel, calculateSkills } from '@/lib/agents';
+import { computeOverallScore, computeBadge } from '@/lib/agents';
 import type { AdminOverviewData, Agent, AgentStats, ModuleStat, AgentEvaluation } from '@/types';
 
 const EMPTY: AdminOverviewData = {
@@ -103,10 +103,8 @@ export async function GET() {
       };
       
       const overallScore = computeOverallScore(partial);
-      const { xp, level } = calculateXpAndLevel(partial);
-      const skills = calculateSkills(partial);
 
-      return { ...partial, overallScore, badge: computeBadge(overallScore), xp, level, skills };
+      return { ...partial, overallScore, badge: computeBadge(overallScore) };
     });
 
     // Module stats

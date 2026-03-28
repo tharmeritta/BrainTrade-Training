@@ -6,46 +6,6 @@ const MODULES = ['foundation', 'product', 'process', 'payment'] as const;
 
 // ── Score helpers ─────────────────────────────────────────────────────────
 
-export function calculateXpAndLevel(stats: Omit<AgentStats, 'xp' | 'level' | 'skills' | 'overallScore' | 'badge'>): { xp: number; level: number } {
-  let xp = 0;
-  
-  // 50 XP per learned module
-  xp += (stats.learnedModules?.length ?? 0) * 50;
-  
-  // 100 XP per passed quiz
-  for (const m in stats.quiz) {
-    if (stats.quiz[m].passed) xp += 100;
-  }
-  
-  // AI Eval XP: 10 XP per attempt + 50 XP per passed scenario
-  if (stats.aiEval) {
-    xp += stats.aiEval.count * 10;
-  }
-  xp += (stats.evalPassedScenarios?.length ?? 0) * 50;
-  
-  // Level formula: Level = floor(sqrt(XP / 50)) + 1
-  // lvl 1: 0 XP
-  // lvl 2: 50 XP
-  // lvl 3: 200 XP
-  // lvl 4: 450 XP
-  // lvl 5: 800 XP
-  const level = Math.floor(Math.sqrt(xp / 50)) + 1;
-  
-  return { xp, level };
-}
-
-export function calculateSkills(stats: Omit<AgentStats, 'xp' | 'level' | 'skills' | 'overallScore' | 'badge'>): AgentStats['skills'] {
-  const getScore = (mod: string) => stats.quiz[mod]?.bestScore ?? 0;
-  
-  return {
-    foundation:    getScore('foundation'),
-    product:       getScore('product'),
-    process:       getScore('process'),
-    payment:       getScore('payment'),
-    communication: stats.aiEval?.avgScore ?? 0,
-  };
-}
-
 export function computeBadge(score: number): AgentStats['badge'] {
   if (score >= 85) return 'elite';
   if (score >= 70) return 'strong';
@@ -54,7 +14,7 @@ export function computeBadge(score: number): AgentStats['badge'] {
 }
 
 export function computeOverallScore(
-  stats: Omit<AgentStats, 'overallScore' | 'badge' | 'xp' | 'level' | 'skills'> & { 
+  stats: Omit<AgentStats, 'overallScore' | 'badge'> & { 
     evalCompletedLevels?: number[]; 
     evalPassedScenarios?: string[]; 
     activeScenariosCount?: number 
@@ -102,16 +62,11 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
     };
     
     const overallScore = computeOverallScore(partialMock);
-    const { xp, level } = calculateXpAndLevel(partialMock);
-    const skills = calculateSkills(partialMock);
 
     const mockStats: AgentStats = {
       ...partialMock,
       overallScore,
       badge: computeBadge(overallScore),
-      xp,
-      level,
-      skills
     };
     return mockStats;
   }
@@ -163,10 +118,8 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
   const partial      = { agent, quiz, aiEval, lastActive, evalCompletedLevels: evalCompleted, evalPassedScenarios: passedScenarios, learnedModules, humanEvaluations: myHumanEvals, activeScenariosCount };
   
   const overallScore = computeOverallScore(partial, weights);
-  const { xp, level } = calculateXpAndLevel(partial);
-  const skills = calculateSkills(partial);
 
-  return { ...partial, overallScore, badge: computeBadge(overallScore), xp, level, skills };
+  return { ...partial, overallScore, badge: computeBadge(overallScore) };
 }
 
 // ── Data types matching GCS records ───────────────────────────────────────
@@ -323,10 +276,8 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
     };
     
     const overallScore = computeOverallScore(partial, weights);
-    const { xp, level } = calculateXpAndLevel(partial);
-    const skills = calculateSkills(partial);
 
-    results.push({ ...partial, overallScore, badge: computeBadge(overallScore), xp, level, skills });
+    results.push({ ...partial, overallScore, badge: computeBadge(overallScore) });
   }
 
   return results;
