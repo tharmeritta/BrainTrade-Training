@@ -298,6 +298,7 @@
       "overallResult": "Overall Result",
       "overallDesc": "Quiz pass / fail across all agents and modules",
       "leaderboard": "Agent Leaderboard",
+      "allAgentsOffline": "All agents currently offline",
       "rankedCount": "{count} agents ranked",
       "noLeaderboard": "No agent data yet. Add agents and have them complete training.",
       "overall": "Overall",
