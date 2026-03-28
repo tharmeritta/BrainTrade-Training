@@ -48,9 +48,8 @@ export default function DashboardPage() {
     if (!agentId) return;
     
     const fetchStats = () => {
-      const simulate = localStorage.getItem('brainstrade_simulate_completion') === 'true';
       const ts = Date.now();
-      fetch(`/api/agent/progress?agentId=${agentId}&agentName=${encodeURIComponent(agentName ?? '')}&simulate=${simulate}&t=${ts}`, {
+      fetch(`/api/agent/progress?agentId=${agentId}&agentName=${encodeURIComponent(agentName ?? '')}&t=${ts}`, {
         cache: 'no-store'
       })
         .then(r => r.json())

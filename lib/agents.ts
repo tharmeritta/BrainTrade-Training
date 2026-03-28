@@ -30,31 +30,19 @@ export function computeOverallScore(stats: Omit<AgentStats, 'overallScore' | 'ba
 
 // ── Single-agent stats (used by /api/agent/progress GET) ──────────────────
 
-export async function getAgentStats(agentId: string, agentName: string, simulateCompletion: boolean = false): Promise<AgentStats> {
+export async function getAgentStats(agentId: string, agentName: string): Promise<AgentStats> {
   // Handle Mockup Agent
   if (agentId === MOCKUP_AGENT_ID) {
-    const isFull = simulateCompletion;
-    
     const partialMock: any = {
       agent: { id: MOCKUP_AGENT_ID, name: agentName || 'Mockup Agent', active: true, createdAt: new Date() },
-      quiz: isFull ? {
-        foundation: { bestScore: 95, passed: true, attempts: 1, history: [] },
-        product:    { bestScore: 90, passed: true, attempts: 1, history: [] },
-        process:    { bestScore: 85, passed: true, attempts: 1, history: [] },
-        payment:    { bestScore: 100, passed: true, attempts: 1, history: [] },
-      } : {
+      quiz: {
         foundation: { bestScore: 90, passed: true, attempts: 1, history: [{ score: 9, total: 10, passed: true, timestamp: new Date().toISOString() }] }
       },
-      aiEval: isFull ? {
-        avgScore: 88,
-        count: 4,
-        history: [],
-        levels: { 1: { passed: true }, 2: { passed: true }, 3: { passed: true }, 4: { passed: true } }
-      } : null,
+      aiEval: null,
       lastActive: new Date().toISOString(),
-      evalCompletedLevels: isFull ? [1, 2, 3, 4] : [],
-      evalPassedScenarios: isFull ? ['scen-1', 'scen-2', 'scen-3'] : [],
-      learnedModules: isFull ? ['product', 'kyc', 'website'] : ['product'],
+      evalCompletedLevels: [],
+      evalPassedScenarios: [],
+      learnedModules: ['product'],
       humanEvaluations: [],
       activeScenariosCount: 3,
     };

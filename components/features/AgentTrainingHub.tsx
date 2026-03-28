@@ -14,7 +14,6 @@ import type { AgentStats } from '@/types';
 import { ScoreRing } from '@/components/ui/ScoreRing';
 import { EASE, TRANSITION, FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
 import { getCompletionStatus } from '@/lib/completion';
-import { CertificationModal } from './CertificationModal';
 import { isMockupAgent } from '@/lib/agent-session';
 
 // ─── Constants & Types ────────────────────────────────────────────────────────
@@ -72,7 +71,6 @@ interface ProfileSidebarProps {
   pct: number;
   derived: Record<StepId, StepState>;
   onLogout: () => void;
-  onViewCert: () => void;
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -334,35 +332,9 @@ const ProfileSidebar = memo(({
   pct,
   derived,
   onLogout,
-  onViewCert
 }: ProfileSidebarProps) => {
   const t = useTranslations('trainingHub');
   const navT = useTranslations('nav');
-
-  const isMock = isMockupAgent();
-  const [isRefreshing, setIsRefreshing] = React.useState(false);
-
-  const handleSimulateToggle = () => {
-    if (isRefreshing) return;
-    setIsRefreshing(true);
-    
-    const current = localStorage.getItem('brainstrade_simulate_completion') === 'true';
-    const nextValue = !current;
-    localStorage.setItem('brainstrade_simulate_completion', nextValue.toString());
-    
-    // 1. Dispatch event for the dashboard listener
-    window.dispatchEvent(new Event('agent-stats-refresh'));
-    
-    // 2. Fallback: if state doesn't update in 1 second, force a hard reload
-    // This is only for the mockup agent to guarantee the demo works perfectly.
-    setTimeout(() => {
-      setIsRefreshing(false);
-      // We check if allDone changed; if not, we force it.
-      if (typeof window !== 'undefined') {
-        window.location.reload();
-      }
-    }, 1200);
-  };
 
   return (
     <motion.div
@@ -423,17 +395,6 @@ const ProfileSidebar = memo(({
         </span>
       </div>
 
-      {isMock && (
-        <div className="w-full mt-6">
-           <button
-             onClick={handleSimulateToggle}
-             className="w-full py-2 px-4 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-500 text-[10px] font-black uppercase tracking-wider hover:bg-violet-500 hover:text-white transition-all active:scale-95"
-           >
-             Mockup: {allDone ? 'Reset Progress' : 'Simulate Completion'}
-           </button>
-        </div>
-      )}
-
       <SectionDivider label={t('progress')} />
 
       <div className="w-full max-w-[260px]">
@@ -486,17 +447,6 @@ const ProfileSidebar = memo(({
               <Trophy size={14} style={{ color: '#FBBF24' }} />
               <span className="text-[11px] font-black" style={{ color: '#FBBF24' }}>{t('allFinished')}</span>
             </motion.div>
-            
-            <motion.button
-              onClick={onViewCert}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl w-full justify-center border border-amber-500/30 bg-amber-500 text-white text-[11px] font-black uppercase tracking-wider hover:bg-amber-600 transition-colors shadow-lg shadow-amber-500/20"
-            >
-              <Award size={14} />
-              <span>{t('viewCertificate')}</span>
-            </motion.button>
           </div>
         )}
       </div>
@@ -553,13 +503,61 @@ const ModuleHeader = memo(({ doneCount }: { doneCount: number }) => {
 
 ModuleHeader.displayName = 'ModuleHeader';
 
+/**
+ * Confetti: A simple celebratory animation using framer-motion.
+ */
+const Confetti = memo(() => {
+  const pieces = useMemo(() => {
+    return Array.from({ length: 50 }).map((_, i) => ({
+      id: i,
+      x: Math.random() * 100, // percentage
+      y: -20,
+      size: 8 + Math.random() * 10,
+      color: ['#818CF8', '#60A5FA', '#F472B6', '#FBBF24', '#34D399'][Math.floor(Math.random() * 5)],
+      duration: 2 + Math.random() * 3,
+      delay: Math.random() * 2,
+      rotation: Math.random() * 360,
+    }));
+  }, []);
+
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
+      {pieces.map((p) => (
+        <motion.div
+          key={p.id}
+          initial={{ y: '-10%', x: `${p.x}%`, rotate: 0, opacity: 1 }}
+          animate={{ 
+            y: '110%', 
+            rotate: p.rotation + 720,
+            opacity: [1, 1, 0]
+          }}
+          transition={{ 
+            duration: p.duration, 
+            delay: p.delay, 
+            ease: "linear",
+            repeat: Infinity 
+          }}
+          className="absolute"
+          style={{
+            width: p.size,
+            height: p.size,
+            backgroundColor: p.color,
+            borderRadius: p.id % 3 === 0 ? '50%' : '2px',
+          }}
+        />
+      ))}
+    </div>
+  );
+});
+
+Confetti.displayName = 'Confetti';
+
 // ─── Main Component ─────────────────────────────────────────────────────────────
 
 export default function AgentTrainingHub({ agentName, agentId, agentStageName, stats, onLogout }: Props) {
   const t         = useTranslations('trainingHub');
   const pathname  = usePathname();
   const locale    = pathname.split('/')[1] ?? 'th';
-  const [isCertOpen, setIsCertOpen] = React.useState(false);
   
   const derived = useMemo(() => deriveSteps(stats), [stats]);
 
@@ -609,7 +607,6 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
         pct={pct}
         derived={derived}
         onLogout={onLogout}
-        onViewCert={() => setIsCertOpen(true)}
       />
 
       {/* ══ RIGHT — Training Modules ══ */}
@@ -619,38 +616,51 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
         <div className="px-6 py-8 lg:px-10 lg:py-12">
           {allDone && (
              <motion.div 
-               initial={{ opacity: 0, y: 20 }}
-               animate={{ opacity: 1, y: 0 }}
-               className="mb-10 p-10 rounded-[2.5rem] border border-amber-500/30 bg-amber-500/5 flex flex-col items-center text-center relative overflow-hidden"
+               initial={{ opacity: 0, scale: 0.95 }}
+               animate={{ opacity: 1, scale: 1 }}
+               className="mb-10 p-10 lg:p-14 rounded-[3rem] border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent flex flex-col items-center text-center relative overflow-hidden shadow-2xl shadow-amber-500/10"
              >
+                <Confetti />
+
                 {/* Decorative background element */}
-                <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] pointer-events-none"
+                <div className="absolute top-0 left-0 w-full h-full opacity-[0.05] pointer-events-none"
                      style={{ backgroundImage: `radial-gradient(circle at 50% 50%, #FBBF24 0%, transparent 70%)` }} />
                 
-                <div className="w-20 h-20 rounded-3xl bg-amber-500/20 flex items-center justify-center mb-6 border border-amber-500/30 shadow-lg shadow-amber-500/10 relative z-10">
-                  <Trophy size={40} className="text-amber-500" />
+                <div className="w-24 h-24 rounded-[2rem] bg-amber-500 flex items-center justify-center mb-8 border-4 border-white/20 shadow-xl shadow-amber-500/30 relative z-30">
+                  <Trophy size={48} className="text-white" />
                 </div>
-                <h3 className="text-2xl lg:text-3xl font-black text-amber-500 mb-3 relative z-10 tracking-tight">
-                  {t('pendingFinalEval')}
+                
+                <h2 className="text-sm font-black text-amber-600 uppercase tracking-[0.3em] mb-4 relative z-30">
+                   {t('allFinished')}
+                </h2>
+
+                <h3 className="text-3xl lg:text-5xl font-black text-[color:var(--hub-text)] mb-6 relative z-30 tracking-tight leading-tight max-w-2xl">
+                  {t('congratsTitle')}
                 </h3>
-                <p className="text-base text-[color:var(--hub-muted)] font-bold max-w-lg relative z-10 leading-relaxed">
-                  {t('pendingEvalDesc')}
+                
+                <p className="text-lg text-[color:var(--hub-muted)] font-medium max-w-2xl relative z-30 leading-relaxed mb-10">
+                  {t('congratsDesc')}
                 </p>
 
-                <div className="mt-8 flex flex-col sm:flex-row items-center gap-4 relative z-10">
-                  <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20">
-                    <div className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-                    <span className="text-xs font-black uppercase tracking-widest text-amber-600">Waiting for Evaluator</span>
-                  </div>
+                <div className="w-full h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent mb-10 relative z-30" />
 
-                  <button
-                    onClick={() => setIsCertOpen(true)}
-                    className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-amber-500 text-white text-xs font-black uppercase tracking-widest hover:bg-amber-600 transition-all shadow-xl shadow-amber-500/25 active:scale-95"
-                  >
-                    <Award size={16} />
-                    {t('viewCertificate')}
-                  </button>
+                <div className="flex flex-col items-center gap-6 relative z-30">
+                  <div className="flex items-center gap-4 px-8 py-4 rounded-3xl bg-white dark:bg-black/40 border border-amber-500/20 shadow-sm">
+                    <div className="w-3 h-3 rounded-full bg-amber-500 animate-ping" />
+                    <div className="flex flex-col items-start">
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600 mb-0.5">{t('pendingFinalEval')}</span>
+                      <span className="text-sm font-bold text-[color:var(--hub-text)]">{t('pendingEvalDesc')}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-xs font-bold text-[color:var(--hub-dim)] italic">
+                    <Award size={14} />
+                    <span>Evaluation will be conducted by a supervisor shortly.</span>
+                  </div>
                 </div>
+
+                {/* Bottom gloss effect */}
+                <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-white/10 to-transparent pointer-events-none" />
              </motion.div>
           )}
 
@@ -672,14 +682,6 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
           </motion.div>
         </div>
       </div>
-
-      <CertificationModal 
-        isOpen={isCertOpen}
-        onClose={() => setIsCertOpen(false)}
-        agentName={agentName}
-        agentId={agentId}
-        stats={stats}
-      />
     </div>
   );
 }

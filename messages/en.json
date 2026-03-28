@@ -152,6 +152,8 @@
     "progress": "Progress",
     "passedModules": "Passed Modules",
     "allFinished": "All Finished! 🎉",
+    "congratsTitle": "Congratulations! You've Completed Your Training!",
+    "congratsDesc": "You have successfully passed all the modules and assessments. Your hard work and dedication have paid off. You are now one step closer to becoming a certified professional!",
     "pendingFinalEval": "Pending Final Simulation",
     "pendingEvalDesc": "Waiting for evaluator to conduct final simulation.",
     "trainingModules": "Training Modules",
