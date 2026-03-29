@@ -87,7 +87,8 @@ function useLiveSession(moduleId: string | null) {
     const participantsRef = ref(rtdb, `presentation_sync/${moduleId}/participants`);
     const unsubParticipants = onValue(participantsRef, (snap) => {
       if (snap.exists()) {
-        setParticipants(Object.values(snap.val()));
+        const list = Object.values(snap.val()).filter((p: any) => p.role === 'agent');
+        setParticipants(list);
       } else {
         setParticipants([]);
       }

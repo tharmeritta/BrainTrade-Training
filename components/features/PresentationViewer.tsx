@@ -97,6 +97,7 @@ export default function PresentationViewer({
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isManualStop, setIsManualStop] = useState(false);
   const [agentName, setAgentName] = useState<string | null>(null);
   const [agentId, setAgentId] = useState<string | null>(null);
 
@@ -511,7 +512,7 @@ export default function PresentationViewer({
     const unsub = onValue(participantsRef, (snap) => {
       if (snap.exists()) {
         const data = snap.val();
-        const list = Object.values(data);
+        const list = Object.values(data).filter((p: any) => p.role === 'agent');
         setParticipants(list as any[]);
       } else {
         setParticipants([]);
@@ -525,6 +526,7 @@ export default function PresentationViewer({
 
   const takeControl = useCallback(async () => {
     if (!user && !agentId) return;
+    setIsManualStop(false);
     const syncRef = ref(rtdb, `presentation_sync/${module.id}/state`);
     await set(syncRef, {
       active: true,
@@ -537,6 +539,7 @@ export default function PresentationViewer({
   }, [user, agentId, module.id, agentName, slide, lang]);
 
   const stopControl = useCallback(async () => {
+    setIsManualStop(true);
     const syncRef = ref(rtdb, `presentation_sync/${module.id}/state`);
     await update(syncRef, {
       active: false,
@@ -603,10 +606,10 @@ export default function PresentationViewer({
 
   // Auto-take control for trainer if embedded and no one is in control
   useEffect(() => {
-    if (embedded && isTrainer && !syncActive && hasContent) {
+    if (embedded && isTrainer && !syncActive && hasContent && !isManualStop) {
       takeControl();
     }
-  }, [embedded, isTrainer, syncActive, hasContent, takeControl]);
+  }, [embedded, isTrainer, syncActive, hasContent, takeControl, isManualStop]);
 
   // Loading timeout
   useEffect(() => {
