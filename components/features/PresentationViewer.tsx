@@ -58,6 +58,9 @@ const LOAD_TIMEOUT_MS = 12_000;
 const slideKey = (moduleId: string, lang: CourseLang) =>
   `brainstrade_slide_${moduleId}_${lang}`;
 
+const viewedKey = (moduleId: string, lang: CourseLang) =>
+  `brainstrade_viewed_${moduleId}_${lang}`;
+
 // --- Main Component ---
 
 interface PresentationViewerProps {
@@ -92,6 +95,20 @@ export default function PresentationViewer({
     const n = saved ? parseInt(saved, 10) : 1;
     const total = module.presentations[initialLang].totalSlides;
     return n >= 1 && n <= total ? n : 1;
+  });
+
+  const [viewedSlides, setViewedSlides] = useState<Set<number>>(() => {
+    if (typeof window === 'undefined') return new Set();
+    const saved = localStorage.getItem(viewedKey(module.id, initialLang));
+    if (saved) {
+      try {
+        const arr = JSON.parse(saved);
+        return new Set(Array.isArray(arr) ? arr : []);
+      } catch {
+        return new Set();
+      }
+    }
+    return new Set();
   });
 
   const [isLoaded, setIsLoaded] = useState(false);
@@ -283,13 +300,28 @@ export default function PresentationViewer({
 
   const hasContent = (slideUrls && slideUrls.length > 0) || presentationId;
 
+  const isModuleComplete = viewedSlides.size >= total;
+
   useEffect(() => { slideRef.current = slide; }, [slide]);
 
   useEffect(() => {
     setIsLoaded(false);
     setLoadError(false);
     setPreloadedSlides(new Set()); // Clear memory on presentation change
-  }, [slideUrls, presentationId, lang]);
+
+    // Restore viewed slides for the new lang/module
+    const saved = localStorage.getItem(viewedKey(module.id, lang));
+    if (saved) {
+      try {
+        const arr = JSON.parse(saved);
+        setViewedSlides(new Set(Array.isArray(arr) ? arr : []));
+      } catch {
+        setViewedSlides(new Set());
+      }
+    } else {
+      setViewedSlides(new Set());
+    }
+  }, [slideUrls, presentationId, lang, module.id]);
 
   useEffect(() => {
     const session = getAgentSession();
@@ -299,12 +331,24 @@ export default function PresentationViewer({
     }
   }, []);
 
+  // ── Track viewed slides ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (isLoaded && hasContent) {
+      setViewedSlides(prev => {
+        if (prev.has(slide)) return prev;
+        const next = new Set(prev).add(slide);
+        localStorage.setItem(viewedKey(module.id, lang), JSON.stringify(Array.from(next)));
+        return next;
+      });
+    }
+  }, [slide, isLoaded, hasContent, module.id, lang]);
+
   // ── Track completion ──────────────────────────────────────────────────────
   useEffect(() => {
     if (!agentId || !module.id || !total || isTrainer) return;
     
-    if (slide === total && isLoaded) {
-      // Small delay to ensure they actually see the last slide
+    if (isModuleComplete && isLoaded) {
+      // Small delay to ensure they actually see the current slide
       const timer = setTimeout(() => {
         fetch('/api/agent/progress', {
           method: 'POST',
@@ -318,7 +362,7 @@ export default function PresentationViewer({
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [slide, total, isLoaded, agentId, agentName, module.id, isTrainer]);
+  }, [isModuleComplete, total, isLoaded, agentId, agentName, module.id, isTrainer]);
 
   // ── Preloading Logic (Sliding Window) ─────────────────────────────────────
 
@@ -649,18 +693,16 @@ export default function PresentationViewer({
     if (n < 1 || n > total) return;
     if (syncActive && !amInControl) return; // Prevent manual change when following sync
 
-    // Only show loader if slide isn't preloaded
-    if (!preloadedSlides.has(n)) {
-      setIsLoaded(false);
-      setLoadError(false);
-    }
+    // Reset loader to ensure we track the next slide properly
+    setIsLoaded(false);
+    setLoadError(false);
     
     setSlide(n);
 
     if (amInControl) {
       updateSyncSlide(n);
     }
-  }, [total, syncActive, amInControl, preloadedSlides, updateSyncSlide]);
+  }, [total, syncActive, amInControl, updateSyncSlide]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -1021,7 +1063,7 @@ export default function PresentationViewer({
 
             {/* Module complete badge */}
             <AnimatePresence>
-              {hasContent && isComplete && isLoaded && (
+              {hasContent && isModuleComplete && isLoaded && (
                 <motion.div
                   key="complete"
                   initial={{ opacity: 0, y: 12 }}
@@ -1206,6 +1248,17 @@ export default function PresentationViewer({
                   {t('slide')}
                 </span>
               </div>
+
+              {/* Viewed progress */}
+              <div className="flex items-center gap-2 border-l border-border/50 pl-4">
+                <span className={`font-black tabular-nums text-sm ${isModuleComplete ? 'text-emerald-500' : ''}`}>
+                  {viewedSlides.size} / {total}
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  {t('viewed')}
+                </span>
+              </div>
+
               {/* Participant count */}
               <div className="relative group/participants">
                 <div className="flex items-center gap-1.5 rounded-lg bg-black/5 px-2.5 py-1 text-[10px] font-bold text-muted-foreground dark:bg-white/5 cursor-help">

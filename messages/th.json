@@ -479,6 +479,7 @@
   "presentation": {
     "productKnowledge": "ความรู้ผลิตภัณฑ์",
     "syncingSlide": "กำลังซิงค์สไลด์ {slide}",
+    "viewed": "ดูแล้ว",
     "arrowsNavigate": "ใช้ลูกศรเพื่อเลื่อน",
     "slide": "สไลด์",
     "back": "ย้อนกลับ",
