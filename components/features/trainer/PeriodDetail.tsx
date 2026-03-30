@@ -11,7 +11,6 @@ import { T, Spinner, fmtDate } from './TrainerConstants';
 import { TrainerService } from '@/lib/services/trainer-service';
 import { DaysTab } from './DaysTab';
 import { DisciplineTab } from './DisciplineTab';
-import { LiveSessionTab } from './LiveSessionTab';
 import { useAgentPresence } from '@/lib/presence';
 
 interface PeriodDetailProps {
@@ -26,7 +25,7 @@ interface PeriodDetailProps {
 export function PeriodDetail({ period, agents, role, readOnly, onPeriodUpdated, onPeriodDeleted }: PeriodDetailProps) {
   const t = useTranslations('trainer');
   const locale = t('management') === 'จัดการการฝึกอบรม' ? 'th-TH' : 'en-GB';
-  const [subTab,    setSubTab]    = useState<'days' | 'discipline' | 'live'>('days');
+  const [subTab,    setSubTab]    = useState<'days' | 'discipline'>('days');
   const [dayRecs,   setDayRecs]   = useState<TrainingDayRecord[]>([]);
   const [discRecs,  setDiscRecs]  = useState<DisciplineRecord[]>([]);
   const [loading,   setLoading]   = useState(true);
@@ -220,13 +219,12 @@ export function PeriodDetail({ period, agents, role, readOnly, onPeriodUpdated, 
         )}
 
         <div className="flex gap-0.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          {(['days', 'discipline', 'live'] as const).map(st => (
+          {(['days', 'discipline'] as const).map(st => (
             <button key={st} onClick={() => setSubTab(st)}
               className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold transition-all relative"
               style={{ color: subTab === st ? T.amber : '#6B7280' }}>
               {st === 'days' ? <><BookOpen size={14} /> {t('trainingDays')}</> : 
-               st === 'discipline' ? <><AlertTriangle size={14} /> {t('discipline')}</> :
-               <><Radio size={14} /> {t('liveLessons')}</>}
+               <><AlertTriangle size={14} /> {t('discipline')}</>}
               {subTab === st && (
                 <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full" style={{ background: T.amber }} />
               )}
@@ -247,13 +245,11 @@ export function PeriodDetail({ period, agents, role, readOnly, onPeriodUpdated, 
             onDeactivateAgent={handleDeactivateAgent} readOnly={!canEdit} role={role}
             presence={presence}
           />
-        ) : subTab === 'discipline' ? (
+        ) : (
           <DisciplineTab
             period={period} records={discRecs} onAdded={r => setDiscRecs(prev => [r, ...prev])}
             onDeleted={id => setDiscRecs(prev => prev.filter(r => r.id !== id))} readOnly={!canEdit}
           />
-        ) : (
-          <LiveSessionTab period={period} locale={locale} role={role} readOnly={readOnly} />
         )}
       </div>
     </div>

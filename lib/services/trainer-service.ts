@@ -74,17 +74,4 @@ export const TrainerService = {
     const res = await fetch(`/api/trainer/discipline/${id}`, { method: 'DELETE' });
     if (!res.ok) throw new Error('Failed to delete discipline record');
   },
-
-  async saveSessionSummary(data: any): Promise<any> {
-    const res = await fetch('/api/trainer/sessions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.error || 'Failed to save session summary');
-    }
-    return res.json();
-  },
 };
