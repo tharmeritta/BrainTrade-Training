@@ -22,9 +22,14 @@ interface PeriodDetailProps {
   readOnly?: boolean;
   onPeriodUpdated: (p: TrainingPeriod) => void;
   onPeriodDeleted?: (id: string) => void;
+  currentUserName?: string;
+  currentUserId?: string;
 }
 
-export function PeriodDetail({ period, agents, role, readOnly, onPeriodUpdated, onPeriodDeleted }: PeriodDetailProps) {
+export function PeriodDetail({ 
+  period, agents, role, readOnly, onPeriodUpdated, onPeriodDeleted,
+  currentUserName, currentUserId
+}: PeriodDetailProps) {
   const t = useTranslations('trainer');
   const locale = t('management') === 'จัดการการฝึกอบรม' ? 'th-TH' : 'en-GB';
   const [subTab,    setSubTab]    = useState<'days' | 'discipline'>('days');
@@ -50,8 +55,8 @@ export function PeriodDetail({ period, agents, role, readOnly, onPeriodUpdated, 
         period.agentIds, 
         'product-knowledge-1', // Default module for now
         'Product Knowledge - Live', 
-        period.trainerId || 'trainer', 
-        period.trainerName || 'Trainer'
+        currentUserId || period.trainerId || 'trainer', 
+        currentUserName || period.trainerName || 'Trainer'
       );
     } finally {
       setSummoning(false);
@@ -200,7 +205,6 @@ export function PeriodDetail({ period, agents, role, readOnly, onPeriodUpdated, 
               { icon: Calendar,    label: fmtDate(period.startDate, locale) },
               { icon: Users,       label: `${period.agentIds.length} ${t('noAgents').includes('ไม่มี') ? 'เอเจนต์' : 'agents'}` },
               { icon: BookOpen,    label: `${period.totalDays} ${t('totalDays')}` },
-              { icon: Clock,       label: period.trainerName },
               ...(completionPct !== null ? [{ icon: TrendingUp, label: `${completionPct}% filled` }] : []),
               { icon: Radio,       label: `${activeFollowers} Online`, color: '#ef4444' },
             ];

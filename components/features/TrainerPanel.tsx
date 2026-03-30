@@ -190,11 +190,6 @@ export default function TrainerPanel({ role, uid, name, readOnly }: TrainerPanel
 
                     <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/40">
                       <span className="text-[10px] font-bold text-muted-foreground opacity-40">{fmtDate(p.startDate, locale)}</span>
-                      {p.trainerName && (
-                        <span className="text-[9px] font-black text-amber-500/60 flex items-center gap-1 uppercase tracking-tighter truncate max-w-[90px]">
-                          <Clock size={10} strokeWidth={3} /> {p.trainerName}
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -214,6 +209,8 @@ export default function TrainerPanel({ role, uid, name, readOnly }: TrainerPanel
               readOnly={readOnly}
               onPeriodUpdated={handlePeriodUpdated}
               onPeriodDeleted={handlePeriodDeleted}
+              currentUserName={name}
+              currentUserId={uid}
             />
           ) : (
             <div className="flex flex-col items-center justify-center flex-1 py-20 text-center px-10">
