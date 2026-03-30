@@ -18,6 +18,7 @@ import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
 
 export default function HRAnalyticsTab({ readOnly }: { readOnly?: boolean }) {
   const t = useTranslations('admin');
+  const th = useTranslations('admin.hranalytics');
   const [agents, setAgents] = useState<AgentStats[]>([]);
   const [periods, setPeriods] = useState<TrainingPeriod[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,32 +87,32 @@ export default function HRAnalyticsTab({ readOnly }: { readOnly?: boolean }) {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard 
-          title="Total Active Agents" 
+          title={th('totalActive')} 
           value={stats.total} 
           icon={Users} 
           color="blue" 
-          trend="+12% from last batch"
+          trend={th('batchTrend', { trend: '+12%' })}
         />
         <KPICard 
-          title="Training Completion" 
+          title={th('completion')} 
           value={`${Math.round((stats.completed / (stats.total || 1)) * 100)}%`} 
           icon={GraduationCap} 
           color="emerald" 
-          trend="8 agents finished"
+          trend={th('agentsFinished', { count: 8 })}
         />
         <KPICard 
-          title="Batch Avg Score" 
+          title={th('avgScore')} 
           value={`${Math.round(stats.avgScore)}%`} 
           icon={TrendingUp} 
           color="purple" 
-          trend="Stable vs target"
+          trend={th('stableTarget')}
         />
         <KPICard 
-          title="At-Risk Profiles" 
+          title={th('atRisk')} 
           value={stats.atRisk} 
           icon={ShieldAlert} 
           color="red" 
-          trend="Requires HR Review"
+          trend={th('hrReview')}
         />
       </div>
 
@@ -121,9 +122,9 @@ export default function HRAnalyticsTab({ readOnly }: { readOnly?: boolean }) {
           <div>
             <h3 className="text-lg font-black text-foreground flex items-center gap-2">
               <Activity size={20} className="text-primary" />
-              Batch Progress Matrix
+              {th('matrixTitle')}
             </h3>
-            <p className="text-xs text-muted-foreground font-medium">Daily sequential tracking & performance audit</p>
+            <p className="text-xs text-muted-foreground font-medium">{th('matrixDesc')}</p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -131,7 +132,7 @@ export default function HRAnalyticsTab({ readOnly }: { readOnly?: boolean }) {
                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" size={16} />
                <input 
                  type="text"
-                 placeholder="Search agent..."
+                 placeholder={th('searchPlaceholder')}
                  value={searchTerm}
                  onChange={(e) => setSearchTerm(e.target.value)}
                  className="pl-10 pr-4 py-2 bg-background/50 border border-border/60 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 w-full md:w-64 transition-all"
@@ -151,12 +152,12 @@ export default function HRAnalyticsTab({ readOnly }: { readOnly?: boolean }) {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-muted/10 text-[10px] font-black uppercase tracking-widest text-muted-foreground border-b border-border/40">
-                <th className="px-6 py-4">Agent Information</th>
-                <th className="px-6 py-4 text-center">Step 01: Learn</th>
-                <th className="px-6 py-4 text-center">Step 02: Quiz</th>
-                <th className="px-6 py-4 text-center">Step 03: AI Eval</th>
-                <th className="px-6 py-4 text-center">Human Eval</th>
-                <th className="px-6 py-4">Final Result</th>
+                <th className="px-6 py-4">{th('agentInfo')}</th>
+                <th className="px-6 py-4 text-center">{th('stepLearn')}</th>
+                <th className="px-6 py-4 text-center">{th('stepQuiz')}</th>
+                <th className="px-6 py-4 text-center">{th('stepAi')}</th>
+                <th className="px-6 py-4 text-center">{th('humanEval')}</th>
+                <th className="px-6 py-4">{th('finalResult')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/20">
@@ -187,7 +188,6 @@ export default function HRAnalyticsTab({ readOnly }: { readOnly?: boolean }) {
                     <ProgressCell passed={steps.learn.passed} score={steps.learn.score} color="#3B82F6" />
                     <ProgressCell passed={steps.quiz.passed} score={steps.quiz.score} color="#F59E0B" />
                     <ProgressCell passed={steps['ai-eval'].passed} score={steps['ai-eval'].score} color="#8B5CF6" />
-                    
                     <td className="px-6 py-5 text-center">
                       {humanEval ? (
                         <div className="inline-flex flex-col items-center">
@@ -197,7 +197,7 @@ export default function HRAnalyticsTab({ readOnly }: { readOnly?: boolean }) {
                           <span className="text-[9px] font-bold text-muted-foreground uppercase">By {humanEval.evaluatorName}</span>
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground/30 font-black italic">PENDING</span>
+                        <span className="text-xs text-muted-foreground/30 font-black italic">{th('statusPending')}</span>
                       )}
                     </td>
 
@@ -205,11 +205,11 @@ export default function HRAnalyticsTab({ readOnly }: { readOnly?: boolean }) {
                       <div className="flex items-center gap-2">
                         {isPassed ? (
                           <div className="px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase flex items-center gap-1.5">
-                            <CheckCircle2 size={12} /> Passed
+                            <CheckCircle2 size={12} /> {th('statusPassed')}
                           </div>
                         ) : (
                           <div className="px-3 py-1 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase flex items-center gap-1.5">
-                            <Clock size={12} /> In Progress
+                            <Clock size={12} /> {th('statusInProgress')}
                           </div>
                         )}
                         <button className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground">
@@ -228,7 +228,7 @@ export default function HRAnalyticsTab({ readOnly }: { readOnly?: boolean }) {
   );
 
   function exportToCSV() {
-    const headers = ['Agent Name', 'Stage Name', 'Learn %', 'Quiz %', 'AI Eval %', 'Human Eval %', 'Status'];
+    const headers = [th('agentInfo'), 'Stage Name', 'Learn %', 'Quiz %', 'AI Eval %', 'Human Eval %', 'Status'];
     const rows = filteredAgents.map(a => {
       const steps = deriveSteps(a);
       const humanEval = a.humanEvaluations?.[0];
@@ -241,7 +241,7 @@ export default function HRAnalyticsTab({ readOnly }: { readOnly?: boolean }) {
         steps.quiz.score || 0,
         steps['ai-eval'].score || 0,
         humanEval?.totalScore || 0,
-        isPassed ? 'Passed' : 'In Progress'
+        isPassed ? th('statusPassed') : th('statusInProgress')
       ];
     });
 

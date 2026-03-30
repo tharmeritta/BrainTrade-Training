@@ -61,10 +61,10 @@ export default function ReportsTab({ readOnly }: { readOnly?: boolean }) {
   }, [agents]);
 
   const handleExport = () => {
-    const headers = ['Agent Name', 'Badge', 'Overall Score', 'Foundation', 'Product', 'Process', 'Payment', 'AI Eval Avg'];
+    const headers = [t('reports.tableAgent'), t('reports.tableBadge'), t('reports.tableOverall'), 'Foundation', 'Product', 'Process', 'Payment', 'AI Eval Avg'];
     const rows = filteredAgents.map(a => [
       a.agent.name,
-      a.badge,
+      t(`badges.${a.badge}`),
       a.overallScore,
       a.quiz.foundation?.bestScore ?? 0,
       a.quiz.product?.bestScore ?? 0,
@@ -97,7 +97,7 @@ export default function ReportsTab({ readOnly }: { readOnly?: boolean }) {
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-20 gap-4">
       <Loader2 className="animate-spin text-primary/40" size={32} />
-      <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">{t('overview.loading')}</p>
+      <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">{t('reports.loading')}</p>
     </div>
   );
 
@@ -137,7 +137,7 @@ export default function ReportsTab({ readOnly }: { readOnly?: boolean }) {
                 return (
                   <div key={b} className="flex-1 flex flex-col items-center gap-2 group relative">
                     <div className="absolute -top-6 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-black text-foreground bg-secondary px-1.5 py-0.5 rounded shadow-sm">
-                      {count} Agents
+                      {t('reports.agentsTooltip', { count })}
                     </div>
                     <motion.div 
                       initial={{ height: 0 }}
@@ -163,7 +163,7 @@ export default function ReportsTab({ readOnly }: { readOnly?: boolean }) {
                 <Users size={24} />
               </div>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/60">Total Agents</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500/60">{t('reports.totalAgents')}</p>
                 <p className="text-3xl font-black text-foreground">{stats.total}</p>
               </div>
             </div>
@@ -172,7 +172,7 @@ export default function ReportsTab({ readOnly }: { readOnly?: boolean }) {
                 <Zap size={24} />
               </div>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500/60">Elite & Strong</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500/60">{t('reports.eliteStrong')}</p>
                 <p className="text-3xl font-black text-foreground">{stats.badges.elite + stats.badges.strong}</p>
               </div>
             </div>
@@ -201,16 +201,16 @@ export default function ReportsTab({ readOnly }: { readOnly?: boolean }) {
                 onChange={e => setBadgeFilter(e.target.value)}
                 className="bg-background border border-border rounded-xl px-3 py-2 text-xs font-bold outline-none cursor-pointer"
               >
-                <option value="all">All Badges</option>
-                <option value="elite">Elite</option>
-                <option value="strong">Strong</option>
-                <option value="developing">Developing</option>
-                <option value="needs-work">Needs Work</option>
+                <option value="all">{t('reports.allBadges')}</option>
+                <option value="elite">{t('badges.elite')}</option>
+                <option value="strong">{t('badges.strong')}</option>
+                <option value="developing">{t('badges.developing')}</option>
+                <option value="needs-work">{t('badges.needs-work')}</option>
               </select>
             </div>
           </div>
           <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-            {filteredAgents.length} Agents Found
+            {t('reports.agentsFound', { count: filteredAgents.length })}
           </div>
         </div>
 
@@ -219,17 +219,17 @@ export default function ReportsTab({ readOnly }: { readOnly?: boolean }) {
             <thead>
               <tr className="border-b border-border bg-secondary/20 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
                 <th className="text-left px-6 py-4 cursor-pointer hover:text-foreground transition-colors" onClick={() => toggleSort('name')}>
-                  <div className="flex items-center gap-1.5">Agent {sortField === 'name' && <ArrowUpDown size={10} />}</div>
+                  <div className="flex items-center gap-1.5">{t('reports.tableAgent')} {sortField === 'name' && <ArrowUpDown size={10} />}</div>
                 </th>
                 <th className="text-center px-4 py-4 cursor-pointer hover:text-foreground transition-colors" onClick={() => toggleSort('badge')}>
-                  <div className="flex items-center justify-center gap-1.5">Badge {sortField === 'badge' && <ArrowUpDown size={10} />}</div>
+                  <div className="flex items-center justify-center gap-1.5">{t('reports.tableBadge')} {sortField === 'badge' && <ArrowUpDown size={10} />}</div>
                 </th>
                 <th className="text-center px-4 py-4 cursor-pointer hover:text-foreground transition-colors" onClick={() => toggleSort('overallScore')}>
-                  <div className="flex items-center justify-center gap-1.5">Overall {sortField === 'overallScore' && <ArrowUpDown size={10} />}</div>
+                  <div className="flex items-center justify-center gap-1.5">{t('reports.tableOverall')} {sortField === 'overallScore' && <ArrowUpDown size={10} />}</div>
                 </th>
-                <th className="text-center px-4 py-4">Quiz Avg</th>
-                <th className="text-center px-4 py-4">AI Eval</th>
-                <th className="text-center px-6 py-4">Status</th>
+                <th className="text-center px-4 py-4">{t('reports.tableQuizAvg')}</th>
+                <th className="text-center px-4 py-4">{t('reports.tableAiEval')}</th>
+                <th className="text-center px-6 py-4">{t('reports.tableStatus')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -268,7 +268,7 @@ export default function ReportsTab({ readOnly }: { readOnly?: boolean }) {
                     </td>
                     <td className="px-6 py-4 text-center">
                        <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter ${statusPill(completion.status)}`}>
-                          {completion.status.replace('-', ' ')}
+                          {t(`overview.status${completion.status.charAt(0).toUpperCase() + completion.status.slice(1).replace(/-([a-z])/g, (g) => g[1].toUpperCase())}`)}
                        </span>
                     </td>
                   </motion.tr>
@@ -281,7 +281,7 @@ export default function ReportsTab({ readOnly }: { readOnly?: boolean }) {
         {filteredAgents.length === 0 && (
           <div className="py-20 text-center text-muted-foreground/40 italic flex flex-col items-center gap-3">
             <Users size={40} className="opacity-20" />
-            <p className="text-sm font-bold uppercase tracking-widest">No agents matching your filters</p>
+            <p className="text-sm font-bold uppercase tracking-widest">{t('reports.noMatching')}</p>
           </div>
         )}
       </div>

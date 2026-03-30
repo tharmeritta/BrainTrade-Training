@@ -124,8 +124,8 @@ export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
                       <tr className="border-b border-border bg-secondary/30 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
                         <th className="text-left px-4 py-2.5">{t('overview.rosterAgent')}</th>
                         <th className="text-center px-3 py-2.5">{t('overview.rosterTraining')}</th>
-                        <th className="text-center px-3 py-2.5">Quiz</th>
-                        <th className="text-center px-3 py-2.5">AI Eval</th>
+                        <th className="text-center px-3 py-2.5">{t('overview.indicatorQuiz')}</th>
+                        <th className="text-center px-3 py-2.5">{t('overview.indicatorAi')}</th>
                         <th className="text-center px-3 py-2.5">{t('overview.rosterEvalScore')}</th>
                       </tr>
                     </thead>
@@ -198,9 +198,9 @@ export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
               <TrendingUp size={18} className="text-primary" /> {t('overview.trainingCompletion')}
             </h3>
             <div className="flex items-center gap-4 text-[10px] uppercase font-black tracking-widest text-muted-foreground/60">
-              <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-blue-400" /> Learn</span>
-              <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-amber-400" /> Quiz</span>
-              <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-purple-400" /> AI Eval</span>
+              <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-blue-400" /> {t('overview.indicatorLearn')}</span>
+              <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-amber-400" /> {t('overview.indicatorQuiz')}</span>
+              <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-purple-400" /> {t('overview.indicatorAi')}</span>
             </div>
           </div>
           
@@ -238,7 +238,7 @@ export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
             <div className="space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                 <Target size={14} className="text-amber-400" />
-                <span className="font-bold text-xs uppercase tracking-wider">{t('overview.quiz')}</span>
+                <span className="font-bold text-xs uppercase tracking-wider">{t('overview.indicatorQuiz')}</span>
                 <span className="ml-auto text-[10px] font-bold text-muted-foreground bg-secondary px-1.5 py-0.5 rounded">
                   {data.moduleStats.find(m => m.moduleId === 'quiz')?.passCount ?? 0}/{data.totalAgents}
                 </span>
@@ -268,7 +268,7 @@ export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
             <div className="space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b border-border/50">
                 <Zap size={14} className="text-purple-400" />
-                <span className="font-bold text-xs uppercase tracking-wider">{t('overview.aiEval')}</span>
+                <span className="font-bold text-xs uppercase tracking-wider">{t('overview.indicatorAi')}</span>
                 <span className="ml-auto text-[10px] font-bold text-muted-foreground bg-secondary px-1.5 py-0.5 rounded">
                   {data.moduleStats.find(m => m.moduleId === 'ai-eval')?.passCount ?? 0}/{data.totalAgents}
                 </span>
@@ -276,7 +276,7 @@ export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
               
               <div className="bg-secondary/20 rounded-xl p-3 border border-border/30 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Avg Score</span>
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">{t('overview.avgScoreLabel')}</span>
                   <span className={`text-sm font-black ${scoreColor(data.avgAiEvalScore)}`}>{data.avgAiEvalScore}%</span>
                 </div>
                 <div className="h-2 bg-secondary rounded-full overflow-hidden">
@@ -286,7 +286,7 @@ export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
                 <div className="pt-2 mt-2 border-t border-border/30">
                    <div className="flex items-center justify-between text-[10px]">
                       <span className="font-bold text-muted-foreground uppercase tracking-tighter">{t('overview.overallResult')}</span>
-                      <span className="font-black text-blue-500">{Math.round((data.passFail.passed / data.totalAgents) * 100)}% Pass</span>
+                      <span className="font-black text-blue-500">{t('overview.passPct', { pct: Math.round((data.passFail.passed / data.totalAgents) * 100) })}</span>
                    </div>
                    <div className="flex gap-1 mt-1.5">
                       {Array.from({ length: 10 }).map((_, i) => (
@@ -299,7 +299,7 @@ export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
               <div className="flex items-center gap-2 p-2 rounded-lg border border-blue-500/10 bg-blue-500/5">
                  <Award size={14} className="text-blue-500 shrink-0" />
                  <p className="text-[9px] leading-tight text-blue-700/70 font-medium">
-                    {data.passFail.passed} agents have cleared all training modules and are ready for live operation.
+                    {t('overview.readyForLive', { count: data.passFail.passed })}
                  </p>
               </div>
             </div>
@@ -316,7 +316,7 @@ export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
                     <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black ${i === 0 ? 'bg-amber-400 text-white' : 'bg-secondary text-muted-foreground'}`}>{i + 1}</div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold truncate text-foreground">{a.agent.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{a.overallScore}% Overall</p>
+                      <p className="text-[10px] text-muted-foreground">{a.overallScore}% {t('overview.overall')}</p>
                     </div>
                   </div>
                 ))}
