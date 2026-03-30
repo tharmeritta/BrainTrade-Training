@@ -21,8 +21,8 @@ export default function ReportsTab({ readOnly }: { readOnly?: boolean }) {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
-    fetchWithCache<AgentStats[]>('/api/admin/agents')
-      .then(data => setAgents(data || []))
+    fetchWithCache<{ agents: AgentStats[] }>('/api/admin/agents')
+      .then(data => setAgents(data?.agents || []))
       .finally(() => setLoading(false));
   }, []);
 
@@ -97,7 +97,7 @@ export default function ReportsTab({ readOnly }: { readOnly?: boolean }) {
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-20 gap-4">
       <Loader2 className="animate-spin text-primary/40" size={32} />
-      <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">{t('reports.loading')}</p>
+      <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">{t('overview.loading')}</p>
     </div>
   );
 
@@ -107,15 +107,15 @@ export default function ReportsTab({ readOnly }: { readOnly?: boolean }) {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-foreground flex items-center gap-2">
-            <FileSpreadsheet className="text-emerald-500" /> {t('reports.title')}
+            <FileSpreadsheet className="text-emerald-500" /> {t('reports.overallTitle')}
           </h2>
-          <p className="text-sm text-muted-foreground font-medium opacity-70">{t('reports.subtitle')}</p>
+          <p className="text-sm text-muted-foreground font-medium opacity-70">{t('reports.overallDesc')}</p>
         </div>
         <button 
           onClick={handleExport}
           className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-500 text-white font-black text-sm shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
         >
-          <Download size={16} /> {t('reports.exportCsv')}
+          <Download size={16} /> {t('reports.exportAll')}
         </button>
       </div>
 
@@ -126,7 +126,7 @@ export default function ReportsTab({ readOnly }: { readOnly?: boolean }) {
           <div className="lg:col-span-2 bg-card rounded-2xl border border-border p-6 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <BarChart3 size={16} className="text-blue-500" /> {t('reports.badgeDistribution')}
+                <BarChart3 size={16} className="text-blue-500" /> {t('overview.overallResult')}
               </h3>
             </div>
             <div className="flex items-end gap-2 h-40 pt-4">
@@ -190,7 +190,7 @@ export default function ReportsTab({ readOnly }: { readOnly?: boolean }) {
                 type="text" 
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder={t('reports.searchPlaceholder')}
+                placeholder={t('agents.searchPlaceholder')}
                 className="w-full pl-9 pr-4 py-2 rounded-xl bg-background border border-border text-xs outline-none focus:ring-2 focus:ring-primary/10 transition-all"
               />
             </div>
