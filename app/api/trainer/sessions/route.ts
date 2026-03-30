@@ -6,8 +6,8 @@ import type { LiveSessionRecord } from '@/types';
 export async function POST(req: NextRequest) {
   try {
     const user = await getServerUser();
-    if (!user || !['admin', 'manager', 'it', 'trainer'].includes(user.role)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user || !['admin', 'trainer'].includes(user.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const body = await req.json();

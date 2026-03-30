@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminManagerOrTrainer } from '@/lib/session';
+import { requireAdminManagerOrTrainer, requireTrainer } from '@/lib/session';
 import { fsAdd, fsGetAll } from '@/lib/firestore-db';
 import type { DisciplineRecord } from '@/types';
 
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   let user;
-  try { user = await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { user = await requireTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   const body = await req.json();
   const { agentId, agentName, trainingPeriodId, date, type, description } = body;
   if (!agentId || !trainingPeriodId || !type) return NextResponse.json({ error: 'agentId, trainingPeriodId, and type required' }, { status: 400 });

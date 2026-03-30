@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminManagerOrTrainer } from '@/lib/session';
+import { requireAdminManagerOrTrainer, requireTrainer } from '@/lib/session';
 import { fsGetAll, fsAdd, fsUpdate } from '@/lib/firestore-db';
 import type { TrainingDayRecord } from '@/types';
 
@@ -12,7 +12,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  try { await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { await requireTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   const { id: trainingPeriodId } = await params;
   const body = await req.json();
   const { agentId, dayNumber, date, attendance, topics, notes } = body;

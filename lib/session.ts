@@ -99,6 +99,6 @@ export async function requireAdminManagerOrTrainer() {
 
 export async function requireTrainer() {
   const user = await requireAuth();
-  if (!['admin', 'manager', 'it', 'trainer'].includes(user.role)) throw new Error('Forbidden');
+  if (!['admin', 'trainer'].includes(user.role)) throw new Error('Forbidden');
   return user;
 }

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminManagerOrTrainer } from '@/lib/session';
+import { requireTrainer } from '@/lib/session';
 import { fsUpdate, fsDelete } from '@/lib/firestore-db';
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  try { await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { await requireTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   const { id } = await params;
   const body = await req.json();
   const update: Record<string, unknown> = {};
@@ -15,7 +15,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  try { await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+  try { await requireTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
   const { id } = await params;
   await fsDelete('discipline_records', id);
   return NextResponse.json({ ok: true });

@@ -148,7 +148,7 @@ export default function PresentationViewer({
   const frameRef = useRef<HTMLDivElement>(null);
   const slideRef = useRef(slide);
   const touchStartX = useRef<number | null>(null);
-  const isTrainer = user && ['admin', 'manager', 'it', 'trainer'].includes(user.role);
+  const isTrainer = user && ['admin', 'trainer'].includes(user.role);
   const amInControl = syncActive && syncedById === (user?.uid || agentId);
 
   // ── Sync Drawing & Laser ─────────────────────────────────────────────────

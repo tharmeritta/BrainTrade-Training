@@ -165,9 +165,10 @@ interface LiveSessionTabProps {
   period: TrainingPeriod;
   locale: string;
   role: 'admin' | 'manager' | 'it' | 'trainer' | 'hr';
+  readOnly?: boolean;
 }
 
-export function LiveSessionTab({ period, locale, role }: LiveSessionTabProps) {
+export function LiveSessionTab({ period, locale, role, readOnly }: LiveSessionTabProps) {
   const t = useTranslations('trainer');
   const lang = locale.split('-')[0];
   const trainerLang = (lang === 'th' ? 'th' : 'en') as CourseLang;
@@ -230,10 +231,10 @@ export function LiveSessionTab({ period, locale, role }: LiveSessionTabProps) {
   const selectedMod = availableMods.find(m => m.id === selectedModId) || availableMods[0];
   const agentNames  = Object.values(period.agentNames ?? {});
   const modTitle    = selectedMod ? (locale === 'th-TH' ? selectedMod.titleTh : selectedMod.title) : '...';
-  const isManager = role === 'manager' || role === 'it' || role === 'hr';
+  const isRestricted = readOnly || (role !== 'admin' && role !== 'trainer');
 
   function handleStart() {
-    if (isManager) return;
+    if (isRestricted) return;
     setSessionNotes('');
     startSession();
   }
@@ -512,7 +513,7 @@ export function LiveSessionTab({ period, locale, role }: LiveSessionTabProps) {
               ))}
              </div>
           </div>
-          {isManager ? (
+          {isRestricted ? (
             <div className="rounded-2xl p-4 bg-muted/20 border border-border text-center">
               <p className="text-sm font-semibold text-muted-foreground flex items-center justify-center gap-2"><AlertTriangle size={16} className="text-amber-500" /> {t('managerNoStartSession')}</p>
             </div>

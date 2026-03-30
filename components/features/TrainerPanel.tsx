@@ -19,7 +19,7 @@ interface TrainerPanelProps {
   readOnly?: boolean;
 }
 
-export default function TrainerPanel({ role, uid, name }: TrainerPanelProps) {
+export default function TrainerPanel({ role, uid, name, readOnly }: TrainerPanelProps) {
   const t = useTranslations('trainer');
   const locale = t('management') === 'จัดการการฝึกอบรม' ? 'th-TH' : 'en-GB';
   
@@ -30,7 +30,7 @@ export default function TrainerPanel({ role, uid, name }: TrainerPanelProps) {
   const [loadingPeriods,   setLoadingPeriods]   = useState(true);
   const [showNewPeriod,    setShowNewPeriod]     = useState(false);
 
-  const canManage = role === 'trainer' || role === 'admin' || role === 'manager' || role === 'it';
+  const canManage = (role === 'trainer' || role === 'admin' || role === 'manager' || role === 'it') && !readOnly;
   const hasAutoSelected = useRef(false);
 
   const loadPeriods = useCallback(async () => {
@@ -185,6 +185,7 @@ export default function TrainerPanel({ role, uid, name }: TrainerPanelProps) {
               period={selectedPeriod}
               agents={agents}
               role={role}
+              readOnly={readOnly}
               onPeriodUpdated={handlePeriodUpdated}
               onPeriodDeleted={handlePeriodDeleted}
             />

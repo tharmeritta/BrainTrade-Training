@@ -18,11 +18,12 @@ interface PeriodDetailProps {
   period: TrainingPeriod;
   agents: { id: string; name: string }[];
   role: 'admin' | 'manager' | 'it' | 'trainer' | 'hr';
+  readOnly?: boolean;
   onPeriodUpdated: (p: TrainingPeriod) => void;
   onPeriodDeleted?: (id: string) => void;
 }
 
-export function PeriodDetail({ period, agents, role, onPeriodUpdated, onPeriodDeleted }: PeriodDetailProps) {
+export function PeriodDetail({ period, agents, role, readOnly, onPeriodUpdated, onPeriodDeleted }: PeriodDetailProps) {
   const t = useTranslations('trainer');
   const locale = t('management') === 'จัดการการฝึกอบรม' ? 'th-TH' : 'en-GB';
   const [subTab,    setSubTab]    = useState<'days' | 'discipline' | 'live'>('days');
@@ -36,8 +37,8 @@ export function PeriodDetail({ period, agents, role, onPeriodUpdated, onPeriodDe
   // Live Presence Tracking
   const presence = useAgentPresence(period.agentIds);
 
-  const canEdit = role === 'trainer' || role === 'admin' || role === 'it';
-  const canManage = role === 'trainer' || role === 'admin' || role === 'manager' || role === 'it';
+  const canEdit = (role === 'trainer' || role === 'admin' || role === 'it') && !readOnly;
+  const canManage = (role === 'trainer' || role === 'admin' || role === 'manager' || role === 'it') && !readOnly;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -252,7 +253,7 @@ export function PeriodDetail({ period, agents, role, onPeriodUpdated, onPeriodDe
             onDeleted={id => setDiscRecs(prev => prev.filter(r => r.id !== id))} readOnly={!canEdit}
           />
         ) : (
-          <LiveSessionTab period={period} locale={locale} role={role} />
+          <LiveSessionTab period={period} locale={locale} role={role} readOnly={readOnly} />
         )}
       </div>
     </div>
