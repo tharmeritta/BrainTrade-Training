@@ -418,6 +418,7 @@
       }
     },
     "reports": {
+      "loading": "Loading reports...",
       "overallTitle": "Overall Report",
       "overallDesc": "All agents · module scores · pass/fail · AI eval · performance badge.",
       "overallColors": "Color-coded: 🟢 ≥70% · 🟡 50–69% · 🔴 <50%",
