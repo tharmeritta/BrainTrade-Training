@@ -3,7 +3,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { GraduationCap, Plus, Users, BookOpen, Clock } from 'lucide-react';
+import { GraduationCap, Plus, Users, BookOpen, Clock, Radio } from 'lucide-react';
+import { ref, onValue } from 'firebase/database';
+import { rtdb } from '@/lib/firebase';
 import type { TrainingPeriod, AgentStats } from '@/types';
 import { T, Spinner, fmtDate } from './trainer/TrainerConstants';
 import { TrainerService } from '@/lib/services/trainer-service';
@@ -29,6 +31,23 @@ export default function TrainerPanel({ role, uid, name, readOnly }: TrainerPanel
   const [selectedPeriodId, setSelectedPeriodId] = useState<string | null>(null);
   const [loadingPeriods,   setLoadingPeriods]   = useState(true);
   const [showNewPeriod,    setShowNewPeriod]     = useState(false);
+  const [liveSessions,     setLiveSessions]     = useState<Record<string, boolean>>({});
+
+  // Listen for live sessions
+  useEffect(() => {
+    const liveRef = ref(rtdb, 'live_sessions');
+    const unsubscribe = onValue(liveRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      const activeMap: Record<string, boolean> = {};
+      Object.keys(data).forEach(moduleId => {
+        if (data[moduleId]?.active) {
+          activeMap[moduleId] = true;
+        }
+      });
+      setLiveSessions(activeMap);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const canManage = (role === 'trainer' || role === 'admin' || role === 'manager' || role === 'it') && !readOnly;
   const hasAutoSelected = useRef(false);
@@ -146,9 +165,16 @@ export default function TrainerPanel({ role, uid, name, readOnly }: TrainerPanel
                     style={{ background: p.active ? T.amber : 'var(--hub-dim-border)' }} />
                   <div className="flex-1 px-4 py-4">
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <span className={`text-[13px] font-black leading-tight tracking-tight ${selectedPeriodId === p.id ? 'text-amber-500' : 'text-foreground'}`}>
-                        {p.name}
-                      </span>
+                      <div className="flex flex-col gap-1 min-w-0">
+                        <span className={`text-[13px] font-black leading-tight tracking-tight truncate ${selectedPeriodId === p.id ? 'text-amber-500' : 'text-foreground'}`}>
+                          {p.name}
+                        </span>
+                        {p.active && Object.values(liveSessions).some(v => v) && (
+                          <div className="flex items-center gap-1.5 text-[9px] font-black text-red-500 uppercase tracking-widest animate-pulse">
+                            <Radio size={10} /> LIVE NOW
+                          </div>
+                        )}
+                      </div>
                       <StatusBadge 
                         status={p.active ? 'active' : 'inactive'} 
                         label={p.active ? t('active') : t('inactive')} 

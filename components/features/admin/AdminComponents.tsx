@@ -52,8 +52,8 @@ export function LivePulse({ agentIds, agentNames }: { agentIds: string[], agentN
   const t = useTranslations('admin');
   const presence = useAgentPresence(agentIds);
   
-  const activeCount = Object.values(presence).filter(s => s === 'focused').length;
-  const awayCount   = Object.values(presence).filter(s => s === 'away').length;
+  const activeCount = Object.values(presence).filter(p => p.status === 'focused').length;
+  const awayCount   = Object.values(presence).filter(p => p.status === 'away').length;
 
   return (
     <div className="bg-card rounded-2xl border border-border p-5 shadow-sm h-full flex flex-col">
@@ -79,8 +79,8 @@ export function LivePulse({ agentIds, agentNames }: { agentIds: string[], agentN
           </div>
         ) : (
           agentIds.map(id => {
-            const status = presence[id] || 'offline';
-            if (status === 'offline') return null;
+            const p = presence[id];
+            if (!p || p.status === 'offline') return null;
 
             return (
               <motion.div 
@@ -90,17 +90,17 @@ export function LivePulse({ agentIds, agentNames }: { agentIds: string[], agentN
                 className="flex items-center justify-between p-2.5 rounded-xl bg-secondary/30 border border-border/40"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className={`w-2 h-2 rounded-full shrink-0 ${status === 'focused' ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-amber-400'}`} />
+                  <div className={`w-2 h-2 rounded-full shrink-0 ${p.status === 'focused' ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-amber-400'}`} />
                   <span className="text-xs font-bold text-foreground truncate">{agentNames[id] || id}</span>
                 </div>
-                <span className={`text-[9px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded-md ${status === 'focused' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-400'}`}>
-                  {status}
+                <span className={`text-[9px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded-md ${p.status === 'focused' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-400'}`}>
+                  {p.status}
                 </span>
               </motion.div>
             );
           })
         )}
-        {Object.values(presence).every(s => s === 'offline') && agentIds.length > 0 && (
+        {Object.values(presence).every(p => p.status === 'offline') && agentIds.length > 0 && (
           <div className="h-full flex flex-col items-center justify-center py-10 opacity-30 gap-2">
             <Clock size={24} />
             <p className="text-[10px] font-bold uppercase tracking-widest text-center">{t('overview.allAgentsOffline')}</p>

@@ -12,7 +12,7 @@ import type { TrainingPeriod, TrainingDayRecord } from '@/types';
 import { T, Spinner } from './TrainerConstants';
 import { TrainerService } from '@/lib/services/trainer-service';
 import { LiveIndicator } from '@/components/ui/LiveIndicator';
-import { AgentPresenceStatus } from '@/lib/presence';
+import { AgentPresenceStatus, PresenceMap } from '@/lib/presence';
 
 // ── Day Record Form (per agent, per day) ─────────────────────────────────────
 
@@ -213,7 +213,7 @@ interface DaysTabProps {
   onDeactivateAgent: (id: string, name: string) => void;
   readOnly: boolean;
   role: 'admin' | 'manager' | 'it' | 'trainer' | 'hr';
-  presence?: Record<string, AgentPresenceStatus>;
+  presence?: PresenceMap;
 }
 
 export function DaysTab({ period, records, onRecordSaved, onPeriodUpdated, onRemoveAgent, onDeactivateAgent, readOnly, role, presence = {} }: DaysTabProps) {
@@ -398,7 +398,7 @@ export function DaysTab({ period, records, onRecordSaved, onPeriodUpdated, onRem
                             agentName={period.agentNames[agentId] ?? agentId}
                             dayNumber={day}
                             existing={getRecord(agentId, day)}
-                            presence={presence[agentId]}
+                            presence={presence[agentId]?.status || 'offline'}
                             onSaved={onRecordSaved}
                             onRemoveAgent={onRemoveAgent}
                             onDeactivateAgent={onDeactivateAgent}

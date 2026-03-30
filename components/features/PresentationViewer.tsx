@@ -18,11 +18,20 @@ import {
   AlertCircle,
   RefreshCw,
   User,
+  Radio,
+  Pencil,
+  Zap,
+  Trash2,
+  Play,
+  Square,
+  X
 } from 'lucide-react';
 import type { CourseModule, CourseLang } from '@/lib/courses';
 import { TRANSITION } from '@/lib/animations';
 import { getAgentSession } from '@/lib/agent-session';
 import type { UserRole } from '@/types';
+import { useLivePresentation } from '@/lib/live-presentation';
+import DrawingCanvas from './DrawingCanvas';
 
 // --- Helpers ---
 
@@ -56,11 +65,20 @@ export default function PresentationViewer({
   const router = useRouter();
 
   const [lang, setLang] = useState<CourseLang>(initialLang);
+  const [activeTool, setActiveTool] = useState<'pen' | 'laser' | null>(null);
+
+  const isTrainer = user && ['admin', 'trainer', 'manager'].includes(user.role);
+
+  // Live Sync Hook
+  const { 
+    session, startLive, stopLive, syncSlide, updateLaser, 
+    addDrawingPath, clearDrawings, isLive, isControlledByOthers 
+  } = useLivePresentation(module.id, user?.uid, user?.name, !!isTrainer);
 
   // Sync lang state if prop changes from outside
   useEffect(() => {
-    setLang(initialLang);
-  }, [initialLang]);
+    if (!isControlledByOthers) setLang(initialLang);
+  }, [initialLang, isControlledByOthers]);
 
   const [slide, setSlide] = useState(() => {
     if (typeof window === 'undefined') return 1;
@@ -69,6 +87,23 @@ export default function PresentationViewer({
     const total = module.presentations[initialLang].totalSlides;
     return n >= 1 && n <= total ? n : 1;
   });
+
+  // ── Sync with Live Session ───────────────────────────────────────────────────
+  
+  // 1. Follow trainer
+  useEffect(() => {
+    if (isControlledByOthers && session?.active) {
+      if (session.slide !== slide) setSlide(session.slide);
+      if (session.lang !== lang) setLang(session.lang as CourseLang);
+    }
+  }, [isControlledByOthers, session, slide, lang]);
+
+  // 2. Broadcast updates (as trainer)
+  useEffect(() => {
+    if (isTrainer && isLive) {
+      syncSlide(slide, lang);
+    }
+  }, [slide, lang, isTrainer, isLive, syncSlide]);
 
   const [viewedSlides, setViewedSlides] = useState<Set<number>>(() => {
     if (typeof window === 'undefined') return new Set();
@@ -99,8 +134,6 @@ export default function PresentationViewer({
   const [preloadingProgress, setPreloadingProgress] = useState(0);
   const [isPreloading, setIsPreloading] = useState(false);
   const [preloadedSlides, setPreloadedSlides] = useState<Set<number>>(new Set());
-
-  const isTrainer = user && ['admin', 'trainer'].includes(user.role);
 
   const { presentationId, totalSlides: total, cacheKey, slideUrls } = module.presentations[lang];
 
@@ -279,11 +312,13 @@ export default function PresentationViewer({
     setLoadError(false);
     setPreloadedSlides(new Set()); // Reset on lang change
 
+    if (isLive) syncSlide(restoredSlide, next);
+
     const url = new URL(window.location.href);
     url.searchParams.set('lang', next);
     url.searchParams.set('slide', String(restoredSlide));
     window.history.replaceState(null, '', url.toString());
-  }, [lang, module.id, module.presentations]);
+  }, [lang, module.id, module.presentations, isLive, syncSlide]);
 
   const goToSlide = useCallback((n: number) => {
     if (n < 1 || n > total) return;
@@ -293,7 +328,8 @@ export default function PresentationViewer({
     setLoadError(false);
     
     setSlide(n);
-  }, [total]);
+    if (isLive) syncSlide(n, lang);
+  }, [total, isLive, syncSlide, lang]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -392,6 +428,17 @@ export default function PresentationViewer({
 
           {/* Right: agent pill + lang switcher */}
           <div className="pointer-events-auto flex shrink-0 items-center gap-2">
+            {isControlledByOthers && session?.active && (
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-2 rounded-xl bg-red-500 px-3 py-1.5 text-[10px] font-black uppercase text-white shadow-lg"
+              >
+                <Radio size={12} className="animate-pulse" />
+                <span>LIVE: {session.trainerName}</span>
+              </motion.div>
+            )}
+
             {(user?.name || agentName) && (
               <div className="hidden items-center gap-1.5 rounded-xl border border-black/5 bg-black/5 px-2.5 py-1.5 dark:border-white/5 dark:bg-white/5 sm:flex">
                 <div className="flex h-5 w-5 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -422,13 +469,72 @@ export default function PresentationViewer({
 
         {/* ── Left nav arrow ── */}
         <button
-          disabled={!hasContent || slide === 1}
+          disabled={!hasContent || slide === 1 || isControlledByOthers}
           onClick={() => goToSlide(slide - 1)}
           className="relative z-10 hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border/50 bg-background/90 shadow-lg backdrop-blur-md transition-all active:scale-95 disabled:opacity-20 hover:bg-black/5 dark:hover:bg-white/5 sm:flex"
           aria-label="Previous slide"
         >
           <ChevronLeft size={22} />
         </button>
+
+        {/* ── Trainer Controls Toolbar ─────────────────────── */}
+        {isTrainer && (
+          <div className="absolute bottom-6 right-6 z-50 flex flex-col gap-2">
+            <AnimatePresence>
+              {isLive && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-black/60 p-2 shadow-2xl backdrop-blur-xl"
+                >
+                  <button
+                    onClick={() => setActiveTool(activeTool === 'pen' ? null : 'pen')}
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${
+                      activeTool === 'pen' ? 'bg-primary text-white' : 'text-white hover:bg-white/10'
+                    }`}
+                    title="Pen Tool"
+                  >
+                    <Pencil size={18} />
+                  </button>
+                  <button
+                    onClick={() => setActiveTool(activeTool === 'laser' ? null : 'laser')}
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${
+                      activeTool === 'laser' ? 'bg-red-500 text-white' : 'text-white hover:bg-white/10'
+                    }`}
+                    title="Laser Pointer"
+                  >
+                    <Zap size={18} />
+                  </button>
+                  <button
+                    onClick={() => { clearDrawings(); setActiveTool(null); }}
+                    className="flex h-10 w-10 items-center justify-center rounded-xl text-white transition-all hover:bg-white/10"
+                    title="Clear All"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <button
+              onClick={() => {
+                if (isLive) {
+                  stopLive();
+                  setActiveTool(null);
+                } else {
+                  startLive(slide, lang);
+                }
+              }}
+              className={`flex h-12 w-12 items-center justify-center rounded-2xl shadow-xl transition-all active:scale-95 ${
+                isLive ? 'bg-red-500 text-white' : 'bg-primary text-white'
+              }`}
+              title={isLive ? 'Stop Live' : 'Go Live'}
+            >
+              {isLive ? <Square size={20} /> : <Play size={20} />}
+            </button>
+          </div>
+        )}
 
         {/* ── Center: slide + overlays ──────────────────────── */}
         <div className="flex-1 min-w-0 min-h-0 flex items-center justify-center sm:self-stretch">
@@ -535,6 +641,15 @@ export default function PresentationViewer({
                   transition={{ duration: 0.2 }}
                   className="relative h-full w-full"
                 >
+                  <DrawingCanvas 
+                    isTrainer={!!isTrainer}
+                    isActive={isLive || isControlledByOthers}
+                    mode={activeTool}
+                    drawings={session?.drawings || []}
+                    laserPos={session?.laserPos || null}
+                    onDrawEnd={addDrawingPath}
+                    onLaserMove={updateLaser}
+                  />
                   <NextImage
                     src={slideImageUrl}
                     fill
@@ -557,7 +672,7 @@ export default function PresentationViewer({
 
         {/* ── Right nav arrow ── */}
         <button
-          disabled={!hasContent || slide === total}
+          disabled={!hasContent || slide === total || isControlledByOthers}
           onClick={() => goToSlide(slide + 1)}
           className="relative z-10 hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-20 sm:flex"
           aria-label="Next slide"

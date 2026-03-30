@@ -12,6 +12,8 @@ import { TrainerService } from '@/lib/services/trainer-service';
 import { DaysTab } from './DaysTab';
 import { DisciplineTab } from './DisciplineTab';
 import { useAgentPresence } from '@/lib/presence';
+import { useSummon } from '../SummonProvider';
+import { useLivePresentation } from '@/lib/live-presentation';
 
 interface PeriodDetailProps {
   period: TrainingPeriod;
@@ -32,9 +34,29 @@ export function PeriodDetail({ period, agents, role, readOnly, onPeriodUpdated, 
   const [addingAgent, setAddingAgent] = useState(false);
   const [selectedToAdd, setSelectedToAdd] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [summoning, setSummoning] = useState(false);
+
+  // Summon
+  const { summon } = useSummon();
 
   // Live Presence Tracking
   const presence = useAgentPresence(period.agentIds);
+  const activeFollowers = Object.values(presence).filter(p => p.status === 'focused').length;
+
+  const handleSummon = async () => {
+    setSummoning(true);
+    try {
+      await summon(
+        period.agentIds, 
+        'product-knowledge-1', // Default module for now
+        'Product Knowledge - Live', 
+        period.trainerId || 'trainer', 
+        period.trainerName || 'Trainer'
+      );
+    } finally {
+      setSummoning(false);
+    }
+  };
 
   const canEdit = (role === 'trainer' || role === 'admin' || role === 'it') && !readOnly;
   const canManage = (role === 'trainer' || role === 'admin' || role === 'manager' || role === 'it') && !readOnly;
@@ -149,9 +171,21 @@ export function PeriodDetail({ period, agents, role, readOnly, onPeriodUpdated, 
             }}>
             {period.active ? t('active') : t('inactive')}
           </span>
+
+          {canManage && (
+            <button
+              onClick={handleSummon}
+              disabled={summoning || !period.active}
+              className="ml-auto flex items-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-[11px] font-black uppercase text-white shadow-lg transition-all active:scale-95 disabled:opacity-40"
+            >
+              <Radio size={14} className={summoning ? 'animate-ping' : ''} />
+              {summoning ? 'Summoning...' : 'Summon to Live'}
+            </button>
+          )}
+
           {role === 'admin' && onPeriodDeleted && (
             <button onClick={handleDeletePeriod} disabled={deleting} title="Delete period"
-              className="ml-auto p-1.5 rounded-lg text-muted-foreground/40 hover:text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-40"
+              className={`${!canManage ? 'ml-auto' : 'ml-2'} p-1.5 rounded-lg text-muted-foreground/40 hover:text-red-400 hover:bg-red-500/10 transition-all disabled:opacity-40`}
             >
               {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
             </button>
@@ -168,11 +202,16 @@ export function PeriodDetail({ period, agents, role, readOnly, onPeriodUpdated, 
               { icon: BookOpen,    label: `${period.totalDays} ${t('totalDays')}` },
               { icon: Clock,       label: period.trainerName },
               ...(completionPct !== null ? [{ icon: TrendingUp, label: `${completionPct}% filled` }] : []),
+              { icon: Radio,       label: `${activeFollowers} Online`, color: '#ef4444' },
             ];
-          })().map(({ icon: Icon, label }) => (
-            <span key={label} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs text-muted-foreground"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)' }}>
-              <Icon size={11} className="opacity-60" /> {label}
+          })().map(({ icon: Icon, label, color }) => (
+            <span key={label} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold"
+              style={{ 
+                background: 'rgba(255,255,255,0.05)', 
+                border: '1px solid rgba(255,255,255,0.10)',
+                color: color || 'inherit'
+              }}>
+              <Icon size={11} className={color ? 'opacity-100' : 'opacity-60'} /> {label}
             </span>
           ))}
         </div>

@@ -1,17 +1,22 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
+import AgentPresenceWrapper from '@/components/features/AgentPresenceWrapper';
 
-/**
- * Locale layout — provides i18n context only.
- * NavBar is intentionally NOT here — full-screen pages (dashboard, admin, evaluator)
- * manage their own chrome. Routes that need NavBar have their own sub-layout.
- */
-export default async function LocaleLayout({ children }: { children: React.ReactNode }) {
+export default async function LocaleLayout({ 
+  children,
+  params 
+}: { 
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider messages={messages}>
-      {children}
+    <NextIntlClientProvider messages={messages} locale={locale}>
+      <AgentPresenceWrapper locale={locale}>
+        {children}
+      </AgentPresenceWrapper>
     </NextIntlClientProvider>
   );
 }
