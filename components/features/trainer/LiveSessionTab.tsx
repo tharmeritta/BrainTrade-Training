@@ -27,13 +27,7 @@ const PresentationViewer = dynamic(() => import('@/components/features/Presentat
   ssr: false
 });
 
-type LivePhase = 'setup' | 'active' | 'summary';
-
-interface SessionSummaryData {
-  module: { id: string; title: string; titleTh: string };
-  durationSecs: number;
-  agentCount: number;
-}
+type LivePhase = 'setup' | 'active';
 
 interface Reaction {
   id: string;
@@ -117,15 +111,11 @@ function useLiveSession(moduleId: string | null) {
     }
   };
 
-  const endSession = () => {
+  const resetToSetup = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    setPhase('summary');
-  };
-
-  const resetToSetup = () => {
     setPhase('setup');
     setElapsed(0);
     setStartTime(null);
@@ -155,7 +145,7 @@ function useLiveSession(moduleId: string | null) {
   return {
     phase, elapsed, startTime, broadcastText, broadcastSent, reactions, reactionCounts, participants,
     setBroadcastText, setBroadcastSent,
-    startSession, endSession, resetToSetup, sendBroadcast
+    startSession, resetToSetup, sendBroadcast
   };
 }
 
@@ -178,7 +168,7 @@ export function LiveSessionTab({ period, locale, role, readOnly }: LiveSessionTa
   const {
     phase, elapsed, startTime, broadcastText, broadcastSent, reactions, reactionCounts, participants,
     setBroadcastText, setBroadcastSent,
-    startSession, endSession, resetToSetup, sendBroadcast
+    startSession, resetToSetup, sendBroadcast
   } = useLiveSession(selectedModId);
 
   const [sessionLang,    setSessionLang]    = useState<CourseLang>(trainerLang);
@@ -187,9 +177,7 @@ export function LiveSessionTab({ period, locale, role, readOnly }: LiveSessionTa
   const [loadingCourse,  setLoadingCourse]  = useState(false);
   const [loadingList,    setLoadingList]    = useState(true);
   const [copied,         setCopied]         = useState(false);
-  const [sessionNotes,   setSessionNotes]   = useState('');
   const [confirmEnd,     setConfirmEnd]     = useState(false);
-  const [summary,        setSummary]        = useState<SessionSummaryData | null>(null);
   const [isSaving,       setIsSaving]       = useState(false);
 
   const agentLearnUrl = typeof window !== 'undefined'
@@ -235,34 +223,21 @@ export function LiveSessionTab({ period, locale, role, readOnly }: LiveSessionTa
 
   function handleStart() {
     if (isRestricted) return;
-    setSessionNotes('');
     startSession();
   }
 
   async function handleEnd() {
     setIsSaving(true);
     try {
-      const endTime = new Date().toISOString();
-      const sessionData = {
-        trainingPeriodId: period.id,
-        moduleId: selectedModId,
-        moduleTitle: modTitle,
-        startTime,
-        endTime,
-        durationSecs: elapsed,
-        agentCount: participants.length,
-        notes: sessionNotes,
-        engagement: reactionCounts,
-      };
-      
-      await TrainerService.saveSessionSummary(sessionData);
-      setSummary({ module: selectedMod, durationSecs: elapsed, agentCount: participants.length });
-      endSession();
+      // Clear sync state immediately so agents stop following
+      if (selectedModId) {
+        const syncRef = ref(rtdb, `presentation_sync/${selectedModId}/state`);
+        await remove(syncRef).catch(() => {});
+      }
+      resetToSetup();
     } catch (err) {
-      console.error('Failed to save session summary:', err);
-      // Still end session even if save fails, but maybe alert?
-      setSummary({ module: selectedMod, durationSecs: elapsed, agentCount: participants.length });
-      endSession();
+      console.error('Failed to end session:', err);
+      resetToSetup();
     } finally {
       setIsSaving(false);
       setConfirmEnd(false);
@@ -282,31 +257,7 @@ export function LiveSessionTab({ period, locale, role, readOnly }: LiveSessionTa
 
   return (
     <AnimatePresence mode="wait">
-      {phase === 'summary' && summary ? (
-        <motion.div key="summary" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-5">
-          <div className="rounded-2xl border p-8 flex flex-col items-center gap-4 text-center" style={{ borderColor: 'rgba(34,197,94,0.20)', background: 'rgba(34,197,94,0.05)' }}>
-            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)' }}>
-              <Check size={28} style={{ color: '#22c55e' }} />
-            </div>
-            <h3 className="text-xl font-black text-foreground">{t('sessionSummaryTitle')}</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full mt-1">
-              {[
-                { label: t('summaryDuration'), value: fmtElapsed(summary.durationSecs) },
-                { label: t('summaryModule'),   value: locale === 'th-TH' ? summary.module.titleTh : summary.module.title },
-                { label: t('summaryAgents'),   value: String(summary.agentCount) },
-              ].map(({ label, value }) => (
-                <div key={label} className="rounded-xl border border-border bg-card p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{label}</p>
-                  <p className="text-base font-black text-foreground leading-tight">{value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-          <button onClick={resetToSetup} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-black bg-primary text-white shadow-lg shadow-primary/20 hover:scale-[1.01] transition-all">
-            <RotateCcw size={15} /> {t('startNewSession')}
-          </button>
-        </motion.div>
-      ) : phase === 'active' ? (
+      {phase === 'active' ? (
         <motion.div key="active" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
           <div className="rounded-2xl p-3.5 flex items-center gap-3 border" style={{ background: 'rgba(239,68,68,0.06)', borderColor: 'rgba(239,68,68,0.20)' }}>
             <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
@@ -455,11 +406,6 @@ export function LiveSessionTab({ period, locale, role, readOnly }: LiveSessionTa
                         <span className="text-xs font-black">{reactionCounts.smile}</span>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="flex-1 flex flex-col mt-2">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-1.5"><Pencil size={12} /> {t('sessionNotes')}</p>
-                    <textarea value={sessionNotes} onChange={e => setSessionNotes(e.target.value)} placeholder={t('sessionNotesPlaceholder')} className="flex-1 w-full text-xs bg-background border border-border rounded-xl px-3.5 py-3 text-foreground resize-none focus:outline-none" />
                   </div>
                 </div>
               </div>

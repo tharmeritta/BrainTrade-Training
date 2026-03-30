@@ -118,6 +118,11 @@ export default function PresentationViewer({
   const [agentName, setAgentName] = useState<string | null>(null);
   const [agentId, setAgentId] = useState<string | null>(null);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const slideRef = useRef(slide);
+  const touchStartX = useRef<number | null>(null);
+
   // Preloading state
   const [preloadingProgress, setPreloadingProgress] = useState(0);
   const [isPreloading, setIsPreloading] = useState(false);
@@ -144,10 +149,6 @@ export default function PresentationViewer({
   const currentStroke = useRef<{ x: number; y: number }[]>([]);
   const lastLaserSync = useRef(0);
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const frameRef = useRef<HTMLDivElement>(null);
-  const slideRef = useRef(slide);
-  const touchStartX = useRef<number | null>(null);
   const isTrainer = user && ['admin', 'trainer'].includes(user.role);
   const amInControl = syncActive && syncedById === (user?.uid || agentId);
 
@@ -569,18 +570,18 @@ export default function PresentationViewer({
   // ── Sync Actions ────────────────────────────────────────────────────────────
 
   const takeControl = useCallback(async () => {
-    if (!user && !agentId) return;
+    if (!user || !['admin', 'trainer'].includes(user.role)) return;
     setIsManualStop(false);
     const syncRef = ref(rtdb, `presentation_sync/${module.id}/state`);
     await set(syncRef, {
       active: true,
-      controlledBy: user?.name || agentName,
-      controlledById: user?.uid || agentId,
+      controlledBy: user.name,
+      controlledById: user.uid,
       currentSlide: slide,
       currentLang: lang,
       updatedAt: rtdbTimestamp(),
     });
-  }, [user, agentId, module.id, agentName, slide, lang]);
+  }, [user, module.id, slide, lang]);
 
   const stopControl = useCallback(async () => {
     setIsManualStop(true);
@@ -651,6 +652,7 @@ export default function PresentationViewer({
   // Auto-take control for trainer if embedded and no one is in control
   useEffect(() => {
     if (embedded && isTrainer && !syncActive && hasContent && !isManualStop) {
+      // isTrainer already checks for ['admin', 'trainer']
       takeControl();
     }
   }, [embedded, isTrainer, syncActive, hasContent, takeControl, isManualStop]);
