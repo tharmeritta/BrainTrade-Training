@@ -21,7 +21,7 @@ export const REQUIRED_LEARN   = ['product', 'kyc', 'website'];
 
 export function getCompletionStatus(stats: AgentStats, activeScenariosCount?: number): CompletionInfo {
   const quizComplete = REQUIRED_QUIZZES.every(id => !!stats.quiz[id]?.passed);
-  const learnComplete = REQUIRED_LEARN.every(id => stats.learnedModules.includes(id));
+  const learnComplete = (stats.learnedModules?.length ?? 0) >= 1;
   
   // AI Eval is done if they have completed all available levels
   // We determine 'all levels' by looking at the highest level number among active scenarios

@@ -317,8 +317,8 @@ export async function getModuleStats(): Promise<ModuleStat[]> {
 
   const pct = (n: number) => Math.round((n / total) * 100);
 
-  // Learn — all 3 required modules
-  const learnCount = active.filter(a => (progressMap[a.id]?.learnedModules?.length ?? 0) >= 3).length;
+  // Learn — at least 1 module required to unlock quiz
+  const learnCount = active.filter(a => (progressMap[a.id]?.learnedModules?.length ?? 0) >= 1).length;
 
   // Quiz — passed all 4 modules
   const quizCount = active.filter(a => {

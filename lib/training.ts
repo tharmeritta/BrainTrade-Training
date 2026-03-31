@@ -16,9 +16,9 @@ export function scoreColor(n: number) {
  * Calculates pass/fail/lock status for each training phase.
  */
 export function deriveSteps(stats: AgentStats | null): Record<StepId, StepState> {
-  // 1. Learn Phase: Pass if 3 or more modules are learned
+  // 1. Learn Phase: Pass if 1 or more modules are learned
   const learnedCount = stats?.learnedModules?.length ?? 0;
-  const isLearnPassed = learnedCount >= 3;
+  const isLearnPassed = learnedCount >= 1;
   
   // 2. Quiz Phase: Pass if all required quizzes are passed
   const REQUIRED = ['foundation', 'product', 'process', 'payment'];
