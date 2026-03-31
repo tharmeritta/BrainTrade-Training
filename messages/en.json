@@ -325,7 +325,8 @@
       "indicatorAi": "AI Eval",
       "avgScoreLabel": "Avg Score",
       "passPct": "{pct}% Pass",
-      "readyForLive": "{count} agents have cleared all training modules and are ready for live operation."
+      "readyForLive": "{count} agents have cleared all training modules and are ready for live operation.",
+      "livePulse": "Live Activity"
     },
     "hranalytics": {
       "totalActive": "Total Active Agents",
