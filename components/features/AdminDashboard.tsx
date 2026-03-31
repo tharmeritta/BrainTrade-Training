@@ -172,9 +172,9 @@ export default function AdminDashboard({ role, uid, name, passwordChanged, inter
           {/* Logo */}
           <div className={`flex items-center h-16 border-b border-border/40 px-4 ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
             <div className="relative w-8 h-8 rounded-xl overflow-hidden shrink-0">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-violet-500 to-orange-400" />
-              <span className="relative z-10 flex items-center justify-center w-full h-full text-[10px] font-black text-white tracking-tight">
-                BT
+              <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan to-brand-purple" />
+              <span className="relative z-10 flex items-center justify-center w-full h-full text-xs font-black text-white tracking-tight">
+                B
               </span>
             </div>
             {!sidebarCollapsed && (

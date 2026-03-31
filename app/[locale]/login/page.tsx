@@ -152,7 +152,7 @@ export default function LoginPage() {
             <div style={{ padding: '36px 32px' }}>
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white text-lg shadow-lg"
-                  style={{ background: `linear-gradient(135deg, ${cfg.accent}, #0050E0)` }}>B</div>
+                  style={{ background: `linear-gradient(135deg, ${CYAN}, ${PURPLE})` }}>B</div>
                 <div>
                   <h1 className="text-xl font-black tracking-tight" style={{ color: 'var(--hub-text)' }}>BrainTrade</h1>
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60" style={{ color: 'var(--hub-text)' }}>Training Platform</p>

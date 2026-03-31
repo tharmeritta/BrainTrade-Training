@@ -102,9 +102,9 @@ export default function NavBar() {
             whileTap={{ scale: 0.92 }}
             transition={{ type: 'spring', stiffness: 400, damping: 17 }}
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-violet-500 to-orange-400" />
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan to-brand-purple" />
             <span className="relative z-10 flex items-center justify-center w-full h-full text-[10px] font-black text-white tracking-tight">
-              BT
+              B
             </span>
           </motion.div>
           <span className="text-sm font-semibold tracking-tight text-foreground/90 group-hover:text-foreground transition-colors hidden sm:block">
