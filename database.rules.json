@@ -2,19 +2,19 @@
   "rules": {
     "presence": {
       ".read": "true",
-      "$agent_id": {
-        ".write": "true"
-      }
-    },
-    "summons": {
-      ".read": "true",
-      "$agent_id": {
+      "$agentId": {
         ".write": "true"
       }
     },
     "live_sessions": {
       ".read": "true",
       ".write": "true"
+    },
+    "summons": {
+      ".read": "true",
+      "$agentId": {
+        ".write": "true"
+      }
     }
   }
 }
