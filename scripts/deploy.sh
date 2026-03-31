@@ -82,10 +82,10 @@ BOOTSTRAP_SECRET=bootstrap-secret:latest,\
 OPENAI_API_KEY=openai-api-key:latest,\
 GEMINI_API_KEY=gemini-api-key:latest"
 
-# ── 4. Deploy Firebase Hosting ────────────────────────────────────────────────
+# ── 4. Deploy Firebase ────────────────────────────────────────────────
 echo ""
-echo "🌐 Deploying Firebase Hosting..."
-firebase deploy --only hosting --project "$PROJECT_ID"
+echo "🌐 Deploying Firebase Hosting & Database Rules..."
+firebase deploy --only hosting,database --project "$PROJECT_ID"
 
 # ── 5. Print URL ──────────────────────────────────────────────────────────────
 echo ""
