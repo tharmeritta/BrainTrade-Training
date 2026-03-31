@@ -19,6 +19,7 @@ package-lock.json
 !.eslintrc.json
 !firebase.json
 !.firebaserc
+!database.rules.json
 !firestore.indexes.json
 !firestore.rules
 !env.yaml

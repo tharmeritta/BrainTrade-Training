@@ -1,8 +1,20 @@
 {
   "rules": {
-    "presentation_sync": {
-      ".read": true,
-      ".write": true
+    "presence": {
+      ".read": "true",
+      "$agent_id": {
+        ".write": "true"
+      }
+    },
+    "summons": {
+      ".read": "true",
+      "$agent_id": {
+        ".write": "true"
+      }
+    },
+    "live_sessions": {
+      ".read": "true",
+      ".write": "true"
     }
   }
 }

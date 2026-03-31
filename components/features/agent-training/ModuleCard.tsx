@@ -183,7 +183,7 @@ export const ModuleCard = memo(({ step, state, href, t, navT }: ModuleCardProps)
       </div>
 
       {/* Decorative noise/texture overlay */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay" style={{ backgroundImage: 'url("https://grainy-gradients.vercel.app/noise.svg")' }} />
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay" style={{ backgroundImage: 'url("/noise.svg")' }} />
     </motion.div>
   );
 });
