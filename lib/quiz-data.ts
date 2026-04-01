@@ -36,6 +36,12 @@ export interface QuizDefinition {
   phases?: QuizPhase[];
   uiOverrides?: QuizUIOverrides;
   passThreshold?: number; // override global 0.7 default
+  // Dynamic UI Metadata
+  order?: number;
+  section?: string;
+  icon?: string;
+  color?: string;
+  prerequisiteId?: string | null;
 }
 
 // ─── Certification Quiz: Part 1 — Ecosystem & Journey ────────────────────────
@@ -2412,6 +2418,11 @@ const FOUND_PART5: QuestionData[] = [
 export const MODULE_QUIZ_MAP: Record<string, QuizDefinition> = {
   foundation: {
     id: 'foundation-knowledge',
+    order: 1,
+    section: 'foundation',
+    icon: 'GraduationCap',
+    color: '#D97706',
+    prerequisiteId: null,
     title: { en: 'Foundation Knowledge', th: 'ความรู้พื้นฐาน' },
     description: {
       en: '30 questions across 5 topics — Stocks, Trading, Brokers, Forex/Crypto/CFD, and Sales Skills.',
@@ -2434,6 +2445,11 @@ export const MODULE_QUIZ_MAP: Record<string, QuizDefinition> = {
   },
   product: {
     id: 'certification-quiz',
+    order: 2,
+    section: 'sales',
+    icon: 'BookOpen',
+    color: '#818CF8',
+    prerequisiteId: 'foundation',
     title: { en: 'Certification Quiz', th: 'แบบทดสอบรับรอง' },
     description: {
       en: 'Comprehensive 40-question quiz covering ecosystem, journey, features, and sales skills.',
@@ -2451,6 +2467,11 @@ export const MODULE_QUIZ_MAP: Record<string, QuizDefinition> = {
   },
   process: {
     id: 'kyc-sales-training',
+    order: 3,
+    section: 'sales',
+    icon: 'Settings',
+    color: '#22D3EE',
+    prerequisiteId: 'product',
     title: { en: 'KYC Sales Training', th: 'KYC — การขายคอร์สเทรดหุ้น' },
     description: {
       en: '30 questions across 6 sections — Fundamentals, Segmentation, Deep KYC, Pain Points, Psychology, and Scripts.',
@@ -2469,6 +2490,11 @@ export const MODULE_QUIZ_MAP: Record<string, QuizDefinition> = {
   },
   payment: {
     id: 'payment-training',
+    order: 4,
+    section: 'sales',
+    icon: 'CreditCard',
+    color: '#60A5FA',
+    prerequisiteId: 'process',
     title: { en: 'Payment & Packages', th: 'การชำระเงินและแพ็กเกจ' },
     description: {
       en: 'Questions covering BrainTrade subscription packages, pricing, payment methods, and handling payment objections.',
