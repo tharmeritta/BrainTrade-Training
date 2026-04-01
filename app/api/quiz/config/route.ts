@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/firebase-admin';
+import { TRAINING_REGISTRY, getCanonicalQuizKey } from '@/lib/registry';
 
 // Agents need to fetch quiz definitions without admin privileges.
-// But we might want some basic auth check if needed.
-
 export async function GET(req: NextRequest) {
   const moduleId = req.nextUrl.searchParams.get('moduleId');
   
@@ -20,16 +19,29 @@ export async function GET(req: NextRequest) {
     const allQuizzes = data?.definitions || {};
     
     if (moduleId) {
-      // 1. Try exact match
-      let config = allQuizzes[moduleId];
+      const canonicalKey = getCanonicalQuizKey(moduleId);
+      const def = (TRAINING_REGISTRY.quiz.definitions as any)[canonicalKey];
+      const expectedId = def?.id || moduleId;
 
-      // 2. Try case-insensitive partial match (e.g., "Foundation" vs "foundation")
+      // 1. Try expected ID from registry
+      let config = allQuizzes[expectedId];
+
+      // 2. Try exact moduleId passed in
+      if (!config && moduleId !== expectedId) {
+        config = allQuizzes[moduleId];
+      }
+
+      // 3. Try case-insensitive lookup
       if (!config) {
-        const key = Object.keys(allQuizzes).find(k => k.toLowerCase() === moduleId.toLowerCase());
+        const key = Object.keys(allQuizzes).find(k => 
+          k.toLowerCase() === expectedId.toLowerCase() || 
+          k.toLowerCase() === moduleId.toLowerCase() ||
+          k.toLowerCase() === canonicalKey.toLowerCase()
+        );
         if (key) config = allQuizzes[key];
       }
 
-      console.log(`[API Quiz] Fetching moduleId: ${moduleId}. Found in DB: ${!!config}`);
+      console.log(`[API Quiz] Fetching moduleId: ${moduleId} (canonical: ${canonicalKey}). Found in DB: ${!!config}`);
       return NextResponse.json({ config: config || null });
     }
 

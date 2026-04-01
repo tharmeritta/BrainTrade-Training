@@ -1,4 +1,5 @@
 import type { AgentStats } from '@/types';
+import { TRAINING_REGISTRY } from '@/lib/registry';
 
 export type CompletionStatus = 'cleared' | 'needs-eval' | 'in-progress' | 'not-started';
 
@@ -16,26 +17,23 @@ export interface CompletionInfo {
   latestEvalScore: number | null;
 }
 
-export const REQUIRED_QUIZZES = ['foundation', 'product', 'process', 'payment'];
-export const REQUIRED_LEARN   = ['product', 'kyc', 'website'];
-
 export function getCompletionStatus(stats: AgentStats, activeScenariosCount?: number): CompletionInfo {
-  const quizComplete = REQUIRED_QUIZZES.every(id => !!stats.quiz[id]?.passed);
-  const learnComplete = (stats.learnedModules?.length ?? 0) >= 1;
+  const { learn, quiz, eval: evaluation } = TRAINING_REGISTRY;
+
+  // Quiz completion: Check if every required quiz is passed
+  const quizComplete = quiz.required.every(id => !!stats.quiz[id]?.passed);
+
+  // Learn completion: Business rule says they need at least N modules (minToUnlockNext)
+  const learnComplete = (stats.learnedModules?.length ?? 0) >= learn.minToUnlockNext;
   
-  // AI Eval is done if they have completed all available levels
-  // We determine 'all levels' by looking at the highest level number among active scenarios
+  // AI Eval completion: Check if they reached the required level
   const completedLevels = stats.evalCompletedLevels ?? [];
   const hasHistory = (stats.aiEval?.count ?? 0) > 0;
   
-  // Fallback: If no levels are tracked, one session is enough.
-  // If levels are tracked, they need to have reached the 'max' level (usually 4).
-  // We'll consider it done if they have at least level 4 (or the highest level) completed.
   let aiEvalDone = false;
   if (completedLevels.length > 0) {
     const maxLevelReached = Math.max(...completedLevels);
-    // Standard training has 4 levels. 
-    aiEvalDone = maxLevelReached >= 4; 
+    aiEvalDone = maxLevelReached >= evaluation.requiredLevel; 
   } else {
     aiEvalDone = hasHistory;
   }

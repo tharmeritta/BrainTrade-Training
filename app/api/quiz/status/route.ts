@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fsGetAll } from '@/lib/firestore-db';
+import { getCanonicalQuizKey } from '@/lib/registry';
 
 interface QuizResult {
   agentId: string;
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
   const all = await fsGetAll<QuizResult>('quiz_results');
   const passed = all
     .filter(r => r.agentId === agentId && r.passed)
-    .map(r => r.moduleId);
+    .map(r => getCanonicalQuizKey(r.moduleId));
 
   return NextResponse.json({ passed: [...new Set(passed)] });
 }

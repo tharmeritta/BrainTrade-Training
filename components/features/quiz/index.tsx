@@ -11,6 +11,7 @@ import {
   type Language, type QuizDefinition, type QuestionData,
 } from '@/lib/quiz-data';
 import { getAgentSession, type AgentSession } from '@/lib/agent-session';
+import { TRAINING_REGISTRY } from '@/lib/registry';
 import { C, isAnswerCorrect } from './shared';
 import type { Screen, SessionMode } from './types';
 import { QuizBriefing } from './QuizBriefing';
@@ -74,8 +75,8 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
       fetch(`/api/agent/progress?agentId=${encodeURIComponent(session.id)}`)
         .then(r => r.json())
         .then(d => {
-          const learned = d.stats?.learnedModules ?? [];
-          if (learned.length === 0) setShowLockedModal(true);
+          const learnedCount = d.stats?.learnedModules?.length ?? 0;
+          if (learnedCount < TRAINING_REGISTRY.learn.minToUnlockNext) setShowLockedModal(true);
         })
         .catch(() => {});
     }

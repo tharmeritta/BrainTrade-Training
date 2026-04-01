@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { MODULE_QUIZ_MAP, type Language, type QuizDefinition } from '@/lib/quiz-data';
 import { getAgentSession } from '@/lib/agent-session';
+import { TRAINING_REGISTRY, getCanonicalQuizKey } from '@/lib/registry';
 
 const ICON_MAP: Record<string, LucideIcon> = {
   GraduationCap,
@@ -24,15 +25,12 @@ const ICON_MAP: Record<string, LucideIcon> = {
   ShieldCheck,
 };
 
-// Framer Motion has trouble animating CSS variables like hsl(var(--border)).
-// Using literal colors ensures smooth transitions.
 const C = {
   border: 'rgba(0,0,0,0.1)',
   card:   'rgba(255,255,255,0.8)',
   muted:  'rgba(0,0,0,0.05)',
   mutedFg: 'rgba(0,0,0,0.4)',
 };
-
 
 // ─── SectionHeader ────────────────────────────────────────────────────────────
 
@@ -81,8 +79,9 @@ function PrereqConnector({ prereqTitle, unlocked }: { prereqTitle: string; unloc
 // ─── ModuleCard ───────────────────────────────────────────────────────────────
 
 function ModuleCard({
-  quiz, locked, passed, lang, locale, index, prereqTitle,
+  mKey, quiz, locked, passed, lang, locale, index, prereqTitle,
 }: {
+  mKey: string;
   quiz: QuizDefinition;
   locked: boolean;
   passed: boolean;
@@ -96,14 +95,14 @@ function ModuleCard({
   
   const Icon = (quiz.icon ? ICON_MAP[quiz.icon] : null) || HelpCircle;
   const color = quiz.color || '#D97706';
-  const glow = `${color}12`; // 0.12 opacity hex approx
+  const glow = `${color}12`;
 
   const total = quiz.questions.length;
   const thresholdPct = Math.round((quiz.passThreshold ?? 0.7) * 100);
 
   return (
     <motion.button
-      onClick={() => { if (!locked) router.push(`/${locale}/quiz/${quiz.id}`); }}
+      onClick={() => { if (!locked) router.push(`/${locale}/quiz/${mKey}`); }}
       disabled={locked}
       className="w-full flex items-center gap-4 p-5 rounded-2xl border-2 text-left transition-all group relative overflow-hidden"
       style={{
@@ -118,7 +117,6 @@ function ModuleCard({
       whileHover={locked ? {} : { scale: 1.01, borderColor: color + '60' }}
       whileTap={locked   ? {} : { scale: 0.98 }}
     >
-      {/* Icon */}
       <div
         className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
         style={{
@@ -132,7 +130,6 @@ function ModuleCard({
         }
       </div>
 
-      {/* Text */}
       <div className="flex-1 min-w-0">
         <div className="font-bold text-foreground text-base leading-tight mb-0.5 flex items-center gap-2 flex-wrap">
           {quiz.title?.[lang]}
@@ -171,7 +168,6 @@ function ModuleCard({
         )}
       </div>
 
-      {/* Right indicator */}
       {locked
         ? <Lock size={16} className="shrink-0 text-muted-foreground" />
         : passed
@@ -217,44 +213,48 @@ export default function QuizIndexPage() {
     const session = getAgentSession();
     if (!session) return;
 
-    // 1. Check learned modules — show prompt if none completed yet
     fetch(`/api/agent/progress?agentId=${encodeURIComponent(session.id)}`)
       .then(r => r.json())
       .then(d => {
-        const learned = d.stats?.learnedModules ?? [];
-        if (learned.length === 0) setShowLockedModal(true);
+        const learnedCount = d.stats?.learnedModules?.length ?? 0;
+        if (learnedCount < TRAINING_REGISTRY.learn.minToUnlockNext) setShowLockedModal(true);
       })
       .catch(() => {});
 
-    // 2. Fetch passed quizzes
     fetch(`/api/quiz/status?agentId=${encodeURIComponent(session.id)}`)
       .then(r => r.json())
-      .then(({ passed }: { passed: string[] }) => setPassedModules(new Set(passed)))
+      .then(({ passed }: { passed: string[] }) => {
+        const canonicalPassed = new Set(passed.map(id => getCanonicalQuizKey(id)));
+        setPassedModules(canonicalPassed);
+      })
       .catch(() => {});
   }, [locale, router]);
 
-  // Dynamic grouping and sorting
+  const allQuizzes = useMemo(() => {
+    return TRAINING_REGISTRY.quiz.required.map(key => ({
+      ...quizConfigs[key],
+      mKey: key
+    })).filter(q => !!q.id);
+  }, [quizConfigs]);
+
   const sections = useMemo(() => {
-    const list = Object.values(quizConfigs).sort((a, b) => (a.order || 99) - (b.order || 99));
-    const groups: Record<string, QuizDefinition[]> = {};
-    list.forEach(q => {
+    const groups: Record<string, (QuizDefinition & { mKey: string })[]> = {};
+    allQuizzes.forEach(q => {
       const s = q.section || 'other';
       if (!groups[s]) groups[s] = [];
       groups[s].push(q);
     });
     return groups;
-  }, [quizConfigs]);
+  }, [allQuizzes]);
 
-  const allList = useMemo(() => Object.values(quizConfigs).sort((a, b) => (a.order || 99) - (b.order || 99)), [quizConfigs]);
-  const completedCount = allList.filter(q => passedModules.has(q.id)).length;
-
-  const foundationTitle = quizConfigs['foundation']?.title?.[lang] ?? '';
-  const foundationPassed = passedModules.has('foundation');
+  const completedCount = allQuizzes.filter(q => passedModules.has(q.mKey)).length;
+  
+  const foundationKey = 'foundation';
+  const foundationTitle = quizConfigs[foundationKey]?.title?.[lang] ?? '';
+  const foundationPassed = passedModules.has(foundationKey);
 
   return (
     <div className="max-w-2xl mx-auto py-10 px-4">
-
-      {/* Header */}
       <motion.div
         className="mb-8"
         initial={{ opacity: 0, y: -12 }}
@@ -273,18 +273,15 @@ export default function QuizIndexPage() {
             <p className="text-sm text-muted-foreground mt-1">{t('subtitle')}</p>
           </div>
 
-          {/* Progress badge */}
           <div className="shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-2xl border-2 border-primary/20 bg-primary/5">
             <span className="text-xl font-black text-primary leading-none">{completedCount}</span>
-            <span className="text-[10px] font-bold text-primary/60 uppercase tracking-wide">/ {allList.length}</span>
+            <span className="text-[10px] font-bold text-primary/60 uppercase tracking-wide">/ {allQuizzes.length}</span>
           </div>
         </div>
       </motion.div>
 
-      {/* Render Sections Dynamically */}
       {Object.entries(sections).map(([sectionKey, quizzes], sIdx) => (
         <div key={sectionKey}>
-          {/* Prerequisite connector if this is the second section */}
           {sIdx === 1 && (
              <PrereqConnector prereqTitle={foundationTitle} unlocked={foundationPassed} />
           )}
@@ -302,18 +299,20 @@ export default function QuizIndexPage() {
             />
             <div className="space-y-3">
               {quizzes.map((quiz, qIdx) => {
-                const locked = quiz.prerequisiteId ? !passedModules.has(quiz.prerequisiteId) : false;
-                const prereqTitle = quiz.prerequisiteId ? quizConfigs[quiz.prerequisiteId]?.title?.[lang] : undefined;
+                const prereqId = quiz.prerequisiteId;
+                const locked = prereqId ? !passedModules.has(prereqId) : false;
+                const prereqTitle = prereqId ? quizConfigs[prereqId]?.title?.[lang] : undefined;
                 
                 return (
                   <ModuleCard
-                    key={quiz.id}
+                    key={quiz.mKey}
+                    mKey={quiz.mKey}
                     quiz={quiz}
                     locked={locked}
-                    passed={passedModules.has(quiz.id)}
+                    passed={passedModules.has(quiz.mKey)}
                     lang={lang}
                     locale={locale}
-                    index={qIdx + (sIdx * 5)} // rough index for stagger
+                    index={qIdx + (sIdx * 5)}
                     prereqTitle={prereqTitle}
                   />
                 );
@@ -323,7 +322,6 @@ export default function QuizIndexPage() {
         </div>
       ))}
 
-      {/* ── Learn-first prompt modal ─────────────────────────────────────────── */}
       <AnimatePresence>
         {showLockedModal && (
           <motion.div
@@ -369,7 +367,6 @@ export default function QuizIndexPage() {
           </motion.div>
         )}
       </AnimatePresence>
-
     </div>
   );
 }

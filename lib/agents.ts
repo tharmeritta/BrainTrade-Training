@@ -1,8 +1,7 @@
 import { fsGet as gcsGet, fsGetAll as gcsGetAll, fsGetWhere as gcsGetWhere } from './firestore-db';
 import type { Agent, AgentStats, ModuleStat, AgentEvaluation, TrainingPeriod } from '@/types';
 import { MOCKUP_AGENT_ID } from './agent-session';
-
-const MODULES = ['foundation', 'product', 'process', 'payment'] as const;
+import { TRAINING_REGISTRY, getCanonicalQuizKey } from './registry';
 
 // ── Score helpers ─────────────────────────────────────────────────────────
 
@@ -22,9 +21,10 @@ export function computeOverallScore(
   weights?: { quiz: number; human: number; ai: number }
 ): number {
   const w = weights ?? { quiz: 0.4, human: 0.3, ai: 0.3 };
+  const modules = TRAINING_REGISTRY.quiz.required;
   
-  const quizScores    = MODULES.map(m => stats.quiz[m]?.bestScore ?? 0);
-  const avgQuiz       = quizScores.reduce((a, b) => a + b, 0) / MODULES.length;
+  const quizScores    = modules.map(m => stats.quiz[m]?.bestScore ?? 0);
+  const avgQuiz       = quizScores.reduce((a, b) => a + b, 0) / modules.length;
   const aiEval        = stats.aiEval?.avgScore ?? 0;
   
   // Human/Simulation Eval progress: 25% per level reached (up to Level 4)
@@ -45,6 +45,7 @@ export function computeOverallScore(
 // ── Single-agent stats (used by /api/agent/progress GET) ──────────────────
 
 export async function getAgentStats(agentId: string, agentName: string): Promise<AgentStats> {
+  const modules = TRAINING_REGISTRY.quiz.required;
   // Handle Mockup Agent
   if (agentId === MOCKUP_AGENT_ID) {
     const partialMock: any = {
@@ -72,14 +73,13 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
   }
 
   // Optimize: Only fetch records belonging to THIS agent.
-  // This prevents loading thousands of records into RAM to find a few.
   const [quizDocs, evalDocs, progressDoc, humanEvals, scenariosSnap, periodsSnap] = await Promise.all([
     gcsGetWhere<QuizRecord>('quiz_results', 'agentId', agentId),
     gcsGetWhere<EvalRecord>('ai_eval_logs', 'agentId', agentId),
     gcsGet<ProgressRecord>('agent_progress', agentId).catch(() => null),
     gcsGetWhere<AgentEvaluation>('agent_evaluations', 'agentId', agentId),
-    gcsGetAll<{ isActive: boolean }>('aiev_scenarios'), // Small collection, okay to getAll
-    gcsGetAll<TrainingPeriod>('training_periods'),       // Find weights from the period
+    gcsGetAll<{ isActive: boolean }>('aiev_scenarios'),
+    gcsGetAll<TrainingPeriod>('training_periods'),
   ]);
 
   // Find the active period this agent belongs to
@@ -88,8 +88,8 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
 
   // Quiz per module
   const quiz: AgentStats['quiz'] = {};
-  for (const mod of MODULES) {
-    const results = quizDocs.filter(r => r.moduleId === mod);
+  for (const mod of modules) {
+    const results = quizDocs.filter(r => getCanonicalQuizKey(r.moduleId) === mod);
     if (results.length > 0) {
       quiz[mod] = {
         bestScore: Math.max(...results.map(r => Math.round((r.score / r.totalQuestions) * 100))),
@@ -156,7 +156,6 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
     if (e.score > l.bestScore) l.bestScore = e.score;
     if (e.passed) l.passed = true;
     if (e.timestamp > l.lastTimestamp) l.lastTimestamp = e.timestamp;
-    // We'll calculate avgScore in a second pass or at the end
   }
 
   // Calculate averages
@@ -182,6 +181,7 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
 // ── Analytics ─────────────────────────────────────────────────────────────
 
 export async function getAllAgentStats(): Promise<AgentStats[]> {
+  const modules = TRAINING_REGISTRY.quiz.required;
   const [agents, quizDocs, evalDocs, progressDocs, humanEvals, scenariosSnap, periodsSnap] = await Promise.all([
     gcsGetAll<Agent & { id: string }>('agents'),
     gcsGetAll<QuizRecord>('quiz_results'),
@@ -195,7 +195,6 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
   const activeAgents = agents.filter(a => a.active);
   const activeScenariosCount = scenariosSnap.filter(s => s.isActive).length;
 
-  // Efficiency: Use Map for O(1) lookup
   const quizMap = new Map<string, QuizRecord[]>();
   for (const r of quizDocs) {
     if (!quizMap.has(r.agentId)) quizMap.set(r.agentId, []);
@@ -219,7 +218,6 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
     progressMap.set(p.agentId, p);
   }
 
-  // Pre-calculate weights map for active agents
   const weightMap = new Map<string, { quiz: number; human: number; ai: number }>();
   const activePeriods = periodsSnap.filter(p => p.active);
   for (const p of activePeriods) {
@@ -241,8 +239,8 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
 
     // Quiz per module
     const quiz: AgentStats['quiz'] = {};
-    for (const mod of MODULES) {
-      const modResults = myQuizzes.filter(r => r.moduleId === mod);
+    for (const mod of modules) {
+      const modResults = myQuizzes.filter(r => getCanonicalQuizKey(r.moduleId) === mod);
       if (modResults.length > 0) {
         quiz[mod] = {
           bestScore: Math.max(...modResults.map(r => Math.round((r.score / r.totalQuestions) * 100))),
@@ -258,7 +256,6 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
       ? [...myHuman].sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt))
       : [];
 
-    // Optimize last active calculation
     let lastActive: string | null = null;
     for (const q of myQuizzes) if (!lastActive || q.timestamp > lastActive) lastActive = q.timestamp;
     for (const e of myEvals) if (!lastActive || e.timestamp > lastActive) lastActive = e.timestamp;
@@ -284,6 +281,7 @@ export async function getAllAgentStats(): Promise<AgentStats[]> {
 }
 
 export async function getModuleStats(): Promise<ModuleStat[]> {
+  const modules = TRAINING_REGISTRY.quiz.required;
   const [agents, quizDocs, evalDocs, progressDocs, scenariosSnap] = await Promise.all([
     gcsGetAll<Agent & { id: string }>('agents'),
     gcsGetAll<QuizRecord>('quiz_results'),
@@ -303,11 +301,10 @@ export async function getModuleStats(): Promise<ModuleStat[]> {
     ];
   }
 
-  // Pre-calculate sets and maps for O(1) lookups
   const quizPassedMap: Record<string, Set<string>> = {};
   quizDocs.filter(q => q.passed).forEach(q => {
     if (!quizPassedMap[q.agentId]) quizPassedMap[q.agentId] = new Set();
-    quizPassedMap[q.agentId].add(q.moduleId);
+    quizPassedMap[q.agentId].add(getCanonicalQuizKey(q.moduleId));
   });
 
   const progressMap: Record<string, ProgressRecord> = {};
@@ -318,18 +315,18 @@ export async function getModuleStats(): Promise<ModuleStat[]> {
   const pct = (n: number) => Math.round((n / total) * 100);
 
   // Learn — at least 1 module required to unlock quiz
-  const learnCount = active.filter(a => (progressMap[a.id]?.learnedModules?.length ?? 0) >= 1).length;
+  const learnCount = active.filter(a => (progressMap[a.id]?.learnedModules?.length ?? 0) >= TRAINING_REGISTRY.learn.minToUnlockNext).length;
 
   // Quiz — passed all 4 modules
   const quizCount = active.filter(a => {
     const passed = quizPassedMap[a.id];
-    return passed && MODULES.every(m => passed.has(m));
+    return passed && modules.every(m => passed.has(m));
   }).length;
 
   // AI Eval — completed Level 4
   const evalCount = active.filter(a => {
     const levels = progressMap[a.id]?.evalCompletedLevels ?? [];
-    return levels.length > 0 && Math.max(...levels) >= 4;
+    return levels.length > 0 && Math.max(...levels) >= TRAINING_REGISTRY.eval.requiredLevel;
   }).length;
 
   return [
