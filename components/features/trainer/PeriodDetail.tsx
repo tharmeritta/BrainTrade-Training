@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { 
   Calendar, Users, BookOpen, Clock, TrendingUp, Plus, 
-  ToggleLeft, ToggleRight, AlertTriangle, Radio, Loader2, Trash2 
+  ToggleLeft, ToggleRight, AlertTriangle, Radio, Loader2, Trash2, CheckCircle
 } from 'lucide-react';
 import type { TrainingPeriod, TrainingDayRecord, DisciplineRecord } from '@/types';
 import { T, Spinner, fmtDate } from './TrainerConstants';
@@ -40,6 +40,7 @@ export function PeriodDetail({
   const [selectedToAdd, setSelectedToAdd] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [summoning, setSummoning] = useState(false);
+  const [markingLearned, setMarkingLearned] = useState(false);
 
   // Summon
   const { summon } = useSummon();
@@ -60,6 +61,34 @@ export function PeriodDetail({
       );
     } finally {
       setSummoning(false);
+    }
+  };
+
+  const handleBulkMarkLearned = async () => {
+    if (!confirm(t('markAllLearnedConfirm', { module: 'Product Knowledge' }) || 'Mark "Product Knowledge" as learned for all agents in this period?')) return;
+    
+    setMarkingLearned(true);
+    try {
+      const res = await fetch('/api/admin/bulk-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agentIds: period.agentIds,
+          moduleId: 'product'
+        })
+      });
+      
+      if (res.ok) {
+        alert(t('bulkMarkSuccess') || 'Successfully marked all agents as learned.');
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to update progress.');
+      }
+    } catch (err) {
+      console.error('Bulk mark error:', err);
+      alert('Network error occurred.');
+    } finally {
+      setMarkingLearned(false);
     }
   };
 
@@ -178,14 +207,25 @@ export function PeriodDetail({
           </span>
 
           {canManage && (
-            <button
-              onClick={handleSummon}
-              disabled={summoning || !period.active}
-              className="ml-auto flex items-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-[11px] font-black uppercase text-white shadow-lg transition-all active:scale-95 disabled:opacity-40"
-            >
-              <Radio size={14} className={summoning ? 'animate-ping' : ''} />
-              {summoning ? 'Summoning...' : 'Summon to Live'}
-            </button>
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={handleBulkMarkLearned}
+                disabled={markingLearned || !period.active}
+                className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-[11px] font-black uppercase text-white shadow-lg transition-all active:scale-95 disabled:opacity-40"
+              >
+                {markingLearned ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                {markingLearned ? 'Updating...' : 'Mark All Learned'}
+              </button>
+
+              <button
+                onClick={handleSummon}
+                disabled={summoning || !period.active}
+                className="flex items-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-[11px] font-black uppercase text-white shadow-lg transition-all active:scale-95 disabled:opacity-40"
+              >
+                <Radio size={14} className={summoning ? 'animate-ping' : ''} />
+                {summoning ? 'Summoning...' : 'Summon to Live'}
+              </button>
+            </div>
           )}
 
           {role === 'admin' && onPeriodDeleted && (

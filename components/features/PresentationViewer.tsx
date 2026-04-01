@@ -182,6 +182,19 @@ export default function PresentationViewer({
     }
   }, [slide, isLoaded, hasContent, module.id, lang]);
 
+  // Auto-credit for live followers: if we are in a live session and not the trainer,
+  // we should mark the current slide as viewed even if we didn't manually click it.
+  useEffect(() => {
+    if (isLive && !isTrainer && isLoaded && hasContent) {
+      setViewedSlides(prev => {
+        if (prev.has(slide)) return prev;
+        const next = new Set(prev).add(slide);
+        localStorage.setItem(viewedKey(module.id, lang), JSON.stringify(Array.from(next)));
+        return next;
+      });
+    }
+  }, [slide, isLive, isTrainer, isLoaded, hasContent, module.id, lang]);
+
   // ── Track completion ──────────────────────────────────────────────────────
   useEffect(() => {
     if (!agentId || !module.id || !total || isTrainer) return;
