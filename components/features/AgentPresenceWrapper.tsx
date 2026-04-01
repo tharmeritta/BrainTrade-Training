@@ -9,7 +9,10 @@ export default function AgentPresenceWrapper({ children, locale }: { children: R
   const [session, setSession] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
-    setSession(getAgentSession());
+    const refresh = () => setSession(getAgentSession());
+    refresh();
+    window.addEventListener('agent-session-changed', refresh);
+    return () => window.removeEventListener('agent-session-changed', refresh);
   }, []);
 
   useTrackPresence(session?.id, session?.name);

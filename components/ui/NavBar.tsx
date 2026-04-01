@@ -60,8 +60,16 @@ export default function NavBar() {
   const [pendingHref, setPendingHref] = useState<string | null>(null);
 
   useEffect(() => {
-    setHasSession(!!getAgentSession());
-    setIsStaff(hasStaffSession());
+    const refresh = () => {
+      setHasSession(!!getAgentSession());
+      setIsStaff(hasStaffSession());
+    };
+    refresh();
+    window.addEventListener('agent-session-changed', refresh);
+    return () => window.removeEventListener('agent-session-changed', refresh);
+  }, []);
+
+  useEffect(() => {
     setPendingHref(null); // navigation completed — clear optimistic state
   }, [pathname]);
 

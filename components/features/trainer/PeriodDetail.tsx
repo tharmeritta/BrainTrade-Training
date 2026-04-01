@@ -53,7 +53,7 @@ export function PeriodDetail({
     try {
       await summon(
         period.agentIds, 
-        'product-knowledge-1', // Default module for now
+        'product', // Valid module ID from COURSE_MODULES
         'Product Knowledge - Live', 
         currentUserId || period.trainerId || 'trainer', 
         currentUserName || period.trainerName || 'Trainer'
