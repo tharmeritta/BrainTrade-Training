@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { agentId, moduleId, type } = await req.json();
+    const { agentId, moduleId, type, score } = await req.json();
 
     if (!agentId || !moduleId || !type) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
 
     const db = getAdminDb();
     const canonicalId = getCanonicalQuizKey(moduleId);
+    const finalScore = typeof score === 'number' ? score : 100;
 
     if (type === 'quiz') {
       // Create a synthetic passing quiz result
@@ -25,8 +26,8 @@ export async function POST(req: NextRequest) {
       await quizRef.set({
         agentId,
         moduleId: canonicalId,
-        score: 100,
-        totalQuestions: 100, // Matching the field name in lib/agents.ts
+        score: finalScore,
+        totalQuestions: 100, // Using 100 as base for percentage-based override
         passed: true,
         timestamp: new Date().toISOString(),
         manualOverride: true,
@@ -38,12 +39,12 @@ export async function POST(req: NextRequest) {
       await evalRef.set({
         agentId,
         level: parseInt(moduleId),
-        score: 100,
+        score: finalScore,
         passed: true,
         timestamp: new Date().toISOString(),
         manualOverride: true,
         overriddenBy: user.name,
-        feedback: "Manual override by administrator"
+        feedback: `Manual override by ${user.name} with score ${finalScore}%`
       });
     }
 

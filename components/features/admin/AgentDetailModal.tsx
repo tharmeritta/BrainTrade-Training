@@ -8,14 +8,22 @@ import type { AgentStats } from '@/types';
 import { BadgePill } from './AdminComponents';
 import { scoreColor, timeAgo } from './AdminHelpers';
 
-function DetailedQuizHistory({ stats, onOverride }: { stats: AgentStats, onOverride: (mod: string, type: 'quiz') => Promise<void> }) {
+function DetailedQuizHistory({ stats, onOverride }: { stats: AgentStats, onOverride: (mod: string, type: 'quiz', score?: number) => Promise<void> }) {
   const t = useTranslations('admin');
   const [loading, setLoading] = useState<string | null>(null);
 
   const handleOverride = async (mod: string) => {
-    if (!confirm(`Are you sure you want to manually mark "${mod}" as PASSED for ${stats.agent.name}?`)) return;
+    const scoreStr = prompt(t('agentDetail.overridePrompt', { mod: t(`modules.${mod}`), name: stats.agent.name }) || `Enter manual score (0-100) for "${mod}" for ${stats.agent.name}:`, "100");
+    if (scoreStr === null) return;
+    const score = parseInt(scoreStr);
+    if (isNaN(score) || score < 0 || score > 100) {
+      alert("Invalid score. Please enter 0-100.");
+      return;
+    }
+    if (!confirm(t('agentDetail.overrideConfirm', { mod: t(`modules.${mod}`), score, name: stats.agent.name }) || `Are you sure?`)) return;
+
     setLoading(mod);
-    await onOverride(mod, 'quiz');
+    await onOverride(mod, 'quiz', score);
     setLoading(null);
   };
 
@@ -79,16 +87,24 @@ function DetailedQuizHistory({ stats, onOverride }: { stats: AgentStats, onOverr
   );
 }
 
-function DetailedAiEvalHistory({ stats, onOverride }: { stats: AgentStats, onOverride: (mod: string, type: 'ai-eval') => Promise<void> }) {
+function DetailedAiEvalHistory({ stats, onOverride }: { stats: AgentStats, onOverride: (mod: string, type: 'ai-eval', score?: number) => Promise<void> }) {
   const t = useTranslations('admin');
   const [loading, setLoading] = useState<number | null>(null);
   const history = stats.aiEval?.history || [];
   const locale  = t('tabs.overview') === 'ภาพรวม' ? 'th-TH' : 'en-GB';
 
   const handleOverride = async (lv: number) => {
-    if (!confirm(`Are you sure you want to manually mark Level ${lv} as PASSED for ${stats.agent.name}?`)) return;
+    const scoreStr = prompt(t('agentDetail.overridePrompt', { mod: `Level ${lv}`, name: stats.agent.name }) || `Enter manual score (0-100) for Level ${lv} for ${stats.agent.name}:`, "100");
+    if (scoreStr === null) return;
+    const score = parseInt(scoreStr);
+    if (isNaN(score) || score < 0 || score > 100) {
+      alert("Invalid score. Please enter 0-100.");
+      return;
+    }
+    if (!confirm(t('agentDetail.overrideConfirm', { mod: `Level ${lv}`, score, name: stats.agent.name }) || `Are you sure?`)) return;
+
     setLoading(lv);
-    await onOverride(lv.toString(), 'ai-eval');
+    await onOverride(lv.toString(), 'ai-eval', score);
     setLoading(null);
   };
 
@@ -239,12 +255,12 @@ export default function AgentDetailModal({ stats, onClose, onRefresh }: { stats:
   const t = useTranslations('admin');
   const [activeTab, setActiveTab] = useState<'quiz' | 'ai' | 'qa'>('quiz');
 
-  const handleOverride = async (moduleId: string, type: 'quiz' | 'ai-eval') => {
+  const handleOverride = async (moduleId: string, type: 'quiz' | 'ai-eval', score?: number) => {
     try {
       const res = await fetch('/api/admin/agents/override', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agentId: stats.agent.id, moduleId, type })
+        body: JSON.stringify({ agentId: stats.agent.id, moduleId, type, score })
       });
       if (res.ok) {
         if (onRefresh) onRefresh();

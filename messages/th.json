@@ -441,6 +441,8 @@
       "fail": "ไม่ผ่าน",
       "evaluatedBy": "ประเมินโดย",
       "noHumanEvals": "ยังไม่มีการประเมินโดยเจ้าหน้าที่",
+      "overridePrompt": "ระบุคะแนน (0-100) สำหรับ \"{mod}\" ของ {name}:",
+      "overrideConfirm": "ยืนยันการทำ Override ให้ \"{mod}\" ผ่านด้วยคะแนน {score}% สำหรับ {name} หรือไม่?",
       "tabs": {
         "quiz": "ประวัติควิซ",
         "ai": "AI โรลเพลย์",
