@@ -89,7 +89,7 @@ function ScenarioForm({
             <p className="text-[9px] font-black uppercase tracking-widest text-primary/80 border-b border-primary/20 pb-1.5 flex-1">ChatGPT System Prompt <span className="text-primary">(Main Instruction)</span></p>
           </div>
           <p className="text-[10px] text-muted-foreground">
-            This prompt is sent directly to ChatGPT as the customer persona + judge. It must instruct ChatGPT to return JSON with <code className="bg-secondary/60 px-1 rounded">verdict: "continue" | "passed" | "failed"</code>. Leave blank to auto-build from the fields below.
+            This prompt is sent directly to ChatGPT as the customer persona + judge. It must instruct ChatGPT to return JSON with <code className="bg-secondary/60 px-1 rounded">verdict: &quot;continue&quot; | &quot;passed&quot; | &quot;failed&quot;</code>. Leave blank to auto-build from the fields below.
           </p>
           <Field label="System Prompt">
             <textarea
