@@ -5,11 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Edit2, Trash2, Save, Zap,
   Target, Shield, FileUp, Settings,
-  RotateCcw, ChevronDown, X, TrendingUp, Lock, Unlock, CheckSquare, Square
+  RotateCcw, ChevronDown, X, TrendingUp, Lock, Unlock, CheckSquare, Square, Loader2
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { AiEvalScenario } from '@/types/ai-eval';
 import AiScenarioImportModal from './AiScenarioImportModal';
+import SandboxManagerModal from './SandboxManagerModal';
 
 /* ─── Difficulty config ─────────────────────────────────────────────────────── */
 
@@ -55,8 +56,6 @@ function ScenarioForm({
   onSave: () => void;
   onCancel: () => void;
 }) {
-  const diff = DIFF[(form.difficulty as keyof typeof DIFF) || 'beginner'];
-
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }}
@@ -125,19 +124,6 @@ function ScenarioForm({
                   {form.isActive ? 'Active' : 'Inactive'}
                 </button>
               </Field>
-            </div>
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={() => onChange({ ...form, isMaster: !form.isMaster })}
-                className={`w-full flex items-center justify-center gap-2 rounded-xl px-3.5 py-2.5 text-xs font-black uppercase tracking-wider border transition-all ${form.isMaster ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'bg-secondary/40 border-border/40 text-muted-foreground hover:border-primary/30'}`}
-              >
-                <Zap size={14} fill={form.isMaster ? "currentColor" : "none"} />
-                {form.isMaster ? 'Master Sandbox Mode ON' : 'Set as Master Sandbox'}
-              </button>
-              <p className="text-[9px] text-muted-foreground mt-2 px-1">
-                If enabled, agents skip scenario selection and go straight to this prompt.
-              </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Pass Threshold">
@@ -246,6 +232,11 @@ function ScenarioCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-black text-sm text-foreground tracking-tight truncate">{s.name}</span>
+            {s.isMaster && (
+              <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded border border-primary/30 text-primary bg-primary/10 shrink-0 flex items-center gap-1">
+                <Zap size={8} fill="currentColor" /> Sandbox
+              </span>
+            )}
             {!s.isActive && (
               <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded border border-muted-foreground/20 text-muted-foreground bg-muted-foreground/5 shrink-0">Inactive</span>
             )}
@@ -396,8 +387,9 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [showImport, setShowImport] = useState(false);
-  const [globalConfig, setGlobalConfig] = useState<{ unlockMode: 'sequential' | 'flexible' }>({ unlockMode: 'sequential' });
+  const [showSandbox, setShowSandbox] = useState(false);
   const [savingConfig, setSavingConfig] = useState(false);
+  const [globalConfig, setGlobalConfig] = useState<{ unlockMode: 'sequential' | 'flexible', sandboxModeEnabled?: boolean }>({ unlockMode: 'sequential', sandboxModeEnabled: false });
 
   const t = useTranslations('admin');
 
@@ -422,7 +414,10 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
       if (res.ok) {
         const data = await res.json();
         const aiEvalConfig = data.configs?.ai_eval || {};
-        setGlobalConfig({ unlockMode: aiEvalConfig.unlockMode || 'sequential' });
+        setGlobalConfig({ 
+          unlockMode: aiEvalConfig.unlockMode || 'sequential',
+          sandboxModeEnabled: aiEvalConfig.sandboxModeEnabled || false
+        });
       }
     } catch (err) {
       console.error('Failed to fetch global config', err);
@@ -471,7 +466,7 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editForm),
       });
-      if (res.ok) { setIsCreating(false); setEditForm({}); fetchScenarios(); }
+      if (res.ok) { setIsCreating(false); setEditForm(EMPTY_FORM); fetchScenarios(); }
     } catch (err) {
       console.error('Create failed', err);
     }
@@ -481,12 +476,7 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
     if (!confirm('Are you sure you want to delete this scenario?')) return;
     try {
       const res = await fetch(`/api/admin/ai-scenarios?id=${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        fetchScenarios();
-      } else {
-        const d = await res.json();
-        alert(d.error || 'Delete failed');
-      }
+      if (res.ok) fetchScenarios();
     } catch {
       alert('Network error while deleting scenario');
     }
@@ -521,18 +511,14 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
 
   const handleBulkDelete = async () => {
     const count = selectedIds.size;
-    if (!confirm(`Delete ${count} scenario${count > 1 ? 's' : ''}? This cannot be undone.`)) return;
+    if (!confirm(`Delete ${count} scenarios?`)) return;
     setBulkDeleting(true);
     try {
-      await Promise.all(
-        Array.from(selectedIds).map(id =>
-          fetch(`/api/admin/ai-scenarios?id=${id}`, { method: 'DELETE' })
-        )
-      );
+      await Promise.all(Array.from(selectedIds).map(id => fetch(`/api/admin/ai-scenarios?id=${id}`, { method: 'DELETE' })));
       clearSelection();
       fetchScenarios();
     } catch {
-      alert('Some deletions failed. Please try again.');
+      alert('Some deletions failed.');
     } finally {
       setBulkDeleting(false);
     }
@@ -544,15 +530,14 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
     setEditForm(s);
   };
 
-  const cancelForm = () => { setEditingId(null); setIsCreating(false); setEditForm({}); };
+  const cancelForm = () => { setEditingId(null); setIsCreating(false); setEditForm(EMPTY_FORM); };
 
-  // Group scenarios by difficulty
   const grouped = DIFF_ORDER.reduce((acc, d) => {
     acc[d] = scenarios.filter(s => s.difficulty === d);
     return acc;
   }, {} as Record<keyof typeof DIFF, AiEvalScenario[]>);
 
-  const totalActive = scenarios.filter(s => s.isActive).length;
+  const masterCount = scenarios.filter(s => s.isMaster && s.isActive).length;
 
   return (
     <div className="space-y-5">
@@ -570,6 +555,30 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
         </div>
         {!readOnly && (
           <div className="flex items-center gap-2">
+            {/* Global Sandbox Toggle */}
+            <button
+              onClick={() => updateGlobalConfig({ ...globalConfig, sandboxModeEnabled: !globalConfig.sandboxModeEnabled })}
+              disabled={savingConfig || (masterCount === 0 && !globalConfig.sandboxModeEnabled)}
+              title={masterCount === 0 ? "Set at least one scenario as Master to enable" : ""}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border ${
+                globalConfig.sandboxModeEnabled 
+                  ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 hover:scale-105' 
+                  : 'bg-secondary/40 border-border/40 text-muted-foreground hover:border-primary/30'
+              } disabled:opacity-40 disabled:hover:scale-100`}
+            >
+              <Zap size={14} fill={globalConfig.sandboxModeEnabled ? "currentColor" : "none"} />
+              Sandbox: {globalConfig.sandboxModeEnabled ? 'ON' : 'OFF'}
+            </button>
+
+            {/* Sandbox Setup button */}
+            <button
+              onClick={() => setShowSandbox(true)}
+              className="flex items-center gap-1.5 bg-secondary text-foreground px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-secondary/80 transition-all border border-border/50"
+            >
+              <Zap size={14} />
+              Sandbox Setup
+            </button>
+
             <button
               onClick={() => setShowImport(true)}
               className="flex items-center gap-1.5 bg-secondary text-foreground px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-secondary/80 transition-all border border-border/50"
@@ -628,7 +637,7 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
             {(['sequential', 'flexible'] as const).map(mode => (
               <button
                 key={mode}
-                onClick={() => updateGlobalConfig({ unlockMode: mode })}
+                onClick={() => updateGlobalConfig({ ...globalConfig, unlockMode: mode })}
                 disabled={savingConfig}
                 className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-wider transition-all capitalize ${
                   globalConfig.unlockMode === mode
@@ -643,10 +652,13 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
         </div>
       )}
 
-      {/* ── Import modal ── */}
+      {/* ── Modals ── */}
       <AnimatePresence>
         {showImport && (
           <AiScenarioImportModal onClose={() => setShowImport(false)} onSuccess={() => fetchScenarios()} />
+        )}
+        {showSandbox && (
+          <SandboxManagerModal onClose={() => setShowSandbox(false)} onSuccess={() => fetchScenarios()} />
         )}
       </AnimatePresence>
 
@@ -666,7 +678,7 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
       {/* ── Scenario groups ── */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <LoaderIcon />
+          <Loader2 className="animate-spin text-primary" size={28} />
           <p className="text-xs font-bold text-muted-foreground animate-pulse">Loading scenarios…</p>
         </div>
       ) : scenarios.length === 0 && !isCreating ? (
@@ -731,13 +743,5 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
         )}
       </AnimatePresence>
     </div>
-  );
-}
-
-function LoaderIcon() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={28} height={28} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin text-primary">
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
   );
 }

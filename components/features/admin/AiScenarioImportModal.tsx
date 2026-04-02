@@ -91,6 +91,7 @@ export default function AiScenarioImportModal({ onClose, onSuccess }: AiScenario
           difficulty: (row.Difficulty || row.difficulty || row['ความยาก'] || 'beginner').toLowerCase(),
           passThreshold: parseInt(row.Threshold || row.threshold || row.passThreshold || row['เกณฑ์คะแนน'] || row['คะแนนผ่าน'] || 7),
           systemPrompt: row.SystemPrompt || row.systemPrompt || row['พรอมต์ระบบ'] || row['คำสั่งระบบ'],
+          isMaster: row.IsMaster === true || row.isMaster === true || row.IsMaster === 'TRUE' || row.isMaster === 'true' || row['แซนด์บ็อกซ์'] === 'TRUE',
           customerPersona: row.Persona || row.persona || row.customerPersona || row['บุคลิกลูกค้า'] || row['ข้อมูลลูกค้า'],
           objective: row.Objective || row.objective || row['วัตถุประสงค์'],
           initialMood: row.Mood || row.mood || row.initialMood || row['อารมณ์'],
