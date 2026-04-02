@@ -37,6 +37,7 @@ export const AiEvalScenarioSchema = z.object({
   bypassPrompt: z.string().optional(), // Prompt for external AI practice
 
   isActive: z.boolean().default(true),
+  isMaster: z.boolean().default(false), // If true, this scenario acts as the "All-in-One" Sandbox
   createdAt: z.string(),
   updatedAt: z.string(),
 });

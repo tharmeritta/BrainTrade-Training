@@ -26,6 +26,7 @@ export default function AiEvaluation() {
   const [completedLevels, setCompletedLevels] = useState<number[]>([]);
   const [passedScenarios, setPassedScenarios] = useState<string[]>([]);
   const [unlockMode,      setUnlockMode]      = useState<'sequential' | 'flexible'>('sequential');
+  const [masterScenarioId, setMasterScenarioId] = useState<string | null>(null);
 
   // ── Agent identity ──
   const [agentId,            setAgentId]            = useState<string | null>(null);
@@ -78,61 +79,17 @@ export default function AiEvaluation() {
       if (data.completedLevels) setCompletedLevels(data.completedLevels);
       if (data.passedScenarios) setPassedScenarios(data.passedScenarios);
       if (data.unlockMode)      setUnlockMode(data.unlockMode);
+      if (data.masterScenarioId) {
+        setMasterScenarioId(data.masterScenarioId);
+        // If there's a master scenario, we skip intro and go to loading
+        setStep('loading');
+      }
     } catch (err) {
       console.error('Failed to fetch AI Eval Config', err);
     } finally {
       setConfigLoading(false);
     }
   }, []);
-
-  // ── Init: load agent session + config ──
-
-  useEffect(() => {
-    const session = getAgentSession();
-    if (session) {
-      setAgentId(session.id);
-      setAgentName(session.name);
-      fetchConfig(session.id);
-    } else {
-      // For staff or first-time users, still fetch scenarios
-      fetchConfig(null);
-    }
-  }, [fetchConfig]);
-
-  // ── Restore active session if one exists ──
-
-  useEffect(() => {
-    if (!agentId) return;
-    fetch(`/api/ai-eval/active?agentId=${agentId}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        const s = data?.session;
-        if (!s || !s.messages?.length) return;
-        setMessages(s.messages);
-        setCustomerProfile(s.customerProfile);
-        if (s.coaching) {
-          const restored = new Map<number, CoachingData>();
-          Object.entries(s.coaching).forEach(([k, v]) => restored.set(parseInt(k), v as CoachingData));
-          setCoaching(restored);
-        }
-        if (s.status === 'passed') setPassed(true);
-        if (s.status === 'failed') setFailed(true);
-        // Restore the effective IDs so sendMessage works on page reload.
-        // s.agentName is authoritative — it was written by the server when the session started.
-        setEffectiveAgentId(agentId);
-        setEffectiveAgentName(s.agentName);
-        setStep('chat');
-      })
-      .catch(err => console.error('[AiEval] Failed to restore active session:', err));
-  }, [agentId]);
-
-  // ── Auto-scroll on new messages ──
-
-  useEffect(() => {
-    if (step === 'chat') {
-      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-    }
-  }, [messages, loading, step]);
 
   // ── Session handlers ──
 
@@ -178,6 +135,61 @@ export default function AiEvaluation() {
       setLoading(false);
     }
   }, [agentId, agentName, showError]);
+
+  // ── Init: load agent session + config ──
+
+  useEffect(() => {
+    const session = getAgentSession();
+    if (session) {
+      setAgentId(session.id);
+      setAgentName(session.name);
+      fetchConfig(session.id);
+    } else {
+      // For staff or first-time users, still fetch scenarios
+      fetchConfig(null);
+    }
+  }, [fetchConfig]);
+
+  // AUTO-START Master Scenario if it exists and we're in the 'loading' step
+  useEffect(() => {
+    if (masterScenarioId && step === 'loading' && !effectiveAgentId && !loading) {
+      startSession(masterScenarioId);
+    }
+  }, [masterScenarioId, step, effectiveAgentId, loading, startSession]);
+
+  // ── Restore active session if one exists ──
+
+  useEffect(() => {
+    if (!agentId) return;
+    fetch(`/api/ai-eval/active?agentId=${agentId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const s = data?.session;
+        if (!s || !s.messages?.length) return;
+        setMessages(s.messages);
+        setCustomerProfile(s.customerProfile);
+        if (s.coaching) {
+          const restored = new Map<number, CoachingData>();
+          Object.entries(s.coaching).forEach(([k, v]) => restored.set(parseInt(k), v as CoachingData));
+          setCoaching(restored);
+        }
+        if (s.status === 'passed') setPassed(true);
+        if (s.status === 'failed') setFailed(true);
+        // Restore the effective IDs so sendMessage works on page reload.
+        setEffectiveAgentId(agentId);
+        setEffectiveAgentName(s.agentName);
+        setStep('chat');
+      })
+      .catch(err => console.error('[AiEval] Failed to restore active session:', err));
+  }, [agentId]);
+
+  // ── Auto-scroll on new messages ──
+
+  useEffect(() => {
+    if (step === 'chat') {
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+    }
+  }, [messages, loading, step]);
 
   const sendMessage = useCallback(async () => {
     if (!input.trim() || !effectiveAgentId || loading || passed || failed) return;

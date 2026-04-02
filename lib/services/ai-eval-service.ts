@@ -148,9 +148,6 @@ export class AiEvalService {
 
   /**
    * 3. Single ChatGPT call — customer dialogue + verdict in one response.
-   *
-   * ChatGPT plays the customer AND evaluates the agent internally.
-   * The system reads `verdict` from the JSON response to determine pass/fail.
    */
   private static async callChatGPT(
     session: AiEvalSession,
@@ -162,7 +159,10 @@ export class AiEvalService {
     if (!openai) throw new Error('OpenAI API key not configured. Please set OPENAI_API_KEY.');
 
     // Use scenario.systemPrompt if set, otherwise build from legacy fields
-    const systemPrompt = scenario.systemPrompt || this.buildFallbackSystemPrompt(scenario);
+    let rawSystemPrompt = scenario.systemPrompt || this.buildFallbackSystemPrompt(scenario);
+    
+    // Inject dynamic variables into the prompt
+    const systemPrompt = this.injectVariables(rawSystemPrompt, session, scenario);
 
     // Build conversation history (last 12 messages)
     const history: { role: 'user' | 'assistant'; content: string }[] = session.messages
@@ -192,12 +192,13 @@ export class AiEvalService {
     const raw = res.choices[0].message.content || '{}';
     const parsed = JSON.parse(this.cleanJson(raw));
 
+    // The core "Pass/Fail" logic driven by the prompt's instruction to ChatGPT
     const verdict = parsed.verdict as 'continue' | 'passed' | 'failed' || 'continue';
 
     return {
       dialogue:      parsed.dialogue     || 'ครับ...',
       verdict,
-      verdictReason: parsed.reason       || '',
+      verdictReason: parsed.reason       || parsed.verdictReason || '',
       score:         parsed.score        ?? undefined,
       strengths:     parsed.strengths    || undefined,
       improvements:  parsed.improvements || undefined,
@@ -206,6 +207,20 @@ export class AiEvalService {
       intent:        verdict === 'passed' ? 'buy' : verdict === 'failed' ? 'hang_up' : 'continue',
       isRoundEnd:    verdict === 'passed' || verdict === 'failed',
     };
+  }
+
+  /**
+   * Inject session and scenario variables into the prompt.
+   * Allows admins to use {{agentName}}, {{customerName}}, etc. in their pasted prompts.
+   */
+  private static injectVariables(prompt: string, session: AiEvalSession, scenario: AiEvalScenario): string {
+    return prompt
+      .replace(/{{agentName}}/g, session.agentName || 'พนักงาน')
+      .replace(/{{customerName}}/g, session.customerProfile.name || 'ลูกค้า')
+      .replace(/{{scenarioName}}/g, scenario.name || '')
+      .replace(/{{difficulty}}/g, scenario.difficulty || '')
+      .replace(/{{level}}/g, (scenario.level || 1).toString())
+      .replace(/{{turnCount}}/g, session.turnCount.toString());
   }
 
   /**
@@ -265,6 +280,7 @@ export class AiEvalService {
         maxTurns: 12,
         minTurnsToWin: 3,
         isActive: true,
+        isMaster: false,
         bypassPrompt: 'Act as a skeptical Thai customer who is busy. If the agent handles your "too busy" objection naturally and makes you want to listen, say "PASSED".',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -297,6 +313,7 @@ export class AiEvalService {
         maxTurns: 12,
         minTurnsToWin: 3,
         isActive: true,
+        isMaster: false,
         bypassPrompt: 'Act as a cautious Thai customer who has lost money before. Ask for proof about the AI system and coach support. If the agent explains credibly, say "PASSED".',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -329,6 +346,7 @@ export class AiEvalService {
         maxTurns: 12,
         minTurnsToWin: 3,
         isActive: true,
+        isMaster: false,
         bypassPrompt: 'Act as a Thai customer who keeps comparing with free YouTube content. If the agent defends the value of 1:1 coaching without giving a discount, say "PASSED".',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -361,6 +379,7 @@ export class AiEvalService {
         maxTurns: 12,
         minTurnsToWin: 3,
         isActive: true,
+        isMaster: false,
         bypassPrompt: 'Act as an aggressive Thai investor. Demand the company license number and technical details about the AI. If the agent stays professional under pressure and gives accurate info, say "PASSED".',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -438,6 +457,7 @@ export class AiEvalService {
       winCondition: 'เมื่อเซลล์อธิบายเรื่องโค้ชส่วนตัว 1:1 ได้อย่างชัดเจนและจริงใจ',
       failCondition: 'เมื่อเซลล์พูดจาเป็นหุ่นยนต์ หรือไม่ตอบคำถามเรื่องความปลอดภัย',
       isActive: true,
+      isMaster: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

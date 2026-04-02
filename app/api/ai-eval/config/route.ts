@@ -31,7 +31,11 @@ export async function GET(req: NextRequest) {
 
     const configData = configDoc.exists ? configDoc.data() : {};
     const unlockMode = configData?.unlockMode || 'sequential';
-    const scenarios = scenariosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const scenarios = scenariosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
+    
+    // Check for Master Sandbox Scenario
+    const masterScenario = scenarios.find(s => s.isMaster === true && s.isActive === true);
+    const masterScenarioId = masterScenario?.id || null;
     
     // Dynamic Level Completion Logic
     const progressData = progressDoc?.exists ? progressDoc.data() : {};
@@ -62,8 +66,6 @@ export async function GET(req: NextRequest) {
         return activeIds.every(id => passedScenarios.includes(id));
       });
 
-    // Combine legacy and dynamic (ensure no duplicates)
-    // If dynamicCompletedLevels has content, we prefer it, but keep legacy if they passed it before
     const completedLevels = Array.from(new Set([...legacyCompletedLevels, ...dynamicCompletedLevels])).sort();
 
     return NextResponse.json({
@@ -73,10 +75,11 @@ export async function GET(req: NextRequest) {
       unlockMode,
       scenarios,
       completedLevels,
-      passedScenarios
+      passedScenarios,
+      masterScenarioId
     });
   } catch (err) {
-    console.error('Fetch AI eval guideline error:', err);
-    return NextResponse.json({ guideline: FALLBACK_AGENT_GUIDELINE });
+    console.error('Fetch AI eval config error:', err);
+    return NextResponse.json({ guideline: FALLBACK_AGENT_GUIDELINE }, { status: 500 });
   }
 }

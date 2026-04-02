@@ -89,14 +89,15 @@ function ScenarioForm({
             <p className="text-[9px] font-black uppercase tracking-widest text-primary/80 border-b border-primary/20 pb-1.5 flex-1">ChatGPT System Prompt <span className="text-primary">(Main Instruction)</span></p>
           </div>
           <p className="text-[10px] text-muted-foreground">
-            This prompt is sent directly to ChatGPT as the customer persona + judge. It must instruct ChatGPT to return JSON with <code className="bg-secondary/60 px-1 rounded">verdict: &quot;continue&quot; | &quot;passed&quot; | &quot;failed&quot;</code>. Leave blank to auto-build from the fields below.
+            This prompt is the <strong>source of truth</strong> for the AI. You can use variables: <code className="bg-secondary/60 px-1 rounded">{"{{agentName}}"}</code>, <code className="bg-secondary/60 px-1 rounded">{"{{customerName}}"}</code>, <code className="bg-secondary/60 px-1 rounded">{"{{level}}"}</code>.
+            It MUST instruct ChatGPT to return JSON with <code className="bg-secondary/60 px-1 rounded">verdict: &quot;continue&quot; | &quot;passed&quot; | &quot;failed&quot;</code>.
           </p>
-          <Field label="System Prompt">
+          <Field label="System Prompt (Thai or English)">
             <textarea
-              className={`${textareaCls} h-52 font-mono text-xs`}
+              className={`${textareaCls} h-64 font-mono text-xs`}
               value={form.systemPrompt || ''}
               onChange={e => onChange({ ...form, systemPrompt: e.target.value })}
-              placeholder={`เล่นบทเป็นลูกค้าคนไทย...\n\n✅ PASS เมื่อ: ...\n❌ FAIL เมื่อ: ...\n\nตอบกลับเป็น JSON เสมอ:\n{"dialogue":"...","verdict":"continue","reason":"","score":null,"strengths":null,"improvements":null,"coachingTip":null}\n\nเมื่อ verdict เป็น passed/failed: ใส่ score (0-100), strengths, improvements, coachingTip ด้วย\nห้ามบอก verdict แก่พนักงานใน dialogue เด็ดขาด`}
+              placeholder={`เล่นบทเป็นลูกค้าคนไทย สุ่มเลือก 1 บทบาท...\nพนักงานชื่อ: {{agentName}}\n\n✅ PASS เมื่อ: ...\n❌ FAIL เมื่อ: ...\n\nตอบกลับเป็น JSON เสมอ:\n{"dialogue":"...","verdict":"continue","reason":"","score":null,"strengths":null,"improvements":null,"coachingTip":null}\n\nห้ามบอก verdict แก่พนักงานใน dialogue เด็ดขาด`}
             />
           </Field>
         </div>
@@ -124,6 +125,19 @@ function ScenarioForm({
                   {form.isActive ? 'Active' : 'Inactive'}
                 </button>
               </Field>
+            </div>
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => onChange({ ...form, isMaster: !form.isMaster })}
+                className={`w-full flex items-center justify-center gap-2 rounded-xl px-3.5 py-2.5 text-xs font-black uppercase tracking-wider border transition-all ${form.isMaster ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'bg-secondary/40 border-border/40 text-muted-foreground hover:border-primary/30'}`}
+              >
+                <Zap size={14} fill={form.isMaster ? "currentColor" : "none"} />
+                {form.isMaster ? 'Master Sandbox Mode ON' : 'Set as Master Sandbox'}
+              </button>
+              <p className="text-[9px] text-muted-foreground mt-2 px-1">
+                If enabled, agents skip scenario selection and go straight to this prompt.
+              </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Pass Threshold">
