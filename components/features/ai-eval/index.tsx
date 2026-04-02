@@ -161,9 +161,9 @@ export default function AiEvaluation() {
       setMessages(data.messages || []);
       setCustomerProfile(data.customerProfile || null);
       
-      // Initialize coaching map with the first turn's data
+      // Initialize coaching map with any round-end data
       const newCoaching = new Map<number, CoachingData>();
-      if (data.coaching && data.messages?.length > 0) {
+      if (data.coaching?.isRoundEnd && data.messages?.length > 0) {
         newCoaching.set(data.messages.length - 1, data.coaching);
       }
       setCoaching(newCoaching);
@@ -195,7 +195,7 @@ export default function AiEvaluation() {
       const data = await res.json();
       if (data.messages)        setMessages(data.messages);
       if (data.customerProfile) setCustomerProfile(data.customerProfile);
-      if (data.coaching) {
+      if (data.coaching?.isRoundEnd) {
         setCoaching(prev => {
           const next = new Map(prev);
           next.set(data.messages.length - 1, data.coaching);

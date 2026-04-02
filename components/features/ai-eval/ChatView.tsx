@@ -60,7 +60,7 @@ export const ChatView = memo(({
                 <span className={`w-1.5 h-1.5 rounded-full ${
                   passed ? 'bg-emerald-500' : failed ? 'bg-rose-500' : 'bg-primary animate-pulse'
                 }`} />
-                {passed ? t('congrats', { level: '' }) : failed ? 'Simulation Ended' : t('liveSim')}
+                {passed ? t('congrats', { level: '' }) : failed ? 'Simulation Ended' : `LIVE: Level ${messages.length > 0 ? (messages[0] as any).level || 1 : 1} | Round ${messages.length > 0 ? (messages[0] as any).round || 1 : 1}`}
               </p>
             </div>
           </div>
@@ -125,7 +125,7 @@ export const ChatView = memo(({
                   {card && (
                     <CoachingCard
                       coaching={card}
-                      autoExpand={card.score < 6}
+                      autoExpand={(card.score ?? 0) < 35}
                       onUseScript={onUseScript}
                       criteriaKeys={criteriaKeys}
                     />

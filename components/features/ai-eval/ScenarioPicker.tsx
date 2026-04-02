@@ -39,15 +39,17 @@ export const ScenarioPicker = memo(({
   const t = useTranslations('aiEval');
 
   const levels = useMemo(() => {
-    const groups: Record<number, { name: string; scenarios: EvalScenario[] }> = {
-      1: { name: t('levelLabel', { n: 1 }), scenarios: [] },
-      2: { name: t('levelLabel', { n: 2 }), scenarios: [] },
-      3: { name: t('levelLabel', { n: 3 }), scenarios: [] },
-      4: { name: t('levelLabel', { n: 4 }), scenarios: [] },
+    const groups: Record<number, { name: string; description: string; scenarios: EvalScenario[] }> = {
+      1: { name: t('level_1_title'), description: t('level_1_desc'), scenarios: [] },
+      2: { name: t('level_2_title'), description: t('level_2_desc'), scenarios: [] },
+      3: { name: t('level_3_title'), description: t('level_3_desc'), scenarios: [] },
+      4: { name: t('level_4_title'), description: t('level_4_desc'), scenarios: [] },
     };
     scenarios.forEach(s => {
-      const lv = DIFFICULTY_MAP[s.difficulty] || 1;
-      groups[lv].scenarios.push(s);
+      const lv = s.level || DIFFICULTY_MAP[s.difficulty] || 1;
+      if (groups[lv]) {
+        groups[lv].scenarios.push(s);
+      }
     });
     return Object.entries(groups)
       .filter(([, group]) => group.scenarios.length > 0)
@@ -178,6 +180,7 @@ export const ScenarioPicker = memo(({
                   <h3 className={`font-black text-xl tracking-tight ${isLevelLocked ? 'text-muted-foreground' : 'text-foreground'}`}>
                     {levelGroup.name}
                   </h3>
+                  <p className="text-[10px] font-bold text-muted-foreground mb-1 leading-tight">{levelGroup.description}</p>
                   <div className="flex items-center gap-2">
                     <span className={`text-[10px] font-black uppercase tracking-widest ${isLevelLocked ? 'text-muted-foreground/60' : 'text-primary'}`}>
                       {t('scenariosCount', { count: levelGroup.scenarios.length })}

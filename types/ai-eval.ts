@@ -10,6 +10,7 @@ export const AiEvalScenarioSchema = z.object({
   name: z.string(), // e.g., "The Angry Skeptic"
   description: z.string(),
   difficulty: z.enum(['beginner', 'intermediate', 'advanced', 'expert']),
+  level: z.number().optional(), // 1, 2, 3, 4
   
   // Personas & Prompts
   customerPersona: z.string(), // Deep prompt for the Customer behavior
@@ -20,14 +21,16 @@ export const AiEvalScenarioSchema = z.object({
   objective: z.string(), // e.g., "Wants to know about the 60-day journey safety"
   
   // Pass/Fail Logic
-  passThreshold: z.number().default(7),
+  passThreshold: z.number().default(35), // Updated for 50 total
   requiredCriteria: z.array(z.string()).default(['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness']),
 
   // State Machine Transitions
-  maxTurns: z.number().default(15),
-  minTurnsToWin: z.number().default(5), // Minimum turns before score-based win can trigger
-  winCondition: z.string().optional(), // Text hint for when to trigger "passed"
-  failCondition: z.string().optional(), // Text hint for when to "hang up"
+  maxTurns: z.number().default(12), // Total turns across rounds
+  maxTurnsPerRound: z.number().default(6),
+  maxRounds: z.number().default(2),
+  minTurnsToWin: z.number().default(3), 
+  winCondition: z.string().optional(), 
+  failCondition: z.string().optional(), 
   
   isActive: z.boolean().default(true),
   createdAt: z.string(),
@@ -38,32 +41,31 @@ export type AiEvalScenario = z.infer<typeof AiEvalScenarioSchema>;
 
 /**
  * 2. LLM Raw Turn Response
- * This is what the AI is expected to return every turn.
  */
 export const AiEvalTurnResponseSchema = z.object({
   // Customer Dialogue (What the user sees)
   dialogue: z.string(),
-  mood: z.string(),
-  objectiveState: z.string(), // Progress towards their goal
+  mood: z.string().optional(),
+  objectiveState: z.string().optional(),
   
   // Internal State (Decision logic)
-  intent: z.enum(['continue', 'buy', 'hang_up']),
+  intent: z.enum(['continue', 'buy', 'hang_up']).default('continue'),
   
-  // Evaluation (The Shadow Coach part)
-  score: z.number().min(0).max(10),
-  criteria: z.record(z.string(), z.number().min(0).max(10)),
-  strengths: z.string(),
-  improvements: z.string(),
-  coachingScript: z.string(),
-  coachingTip: z.string(),
+  // Evaluation (The Coaching part) - Optional during dialogue turns
+  score: z.number().min(0).max(50).optional(),
+  criteria: z.record(z.string(), z.number().min(0).max(10)).optional(),
+  strengths: z.string().optional(),
+  improvements: z.string().optional(),
+  coachingScript: z.string().optional(),
+  coachingTip: z.string().optional(),
   buyingSignal: z.string().optional(),
+  isRoundEnd: z.boolean().default(false),
 });
 
 export type AiEvalTurnResponse = z.infer<typeof AiEvalTurnResponseSchema>;
 
 /**
  * 3. Session State
- * Persistent state for a single training session.
  */
 export interface AiEvalSession {
   id: string;
@@ -71,6 +73,7 @@ export interface AiEvalSession {
   agentName: string;
   scenarioId: string;
   level: number;
+  round: number;
   
   messages: PitchMessage[];
   coaching: Record<number, AiEvalTurnResponse>;
@@ -86,6 +89,7 @@ export interface AiEvalSession {
   
   status: 'active' | 'passed' | 'failed';
   turnCount: number;
+  turnCountInRound: number;
   startTime: string;
   lastUpdate: string;
 }

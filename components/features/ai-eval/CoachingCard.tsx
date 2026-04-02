@@ -8,12 +8,14 @@ import type { CoachingData } from './types';
 
 /* ─── Score Style Helper ────────────────────────────────────────────────────── */
 
-export const SCORE_STYLE = (score: number) =>
-  score >= 7
-    ? { badge: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800', dot: 'bg-emerald-500' }
-    : score >= 5
-    ? { badge: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800', dot: 'bg-amber-400' }
-    : { badge: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800', dot: 'bg-rose-500' };
+export const SCORE_STYLE = (score: number, max: number = 10) => {
+  const pct = (score / max) * 100;
+  if (pct >= 70)
+    return { badge: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800', dot: 'bg-emerald-500', label: 'Passed' };
+  if (pct >= 50)
+    return { badge: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800', dot: 'bg-amber-400', label: 'Developing' };
+  return { badge: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800', dot: 'bg-rose-500', label: 'Needs Help' };
+};
 
 /* ─── CoachingCard ──────────────────────────────────────────────────────────── */
 
@@ -24,12 +26,26 @@ export const CoachingCard = memo(({ coaching, autoExpand, onUseScript, criteriaK
   criteriaKeys: string[];
 }) => {
   const [open, setOpen] = useState(autoExpand);
-  const { score, criteria, strengths, improvements, coachingScript, coachingTip } = coaching;
-  const style = SCORE_STYLE(score);
+  const { score = 0, criteria, strengths, improvements, coachingScript, coachingTip } = coaching;
+  const maxScore = 50;
+  const style = SCORE_STYLE(score, maxScore);
   const t = useTranslations('aiEval');
-  // t.raw() can throw for unknown keys (e.g. custom criteria added via admin panel).
-  // Fall back to the raw key name so the component never crashes.
-  const tc = (key: string) => { try { return t(`criteria.${key}` as any); } catch { return key; } };
+  
+  const tc = (key: string) => { 
+    try { 
+      // Mapping keys to translation file keys if they differ
+      const keyMap: Record<string, string> = {
+        'rapport': 'rapport',
+        'objectionHandling': 'objectionHandling',
+        'credibility': 'credibility',
+        'closing': 'closing',
+        'naturalness': 'naturalness'
+      };
+      return t(`criteria.${keyMap[key] || key}` as any); 
+    } catch { 
+      return key; 
+    } 
+  };
 
   return (
     <div className="ml-9 mt-1.5 mb-1">
@@ -38,7 +54,9 @@ export const CoachingCard = memo(({ coaching, autoExpand, onUseScript, criteriaK
         className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl border transition-all hover:opacity-80 ${style.badge}`}
       >
         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${style.dot}`} />
-        <span className="font-black">{score}/10</span>
+        <span className="font-black">{score}/{maxScore}</span>
+        <span className="opacity-50">·</span>
+        <span className="uppercase tracking-tighter">{style.label}</span>
         <span className="opacity-50">·</span>
         <span>{open ? t('hideCoaching') : t('viewCoaching')}</span>
         <ChevronDown size={11} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
@@ -133,9 +151,18 @@ CoachingCard.displayName = 'CoachingCard';
 /* ─── ScoreTrend ────────────────────────────────────────────────────────────── */
 
 export const ScoreTrend = memo(({ coaching }: { coaching: Map<number, CoachingData> }) => {
-  const scores = useMemo(() => Array.from(coaching.values()).map(c => c.score), [coaching]);
+  const scores = useMemo(() => 
+    Array.from(coaching.values())
+      .map(c => c.score ?? 0)
+  , [coaching]);
+  
   if (scores.length < 2) return null;
-  const max = 10; const min = 0; const height = 16; const width = 100;
+  
+  const max = 50; 
+  const min = 0; 
+  const height = 16; 
+  const width = 100;
+  
   const points = scores.map((s, i) => {
     const x = (i / (scores.length - 1)) * width;
     const y = height - ((s - min) / (max - min)) * height;

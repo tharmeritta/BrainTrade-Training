@@ -24,13 +24,14 @@ export class AiEvalService {
   static async startSession(
     agentId: string, 
     agentName: string, 
-    scenarioId: string = 'default'
+    scenarioId: string = 'level_1_round_1'
   ): Promise<AiEvalSession> {
     
-    // Fetch scenario (fallback to default if not found)
+    // Fetch scenario (fallback to level_1 if not found)
     let scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, scenarioId);
     if (!scenario) {
-      scenario = await this.seedDefaultScenario();
+      await this.seedAllScenarios();
+      scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, scenarioId) || await this.seedDefaultScenario();
     }
 
     const session: AiEvalSession = {
@@ -38,23 +39,24 @@ export class AiEvalService {
       agentId,
       agentName,
       scenarioId,
-      level: 1,
+      level: scenario.level || 1,
+      round: 1,
       messages: [],
       coaching: {},
       currentMood: scenario.initialMood,
       customerProfile: {
-        name: 'คุณสมชาย', // Can be randomized later
-        occupation: 'ธุรกิจส่วนตัว',
-        age: 45,
+        name: scenario.name.split(' ')[0] || 'ลูกค้า',
+        occupation: scenario.description,
+        age: 30, // Default or parsed from persona
         objective: scenario.objective
       },
       status: 'active',
       turnCount: 0,
+      turnCountInRound: 0,
       startTime: new Date().toISOString(),
       lastUpdate: new Date().toISOString()
     };
 
-    // Note: We don't save to DB yet, we'll do it after the first AI call
     return session;
   }
 
@@ -75,39 +77,26 @@ export class AiEvalService {
     try {
       session = await fsGet<AiEvalSession>(this.COLLECTION_SESSIONS, agentId);
     } catch (err) {
-      console.error('[AiEvalService] Failed to load session from Firestore:', err);
-      // Don't throw yet, we might be starting fresh
+      console.error('[AiEvalService] Failed to load session:', err);
     }
 
-    // When starting fresh, always discard any existing session so we get a clean slate
     if (isStart && session) {
-      console.log('[AiEvalService] Discarding existing session for fresh start');
+      console.log('[AiEvalService] Fresh start, discarding session');
       await fsDelete(this.COLLECTION_SESSIONS, agentId);
       session = null;
     }
 
-    // b. Resolve scenario ID — explicit param takes priority, then existing session, then default
     const actualScenarioId = (isStart && scenarioId)
       ? scenarioId
-      : (session?.scenarioId || 'default');
+      : (session?.scenarioId || 'level_1_round_1');
 
-    console.log(`[AiEvalService] Using scenarioId: ${actualScenarioId}`);
-
-    let scenario: AiEvalScenario | null = null;
-    try {
-      scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, actualScenarioId)
-                 || await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, 'default');
-    } catch (err) {
-      console.error('[AiEvalService] Firestore error fetching scenario:', err);
-    }
-
+    let scenario: AiEvalScenario | null = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, actualScenarioId);
     if (!scenario) {
-      console.log('[AiEvalService] Scenario not found, seeding default');
-      scenario = await this.seedDefaultScenario();
+      await this.seedAllScenarios();
+      scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, actualScenarioId) || await this.seedDefaultScenario();
     }
 
     if (!session) {
-      console.log('[AiEvalService] Initializing new session');
       session = await this.startSession(agentId, agentName || 'Agent', actualScenarioId);
     }
 
@@ -119,36 +108,54 @@ export class AiEvalService {
         timestamp: new Date().toISOString()
       });
       session.turnCount++;
+      session.turnCountInRound++;
     }
 
-    // d. Build LLM Orchestration
-    console.log('[AiEvalService] Calling AI...');
-    const turn = await this.callAI(session, scenario, isStart);
-    console.log('[AiEvalService] AI returned dialogue:', turn.dialogue.substring(0, 30) + '...');
+    // d. Orchestration: Persona Dialogue first
+    console.log('[AiEvalService] Calling Persona AI...');
+    let turn = await this.callPersonaAI(session, scenario, isStart);
     
-    // e. Update Session State
+    // e. Check for Round End
+    const isMaxTurns = session.turnCountInRound >= (scenario.maxTurnsPerRound || 6);
+    const isIntentEnd = turn.intent === 'buy' || turn.intent === 'hang_up';
+
+    if (isMaxTurns || isIntentEnd) {
+      console.log('[AiEvalService] Round Ended. Calling Evaluator AI...');
+      const evaluation = await this.callEvaluatorAI(session, scenario, turn.dialogue);
+      turn = { ...turn, ...evaluation, isRoundEnd: true };
+      
+      // Update Win/Fail status based on evaluation
+      if (turn.score && turn.score >= scenario.passThreshold) {
+        if (session.round >= (scenario.maxRounds || 2)) {
+          session.status = 'passed';
+          await this.logCompletion(session, true);
+        } else {
+          session.round++;
+          session.turnCountInRound = 0;
+        }
+      } else if (isIntentEnd && turn.intent === 'hang_up') {
+        session.status = 'failed';
+        await this.logCompletion(session, false);
+      } else if (isMaxTurns && (!turn.score || turn.score < scenario.passThreshold)) {
+        session.status = 'failed'; // Round ended without passing
+        await this.logCompletion(session, false);
+      }
+    }
+
+    // f. Update Session State
     session.messages.push({
       role: 'assistant',
       content: turn.dialogue,
       timestamp: new Date().toISOString()
     });
-    session.coaching[session.messages.length - 1] = turn;
-    session.currentMood = turn.mood;
-    session.customerProfile.mood = turn.mood;  // keep customerProfile in sync for ChatView emoji
+    
+    if (turn.isRoundEnd) {
+      session.coaching[session.messages.length - 1] = turn;
+    }
+    
     session.lastUpdate = new Date().toISOString();
 
-    // Check Win/Fail Conditions
-    if (turn.intent === 'buy' || (turn.score >= scenario.passThreshold && session.turnCount >= (scenario.minTurnsToWin ?? 5))) {
-      console.log('[AiEvalService] Status: PASSED');
-      session.status = 'passed';
-      await this.logCompletion(session, true);
-    } else if (turn.intent === 'hang_up' || session.turnCount >= scenario.maxTurns) {
-      console.log('[AiEvalService] Status: FAILED');
-      session.status = 'failed';
-      await this.logCompletion(session, false);
-    }
-
-    // f. Save/Clean Session
+    // Save
     try {
       if (session.status === 'active') {
         await fsSet(this.COLLECTION_SESSIONS, agentId, session);
@@ -156,37 +163,39 @@ export class AiEvalService {
         await fsDelete(this.COLLECTION_SESSIONS, agentId);
       }
     } catch (err) {
-      console.error('[AiEvalService] Failed to save/delete session in Firestore:', err);
+      console.error('[AiEvalService] Save error:', err);
     }
 
     return { session, turn };
   }
 
   /**
-   * 3. Orchestrated AI Call
-   * Uses "Shadow Coach" pattern to combine Persona + Evaluation
+   * 3. Persona Dialogue Call (Fast & Focused)
    */
-  private static async callAI(
+  private static async callPersonaAI(
     session: AiEvalSession, 
     scenario: AiEvalScenario,
     isStart: boolean
   ): Promise<AiEvalTurnResponse> {
     
-    // Fetch global config to check provider override
-    let config: any = null;
-    try {
-      config = await fsGet<any>('module_config', 'ai_eval');
-    } catch (err) {
-      console.warn('[AiEvalService] Failed to fetch module_config, using auto provider');
-    }
+    const systemPrompt = `
+คุณคือลูกค้าคนไทย: ${scenario.customerPersona}
+บริบทสินค้า: คอร์สเทรด BrainTrade Thailand (มี Coach, AI, Campus)
+กติกาการสนทนา:
+- ตอบโต้กับพนักงานขายสั้นๆ เป็นธรรมชาติที่สุด (ภาษาพูดคนไทย)
+- ห้ามหลุดบทบาท AI หรือ Coach เด็ดขาด
+- ห้ามให้คำแนะนำหรือประเมินพนักงานในบทสนทนา
+- อารมณ์ปัจจุบัน: ${session.currentMood}
 
-    const providerSetting = config?.provider || 'auto';
-    const primaryProvider = providerSetting === 'auto' ? this.determineProvider(session.messages, scenario) : providerSetting;
-    
-    const systemPrompt = this.buildSystemPrompt(session, scenario, isStart);
-    
-    // Optimized Window: Last 10 messages + System Instruction
-    const windowedHistory = session.messages.slice(-10).map(m => ({
+ตอบกลับเป็น JSON:
+{
+  "dialogue": "บทพูดของคุณ",
+  "intent": "continue | buy | hang_up",
+  "mood": "อารมณ์ที่เปลี่ยนไป (ถ้ามี)"
+}
+    `.trim();
+
+    const windowedHistory = session.messages.slice(-6).map(m => ({
       role: m.role as 'user' | 'assistant',
       content: m.content
     }));
@@ -195,130 +204,162 @@ export class AiEvalService {
       windowedHistory.push({ role: 'user', content: '[ลูกค้ารับสาย]' });
     }
 
-    let raw = '';
-    let currentProvider = primaryProvider;
-    let attempts = 0;
+    const openai = getOpenAI();
+    if (!openai) throw new Error('OpenAI API Missing');
 
-    while (attempts < 2) {
-      try {
-        console.log(`[AiEvalService] LLM Provider: ${currentProvider} (Attempt ${attempts + 1})`);
-        if (currentProvider === 'gemini') {
-          const model = getGeminiModel({
-            systemInstruction: {
-              role: 'system',
-              parts: [{ text: systemPrompt }]
-            }
-          });
-          if (!model) throw new Error('Gemini API Missing or Invalid');
-          
-          const chat = model.startChat({
-            history: windowedHistory.slice(0, -1).map(m => ({
-              role: m.role === 'assistant' ? 'model' : 'user',
-              parts: [{ text: m.content }],
-            })),
-            generationConfig: { responseMimeType: 'application/json', temperature: 0.7 }
-          });
-          const last = windowedHistory[windowedHistory.length - 1]?.content || '...';
-          const res = await chat.sendMessage(last);
-          raw = res.response.text();
-          break; // Success
-        } else {
-          const openai = getOpenAI();
-          if (!openai) throw new Error('OpenAI API Missing or Invalid');
-          
-          const res = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: [{ role: 'system', content: systemPrompt }, ...windowedHistory],
-            response_format: { type: 'json_object' },
-            temperature: 0.7
-          });
-          raw = res.choices[0].message.content || '{}';
-          break; // Success
-        }
-      } catch (err: any) {
-        attempts++;
-        console.error(`[AiEvalService] ${currentProvider} failed:`, err.message);
-        
-        if (attempts < 2) {
-          const hasOpenAI = !!process.env.OPENAI_API_KEY;
-          const hasGemini = !!process.env.GEMINI_API_KEY;
-          
-          if (currentProvider === 'gemini' && hasOpenAI) {
-            currentProvider = 'openai';
-            continue;
-          } else if (currentProvider === 'openai' && hasGemini) {
-            currentProvider = 'gemini';
-            continue;
-          }
-        }
-        throw new Error(`AI Provider Error (All attempts failed): ${err.message}`);
-      }
-    }
+    const res = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'system', content: systemPrompt }, ...windowedHistory],
+      response_format: { type: 'json_object' },
+      temperature: 0.8
+    });
 
-    // Parse and Validate with Zod
-    try {
-      const cleaned = this.cleanJson(raw);
-      const parsed = JSON.parse(cleaned);
-      return AiEvalTurnResponseSchema.parse(parsed);
-    } catch (err) {
-      console.error('[AiEvalService] AI Response Validation/Parsing Failed:', err, '\nRaw Output:', raw);
-      // Fallback recovery object
-      return {
-        dialogue: "ขอโทษทีครับ พอดีสัญญาณไม่ค่อยดี คุณว่ายังไงนะ?",
-        mood: session.currentMood,
-        objectiveState: "stalled",
-        intent: "continue",
-        score: 5,
-        criteria: { rapport: 5, objectionHandling: 5, credibility: 5, closing: 5, naturalness: 5 },
-        strengths: "พยายามสื่อสาร",
-        improvements: "รอสัญญาณชัดเจนอีกครั้ง",
-        coachingScript: "ลองทวนประโยคก่อนหน้าดูครับ",
-        coachingTip: "Technical Recovery"
-      };
-    }
+    const raw = res.choices[0].message.content || '{}';
+    const parsed = JSON.parse(this.cleanJson(raw));
+    
+    return {
+      dialogue: parsed.dialogue || "ครับ...",
+      intent: parsed.intent || "continue",
+      mood: parsed.mood || session.currentMood,
+      isRoundEnd: false
+    };
   }
 
-  /* ─── Prompt Engineering ────────────────────────────────────────────────── */
+  /**
+   * 4. Evaluator Call (The "Professional Coach")
+   */
+  private static async callEvaluatorAI(
+    session: AiEvalSession,
+    scenario: AiEvalScenario,
+    lastDialogue: string
+  ): Promise<Partial<AiEvalTurnResponse>> {
+    
+    const transcript = session.messages.map(m => `${m.role === 'user' ? 'พนักงาน' : 'ลูกค้า'}: ${m.content}`).join('\n');
+    const fullTranscript = `${transcript}\nลูกค้า: ${lastDialogue}`;
 
-  private static buildSystemPrompt(session: AiEvalSession, scenario: AiEvalScenario, isStart: boolean): string {
-    return `
-คุณคือระบบ AI อัจฉริยะที่ทำหน้าที่ 2 บทบาทพร้อมกันในโครงสร้าง JSON เดียว:
-1. ROLE: ${scenario.name} (ลูกค้าคนไทย)
-2. SHADOW COACH: ผู้เชี่ยวชาญการขายระดับโลกที่จะประเมินพนักงานขายแบบ Real-time
+    const systemPrompt = `
+คุณคือ "ครูฝึกเทเลเซลล์ระดับมืออาชีพ" ประสบการณ์ 15 ปี เชี่ยวชาญธุรกิจ BrainTrade
+จงประเมินบทสนทนาที่กำหนดให้ตามเกณฑ์ 1-10 คะแนน:
 
-[CUSTOMER PERSONA]
-- ประวัติ: ${scenario.customerPersona}
-- วัตถุประสงค์ของลูกค้า: ${session.customerProfile.objective}
-- อารมณ์เริ่มต้น: ${session.currentMood}
-- กติกา: พูดภาษาไทยที่เป็นธรรมชาติที่สุด ห้ามหลุดบทบาท AI เด็ดขาด สั้น กระชับ สมจริง
+1. rapport: การสร้างความสัมพันธ์ (Rapport)
+2. objectionHandling: การรับมือข้อโต้แย้ง (Objection Handling)
+3. credibility: ความน่าเชื่อถือ (Credibility)
+4. closing: การปิดการขาย (Closing)
+5. naturalness: ความเป็นธรรมชาติแบบคนไทย (Thai Naturalness)
 
-[EVALUATION RULES]
-- ประเมินพนักงานขายชื่อ: ${session.agentName}
-- เกณฑ์การผ่าน: ${scenario.passThreshold}/10
-- Criteria ที่ต้องประเมิน: ${(scenario.requiredCriteria || ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness']).join(', ')}
-- ${scenario.evaluatorInstructions || ''}
+เกณฑ์ผ่าน: คะแนนรวม >= 35/50 และไม่มีข้อใดต่ำกว่า 5
 
-[DECISION LOGIC - Intent]
-- 'continue': ยังคุยต่อได้ มีเรื่องให้ถามหรือคัดค้าน
-- 'buy': เซลล์ทำได้ยอดเยี่ยม ปิดการขายได้ประทับใจ หรือทำตามเงื่อนไข: ${scenario.winCondition || 'N/A'}
-- 'hang_up': เซลล์พูดจาไม่ดี ตื้อจนน่ารำคาญ หรือทำตามเงื่อนไข: ${scenario.failCondition || 'N/A'}
-
-[RESPONSE FORMAT]
-ตอบกลับเป็น JSON Object ตาม Schema นี้เท่านั้น:
+ตอบกลับเป็น JSON เท่านั้น:
 {
-  "dialogue": "บทพูดของลูกค้า (ภาษาไทย)",
-  "mood": "อารมณ์ปัจจุบันของลูกค้า",
-  "objectiveState": "ความคืบหน้าของวัตถุประสงค์ลูกค้า",
-  "intent": "continue | buy | hang_up",
-  "score": (คะแนนรวม 1-10),
-  "criteria": { ${(scenario.requiredCriteria || ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness']).map(c => `"${c}": 1-10`).join(', ')} },
-  "strengths": "จุดเด่นของเซลล์ในรอบนี้",
+  "score": (คะแนนรวม 0-50),
+  "criteria": { "rapport": 0, "objectionHandling": 0, "credibility": 0, "closing": 0, "naturalness": 0 },
+  "strengths": "จุดเด่น",
   "improvements": "สิ่งที่ควรปรับปรุง",
-  "coachingScript": "ประโยคตัวอย่างที่เซลล์ควรพูด (Actionable)",
-  "coachingTip": "ชื่อเทคนิคและวิธีใช้",
-  "buyingSignal": "สัญญาณการซื้อที่พบ (ถ้ามี)"
+  "coachingScript": "ตัวอย่างประโยคที่ควรพูด",
+  "coachingTip": "เทคนิคที่แนะนำ"
 }
     `.trim();
+
+    const openai = getOpenAI();
+    if (!openai) throw new Error('OpenAI API Missing');
+
+    const res = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `บทสนทนา:\n${fullTranscript}` }
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.3
+    });
+
+    const raw = res.choices[0].message.content || '{}';
+    return JSON.parse(this.cleanJson(raw));
+  }
+
+  static async seedAllScenarios() {
+    const scenarios: AiEvalScenario[] = [
+      {
+        id: 'level_1',
+        level: 1,
+        name: 'Level 1: ลูกค้าปฏิเสธทั่วไป',
+        description: 'เน้นการรับมือคำปฏิเสธเบื้องต้น',
+        difficulty: 'beginner',
+        customerPersona: 'สุ่มบทบาท: 1.พนักงานออฟฟิศ ยุ่ง 2.แม่บ้าน ต้องถามสามี 3.ผู้สูงอายุ ไม่เก่งเทคโนโลยี',
+        initialMood: 'ไม่สนใจ',
+        objective: 'ต้องการจบการสนทนาเร็วที่สุด',
+        passThreshold: 35,
+        requiredCriteria: ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
+        maxTurnsPerRound: 6,
+        maxRounds: 2,
+        maxTurns: 12,
+        minTurnsToWin: 3,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 'level_2',
+        level: 2,
+        name: 'Level 2: ลูกค้าสงสัยสินค้า',
+        description: 'เน้นการตอบคำถามเรื่องความคุ้มค่าและความเชื่อมั่น',
+        difficulty: 'intermediate',
+        customerPersona: 'สุ่มบทบาท: 1.นักธุรกิจ ต้องการหลักฐาน 2.Freelancer เคยขาดทุน 3.พยาบาล กลัวเสียเงินเปล่า',
+        initialMood: 'ระมัดระวัง',
+        objective: 'ต้องการหลักฐานความสำเร็จและเหตุผลที่ต้องจ่ายเงิน',
+        passThreshold: 35,
+        requiredCriteria: ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
+        maxTurnsPerRound: 6,
+        maxRounds: 2,
+        maxTurns: 12,
+        minTurnsToWin: 3,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 'level_3',
+        level: 3,
+        name: 'Level 3: ลูกค้าต่อรองและเปรียบเทียบ',
+        description: 'เน้นการรักษา Value และการเปรียบเทียบกับคู่แข่ง',
+        difficulty: 'advanced',
+        customerPersona: 'สุ่มบทบาท: 1.พ่อค้าออนไลน์ ต่อรองเก่ง 2.พนักงานธนาคาร รู้จักตลาด 3.นักศึกษา งบจำกัด',
+        initialMood: 'ต่อรอง',
+        objective: 'ต้องการส่วนลด หรือเหตุผลที่แพงกว่า YouTube/คู่แข่ง',
+        passThreshold: 35,
+        requiredCriteria: ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
+        maxTurnsPerRound: 6,
+        maxRounds: 2,
+        maxTurns: 12,
+        minTurnsToWin: 3,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 'level_4',
+        level: 4,
+        name: 'Level 4: Boss Level (Hard)',
+        description: 'เน้นความอดทนและการตอบคำถามเชิงเทคนิคขั้นสูง',
+        difficulty: 'expert',
+        customerPersona: 'สุ่มบทบาท: 1.เหยื่อแชร์ลูกโซ่ ไม่ไว้ใจใคร 2.นักลงทุนมืออาชีพ ถาม Technical 3.ลูกค้าอารมณ์ร้อน กดดัน',
+        initialMood: 'ไม่พอใจ/ท้าทาย',
+        objective: 'ต้องการทดสอบความรู้จริงของพนักงานและเลข License',
+        passThreshold: 40,
+        requiredCriteria: ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
+        maxTurnsPerRound: 6,
+        maxRounds: 2,
+        maxTurns: 12,
+        minTurnsToWin: 3,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ];
+
+    for (const s of scenarios) {
+      await fsSet(this.COLLECTION_SCENARIOS, s.id, s);
+    }
   }
 
   /* ─── Helpers ───────────────────────────────────────────────────────────── */
@@ -402,6 +443,8 @@ export class AiEvalService {
       passThreshold: 7,
       requiredCriteria: ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
       maxTurns: 12,
+      maxTurnsPerRound: 6,
+      maxRounds: 2,
       minTurnsToWin: 5,
       winCondition: 'เมื่อเซลล์อธิบายเรื่องโค้ชส่วนตัว 1:1 ได้อย่างชัดเจนและจริงใจ',
       failCondition: 'เมื่อเซลล์พูดจาเป็นหุ่นยนต์ หรือไม่ตอบคำถามเรื่องความปลอดภัย',
