@@ -236,7 +236,7 @@ export class AiEvalService {
 
     let raw = '{}';
     if (provider === 'gemini') {
-      const model = getGeminiModel({ model: 'gemini-2.0-flash' });
+      const model = getGeminiModel({ model: 'gemini-3-flash' });
       if (!model) throw new Error('Gemini API Missing');
       const chat = model.startChat({
         history: windowedHistory.map(h => ({
