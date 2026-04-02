@@ -113,7 +113,8 @@ export class AiEvalService {
 
     // d. Orchestration: Persona Dialogue first
     console.log('[AiEvalService] Calling Persona AI...');
-    let turn = await this.callPersonaAI(session, scenario, isStart);
+    const personaProvider = this.determineProvider(session.messages as any, scenario);
+    let turn = await this.callPersonaAI(session, scenario, isStart, personaProvider);
     
     // e. Check for Round End
     const isMaxTurns = session.turnCountInRound >= (scenario.maxTurnsPerRound || 6);
@@ -121,24 +122,33 @@ export class AiEvalService {
 
     if (isMaxTurns || isIntentEnd) {
       console.log('[AiEvalService] Round Ended. Calling Evaluator AI...');
-      const evaluation = await this.callEvaluatorAI(session, scenario, turn.dialogue);
+      // Use GPT-4o (Standard) for Level 4 for elite coaching, else gpt-4o-mini
+      const evaluatorModel = scenario.level === 4 ? 'gpt-4o' : 'gpt-4o-mini';
+      const evaluation = await this.callEvaluatorAI(session, scenario, turn.dialogue, evaluatorModel);
       turn = { ...turn, ...evaluation, isRoundEnd: true };
       
       // Update Win/Fail status based on evaluation
-      if (turn.score && turn.score >= scenario.passThreshold) {
-        if (session.round >= (scenario.maxRounds || 2)) {
+      const hasPassedRound = (turn.score || 0) >= scenario.passThreshold;
+      const isExceptional = (turn.score || 0) >= 45; // Exceptional performance
+
+      if (hasPassedRound) {
+        // SKIP ROUND 2 Logic: If score >= 45, or if already in round 2
+        if (isExceptional || session.round >= (scenario.maxRounds || 2)) {
           session.status = 'passed';
           await this.logCompletion(session, true);
         } else {
           session.round++;
           session.turnCountInRound = 0;
         }
-      } else if (isIntentEnd && turn.intent === 'hang_up') {
-        session.status = 'failed';
-        await this.logCompletion(session, false);
-      } else if (isMaxTurns && (!turn.score || turn.score < scenario.passThreshold)) {
-        session.status = 'failed'; // Round ended without passing
-        await this.logCompletion(session, false);
+      } else {
+        // FAIL Logic: If intent was hang_up or max turns reached without passing
+        if (isIntentEnd && turn.intent === 'hang_up') {
+          session.status = 'failed';
+          await this.logCompletion(session, false);
+        } else if (isMaxTurns) {
+          session.status = 'failed';
+          await this.logCompletion(session, false);
+        }
       }
     }
 
@@ -175,7 +185,8 @@ export class AiEvalService {
   private static async callPersonaAI(
     session: AiEvalSession, 
     scenario: AiEvalScenario,
-    isStart: boolean
+    isStart: boolean,
+    provider: 'openai' | 'gemini' = 'gemini'
   ): Promise<AiEvalTurnResponse> {
     
     const systemPrompt = `
@@ -204,17 +215,31 @@ export class AiEvalService {
       windowedHistory.push({ role: 'user', content: '[ลูกค้ารับสาย]' });
     }
 
-    const openai = getOpenAI();
-    if (!openai) throw new Error('OpenAI API Missing');
+    let raw = '{}';
+    if (provider === 'gemini') {
+      const model = getGeminiModel({ model: 'gemini-2.0-flash' });
+      if (!model) throw new Error('Gemini API Missing');
+      const chat = model.startChat({
+        history: windowedHistory.map(h => ({
+          role: h.role === 'user' ? 'user' : 'model',
+          parts: [{ text: h.content }]
+        })),
+        generationConfig: { responseMimeType: 'application/json' }
+      });
+      const res = await chat.sendMessage(systemPrompt);
+      raw = res.response.text();
+    } else {
+      const openai = getOpenAI();
+      if (!openai) throw new Error('OpenAI API Missing');
+      const res = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'system', content: systemPrompt }, ...windowedHistory],
+        response_format: { type: 'json_object' },
+        temperature: 0.8
+      });
+      raw = res.choices[0].message.content || '{}';
+    }
 
-    const res = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'system', content: systemPrompt }, ...windowedHistory],
-      response_format: { type: 'json_object' },
-      temperature: 0.8
-    });
-
-    const raw = res.choices[0].message.content || '{}';
     const parsed = JSON.parse(this.cleanJson(raw));
     
     return {
@@ -231,7 +256,8 @@ export class AiEvalService {
   private static async callEvaluatorAI(
     session: AiEvalSession,
     scenario: AiEvalScenario,
-    lastDialogue: string
+    lastDialogue: string,
+    model: string = 'gpt-4o-mini'
   ): Promise<Partial<AiEvalTurnResponse>> {
     
     const transcript = session.messages.map(m => `${m.role === 'user' ? 'พนักงาน' : 'ลูกค้า'}: ${m.content}`).join('\n');
@@ -249,13 +275,16 @@ export class AiEvalService {
 
 เกณฑ์ผ่าน: คะแนนรวม >= 35/50 และไม่มีข้อใดต่ำกว่า 5
 
+กรณีพนักงานทำคะแนนได้น้อย หรือสอบตก: 
+- ในส่วน "coachingScript" ให้เขียน "Model Answer" หรือ "Golden Script" ที่ดีที่สุดและคมที่สุดให้พนักงานนำไปใช้ได้ทันที
+
 ตอบกลับเป็น JSON เท่านั้น:
 {
   "score": (คะแนนรวม 0-50),
   "criteria": { "rapport": 0, "objectionHandling": 0, "credibility": 0, "closing": 0, "naturalness": 0 },
   "strengths": "จุดเด่น",
   "improvements": "สิ่งที่ควรปรับปรุง",
-  "coachingScript": "ตัวอย่างประโยคที่ควรพูด",
+  "coachingScript": "Model Answer / Golden Script (ประโยคที่ควรพูด)",
   "coachingTip": "เทคนิคที่แนะนำ"
 }
     `.trim();
@@ -264,7 +293,7 @@ export class AiEvalService {
     if (!openai) throw new Error('OpenAI API Missing');
 
     const res = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: model as any,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `บทสนทนา:\n${fullTranscript}` }
