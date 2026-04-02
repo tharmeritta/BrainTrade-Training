@@ -125,7 +125,12 @@ export const ChatView = memo(({
                   {card && (
                     <CoachingCard
                       coaching={card}
-                      autoExpand={(card.score ?? 0) < 35}
+                      autoExpand={(() => {
+                        const score = card.score ?? 0;
+                        const criteria = card.criteria || {};
+                        const hasLowScore = Object.values(criteria).some(val => val < 5);
+                        return score < 35 || hasLowScore;
+                      })()}
                       onUseScript={onUseScript}
                       criteriaKeys={criteriaKeys}
                     />

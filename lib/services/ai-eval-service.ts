@@ -121,15 +121,28 @@ export class AiEvalService {
     const isIntentEnd = turn.intent === 'buy' || turn.intent === 'hang_up';
 
     if (isMaxTurns || isIntentEnd) {
-      console.log('[AiEvalService] Round Ended. Calling Evaluator AI...');
+      console.log(`[AiEvalService] Round Ended. Level: ${scenario.level}, Round: ${session.round}`);
+      
       // Use GPT-4o (Standard) for Level 4 for elite coaching, else gpt-4o-mini
       const evaluatorModel = scenario.level === 4 ? 'gpt-4o' : 'gpt-4o-mini';
       const evaluation = await this.callEvaluatorAI(session, scenario, turn.dialogue, evaluatorModel);
-      turn = { ...turn, ...evaluation, isRoundEnd: true };
+      
+      // Hard-coded Strict Validation: No single criteria < 5
+      const criteria = evaluation.criteria || {};
+      const hasLowScore = Object.values(criteria).some(val => val < 5);
+      const totalScore = evaluation.score || 0;
       
       // Update Win/Fail status based on evaluation
-      const hasPassedRound = (turn.score || 0) >= scenario.passThreshold;
-      const isExceptional = (turn.score || 0) >= 45; // Exceptional performance
+      let hasPassedRound = totalScore >= scenario.passThreshold && !hasLowScore;
+      
+      // Special feedback if failed due to single low score
+      if (totalScore >= scenario.passThreshold && hasLowScore) {
+        evaluation.improvements = `⚠️ ตกเกณฑ์มาตรฐาน: แม้คะแนนรวมจะถึง แต่คุณมีบางหัวข้อที่ได้ต่ำกว่า 5 คะแนน (ต้องได้ 5+ ทุกหัวข้อถึงจะผ่าน)\n\n${evaluation.improvements}`;
+      }
+
+      const isExceptional = totalScore >= 45; 
+
+      turn = { ...turn, ...evaluation, isRoundEnd: true, score: totalScore };
 
       if (hasPassedRound) {
         // SKIP ROUND 2 Logic: If score >= 45, or if already in round 2
@@ -142,12 +155,14 @@ export class AiEvalService {
         }
       } else {
         // FAIL Logic: If intent was hang_up or max turns reached without passing
-        if (isIntentEnd && turn.intent === 'hang_up') {
+        // If it was the last round, it's a definitive fail
+        if (session.round >= (scenario.maxRounds || 2) || (isIntentEnd && turn.intent === 'hang_up')) {
           session.status = 'failed';
           await this.logCompletion(session, false);
-        } else if (isMaxTurns) {
-          session.status = 'failed';
-          await this.logCompletion(session, false);
+        } else {
+          // Retry in Round 2
+          session.round++;
+          session.turnCountInRound = 0;
         }
       }
     }
@@ -189,11 +204,15 @@ export class AiEvalService {
     provider: 'openai' | 'gemini' = 'gemini'
   ): Promise<AiEvalTurnResponse> {
     
+    const isHardMode = (scenario.level || 1) >= 3;
     const systemPrompt = `
 คุณคือลูกค้าคนไทย: ${scenario.customerPersona}
+ระดับความยาก: Level ${scenario.level || 1} ${isHardMode ? '(โหมดเข้มงวด - ปฏิเสธเก่ง สงสัยเยอะ)' : '(โหมดปกติ)'}
 บริบทสินค้า: คอร์สเทรด BrainTrade Thailand (มี Coach, AI, Campus)
+
 กติกาการสนทนา:
-- ตอบโต้กับพนักงานขายสั้นๆ เป็นธรรมชาติที่สุด (ภาษาพูดคนไทย)
+- ตอบโต้สั้นๆ เป็นธรรมชาติที่สุด (ภาษาพูดคนไทย)
+- ${isHardMode ? 'คุณมีความสงสัยสูงมาก ไม่เชื่อใจง่ายๆ จะถามจี้จุดอ่อน หรือเปรียบเทียบกับคู่แข่งเสมอ' : 'คุณมีความลังเลตามปกติของลูกค้าทั่วไป'}
 - ห้ามหลุดบทบาท AI หรือ Coach เด็ดขาด
 - ห้ามให้คำแนะนำหรือประเมินพนักงานในบทสนทนา
 - อารมณ์ปัจจุบัน: ${session.currentMood}
@@ -263,29 +282,36 @@ export class AiEvalService {
     const transcript = session.messages.map(m => `${m.role === 'user' ? 'พนักงาน' : 'ลูกค้า'}: ${m.content}`).join('\n');
     const fullTranscript = `${transcript}\nลูกค้า: ${lastDialogue}`;
 
+    const isLevel4 = scenario.level === 4;
     const systemPrompt = `
-คุณคือ "ครูฝึกเทเลเซลล์ระดับมืออาชีพ" ประสบการณ์ 15 ปี เชี่ยวชาญธุรกิจ BrainTrade
-จงประเมินบทสนทนาที่กำหนดให้ตามเกณฑ์ 1-10 คะแนน:
+คุณคือ "หัวหน้าทีมขายและครูฝึกเทเลเซลล์ระดับเหรียญทอง" ที่มีความเข้มงวดสูงมาก (Strict Mentor)
+จงประเมินบทสนทนาตามเกณฑ์ 1-10 คะแนน (ให้คะแนนแบบอนุรักษ์นิยม - ไม่ให้คะแนนง่ายๆ):
 
-1. rapport: การสร้างความสัมพันธ์ (Rapport)
-2. objectionHandling: การรับมือข้อโต้แย้ง (Objection Handling)
-3. credibility: ความน่าเชื่อถือ (Credibility)
-4. closing: การปิดการขาย (Closing)
-5. naturalness: ความเป็นธรรมชาติแบบคนไทย (Thai Naturalness)
+ระดับความคาดหวัง: Level ${scenario.level || 1} ${isLevel4 ? '(มาตรฐานสูงสุด: ต้องไร้ที่ติ)' : '(มาตรฐานมืออาชีพ)'}
 
-เกณฑ์ผ่าน: คะแนนรวม >= 35/50 และไม่มีข้อใดต่ำกว่า 5
+เกณฑ์การให้คะแนน:
+1. rapport: การสร้างความสัมพันธ์ (ถ้าพูดจาเป็นหุ่นยนต์ หรือไม่ฟังลูกค้า ให้ 1-4)
+2. objectionHandling: การรับมือข้อโต้แย้ง (ถ้าข้ามคำถามลูกค้า หรือตอบไม่เคลียร์ ให้ 1-4)
+3. credibility: ความน่าเชื่อถือ (ถ้าข้อมูลผิด หรือน้ำเสียงไม่มั่นใจ ให้ 1-4)
+4. closing: การปิดการขาย (ถ้าไม่พยายามปิดการขาย หรือปิดแบบยัดเยียดเกินไป ให้ 1-4)
+5. naturalness: ความเป็นธรรมชาติ (ถ้าใช้สคริปต์แข็งทื่อ หรือภาษาไม่เป็นธรรมชาติ ให้ 1-4)
 
-กรณีพนักงานทำคะแนนได้น้อย หรือสอบตก: 
-- ในส่วน "coachingScript" ให้เขียน "Model Answer" หรือ "Golden Script" ที่ดีที่สุดและคมที่สุดให้พนักงานนำไปใช้ได้ทันที
+กติกาเหล็ก:
+- คะแนนรวม >= 35/50 ถึงจะผ่าน
+- **สำคัญมาก**: หากมีเกณฑ์ใดเกณฑ์หนึ่งได้ต่ำกว่า 5 คะแนน จะถือว่า "ตก" ทันที (แม้คะแนนรวมจะสูงก็ตาม)
+- สำหรับ Level 4: หากพนักงานไม่สามารถตอบคำถาม Technical หรือเลข License ได้อย่างถูกต้อง ให้คะแนน Credibility ต่ำกว่า 5 ทันที
+
+กรณีสอบตก:
+- ในส่วน "coachingScript" ให้เขียน "Golden Script" ที่สมบูรณ์แบบที่สุด เพื่อให้พนักงานเห็นภาพว่า 'มือโปร' เขาพูดกันอย่างไร
 
 ตอบกลับเป็น JSON เท่านั้น:
 {
   "score": (คะแนนรวม 0-50),
   "criteria": { "rapport": 0, "objectionHandling": 0, "credibility": 0, "closing": 0, "naturalness": 0 },
-  "strengths": "จุดเด่น",
-  "improvements": "สิ่งที่ควรปรับปรุง",
-  "coachingScript": "Model Answer / Golden Script (ประโยคที่ควรพูด)",
-  "coachingTip": "เทคนิคที่แนะนำ"
+  "strengths": "จุดเด่น (ถ้ามีจริงๆ)",
+  "improvements": "จุดที่ต้องปรับปรุงอย่างละเอียด",
+  "coachingScript": "Golden Script (Model Answer)",
+  "coachingTip": "เทคนิคเชิงลึกสำหรับ Level นี้"
 }
     `.trim();
 
