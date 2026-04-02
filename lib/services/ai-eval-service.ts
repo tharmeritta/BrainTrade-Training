@@ -235,21 +235,25 @@ export class AiEvalService {
     }
 
     let raw = '{}';
-    if (provider === 'gemini') {
-      const model = getGeminiModel({ model: 'gemini-3-flash' });
-      if (!model) throw new Error('Gemini API Missing');
-      const chat = model.startChat({
+    const geminiModel = getGeminiModel({ model: 'gemini-3.1-flash' });
+    
+    // Priority: If provider is gemini OR openai is missing, use Gemini
+    if ((provider === 'gemini' || !process.env.OPENAI_API_KEY) && geminiModel) {
+      const chat = geminiModel.startChat({
         history: windowedHistory.map(h => ({
           role: h.role === 'user' ? 'user' : 'model',
           parts: [{ text: h.content }]
         })),
-        generationConfig: { responseMimeType: 'application/json' }
+        generationConfig: { 
+          responseMimeType: 'application/json',
+          temperature: 0.8
+        }
       });
       const res = await chat.sendMessage(systemPrompt);
       raw = res.response.text();
     } else {
       const openai = getOpenAI();
-      if (!openai) throw new Error('OpenAI API Missing');
+      if (!openai) throw new Error('No AI Provider available (OpenAI/Gemini missing)');
       const res = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [{ role: 'system', content: systemPrompt }, ...windowedHistory],
@@ -276,7 +280,7 @@ export class AiEvalService {
     session: AiEvalSession,
     scenario: AiEvalScenario,
     lastDialogue: string,
-    model: string = 'gpt-4o-mini'
+    modelPreference: string = 'gemini-3.1-flash'
   ): Promise<Partial<AiEvalTurnResponse>> {
     
     const transcript = session.messages.map(m => `${m.role === 'user' ? 'พนักงาน' : 'ลูกค้า'}: ${m.content}`).join('\n');
@@ -315,20 +319,41 @@ export class AiEvalService {
 }
     `.trim();
 
-    const openai = getOpenAI();
-    if (!openai) throw new Error('OpenAI API Missing');
+    let raw = '{}';
+    // Decide Gemini model: 2.5 Pro for Level 4 (Elite), 3.1 Flash for others
+    const targetModel = isLevel4 ? 'gemini-2.5-pro' : 'gemini-3.1-flash';
+    const gemini = getGeminiModel({ model: targetModel });
 
-    const res = await openai.chat.completions.create({
-      model: model as any,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: `บทสนทนา:\n${fullTranscript}` }
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.3
-    });
+    if (gemini) {
+      console.log(`[AiEvalService] Using Gemini Evaluator: ${targetModel}`);
+      const result = await gemini.generateContent({
+        contents: [
+          { role: 'user', parts: [{ text: `SYSTEM: ${systemPrompt}\n\nบทสนทนาเพื่อประเมิน:\n${fullTranscript}` }] }
+        ],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.2,
+        }
+      });
+      raw = result.response.text();
+    } else {
+      // Fallback to OpenAI
+      const openai = getOpenAI();
+      if (!openai) throw new Error('No AI Provider Available');
+      const fallbackModel = isLevel4 ? 'gpt-4o' : 'gpt-4o-mini';
+      console.log(`[AiEvalService] Gemini missing, falling back to OpenAI: ${fallbackModel}`);
+      const res = await openai.chat.completions.create({
+        model: fallbackModel as any,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `บทสนทนา:\n${fullTranscript}` }
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.2
+      });
+      raw = res.choices[0].message.content || '{}';
+    }
 
-    const raw = res.choices[0].message.content || '{}';
     return JSON.parse(this.cleanJson(raw));
   }
 
@@ -420,42 +445,10 @@ export class AiEvalService {
   /* ─── Helpers ───────────────────────────────────────────────────────────── */
 
   private static determineProvider(messages: PitchMessage[], scenario?: AiEvalScenario): 'openai' | 'gemini' {
-    const hasOpenAI = !!process.env.OPENAI_API_KEY;
     const hasGemini = !!process.env.GEMINI_API_KEY;
-    if (!hasOpenAI) return 'gemini';
-    if (!hasGemini) return 'openai';
-
-    // Get the latest message to analyze
-    const latestMessage = messages.length > 0 ? messages[messages.length - 1].content : '';
-    const isThai = /[\u0e00-\u0e7f]/.test(latestMessage || scenario?.customerPersona || '');
-
-    if (!isThai) return 'openai'; // English is best handled by OpenAI by default
-
-    // THAI COMPLEXITY ANALYSIS
-    let complexityScore = 0;
+    if (hasGemini) return 'gemini';
     
-    // 1. Length Factor (Complexity increases with length)
-    if (latestMessage.length > 150) complexityScore += 3;
-    else if (latestMessage.length > 80) complexityScore += 1;
-
-    // 2. Logical Keywords (Complexity increases with reasoning)
-    const complexKeywords = [
-      'เพราะอะไร', 'ทำไม', 'อย่างไร', 'เปรียบเทียบ', 'ต่างจาก', 
-      'ความเสี่ยง', 'กลยุทธ์', 'ขั้นตอน', 'อธิบาย', 'เหตุผล'
-    ];
-    complexKeywords.forEach(word => {
-      if (latestMessage.includes(word)) complexityScore += 2;
-    });
-
-    // 3. Technical/Questioning Density
-    if (latestMessage.includes('?') || latestMessage.includes('ช่วย')) complexityScore += 1;
-
-    console.log(`[AiEvalService] Thai Complexity Score: ${complexityScore} (Threshold: 4)`);
-
-    // Decision: 
-    // Score >= 4 -> OpenAI (Better for multi-step logic and technical reasoning)
-    // Score < 4  -> Gemini (Better for natural, fast, conversational Thai)
-    return complexityScore >= 4 ? 'openai' : 'gemini';
+    return !!process.env.OPENAI_API_KEY ? 'openai' : 'gemini';
   }
 
   private static cleanJson(raw: string): string {

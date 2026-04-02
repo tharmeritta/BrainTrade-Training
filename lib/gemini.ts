@@ -7,9 +7,9 @@ export function getGeminiModel(params?: Partial<ModelParams>): GenerativeModel |
   
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
   
-  // Using v1beta as requested for Gemini 3 Flash
+  // Using v1beta as requested for Gemini 3.1 Flash
   return genAI.getGenerativeModel({ 
-    model: 'gemini-3-flash', 
+    model: 'gemini-3.1-flash', 
     ...params 
   }, { apiVersion: 'v1beta' });
 }

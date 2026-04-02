@@ -71,17 +71,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing rawText' }, { status: 400 });
     }
 
+    const gemini = getGeminiModel({ model: 'gemini-3.1-flash' });
     const openai = getOpenAI();
     let resultText = '';
 
-    if (!openai) {
-      // Fallback to Gemini if OpenAI is missing
-      const model = getGeminiModel();
-      if (!model) {
-        throw new Error('No AI provider available. Set OPENAI_API_KEY or GEMINI_API_KEY.');
-      }
-      
-      const result = await model.generateContent({
+    if (gemini) {
+      // Primary: Gemini 3.1 Flash
+      const result = await gemini.generateContent({
         contents: [{ role: 'user', parts: [{ text: `SYSTEM: ${SYSTEM_PROMPT}\n\nUSER: ${rawText}` }] }],
         generationConfig: {
           responseMimeType: 'application/json',
@@ -89,7 +85,8 @@ export async function POST(req: NextRequest) {
         }
       });
       resultText = result.response.text();
-    } else {
+    } else if (openai) {
+      // Fallback: OpenAI
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 55000);
       try {
@@ -106,6 +103,8 @@ export async function POST(req: NextRequest) {
       } finally {
         clearTimeout(timeoutId);
       }
+    } else {
+      throw new Error('No AI provider available. Set GEMINI_API_KEY or OPENAI_API_KEY.');
     }
 
     if (!resultText) {

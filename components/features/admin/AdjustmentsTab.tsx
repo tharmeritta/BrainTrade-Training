@@ -819,11 +819,11 @@ function AiEvalEditor({ data, onSave, onChange, saving, readOnly }: { data: AiEv
             onChange={e => handleUpdate('provider', e.target.value)}
             className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all font-bold"
           >
-            <option value="auto">Auto (Detect Language)</option>
+            <option value="auto">Auto (Native Optimized)</option>
+            <option value="gemini">Google Gemini (3.1 Flash)</option>
             <option value="openai">OpenAI (GPT-4o mini)</option>
-            <option value="gemini">Google Gemini (2.0 Flash)</option>
-          </select>
-          <p className="text-[9px] text-muted-foreground italic px-1">Choose which AI engine powers the evaluation. &apos;Auto&apos; uses Gemini for Thai and OpenAI for English.</p>
+            </select>
+            <p className="text-[9px] text-muted-foreground italic px-1">Choose the AI engine for evaluations. &apos;Auto&apos; defaults to Gemini 3.1 Flash for optimized performance.</p>
         </div>
         <div className="space-y-2">
           <label className="text-[10px] font-black uppercase opacity-50 px-1">Default Pass Threshold (Score 1-10)</label>
