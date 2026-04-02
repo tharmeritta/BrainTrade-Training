@@ -81,66 +81,87 @@ function ScenarioForm({
         </button>
       </div>
 
-      <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Column 1 — Identity */}
-        <div className="space-y-4">
-          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 border-b border-border/30 pb-1.5">Identity</p>
-          <Field label="Scenario Name">
-            <input className={inputCls} value={form.name || ''} onChange={e => onChange({ ...form, name: e.target.value })} placeholder="e.g. The Angry Skeptic" />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Difficulty">
-              <select className={inputCls} value={form.difficulty} onChange={e => onChange({ ...form, difficulty: e.target.value as any })}>
-                {DIFF_ORDER.map(d => <option key={d} value={d}>{DIFF[d].label}</option>)}
-              </select>
-            </Field>
-            <Field label="Status">
-              <button
-                type="button"
-                onClick={() => onChange({ ...form, isActive: !form.isActive })}
-                className={`w-full flex items-center justify-center gap-2 rounded-xl px-3.5 py-2.5 text-sm font-bold border transition-all ${form.isActive ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' : 'bg-secondary/40 border-border/40 text-muted-foreground'}`}
-              >
-                {form.isActive ? <Unlock size={13} /> : <Lock size={13} />}
-                {form.isActive ? 'Active' : 'Inactive'}
-              </button>
-            </Field>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Pass Threshold">
-              <input type="number" className={inputCls} value={form.passThreshold ?? 7} onChange={e => onChange({ ...form, passThreshold: parseInt(e.target.value) })} min={1} max={10} />
-            </Field>
-            <Field label="Max Turns">
-              <input type="number" className={inputCls} value={form.maxTurns ?? 12} onChange={e => onChange({ ...form, maxTurns: parseInt(e.target.value) })} min={1} />
-            </Field>
-          </div>
-        </div>
+      <div className="p-6 space-y-6">
 
-        {/* Column 2 — Persona */}
-        <div className="space-y-4">
-          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 border-b border-border/30 pb-1.5">Customer Persona</p>
-          <Field label="Persona Description">
-            <textarea className={`${textareaCls} h-28`} value={form.customerPersona || ''} onChange={e => onChange({ ...form, customerPersona: e.target.value })} placeholder="Background, personality, knowledge level…" />
-          </Field>
-          <Field label="Objective">
-            <input className={inputCls} value={form.objective || ''} onChange={e => onChange({ ...form, objective: e.target.value })} placeholder="What does the customer want?" />
-          </Field>
-          <Field label="Initial Mood">
-            <input className={inputCls} value={form.initialMood || ''} onChange={e => onChange({ ...form, initialMood: e.target.value })} placeholder="e.g. Skeptical but curious" />
+        {/* System Prompt — full width, primary field */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <p className="text-[9px] font-black uppercase tracking-widest text-primary/80 border-b border-primary/20 pb-1.5 flex-1">ChatGPT System Prompt <span className="text-primary">(Main Instruction)</span></p>
+          </div>
+          <p className="text-[10px] text-muted-foreground">
+            This prompt is sent directly to ChatGPT as the customer persona + judge. It must instruct ChatGPT to return JSON with <code className="bg-secondary/60 px-1 rounded">verdict: "continue" | "passed" | "failed"</code>. Leave blank to auto-build from the fields below.
+          </p>
+          <Field label="System Prompt">
+            <textarea
+              className={`${textareaCls} h-52 font-mono text-xs`}
+              value={form.systemPrompt || ''}
+              onChange={e => onChange({ ...form, systemPrompt: e.target.value })}
+              placeholder={`เล่นบทเป็นลูกค้าคนไทย...\n\n✅ PASS เมื่อ: ...\n❌ FAIL เมื่อ: ...\n\nตอบกลับเป็น JSON เสมอ:\n{"dialogue":"...","verdict":"continue","reason":"","score":null,"strengths":null,"improvements":null,"coachingTip":null}\n\nเมื่อ verdict เป็น passed/failed: ใส่ score (0-100), strengths, improvements, coachingTip ด้วย\nห้ามบอก verdict แก่พนักงานใน dialogue เด็ดขาด`}
+            />
           </Field>
         </div>
 
-        {/* Column 3 — Conditions */}
-        <div className="space-y-4">
-          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 border-b border-border/30 pb-1.5">Win / Fail Conditions</p>
-          <Field label="Win Condition">
-            <textarea className={`${textareaCls} h-28`} value={form.winCondition || ''} onChange={e => onChange({ ...form, winCondition: e.target.value })} placeholder="When should the AI decide the agent passed?" />
-          </Field>
-          <Field label="Fail Condition">
-            <textarea className={`${textareaCls} h-[4.5rem]`} value={form.failCondition || ''} onChange={e => onChange({ ...form, failCondition: e.target.value })} placeholder="When should the AI hang up?" />
-          </Field>
-          <Field label="Evaluator Instructions (optional)">
-            <input className={inputCls} value={form.evaluatorInstructions || ''} onChange={e => onChange({ ...form, evaluatorInstructions: e.target.value })} placeholder="Extra coaching rules for the AI judge" />
-          </Field>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Column 1 — Identity */}
+          <div className="space-y-4">
+            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 border-b border-border/30 pb-1.5">Identity</p>
+            <Field label="Scenario Name">
+              <input className={inputCls} value={form.name || ''} onChange={e => onChange({ ...form, name: e.target.value })} placeholder="e.g. The Angry Skeptic" />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Difficulty">
+                <select className={inputCls} value={form.difficulty} onChange={e => onChange({ ...form, difficulty: e.target.value as any })}>
+                  {DIFF_ORDER.map(d => <option key={d} value={d}>{DIFF[d].label}</option>)}
+                </select>
+              </Field>
+              <Field label="Status">
+                <button
+                  type="button"
+                  onClick={() => onChange({ ...form, isActive: !form.isActive })}
+                  className={`w-full flex items-center justify-center gap-2 rounded-xl px-3.5 py-2.5 text-sm font-bold border transition-all ${form.isActive ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' : 'bg-secondary/40 border-border/40 text-muted-foreground'}`}
+                >
+                  {form.isActive ? <Unlock size={13} /> : <Lock size={13} />}
+                  {form.isActive ? 'Active' : 'Inactive'}
+                </button>
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Pass Threshold">
+                <input type="number" className={inputCls} value={form.passThreshold ?? 7} onChange={e => onChange({ ...form, passThreshold: parseInt(e.target.value) })} min={1} max={10} />
+              </Field>
+              <Field label="Max Turns">
+                <input type="number" className={inputCls} value={form.maxTurns ?? 12} onChange={e => onChange({ ...form, maxTurns: parseInt(e.target.value) })} min={1} />
+              </Field>
+            </div>
+          </div>
+
+          {/* Column 2 — Persona (fallback fields) */}
+          <div className="space-y-4">
+            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 border-b border-border/30 pb-1.5">Customer Persona <span className="normal-case font-medium">(fallback if no system prompt)</span></p>
+            <Field label="Persona Description">
+              <textarea className={`${textareaCls} h-28`} value={form.customerPersona || ''} onChange={e => onChange({ ...form, customerPersona: e.target.value })} placeholder="Background, personality, knowledge level…" />
+            </Field>
+            <Field label="Objective">
+              <input className={inputCls} value={form.objective || ''} onChange={e => onChange({ ...form, objective: e.target.value })} placeholder="What does the customer want?" />
+            </Field>
+            <Field label="Initial Mood">
+              <input className={inputCls} value={form.initialMood || ''} onChange={e => onChange({ ...form, initialMood: e.target.value })} placeholder="e.g. Skeptical but curious" />
+            </Field>
+          </div>
+
+          {/* Column 3 — Conditions */}
+          <div className="space-y-4">
+            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 border-b border-border/30 pb-1.5">Win / Fail Conditions</p>
+            <Field label="Win Condition">
+              <textarea className={`${textareaCls} h-28`} value={form.winCondition || ''} onChange={e => onChange({ ...form, winCondition: e.target.value })} placeholder="When should the AI decide the agent passed?" />
+            </Field>
+            <Field label="Fail Condition">
+              <textarea className={`${textareaCls} h-[4.5rem]`} value={form.failCondition || ''} onChange={e => onChange({ ...form, failCondition: e.target.value })} placeholder="When should the AI hang up?" />
+            </Field>
+            <Field label="Bypass Prompt (External AI Practice)">
+              <textarea className={`${textareaCls} h-28`} value={form.bypassPrompt || ''} onChange={e => onChange({ ...form, bypassPrompt: e.target.value })} placeholder="Prompt for ChatGPT/Gemini practice..." />
+            </Field>
+          </div>
         </div>
       </div>
 

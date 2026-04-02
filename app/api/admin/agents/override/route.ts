@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { agentId, moduleId, type, score } = await req.json();
+    const { agentId, agentName, moduleId, type, score, isBypassed, bypassReason } = await req.json();
 
     if (!agentId || !moduleId || !type) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
@@ -34,18 +34,57 @@ export async function POST(req: NextRequest) {
         overriddenBy: user.name
       });
     } else if (type === 'ai-eval') {
-      // Create a synthetic passing AI eval result
+      const timestamp = new Date().toISOString();
+      const level = parseInt(moduleId);
+      
+      // 1. Create a synthetic passing AI eval result in legacy logs
       const evalRef = db.collection('ai_eval_logs').doc(`${agentId}_lv${moduleId}_override`);
       await evalRef.set({
         agentId,
-        level: parseInt(moduleId),
+        level,
         score: finalScore,
         passed: true,
-        timestamp: new Date().toISOString(),
+        timestamp,
         manualOverride: true,
+        isBypassed: isBypassed || false,
+        bypassReason: bypassReason || '',
         overriddenBy: user.name,
-        feedback: `Manual override by ${user.name} with score ${finalScore}%`
+        feedback: isBypassed 
+          ? `Bypassed by ${user.name}. Reason: ${bypassReason}`
+          : `Manual override by ${user.name} with score ${finalScore}%`
       });
+
+      // 2. Also write to the new v2 logs
+      const difficultyMap: Record<number, string> = { 1: 'beginner', 2: 'intermediate', 3: 'advanced', 4: 'expert' };
+      const v2Ref = db.collection('ai_eval_logs_v2').doc(`${agentId}_lv${moduleId}_v2_override`);
+      await v2Ref.set({
+        agentId,
+        agentName: agentName || 'Agent',
+        level,
+        difficulty: difficultyMap[level] || 'beginner',
+        passed: true,
+        score: finalScore,
+        timestamp,
+        manualOverride: true,
+        isBypassed: isBypassed || false,
+        bypassReason: bypassReason || '',
+        overriddenBy: user.name,
+      });
+
+      // 3. Update agent progress so it reflects in the UI
+      const progressRef = db.collection('agent_progress').doc(agentId);
+      const progressDoc = await progressRef.get();
+      let evalCompletedLevels = [];
+      if (progressDoc.exists) {
+        evalCompletedLevels = progressDoc.data()?.evalCompletedLevels || [];
+      }
+      if (!evalCompletedLevels.includes(level)) {
+        evalCompletedLevels.push(level);
+        await progressRef.set({
+          evalCompletedLevels,
+          updatedAt: timestamp
+        }, { merge: true });
+      }
     }
 
     return NextResponse.json({ success: true });

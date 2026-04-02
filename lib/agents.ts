@@ -73,14 +73,18 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
   }
 
   // Optimize: Only fetch records belonging to THIS agent.
-  const [quizDocs, evalDocs, progressDoc, humanEvals, scenariosSnap, periodsSnap] = await Promise.all([
+  const [quizDocs, evalDocsLegacy, evalDocsV2, progressDoc, humanEvals, scenariosSnap, periodsSnap] = await Promise.all([
     gcsGetWhere<QuizRecord>('quiz_results', 'agentId', agentId),
     gcsGetWhere<EvalRecord>('ai_eval_logs', 'agentId', agentId),
+    gcsGetWhere<EvalRecord>('ai_eval_logs_v2', 'agentId', agentId),
     gcsGet<ProgressRecord>('agent_progress', agentId).catch(() => null),
     gcsGetWhere<AgentEvaluation>('agent_evaluations', 'agentId', agentId),
     gcsGetAll<{ isActive: boolean }>('aiev_scenarios'),
     gcsGetAll<TrainingPeriod>('training_periods'),
   ]);
+
+  // Combine and deduplicate if necessary, though buildAiEval handles multiple anyway
+  const evalDocs = [...evalDocsLegacy, ...evalDocsV2];
 
   // Find the active period this agent belongs to
   const myPeriod = periodsSnap.find(p => p.active && p.agentIds.includes(agentId));
@@ -172,26 +176,32 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
       score: e.score, 
       level: e.level || 1, 
       passed: e.passed || false, 
-      timestamp: e.timestamp 
+      timestamp: e.timestamp,
+      manualOverride: (e as any).manualOverride || false,
+      overriddenBy: (e as any).overriddenBy || '',
+      isBypassed: (e as any).isBypassed || false,
+      bypassReason: (e as any).bypassReason || ''
     })).sort((a, b) => b.timestamp.localeCompare(a.timestamp)),
     levels,
-  };
-}
+    };
+    }
 
-// ── Analytics ─────────────────────────────────────────────────────────────
+    // ── Analytics ─────────────────────────────────────────────────────────────
 
-export async function getAllAgentStats(): Promise<AgentStats[]> {
-  const modules = TRAINING_REGISTRY.quiz.required;
-  const [agents, quizDocs, evalDocs, progressDocs, humanEvals, scenariosSnap, periodsSnap] = await Promise.all([
+    export async function getAllAgentStats(): Promise<AgentStats[]> {
+    const modules = TRAINING_REGISTRY.quiz.required;
+    const [agents, quizDocs, evalDocsLegacy, evalDocsV2, progressDocs, humanEvals, scenariosSnap, periodsSnap] = await Promise.all([
     gcsGetAll<Agent & { id: string }>('agents'),
     gcsGetAll<QuizRecord>('quiz_results'),
     gcsGetAll<EvalRecord>('ai_eval_logs'),
+    gcsGetAll<EvalRecord>('ai_eval_logs_v2'),
     gcsGetAll<ProgressRecord>('agent_progress'),
     gcsGetAll<AgentEvaluation>('agent_evaluations'),
     gcsGetAll<{ isActive: boolean }>('aiev_scenarios'),
     gcsGetAll<TrainingPeriod>('training_periods'),
-  ]);
+    ]);
 
+    const evalDocs = [...evalDocsLegacy, ...evalDocsV2];
   const activeAgents = agents.filter(a => a.active);
   const activeScenariosCount = scenariosSnap.filter(s => s.isActive).length;
 

@@ -1,33 +1,30 @@
 import { getOpenAI } from '@/lib/openai';
-import { getGeminiModel } from '@/lib/gemini';
 import { fsGet, fsSet, fsDelete, fsAdd } from '@/lib/firestore-db';
 import crypto from 'crypto';
-import { 
-  AiEvalScenario, 
-  AiEvalSession, 
-  AiEvalTurnResponse, 
-  AiEvalTurnResponseSchema 
+import {
+  AiEvalScenario,
+  AiEvalSession,
+  AiEvalTurnResponse,
 } from '@/types/ai-eval';
 import { PitchMessage } from '@/types';
 
 /* ─── Service Implementation ────────────────────────────────────────────────── */
 
 export class AiEvalService {
-  
+
   private static readonly COLLECTION_SCENARIOS = 'aiev_scenarios';
   private static readonly COLLECTION_SESSIONS  = 'aiev_sessions_v2';
   private static readonly COLLECTION_LOGS      = 'ai_eval_logs_v2';
 
   /**
-   * 1. Start a new session or reset an existing one.
+   * 1. Start a new session.
    */
   static async startSession(
-    agentId: string, 
-    agentName: string, 
-    scenarioId: string = 'level_1_round_1'
+    agentId: string,
+    agentName: string,
+    scenarioId: string = 'level_1'
   ): Promise<AiEvalSession> {
-    
-    // Fetch scenario (fallback to level_1 if not found)
+
     let scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, scenarioId);
     if (!scenario) {
       await this.seedAllScenarios();
@@ -43,25 +40,25 @@ export class AiEvalService {
       round: 1,
       messages: [],
       coaching: {},
-      currentMood: scenario.initialMood,
+      currentMood: scenario.initialMood || 'ปกติ',
       customerProfile: {
-        name: scenario.name.split(' ')[0] || 'ลูกค้า',
+        name: 'ลูกค้า',
         occupation: scenario.description,
-        age: 30, // Default or parsed from persona
-        objective: scenario.objective
+        age: 35,
+        objective: scenario.objective || '',
       },
       status: 'active',
       turnCount: 0,
       turnCountInRound: 0,
       startTime: new Date().toISOString(),
-      lastUpdate: new Date().toISOString()
+      lastUpdate: new Date().toISOString(),
     };
 
     return session;
   }
 
   /**
-   * 2. Process a turn (User message -> AI response + Coaching).
+   * 2. Process a turn — single ChatGPT call, reads verdict directly.
    */
   static async processTurn(
     agentId: string,
@@ -70,9 +67,9 @@ export class AiEvalService {
     agentName?: string,
     scenarioId?: string
   ): Promise<{ session: AiEvalSession; turn: AiEvalTurnResponse }> {
-    console.log(`[AiEvalService] processTurn - agentId: ${agentId}, isStart: ${isStart}, scenarioId: ${scenarioId}`);
+    console.log(`[AiEvalService] processTurn — agentId: ${agentId}, isStart: ${isStart}, scenarioId: ${scenarioId}`);
 
-    // a. Load current active session
+    // a. Load active session
     let session: AiEvalSession | null = null;
     try {
       session = await fsGet<AiEvalSession>(this.COLLECTION_SESSIONS, agentId);
@@ -81,14 +78,13 @@ export class AiEvalService {
     }
 
     if (isStart && session) {
-      console.log('[AiEvalService] Fresh start, discarding session');
       await fsDelete(this.COLLECTION_SESSIONS, agentId);
       session = null;
     }
 
     const actualScenarioId = (isStart && scenarioId)
       ? scenarioId
-      : (session?.scenarioId || 'level_1_round_1');
+      : (session?.scenarioId || 'level_1');
 
     let scenario: AiEvalScenario | null = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, actualScenarioId);
     if (!scenario) {
@@ -100,87 +96,43 @@ export class AiEvalService {
       session = await this.startSession(agentId, agentName || 'Agent', actualScenarioId);
     }
 
-    // c. Add user message
+    // b. Add user message
     if (userMessage && !isStart) {
       session.messages.push({
         role: 'user',
         content: userMessage,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
       session.turnCount++;
       session.turnCountInRound++;
     }
 
-    // d. Orchestration: Persona Dialogue first
-    console.log('[AiEvalService] Calling Persona AI...');
-    const personaProvider = this.determineProvider(session.messages as any, scenario);
-    let turn = await this.callPersonaAI(session, scenario, isStart, personaProvider);
-    
-    // e. Check for Round End
-    const isMaxTurns = session.turnCountInRound >= (scenario.maxTurnsPerRound || 6);
-    const isIntentEnd = turn.intent === 'buy' || turn.intent === 'hang_up';
+    // c. Single ChatGPT call — returns dialogue + verdict
+    console.log('[AiEvalService] Calling ChatGPT...');
+    const turn = await this.callChatGPT(session, scenario, isStart);
 
-    if (isMaxTurns || isIntentEnd) {
-      console.log(`[AiEvalService] Round Ended. Level: ${scenario.level}, Round: ${session.round}`);
-      
-      // Use GPT-4o (Standard) for Level 4 for elite coaching, else gpt-4o-mini
-      const evaluatorModel = scenario.level === 4 ? 'gpt-4o' : 'gpt-4o-mini';
-      const evaluation = await this.callEvaluatorAI(session, scenario, turn.dialogue, evaluatorModel);
-      
-      // Hard-coded Strict Validation: No single criteria < 5
-      const criteria = evaluation.criteria || {};
-      const hasLowScore = Object.values(criteria).some(val => val < 5);
-      const totalScore = evaluation.score || 0;
-      
-      // Update Win/Fail status based on evaluation
-      let hasPassedRound = totalScore >= scenario.passThreshold && !hasLowScore;
-      
-      // Special feedback if failed due to single low score
-      if (totalScore >= scenario.passThreshold && hasLowScore) {
-        evaluation.improvements = `⚠️ ตกเกณฑ์มาตรฐาน: แม้คะแนนรวมจะถึง แต่คุณมีบางหัวข้อที่ได้ต่ำกว่า 5 คะแนน (ต้องได้ 5+ ทุกหัวข้อถึงจะผ่าน)\n\n${evaluation.improvements}`;
-      }
-
-      const isExceptional = totalScore >= 45; 
-
-      turn = { ...turn, ...evaluation, isRoundEnd: true, score: totalScore };
-
-      if (hasPassedRound) {
-        // SKIP ROUND 2 Logic: If score >= 45, or if already in round 2
-        if (isExceptional || session.round >= (scenario.maxRounds || 2)) {
-          session.status = 'passed';
-          await this.logCompletion(session, true);
-        } else {
-          session.round++;
-          session.turnCountInRound = 0;
-        }
-      } else {
-        // FAIL Logic: If intent was hang_up or max turns reached without passing
-        // If it was the last round, it's a definitive fail
-        if (session.round >= (scenario.maxRounds || 2) || (isIntentEnd && turn.intent === 'hang_up')) {
-          session.status = 'failed';
-          await this.logCompletion(session, false);
-        } else {
-          // Retry in Round 2
-          session.round++;
-          session.turnCountInRound = 0;
-        }
-      }
+    // d. Read verdict — the system knows pass/fail directly from ChatGPT's response
+    if (turn.verdict === 'passed') {
+      session.status = 'passed';
+      session.verdictReason = turn.verdictReason || '';
+      session.coaching[session.messages.length] = turn;
+      await this.logCompletion(session, true, turn.score || 80);
+    } else if (turn.verdict === 'failed') {
+      session.status = 'failed';
+      session.verdictReason = turn.verdictReason || '';
+      session.coaching[session.messages.length] = turn;
+      await this.logCompletion(session, false, turn.score || 20);
     }
 
-    // f. Update Session State
+    // e. Append assistant message to history
     session.messages.push({
       role: 'assistant',
       content: turn.dialogue,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-    
-    if (turn.isRoundEnd) {
-      session.coaching[session.messages.length - 1] = turn;
-    }
-    
     session.lastUpdate = new Date().toISOString();
 
-    // Save
+    // f. Save or clear session
     try {
       if (session.status === 'active') {
         await fsSet(this.COLLECTION_SESSIONS, agentId, session);
@@ -195,167 +147,93 @@ export class AiEvalService {
   }
 
   /**
-   * 3. Persona Dialogue Call (Fast & Focused)
+   * 3. Single ChatGPT call — customer dialogue + verdict in one response.
+   *
+   * ChatGPT plays the customer AND evaluates the agent internally.
+   * The system reads `verdict` from the JSON response to determine pass/fail.
    */
-  private static async callPersonaAI(
-    session: AiEvalSession, 
+  private static async callChatGPT(
+    session: AiEvalSession,
     scenario: AiEvalScenario,
-    isStart: boolean,
-    provider: 'openai' | 'gemini' = 'gemini'
+    isStart: boolean
   ): Promise<AiEvalTurnResponse> {
-    
-    const isHardMode = (scenario.level || 1) >= 3;
-    const systemPrompt = `
-คุณคือลูกค้าคนไทย: ${scenario.customerPersona}
-ระดับความยาก: Level ${scenario.level || 1} ${isHardMode ? '(โหมดเข้มงวด - ปฏิเสธเก่ง สงสัยเยอะ)' : '(โหมดปกติ)'}
-บริบทสินค้า: คอร์สเทรด BrainTrade Thailand (มี Coach, AI, Campus)
 
-กติกาการสนทนา:
-- ตอบโต้สั้นๆ เป็นธรรมชาติที่สุด (ภาษาพูดคนไทย)
-- ${isHardMode ? 'คุณมีความสงสัยสูงมาก ไม่เชื่อใจง่ายๆ จะถามจี้จุดอ่อน หรือเปรียบเทียบกับคู่แข่งเสมอ' : 'คุณมีความลังเลตามปกติของลูกค้าทั่วไป'}
-- ห้ามหลุดบทบาท AI หรือ Coach เด็ดขาด
-- ห้ามให้คำแนะนำหรือประเมินพนักงานในบทสนทนา
-- อารมณ์ปัจจุบัน: ${session.currentMood}
+    const openai = getOpenAI();
+    if (!openai) throw new Error('OpenAI API key not configured. Please set OPENAI_API_KEY.');
 
-ตอบกลับเป็น JSON:
-{
-  "dialogue": "บทพูดของคุณ",
-  "intent": "continue | buy | hang_up",
-  "mood": "อารมณ์ที่เปลี่ยนไป (ถ้ามี)"
-}
-    `.trim();
+    // Use scenario.systemPrompt if set, otherwise build from legacy fields
+    const systemPrompt = scenario.systemPrompt || this.buildFallbackSystemPrompt(scenario);
 
-    const windowedHistory = session.messages.slice(-6).map(m => ({
-      role: m.role as 'user' | 'assistant',
-      content: m.content
-    }));
+    // Build conversation history (last 12 messages)
+    const history: { role: 'user' | 'assistant'; content: string }[] = session.messages
+      .slice(-12)
+      .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
-    if (isStart && windowedHistory.length === 0) {
-      windowedHistory.push({ role: 'user', content: '[ลูกค้ารับสาย]' });
+    // Seed the first turn
+    if (isStart && history.length === 0) {
+      history.push({ role: 'user', content: '[ลูกค้ารับสาย]' });
     }
 
-    let raw = '{}';
-    const geminiModel = getGeminiModel({ model: 'gemini-3.1-flash' });
-    
-    // Priority: If provider is gemini OR openai is missing, use Gemini
-    if ((provider === 'gemini' || !process.env.OPENAI_API_KEY) && geminiModel) {
-      const chat = geminiModel.startChat({
-        history: windowedHistory.map(h => ({
-          role: h.role === 'user' ? 'user' : 'model',
-          parts: [{ text: h.content }]
-        })),
-        generationConfig: { 
-          responseMimeType: 'application/json',
-          temperature: 0.8
-        }
-      });
-      const res = await chat.sendMessage(systemPrompt);
-      raw = res.response.text();
-    } else {
-      const openai = getOpenAI();
-      if (!openai) throw new Error('No AI Provider available (OpenAI/Gemini missing)');
-      const res = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'system', content: systemPrompt }, ...windowedHistory],
-        response_format: { type: 'json_object' },
-        temperature: 0.8
-      });
-      raw = res.choices[0].message.content || '{}';
-    }
+    // Level 4 uses gpt-4o for higher reasoning; other levels use gpt-4o-mini
+    const model = (scenario.level || 1) >= 4 ? 'gpt-4o' : 'gpt-4o-mini';
 
+    console.log(`[AiEvalService] Using model: ${model}, scenario level: ${scenario.level || 1}`);
+
+    const res = await openai.chat.completions.create({
+      model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...history,
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.7,
+    });
+
+    const raw = res.choices[0].message.content || '{}';
     const parsed = JSON.parse(this.cleanJson(raw));
-    
+
+    const verdict = parsed.verdict as 'continue' | 'passed' | 'failed' || 'continue';
+
     return {
-      dialogue: parsed.dialogue || "ครับ...",
-      intent: parsed.intent || "continue",
-      mood: parsed.mood || session.currentMood,
-      isRoundEnd: false
+      dialogue:      parsed.dialogue     || 'ครับ...',
+      verdict,
+      verdictReason: parsed.reason       || '',
+      score:         parsed.score        ?? undefined,
+      strengths:     parsed.strengths    || undefined,
+      improvements:  parsed.improvements || undefined,
+      coachingTip:   parsed.coachingTip  || undefined,
+      // Map verdict → legacy intent field for backward compat with existing UI
+      intent:        verdict === 'passed' ? 'buy' : verdict === 'failed' ? 'hang_up' : 'continue',
+      isRoundEnd:    verdict === 'passed' || verdict === 'failed',
     };
   }
 
   /**
-   * 4. Evaluator Call (The "Professional Coach")
+   * 4. Build a default system prompt from legacy scenario fields.
+   *    Used as fallback when scenario.systemPrompt is not set.
    */
-  private static async callEvaluatorAI(
-    session: AiEvalSession,
-    scenario: AiEvalScenario,
-    lastDialogue: string,
-    modelPreference: string = 'gemini-3.1-flash'
-  ): Promise<Partial<AiEvalTurnResponse>> {
-    
-    const transcript = session.messages.map(m => `${m.role === 'user' ? 'พนักงาน' : 'ลูกค้า'}: ${m.content}`).join('\n');
-    const fullTranscript = `${transcript}\nลูกค้า: ${lastDialogue}`;
+  private static buildFallbackSystemPrompt(scenario: AiEvalScenario): string {
+    const maxTurns = scenario.maxTurns || 12;
+    return `เล่นบทเป็นลูกค้าคนไทย: ${scenario.customerPersona || 'ลูกค้าทั่วไป'}
+อารมณ์เริ่มต้น: ${scenario.initialMood || 'ปกติ'}
+เป้าหมายของลูกค้า: ${scenario.objective || 'ต้องการข้อมูลเพิ่มเติม'}
+สินค้า: คอร์สเทรด BrainTrade Thailand — Coach 1:1 / AI วิเคราะห์ตลาด / BrainTrade Campus
 
-    const isLevel4 = scenario.level === 4;
-    const systemPrompt = `
-คุณคือ "หัวหน้าทีมขายและครูฝึกเทเลเซลล์ระดับเหรียญทอง" ที่มีความเข้มงวดสูงมาก (Strict Mentor)
-จงประเมินบทสนทนาตามเกณฑ์ 1-10 คะแนน (ให้คะแนนแบบอนุรักษ์นิยม - ไม่ให้คะแนนง่ายๆ):
+✅ PASS เมื่อ: ${scenario.winCondition || 'พนักงานตอบคำถาม สร้างความเชื่อมั่น และปิดการขายได้'}
+❌ FAIL เมื่อ: ${scenario.failCondition || 'พนักงานพูดแบบหุ่นยนต์ ไม่รับฟัง หรือหมดโอกาสแล้ว'}
 
-ระดับความคาดหวัง: Level ${scenario.level || 1} ${isLevel4 ? '(มาตรฐานสูงสุด: ต้องไร้ที่ติ)' : '(มาตรฐานมืออาชีพ)'}
+กติกา:
+- ตอบสั้นๆ เป็นธรรมชาติ ใช้ภาษาพูดคนไทย ห้ามหลุดบทบาท
+- หากสนทนาครบ ${maxTurns} ครั้งแล้วยังไม่ตัดสิน ให้ตัดสิน failed
 
-เกณฑ์การให้คะแนน:
-1. rapport: การสร้างความสัมพันธ์ (ถ้าพูดจาเป็นหุ่นยนต์ หรือไม่ฟังลูกค้า ให้ 1-4)
-2. objectionHandling: การรับมือข้อโต้แย้ง (ถ้าข้ามคำถามลูกค้า หรือตอบไม่เคลียร์ ให้ 1-4)
-3. credibility: ความน่าเชื่อถือ (ถ้าข้อมูลผิด หรือน้ำเสียงไม่มั่นใจ ให้ 1-4)
-4. closing: การปิดการขาย (ถ้าไม่พยายามปิดการขาย หรือปิดแบบยัดเยียดเกินไป ให้ 1-4)
-5. naturalness: ความเป็นธรรมชาติ (ถ้าใช้สคริปต์แข็งทื่อ หรือภาษาไม่เป็นธรรมชาติ ให้ 1-4)
+ตอบกลับเป็น JSON เสมอ:
+{"dialogue":"...","verdict":"continue","reason":"","score":null,"strengths":null,"improvements":null,"coachingTip":null}
 
-กติกาเหล็ก:
-- คะแนนรวม >= 35/50 ถึงจะผ่าน
-- **สำคัญมาก**: หากมีเกณฑ์ใดเกณฑ์หนึ่งได้ต่ำกว่า 5 คะแนน จะถือว่า "ตก" ทันที (แม้คะแนนรวมจะสูงก็ตาม)
-- สำหรับ Level 4: หากพนักงานไม่สามารถตอบคำถาม Technical หรือเลข License ได้อย่างถูกต้อง ให้คะแนน Credibility ต่ำกว่า 5 ทันที
-
-กรณีสอบตก:
-- ในส่วน "coachingScript" ให้เขียน "Golden Script" ที่สมบูรณ์แบบที่สุด เพื่อให้พนักงานเห็นภาพว่า 'มือโปร' เขาพูดกันอย่างไร
-
-ตอบกลับเป็น JSON เท่านั้น:
-{
-  "score": (คะแนนรวม 0-50),
-  "criteria": { "rapport": 0, "objectionHandling": 0, "credibility": 0, "closing": 0, "naturalness": 0 },
-  "strengths": "จุดเด่น (ถ้ามีจริงๆ)",
-  "improvements": "จุดที่ต้องปรับปรุงอย่างละเอียด",
-  "coachingScript": "Golden Script (Model Answer)",
-  "coachingTip": "เทคนิคเชิงลึกสำหรับ Level นี้"
-}
-    `.trim();
-
-    let raw = '{}';
-    // Decide Gemini model: 2.5 Pro for Level 4 (Elite), 3.1 Flash for others
-    const targetModel = isLevel4 ? 'gemini-2.5-pro' : 'gemini-3.1-flash';
-    const gemini = getGeminiModel({ model: targetModel });
-
-    if (gemini) {
-      console.log(`[AiEvalService] Using Gemini Evaluator: ${targetModel}`);
-      const result = await gemini.generateContent({
-        contents: [
-          { role: 'user', parts: [{ text: `SYSTEM: ${systemPrompt}\n\nบทสนทนาเพื่อประเมิน:\n${fullTranscript}` }] }
-        ],
-        generationConfig: {
-          responseMimeType: 'application/json',
-          temperature: 0.2,
-        }
-      });
-      raw = result.response.text();
-    } else {
-      // Fallback to OpenAI
-      const openai = getOpenAI();
-      if (!openai) throw new Error('No AI Provider Available');
-      const fallbackModel = isLevel4 ? 'gpt-4o' : 'gpt-4o-mini';
-      console.log(`[AiEvalService] Gemini missing, falling back to OpenAI: ${fallbackModel}`);
-      const res = await openai.chat.completions.create({
-        model: fallbackModel as any,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `บทสนทนา:\n${fullTranscript}` }
-        ],
-        response_format: { type: 'json_object' },
-        temperature: 0.2
-      });
-      raw = res.choices[0].message.content || '{}';
-    }
-
-    return JSON.parse(this.cleanJson(raw));
+เมื่อ verdict เป็น passed หรือ failed: ใส่ score (0-100), strengths, improvements, coachingTip
+ห้ามบอก verdict แก่พนักงานใน dialogue เด็ดขาด`;
   }
+
+  /* ─── Seed Data ──────────────────────────────────────────────────────────── */
 
   static async seedAllScenarios() {
     const scenarios: AiEvalScenario[] = [
@@ -368,6 +246,18 @@ export class AiEvalService {
         customerPersona: 'สุ่มบทบาท: 1.พนักงานออฟฟิศ ยุ่ง 2.แม่บ้าน ต้องถามสามี 3.ผู้สูงอายุ ไม่เก่งเทคโนโลยี',
         initialMood: 'ไม่สนใจ',
         objective: 'ต้องการจบการสนทนาเร็วที่สุด',
+        systemPrompt: `เล่นบทเป็นลูกค้าคนไทย สุ่มเลือก 1 บทบาท: พนักงานออฟฟิศที่ยุ่งมาก / แม่บ้านที่ต้องถามสามีก่อน / ผู้สูงอายุที่ไม่เก่งเทคโนโลยี
+สินค้า: คอร์สเทรด BrainTrade Thailand — Coach 1:1 / AI วิเคราะห์ตลาด / BrainTrade Campus
+อารมณ์เริ่มต้น: ไม่สนใจ อยากวางสายให้เร็วที่สุด ตอบสั้นๆ เป็นธรรมชาติ ห้ามหลุดบทบาท
+
+✅ PASS เมื่อ: พนักงานสร้างความสนใจเบื้องต้นได้ รับมือคำปฏิเสธอย่างเป็นธรรมชาติ ทำให้ลูกค้ายอมรับฟังข้อมูล
+❌ FAIL เมื่อ: พนักงานพูดแบบหุ่นยนต์ ไม่รับฟัง ยัดเยียดสินค้า หรือสนทนาครบ 12 ครั้งแล้ว
+
+ตอบกลับเป็น JSON เสมอ:
+{"dialogue":"...","verdict":"continue","reason":"","score":null,"strengths":null,"improvements":null,"coachingTip":null}
+
+เมื่อ verdict เป็น passed/failed: ใส่ score (0-100), strengths, improvements, coachingTip ด้วย
+ห้ามบอก verdict แก่พนักงานใน dialogue เด็ดขาด`,
         passThreshold: 35,
         requiredCriteria: ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
         maxTurnsPerRound: 6,
@@ -375,8 +265,9 @@ export class AiEvalService {
         maxTurns: 12,
         minTurnsToWin: 3,
         isActive: true,
+        bypassPrompt: 'Act as a skeptical Thai customer who is busy. If the agent handles your "too busy" objection naturally and makes you want to listen, say "PASSED".',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       },
       {
         id: 'level_2',
@@ -387,6 +278,18 @@ export class AiEvalService {
         customerPersona: 'สุ่มบทบาท: 1.นักธุรกิจ ต้องการหลักฐาน 2.Freelancer เคยขาดทุน 3.พยาบาล กลัวเสียเงินเปล่า',
         initialMood: 'ระมัดระวัง',
         objective: 'ต้องการหลักฐานความสำเร็จและเหตุผลที่ต้องจ่ายเงิน',
+        systemPrompt: `เล่นบทเป็นลูกค้าคนไทย สุ่มเลือก 1 บทบาท: นักธุรกิจที่ต้องการหลักฐานจริงจัง / Freelancer ที่เคยขาดทุนมาก่อน / พยาบาลที่กลัวเสียเงินเปล่า
+สินค้า: คอร์สเทรด BrainTrade Thailand — Coach 1:1 / AI วิเคราะห์ตลาด / BrainTrade Campus
+อารมณ์เริ่มต้น: ระมัดระวัง สงสัยมาก ต้องการหลักฐานก่อนตัดสินใจ ตอบสั้นๆ เป็นธรรมชาติ ห้ามหลุดบทบาท
+
+✅ PASS เมื่อ: พนักงานอธิบาย Coach 1:1 และระบบ AI ได้ชัดเจน มีหลักฐานความสำเร็จ ทำให้ลูกค้ามีความเชื่อมั่น
+❌ FAIL เมื่อ: พนักงานตอบกว้างๆ ไม่มีข้อมูลจริง หรือสนทนาครบ 12 ครั้งแล้ว
+
+ตอบกลับเป็น JSON เสมอ:
+{"dialogue":"...","verdict":"continue","reason":"","score":null,"strengths":null,"improvements":null,"coachingTip":null}
+
+เมื่อ verdict เป็น passed/failed: ใส่ score (0-100), strengths, improvements, coachingTip ด้วย
+ห้ามบอก verdict แก่พนักงานใน dialogue เด็ดขาด`,
         passThreshold: 35,
         requiredCriteria: ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
         maxTurnsPerRound: 6,
@@ -394,8 +297,9 @@ export class AiEvalService {
         maxTurns: 12,
         minTurnsToWin: 3,
         isActive: true,
+        bypassPrompt: 'Act as a cautious Thai customer who has lost money before. Ask for proof about the AI system and coach support. If the agent explains credibly, say "PASSED".',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       },
       {
         id: 'level_3',
@@ -406,6 +310,18 @@ export class AiEvalService {
         customerPersona: 'สุ่มบทบาท: 1.พ่อค้าออนไลน์ ต่อรองเก่ง 2.พนักงานธนาคาร รู้จักตลาด 3.นักศึกษา งบจำกัด',
         initialMood: 'ต่อรอง',
         objective: 'ต้องการส่วนลด หรือเหตุผลที่แพงกว่า YouTube/คู่แข่ง',
+        systemPrompt: `เล่นบทเป็นลูกค้าคนไทย สุ่มเลือก 1 บทบาท: พ่อค้าออนไลน์ที่ต่อรองเก่ง / พนักงานธนาคารที่รู้จักตลาด / นักศึกษางบจำกัด
+สินค้า: คอร์สเทรด BrainTrade Thailand — Coach 1:1 / AI วิเคราะห์ตลาด / BrainTrade Campus
+อารมณ์เริ่มต้น: อยากต่อรอง เปรียบเทียบกับ YouTube หรือคู่แข่งตลอด ตอบสั้นๆ เป็นธรรมชาติ ห้ามหลุดบทบาท
+
+✅ PASS เมื่อ: พนักงานรักษา Value ได้โดยไม่ลดราคา อธิบายความแตกต่างจาก YouTube ได้ชัดเจน
+❌ FAIL เมื่อ: พนักงานยอมลดราคาง่ายๆ ตอบเรื่อง Value ได้ไม่ชัด หรือสนทนาครบ 12 ครั้งแล้ว
+
+ตอบกลับเป็น JSON เสมอ:
+{"dialogue":"...","verdict":"continue","reason":"","score":null,"strengths":null,"improvements":null,"coachingTip":null}
+
+เมื่อ verdict เป็น passed/failed: ใส่ score (0-100), strengths, improvements, coachingTip ด้วย
+ห้ามบอก verdict แก่พนักงานใน dialogue เด็ดขาด`,
         passThreshold: 35,
         requiredCriteria: ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
         maxTurnsPerRound: 6,
@@ -413,8 +329,9 @@ export class AiEvalService {
         maxTurns: 12,
         minTurnsToWin: 3,
         isActive: true,
+        bypassPrompt: 'Act as a Thai customer who keeps comparing with free YouTube content. If the agent defends the value of 1:1 coaching without giving a discount, say "PASSED".',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       },
       {
         id: 'level_4',
@@ -425,6 +342,18 @@ export class AiEvalService {
         customerPersona: 'สุ่มบทบาท: 1.เหยื่อแชร์ลูกโซ่ ไม่ไว้ใจใคร 2.นักลงทุนมืออาชีพ ถาม Technical 3.ลูกค้าอารมณ์ร้อน กดดัน',
         initialMood: 'ไม่พอใจ/ท้าทาย',
         objective: 'ต้องการทดสอบความรู้จริงของพนักงานและเลข License',
+        systemPrompt: `เล่นบทเป็นลูกค้าคนไทย สุ่มเลือก 1 บทบาท: เหยื่อแชร์ลูกโซ่ที่ไม่ไว้ใจใคร / นักลงทุนมืออาชีพที่ถามเชิงเทคนิค / ลูกค้าอารมณ์ร้อนที่กดดัน
+สินค้า: คอร์สเทรด BrainTrade Thailand — Coach 1:1 / AI วิเคราะห์ตลาด / BrainTrade Campus
+อารมณ์เริ่มต้น: ไม่พอใจ ท้าทาย กดดัน ถามจี้เรื่อง License และข้อมูล Technical ตอบสั้นๆ เป็นธรรมชาติ ห้ามหลุดบทบาท
+
+✅ PASS เมื่อ: พนักงานสงบ มืออาชีพ ตอบคำถาม Technical และ License ได้ถูกต้อง รับมือแรงกดดันได้
+❌ FAIL เมื่อ: พนักงานหลุดอารมณ์ ตอบข้อมูลผิด หรือสนทนาครบ 12 ครั้งแล้ว
+
+ตอบกลับเป็น JSON เสมอ:
+{"dialogue":"...","verdict":"continue","reason":"","score":null,"strengths":null,"improvements":null,"coachingTip":null}
+
+เมื่อ verdict เป็น passed/failed: ใส่ score (0-100), strengths, improvements, coachingTip ด้วย
+ห้ามบอก verdict แก่พนักงานใน dialogue เด็ดขาด`,
         passThreshold: 40,
         requiredCriteria: ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
         maxTurnsPerRound: 6,
@@ -432,9 +361,10 @@ export class AiEvalService {
         maxTurns: 12,
         minTurnsToWin: 3,
         isActive: true,
+        bypassPrompt: 'Act as an aggressive Thai investor. Demand the company license number and technical details about the AI. If the agent stays professional under pressure and gives accurate info, say "PASSED".',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
+        updatedAt: new Date().toISOString(),
+      },
     ];
 
     for (const s of scenarios) {
@@ -442,38 +372,36 @@ export class AiEvalService {
     }
   }
 
-  /* ─── Helpers ───────────────────────────────────────────────────────────── */
-
-  private static determineProvider(messages: PitchMessage[], scenario?: AiEvalScenario): 'openai' | 'gemini' {
-    const hasGemini = !!process.env.GEMINI_API_KEY;
-    if (hasGemini) return 'gemini';
-    
-    return !!process.env.OPENAI_API_KEY ? 'openai' : 'gemini';
-  }
+  /* ─── Helpers ────────────────────────────────────────────────────────────── */
 
   private static cleanJson(raw: string): string {
     return raw.replace(/```json/g, '').replace(/```/g, '').trim();
   }
 
-  private static async logCompletion(session: AiEvalSession, passed: boolean) {
+  /**
+   * Log a completed evaluation to ai_eval_logs_v2 and update agent_progress.
+   * score is 0-100, returned by ChatGPT in the verdict response.
+   */
+  private static async logCompletion(session: AiEvalSession, passed: boolean, score: number) {
     const scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, session.scenarioId);
-    const difficultyMap: Record<string, number> = { 'beginner': 1, 'intermediate': 2, 'advanced': 3, 'expert': 4 };
-    const level = scenario ? difficultyMap[scenario.difficulty] || 1 : 1;
+    const level = scenario?.level || session.level || 1;
 
     await fsAdd(this.COLLECTION_LOGS, {
-      agentId: session.agentId,
-      agentName: session.agentName,
-      scenarioId: session.scenarioId,
-      difficulty: scenario?.difficulty || 'beginner',
+      agentId:        session.agentId,
+      agentName:      session.agentName,
+      scenarioId:     session.scenarioId,
+      level,
+      difficulty:     scenario?.difficulty || 'beginner',
       passed,
+      score,
       finalTurnCount: session.turnCount,
-      timestamp: new Date().toISOString()
+      timestamp:      new Date().toISOString(),
     });
-    
+
     if (passed) {
-      // Update global progress
-      const existing = await fsGet<any>('agent_progress', session.agentId) || { agentId: session.agentId, evalCompletedLevels: [], evalPassedScenarios: [] };
-      const levels = Array.from(new Set([...(existing.evalCompletedLevels || []), level])).sort();
+      const existing = await fsGet<any>('agent_progress', session.agentId)
+        || { agentId: session.agentId, evalCompletedLevels: [], evalPassedScenarios: [] };
+      const levels    = Array.from(new Set([...(existing.evalCompletedLevels || []), level])).sort();
       const scenarios = Array.from(new Set([...(existing.evalPassedScenarios || []), session.scenarioId]));
       await fsSet('agent_progress', session.agentId, { ...existing, evalCompletedLevels: levels, evalPassedScenarios: scenarios });
     }
@@ -485,10 +413,23 @@ export class AiEvalService {
       name: 'ลูกค้าทั่วไป (มือใหม่)',
       description: 'ลูกค้าคนไทยที่สนใจการลงทุนแต่ยังลังเลเรื่องความปลอดภัยและความคุ้มค่า',
       difficulty: 'beginner',
+      level: 1,
       customerPersona: 'ชื่อ สมชาย อายุ 45 ทำธุรกิจส่วนตัว มีเงินเย็นแต่กลัวโดนหลอก เคยเล่นหุ้นไทยนิดหน่อย ไม่รู้จัก BrainTrade',
       initialMood: 'สงสัยและระมัดระวัง',
       objective: 'ต้องการความมั่นใจว่า BrainTrade มีคนสอนจริงๆ ไม่ใช่แค่ส่งวิดีโอมาให้ดู',
-      passThreshold: 7,
+      systemPrompt: `เล่นบทเป็น สมชาย อายุ 45 เจ้าของธุรกิจส่วนตัว มีเงินเย็นแต่กลัวโดนหลอก เคยเล่นหุ้นไทยนิดหน่อย ไม่รู้จัก BrainTrade
+สินค้า: คอร์สเทรด BrainTrade Thailand — Coach 1:1 / AI วิเคราะห์ตลาด / BrainTrade Campus
+อารมณ์เริ่มต้น: สงสัยและระมัดระวัง ตอบสั้นๆ เป็นธรรมชาติ ห้ามหลุดบทบาท
+
+✅ PASS เมื่อ: พนักงานอธิบายเรื่อง Coach 1:1 ได้ชัดเจนและจริงใจ ทำให้ลูกค้ามีความเชื่อมั่น
+❌ FAIL เมื่อ: พนักงานพูดจาเป็นหุ่นยนต์ ไม่ตอบคำถามเรื่องความปลอดภัย หรือสนทนาครบ 12 ครั้งแล้ว
+
+ตอบกลับเป็น JSON เสมอ:
+{"dialogue":"...","verdict":"continue","reason":"","score":null,"strengths":null,"improvements":null,"coachingTip":null}
+
+เมื่อ verdict เป็น passed/failed: ใส่ score (0-100), strengths, improvements, coachingTip ด้วย
+ห้ามบอก verdict แก่พนักงานใน dialogue เด็ดขาด`,
+      passThreshold: 35,
       requiredCriteria: ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
       maxTurns: 12,
       maxTurnsPerRound: 6,
@@ -498,7 +439,7 @@ export class AiEvalService {
       failCondition: 'เมื่อเซลล์พูดจาเป็นหุ่นยนต์ หรือไม่ตอบคำถามเรื่องความปลอดภัย',
       isActive: true,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
     await fsSet(this.COLLECTION_SCENARIOS, 'default', scenario);
     return scenario;

@@ -73,6 +73,8 @@ export interface AgentStats {
       timestamp: string;
       manualOverride?: boolean;
       overriddenBy?: string;
+      isBypassed?: boolean;
+      bypassReason?: string;
     }[];
     /** per-level breakdown so staff can see where agents struggle */
     levels: {
