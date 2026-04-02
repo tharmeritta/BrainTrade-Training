@@ -16,7 +16,7 @@
  * clutter the full-page onboarding experience.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AgentEntry from '@/components/features/AgentEntry';
 import AgentTrainingHub from '@/components/features/AgentTrainingHub';
@@ -42,58 +42,57 @@ export default function DashboardPage() {
     }
   }, []);
 
+  const fetchStats = useCallback(() => {
+    if (!agentId) return;
+    const ts = Date.now();
+    fetch(`/api/agent/progress?agentId=${agentId}&agentName=${encodeURIComponent(agentName ?? '')}&t=${ts}`, {
+      cache: 'no-store'
+    })
+      .then(r => r.json())
+      .then(d => {
+        const serverStats = d.stats ?? null;
+        setStats(serverStats);
+        // Mirror progress to localStorage so the browser has a copy
+        if (serverStats && agentId) {
+          saveProgress(agentId, {
+            agentId,
+            agentName: agentName ?? '',
+            evalCompletedLevels: serverStats.evalCompletedLevels ?? [],
+            learnedModules: serverStats.learnedModules ?? [],
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      })
+      .catch(() => {
+        // Server unreachable — load from localStorage backup
+        const cached = agentId ? getProgress(agentId) : null;
+        if (cached) {
+          setStats({
+            agent: { id: agentId, name: agentName ?? '', active: true, createdAt: new Date() },
+            quiz: {},
+            aiEval: null,
+            lastActive: cached.updatedAt ?? null,
+            evalCompletedLevels: cached.evalCompletedLevels ?? [],
+            learnedModules: cached.learnedModules ?? [],
+            overallScore: 0,
+            badge: 'needs-work',
+          } as AgentStats);
+        } else {
+          setStats(null);
+        }
+      });
+  }, [agentId, agentName]);
+
   // Fetch agent progress whenever agentId changes.
-  // Falls back to localStorage cache if the server is unreachable.
   useEffect(() => {
     if (!agentId) return;
-    
-    const fetchStats = () => {
-      const ts = Date.now();
-      fetch(`/api/agent/progress?agentId=${agentId}&agentName=${encodeURIComponent(agentName ?? '')}&t=${ts}`, {
-        cache: 'no-store'
-      })
-        .then(r => r.json())
-        .then(d => {
-          const serverStats = d.stats ?? null;
-          setStats(serverStats);
-          // Mirror progress to localStorage so the browser has a copy
-          if (serverStats && agentId) {
-            saveProgress(agentId, {
-              agentId,
-              agentName: agentName ?? '',
-              evalCompletedLevels: serverStats.evalCompletedLevels ?? [],
-              learnedModules: serverStats.learnedModules ?? [],
-              updatedAt: new Date().toISOString(),
-            });
-          }
-        })
-        .catch(() => {
-          // Server unreachable — load from localStorage backup
-          const cached = agentId ? getProgress(agentId) : null;
-          if (cached) {
-            setStats({
-              agent: { id: agentId, name: agentName ?? '', active: true, createdAt: new Date() },
-              quiz: {},
-              aiEval: null,
-              lastActive: cached.updatedAt ?? null,
-              evalCompletedLevels: cached.evalCompletedLevels ?? [],
-              learnedModules: cached.learnedModules ?? [],
-              overallScore: 0,
-              badge: 'needs-work',
-            } as AgentStats);
-          } else {
-            setStats(null);
-          }
-        });
-    };
-
     fetchStats();
 
     // Listen for custom event to refresh when mockup simulation toggles
     const handleRefresh = () => fetchStats();
     window.addEventListener('agent-stats-refresh', handleRefresh);
     return () => window.removeEventListener('agent-stats-refresh', handleRefresh);
-  }, [agentId, agentName]);
+  }, [agentId, fetchStats]);
 
   function handleAgentSelected(id: string, name: string, stageName: string) {
     setAgentId(id);
@@ -136,6 +135,7 @@ export default function DashboardPage() {
             agentStageName={agentStageName}
             stats={stats}
             onLogout={handleLogout}
+            refresh={fetchStats}
           />
         </motion.div>
       )}

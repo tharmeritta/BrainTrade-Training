@@ -147,7 +147,11 @@ export default function AgentsTab({ role, readOnly }: { role: 'admin' | 'manager
     <div className="space-y-6">
       <AnimatePresence>
         {selectedForDetail && (
-          <AgentDetailModal stats={selectedForDetail} onClose={() => setSelectedForDetail(null)} />
+          <AgentDetailModal 
+            stats={selectedForDetail} 
+            onClose={() => setSelectedForDetail(null)} 
+            onRefresh={load}
+          />
         )}
       </AnimatePresence>
 

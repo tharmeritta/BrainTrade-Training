@@ -3,13 +3,22 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { Target, Zap, TrendingUp, ClipboardCheck, X, Clock, GraduationCap } from 'lucide-react';
+import { Target, Zap, TrendingUp, ClipboardCheck, X, Clock, GraduationCap, ShieldCheck, Loader2 } from 'lucide-react';
 import type { AgentStats } from '@/types';
 import { BadgePill } from './AdminComponents';
 import { scoreColor, timeAgo } from './AdminHelpers';
 
-function DetailedQuizHistory({ stats }: { stats: AgentStats }) {
+function DetailedQuizHistory({ stats, onOverride }: { stats: AgentStats, onOverride: (mod: string, type: 'quiz') => Promise<void> }) {
   const t = useTranslations('admin');
+  const [loading, setLoading] = useState<string | null>(null);
+
+  const handleOverride = async (mod: string) => {
+    if (!confirm(`Are you sure you want to manually mark "${mod}" as PASSED for ${stats.agent.name}?`)) return;
+    setLoading(mod);
+    await onOverride(mod, 'quiz');
+    setLoading(null);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
@@ -19,10 +28,24 @@ function DetailedQuizHistory({ stats }: { stats: AgentStats }) {
       {(['foundation', 'product', 'process', 'payment'] as const).map(topic => {
         const q = stats.quiz[topic];
         const history = q?.history || [];
+        const isPassed = q?.passed || history.some(h => h.passed);
+
         return (
           <div key={topic} className="bg-secondary/20 rounded-2xl p-4 border border-border/50">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-bold capitalize text-foreground">{t(`modules.${topic}`)}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold capitalize text-foreground">{t(`modules.${topic}`)}</span>
+                {!isPassed && (
+                  <button 
+                    onClick={() => handleOverride(topic)}
+                    disabled={loading === topic}
+                    className="p-1 rounded-md bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 transition-all"
+                    title="Manual Pass Override"
+                  >
+                    {loading === topic ? <Loader2 size={12} className="animate-spin" /> : <ShieldCheck size={12} />}
+                  </button>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 <span className={`text-xs font-black ${scoreColor(q?.bestScore)}`}>{t('agentDetail.best')}: {q?.bestScore ?? 0}%</span>
                 <span className="text-[10px] text-muted-foreground uppercase">{t('agentDetail.attempts', { count: q?.attempts ?? 0 })}</span>
@@ -37,6 +60,7 @@ function DetailedQuizHistory({ stats }: { stats: AgentStats }) {
                     <span className={`w-1.5 h-1.5 rounded-full ${h.passed ? 'bg-blue-500' : 'bg-red-500'}`} />
                     <span className="font-medium text-foreground">{h.score}/{h.total}</span>
                     <span className="text-muted-foreground">({Math.round(h.score/h.total*100)}%)</span>
+                    {h.manualOverride && <span className="text-[8px] font-black uppercase bg-blue-500/10 text-blue-500 px-1 rounded ml-1">Manual Override</span>}
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={`font-bold uppercase text-[9px] ${h.passed ? 'text-blue-500' : 'text-red-500'}`}>
@@ -54,10 +78,18 @@ function DetailedQuizHistory({ stats }: { stats: AgentStats }) {
   );
 }
 
-function DetailedAiEvalHistory({ stats }: { stats: AgentStats }) {
+function DetailedAiEvalHistory({ stats, onOverride }: { stats: AgentStats, onOverride: (mod: string, type: 'ai-eval') => Promise<void> }) {
   const t = useTranslations('admin');
+  const [loading, setLoading] = useState<number | null>(null);
   const history = stats.aiEval?.history || [];
   const locale  = t('tabs.overview') === 'ภาพรวม' ? 'th-TH' : 'en-GB';
+
+  const handleOverride = async (lv: number) => {
+    if (!confirm(`Are you sure you want to manually mark Level ${lv} as PASSED for ${stats.agent.name}?`)) return;
+    setLoading(lv);
+    await onOverride(lv.toString(), 'ai-eval');
+    setLoading(null);
+  };
 
   return (
     <div className="space-y-4">
@@ -72,17 +104,38 @@ function DetailedAiEvalHistory({ stats }: { stats: AgentStats }) {
           {([1, 2, 3, 4] as const).map(lv => {
             const lvData = stats.aiEval?.levels?.[lv];
             const lvHistory = history.filter(h => h.level === lv);
+            const isPassed = lvData?.passed;
+
             if (!lvData) return (
-              <div key={lv} className="flex items-center gap-4 bg-secondary/10 p-4 rounded-2xl border border-dashed border-border/40 opacity-40">
+              <div key={lv} className="flex items-center gap-4 bg-secondary/10 p-4 rounded-2xl border border-dashed border-border/40 opacity-40 group relative">
                 <div className="w-12 h-12 rounded-xl bg-secondary flex flex-col items-center justify-center border border-border">
                   <span className="text-[10px] font-bold text-muted-foreground uppercase leading-none mb-0.5">{t('agentDetail.lvl')}</span>
                   <span className="text-lg font-black text-muted-foreground leading-none">{lv}</span>
                 </div>
                 <span className="text-xs text-muted-foreground/50">{t('agentDetail.noAttempts')}</span>
+                <button 
+                  onClick={() => handleOverride(lv)}
+                  disabled={loading === lv}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 transition-all opacity-0 group-hover:opacity-100"
+                  title="Manual Pass Override"
+                >
+                  {loading === lv ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+                </button>
               </div>
             );
+
             return (
-              <div key={lv} className="bg-secondary/20 rounded-2xl border border-border/50 overflow-hidden">
+              <div key={lv} className="bg-secondary/20 rounded-2xl border border-border/50 overflow-hidden group relative">
+                {!isPassed && (
+                   <button 
+                    onClick={() => handleOverride(lv)}
+                    disabled={loading === lv}
+                    className="absolute right-4 top-4 p-1.5 rounded-lg bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 transition-all opacity-0 group-hover:opacity-100 z-10"
+                    title="Manual Pass Override"
+                  >
+                    {loading === lv ? <Loader2 size={14} className="animate-spin" /> : <ShieldCheck size={14} />}
+                  </button>
+                )}
                 {/* Level header */}
                 <div className="flex items-center gap-4 p-4">
                   <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center border shrink-0 ${lvData.passed ? 'bg-purple-500/10 border-purple-500/20' : 'bg-amber-500/10 border-amber-500/20'}`}>
@@ -116,6 +169,7 @@ function DetailedAiEvalHistory({ stats }: { stats: AgentStats }) {
                         <div className="flex items-center gap-2">
                           <span className={`w-1.5 h-1.5 rounded-full ${h.passed ? 'bg-purple-400' : 'bg-amber-400'}`} />
                           <span className={`font-bold ${scoreColor(h.score)}`}>{h.score}/100</span>
+                          {h.manualOverride && <span className="text-[8px] font-black uppercase bg-purple-500/10 text-purple-500 px-1 rounded ml-1">Manual Override</span>}
                         </div>
                         <div className="flex items-center gap-2">
                           <span className={`font-bold uppercase text-[9px] ${h.passed ? 'text-purple-400' : 'text-amber-400'}`}>
@@ -178,9 +232,24 @@ function DetailedHumanEvaluations({ stats }: { stats: AgentStats }) {
   );
 }
 
-export default function AgentDetailModal({ stats, onClose }: { stats: AgentStats; onClose: () => void }) {
+export default function AgentDetailModal({ stats, onClose, onRefresh }: { stats: AgentStats; onClose: () => void; onRefresh?: () => void }) {
   const t = useTranslations('admin');
   const [activeTab, setActiveTab] = useState<'quiz' | 'ai' | 'qa'>('quiz');
+
+  const handleOverride = async (moduleId: string, type: 'quiz' | 'ai-eval') => {
+    try {
+      const res = await fetch('/api/admin/agents/override', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId: stats.agent.id, moduleId, type })
+      });
+      if (res.ok) {
+        if (onRefresh) onRefresh();
+      }
+    } catch (err) {
+      console.error('Override failed:', err);
+    }
+  };
 
   return (
     <motion.div
@@ -251,8 +320,8 @@ export default function AgentDetailModal({ stats, onClose }: { stats: AgentStats
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.2 }}
             >
-              {activeTab === 'quiz'  && <DetailedQuizHistory stats={stats} />}
-              {activeTab === 'ai'    && <DetailedAiEvalHistory stats={stats} />}
+              {activeTab === 'quiz'  && <DetailedQuizHistory stats={stats} onOverride={handleOverride} />}
+              {activeTab === 'ai'    && <DetailedAiEvalHistory stats={stats} onOverride={handleOverride} />}
               {activeTab === 'qa'    && <DetailedHumanEvaluations stats={stats} />}
             </motion.div>
           </AnimatePresence>

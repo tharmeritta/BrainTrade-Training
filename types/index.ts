@@ -52,14 +52,28 @@ export interface AgentStats {
       bestScore: number;
       passed: boolean;
       attempts: number;
-      history: { score: number; total: number; passed: boolean; timestamp: string }[];
+      history: { 
+        score: number; 
+        total: number; 
+        passed: boolean; 
+        timestamp: string;
+        manualOverride?: boolean;
+        overriddenBy?: string;
+      }[];
     }
   };
   /** AI evaluation summary */
   aiEval: {
     avgScore: number;
     count: number;
-    history: { score: number; level: number; passed: boolean; timestamp: string }[];
+    history: { 
+      score: number; 
+      level: number; 
+      passed: boolean; 
+      timestamp: string;
+      manualOverride?: boolean;
+      overriddenBy?: string;
+    }[];
     /** per-level breakdown so staff can see where agents struggle */
     levels: {
       [level: number]: {

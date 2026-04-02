@@ -1,8 +1,8 @@
 'use client';
 
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { LogOut, CheckCircle2, Lock, Trophy, Target, ChevronRight } from 'lucide-react';
+import { LogOut, CheckCircle2, Lock, Trophy, Target, ChevronRight, RefreshCw } from 'lucide-react';
 import { ScoreRing } from '@/components/ui/ScoreRing';
 import { FADE_IN, EASE, TRANSITION } from '@/lib/animations';
 import { StepState } from '@/lib/training';
@@ -21,6 +21,7 @@ interface ProfileSidebarProps {
   pct: number;
   derived: Record<string, StepState>;
   onLogout: () => void;
+  onSync?: () => Promise<void>;
   t: (key: string, values?: any) => string;
   navT: (key: string) => string;
   locale: string;
@@ -50,10 +51,20 @@ export const ProfileSidebar = memo(({
   pct,
   derived,
   onLogout,
+  onSync,
   t,
   navT,
   locale
 }: ProfileSidebarProps) => {
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSync = async () => {
+    if (!onSync || syncing) return;
+    setSyncing(true);
+    await onSync();
+    setSyncing(false);
+  };
+
   return (
     <motion.div
       variants={FADE_IN}
@@ -191,6 +202,18 @@ export const ProfileSidebar = memo(({
       </div>
 
       <div className="mt-auto w-full pt-8 flex flex-col gap-3 items-center">
+        {onSync && (
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-medium transition-all
+              text-[color:var(--hub-muted)] border border-[color:var(--hub-border)]
+              hover:text-primary hover:border-primary/30 hover:bg-primary/5 w-full justify-center disabled:opacity-50"
+          >
+            <RefreshCw size={12} className={syncing ? 'animate-spin' : ''} />
+            <span>{syncing ? 'Syncing...' : 'Sync Progress'}</span>
+          </button>
+        )}
         <button
           onClick={onLogout}
           className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-medium transition-all

@@ -31,13 +31,29 @@ interface Props {
   agentStageName?: string;
   stats: AgentStats | null;
   onLogout: () => void;
+  refresh?: () => void;
 }
 
-export default function AgentTrainingHub({ agentName, agentId, agentStageName, stats, onLogout }: Props) {
+export default function AgentTrainingHub({ agentName, agentId, agentStageName, stats, onLogout, refresh }: Props) {
   const t         = useTranslations('trainingHub');
   const navT      = useTranslations('nav');
   const pathname  = usePathname();
   const locale    = pathname.split('/')[1] ?? 'th';
+
+  const handleSync = async () => {
+    try {
+      const res = await fetch('/api/agent/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId })
+      });
+      if (res.ok && refresh) {
+        refresh();
+      }
+    } catch (err) {
+      console.error('Sync failed:', err);
+    }
+  };
   
   const derived = useMemo(() => deriveSteps(stats), [stats]);
 
@@ -87,6 +103,7 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
         pct={pct}
         derived={derived}
         onLogout={onLogout}
+        onSync={handleSync}
         t={t}
         navT={navT}
         locale={locale}

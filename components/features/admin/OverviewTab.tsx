@@ -1,25 +1,31 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { Users, Target, Award, Activity, TrendingUp, BookOpen, Zap, Loader2, CheckCircle2, Clock, AlertCircle, ShieldCheck, type LucideIcon } from 'lucide-react';
-import type { AdminOverviewData } from '@/types';
+import type { AdminOverviewData, AgentStats } from '@/types';
 import { KpiCard, DonutChart, ModuleBar, BadgePill, StatusPipeline, LivePulse } from './AdminComponents';
 import { scoreColor, scoreBg, timeAgo } from './AdminHelpers';
 import { getCompletionStatus, type CompletionStatus } from '@/lib/completion';
 import { fetchWithCache } from '@/lib/fetcher';
+import AgentDetailModal from './AgentDetailModal';
 
 export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
   const t = useTranslations('admin');
   const [data,    setData]    = useState<AdminOverviewData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedForDetail, setSelectedForDetail] = useState<AgentStats | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const ovData = await fetchWithCache<AdminOverviewData>('/api/admin/overview');
-      setData(ovData);
+      // Use noCache to ensure overrides are reflected
+      const res = await fetch('/api/admin/overview');
+      if (res.ok) {
+        const ovData = await res.json();
+        setData(ovData);
+      }
     } catch (err) {
       console.error('Overview fetching error:', err);
     } finally {
@@ -30,6 +36,10 @@ export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
   useEffect(() => {
     load();
   }, [load]);
+
+  const handleViewAgent = (agent: AgentStats) => {
+    setSelectedForDetail(agent);
+  };
 
   if (loading && !data) return (
     <div className="flex flex-col items-center justify-center h-64 gap-4">
@@ -61,6 +71,16 @@ export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
 
   return (
     <div className="space-y-8">
+      <AnimatePresence>
+        {selectedForDetail && (
+          <AgentDetailModal 
+            stats={selectedForDetail} 
+            onClose={() => setSelectedForDetail(null)} 
+            onRefresh={load}
+          />
+        )}
+      </AnimatePresence>
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard 
           label={t('overview.totalAgents')} 
@@ -141,7 +161,12 @@ export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
                         return (
                           <tr key={a.agent.id} className="hover:bg-secondary/20 transition-colors">
                             <td className="px-4 py-3">
-                              <div className="font-semibold text-foreground text-xs">{a.agent.name}</div>
+                              <button 
+                                onClick={() => handleViewAgent(a)}
+                                className="font-semibold text-foreground text-xs hover:text-primary transition-colors text-left"
+                              >
+                                {a.agent.name}
+                              </button>
                               {a.agent.stageName && <div className="text-[10px] text-primary/60">&quot;{a.agent.stageName}&quot;</div>}
                             </td>
                             <td className="px-3 py-3 text-center">
@@ -350,7 +375,12 @@ export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-foreground truncate">{agent.agent.name}</span>
+                  <button 
+                    onClick={() => handleViewAgent(agent)}
+                    className="font-semibold text-foreground truncate hover:text-primary transition-colors"
+                  >
+                    {agent.agent.name}
+                  </button>
                   <BadgePill badge={agent.badge} />
                 </div>
                 <div className="flex gap-3 mt-1">
