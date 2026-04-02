@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireAdminManagerOrTrainer } from '@/lib/session';
 import { fsGetAll } from '@/lib/firestore-db';
 import { computeOverallScore, computeBadge } from '@/lib/agents';
+import { getCanonicalQuizKey } from '@/lib/registry';
 import type { AdminOverviewData, Agent, AgentStats, ModuleStat, AgentEvaluation } from '@/types';
 
 const EMPTY: AdminOverviewData = {
@@ -46,7 +47,7 @@ export async function GET() {
       // Quiz per module
       const quiz: AgentStats['quiz'] = {};
       for (const mod of MODULES) {
-        const results = quizDocs.filter(r => r.agentId === agent.id && r.moduleId === mod);
+        const results = quizDocs.filter(r => r.agentId === agent.id && getCanonicalQuizKey(r.moduleId) === mod);
         if (results.length > 0) {
           quiz[mod] = {
             bestScore: Math.max(...results.map(r => Math.round((r.score / r.totalQuestions) * 100))),
@@ -84,7 +85,7 @@ export async function GET() {
       const progress       = progressDocs.find(p => p.agentId === agent.id);
       const evalCompleted  = progress?.evalCompletedLevels ?? [];
       const evalPassedScenarios = progress?.evalPassedScenarios ?? [];
-      const learnedModules = progress?.learnedModules ?? [];
+      const learnedModules = (progress?.learnedModules ?? []).map(getCanonicalQuizKey);
       const myHumanEvals   = humanEvals.filter(h => h.agentId === agent.id).sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
 
       const allTimes = [
@@ -120,7 +121,7 @@ export async function GET() {
       },
       { 
         moduleId: 'quiz', label: 'Quiz', 
-        passCount: activeAgents.filter(a => MODULES.every(m => quizDocs.filter(q => q.agentId === a.id && q.moduleId === m).some(q => q.passed))).length,
+        passCount: activeAgents.filter(a => MODULES.every(m => quizDocs.filter(q => q.agentId === a.id && getCanonicalQuizKey(q.moduleId) === m).some(q => q.passed))).length,
         avgScore: 0, totalAttempts: totalAgents 
       },
       { 
