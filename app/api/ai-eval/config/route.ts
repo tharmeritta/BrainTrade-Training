@@ -33,9 +33,10 @@ export async function GET(req: NextRequest) {
     const unlockMode = configData?.unlockMode || 'sequential';
     const scenarios = scenariosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
     
-    // Check for Master Sandbox Scenario
+    // Check for Master Sandbox Scenario (only if globally enabled)
+    const sandboxEnabled = configData?.sandboxModeEnabled || false;
     const masterScenario = scenarios.find(s => s.isMaster === true && s.isActive === true);
-    const masterScenarioId = masterScenario?.id || null;
+    const masterScenarioId = (sandboxEnabled && masterScenario) ? masterScenario.id : null;
     
     // Dynamic Level Completion Logic
     const progressData = progressDoc?.exists ? progressDoc.data() : {};

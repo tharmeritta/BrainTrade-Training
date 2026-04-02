@@ -86,25 +86,32 @@ export default function AiScenarioImportModal({ onClose, onSuccess }: AiScenario
       const json = XLSX.utils.sheet_to_json(sheet) as any[];
 
       const scenarios = json
-        .map(row => ({
-          name: row.Name || row.name || row['ชื่อ'] || row['ชื่อสถานการณ์'],
-          difficulty: (row.Difficulty || row.difficulty || row['ความยาก'] || 'beginner').toLowerCase(),
-          passThreshold: parseInt(row.Threshold || row.threshold || row.passThreshold || row['เกณฑ์คะแนน'] || row['คะแนนผ่าน'] || 7),
-          systemPrompt: row.SystemPrompt || row.systemPrompt || row['พรอมต์ระบบ'] || row['คำสั่งระบบ'],
-          isMaster: row.IsMaster === true || row.isMaster === true || row.IsMaster === 'TRUE' || row.isMaster === 'true' || row['แซนด์บ็อกซ์'] === 'TRUE',
-          customerPersona: row.Persona || row.persona || row.customerPersona || row['บุคลิกลูกค้า'] || row['ข้อมูลลูกค้า'],
-          objective: row.Objective || row.objective || row['วัตถุประสงค์'],
-          initialMood: row.Mood || row.mood || row.initialMood || row['อารมณ์'],
-          maxTurns: parseInt(row.MaxTurns || row.maxTurns || row['รอบสูงสุด'] || row['จำนวนรอบ'] || 12),
-          winCondition: row.WinHint || row.winHint || row.winCondition || row['เงื่อนไขการชนะ'] || row['คำแนะนำการชนะ'],
-          failCondition: row.FailHint || row.failHint || row.failCondition || row['เงื่อนไขการแพ้'] || row['คำแนะนำการแพ้'],
-          requiredCriteria: (() => {
-            const raw = row.Criteria || row.criteria || row.requiredCriteria || row['เกณฑ์การประเมิน'];
-            if (!raw) return ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'];
-            return String(raw).split(',').map((s: string) => s.trim()).filter(Boolean);
-          })(),
-          isActive: true
-        }))
+        .map(row => {
+          const difficulty = (row.Difficulty || row.difficulty || row['ความยาก'] || 'beginner').toLowerCase();
+          const levelMap: Record<string, number> = { beginner: 1, intermediate: 2, advanced: 3, expert: 4 };
+          const level = levelMap[difficulty] || 1;
+
+          return {
+            name: row.Name || row.name || row['ชื่อ'] || row['ชื่อสถานการณ์'],
+            difficulty,
+            level,
+            passThreshold: parseInt(row.Threshold || row.threshold || row.passThreshold || row['เกณฑ์คะแนน'] || row['คะแนนผ่าน'] || 7),
+            systemPrompt: row.SystemPrompt || row.systemPrompt || row['พรอมต์ระบบ'] || row['คำสั่งระบบ'],
+            isMaster: row.IsMaster === true || row.isMaster === true || row.IsMaster === 'TRUE' || row.isMaster === 'true' || row['แซนด์บ็อกซ์'] === 'TRUE',
+            customerPersona: row.Persona || row.persona || row.customerPersona || row['บุคลิกลูกค้า'] || row['ข้อมูลลูกค้า'],
+            objective: row.Objective || row.objective || row['วัตถุประสงค์'],
+            initialMood: row.Mood || row.mood || row.initialMood || row['อารมณ์'],
+            maxTurns: parseInt(row.MaxTurns || row.maxTurns || row['รอบสูงสุด'] || row['จำนวนรอบ'] || 12),
+            winCondition: row.WinHint || row.winHint || row.winCondition || row['เงื่อนไขการชนะ'] || row['คำแนะนำการชนะ'],
+            failCondition: row.FailHint || row.failHint || row.failCondition || row['เงื่อนไขการแพ้'] || row['คำแนะนำการแพ้'],
+            requiredCriteria: (() => {
+              const raw = row.Criteria || row.criteria || row.requiredCriteria || row['เกณฑ์การประเมิน'];
+              if (!raw) return ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'];
+              return String(raw).split(',').map((s: string) => s.trim()).filter(Boolean);
+            })(),
+            isActive: true
+          };
+        })
         .filter(s => s.name && s.customerPersona);
 
       if (scenarios.length === 0) {

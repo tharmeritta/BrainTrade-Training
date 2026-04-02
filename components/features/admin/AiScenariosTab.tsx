@@ -527,7 +527,18 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
   const handleEdit = (s: AiEvalScenario) => {
     setIsCreating(false);
     setEditingId(s.id);
-    setEditForm(s);
+    // Ensure level is present based on difficulty if missing
+    const levelMap: Record<string, number> = { beginner: 1, intermediate: 2, advanced: 3, expert: 4 };
+    setEditForm({ ...s, level: s.level || levelMap[s.difficulty] || 1 });
+  };
+
+  const handleFormChange = (newForm: Partial<AiEvalScenario>) => {
+    // Sync level if difficulty changed
+    if (newForm.difficulty !== editForm.difficulty && newForm.difficulty) {
+      const levelMap: Record<string, number> = { beginner: 1, intermediate: 2, advanced: 3, expert: 4 };
+      newForm.level = levelMap[newForm.difficulty] || 1;
+    }
+    setEditForm(newForm);
   };
 
   const cancelForm = () => { setEditingId(null); setIsCreating(false); setEditForm(EMPTY_FORM); };
@@ -668,7 +679,7 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
           <ScenarioForm
             form={editForm}
             isCreating={isCreating}
-            onChange={setEditForm}
+            onChange={handleFormChange}
             onSave={isCreating ? handleCreate : handleSave}
             onCancel={cancelForm}
           />

@@ -175,9 +175,11 @@ export class AiEvalService {
     }
 
     // Level 4 uses gpt-4o for higher reasoning; other levels use gpt-4o-mini
-    const model = (scenario.level || 1) >= 4 ? 'gpt-4o' : 'gpt-4o-mini';
+    // Master scenarios ALWAYS use gpt-4o for best reasoning
+    const isMaster = scenario.isMaster === true;
+    const model = (isMaster || (scenario.level || 1) >= 4) ? 'gpt-4o' : 'gpt-4o-mini';
 
-    console.log(`[AiEvalService] Using model: ${model}, scenario level: ${scenario.level || 1}`);
+    console.log(`[AiEvalService] Using model: ${model}, scenario level: ${scenario.level || 1}, isMaster: ${isMaster}`);
 
     const res = await openai.chat.completions.create({
       model,
@@ -192,17 +194,23 @@ export class AiEvalService {
     const raw = res.choices[0].message.content || '{}';
     const parsed = JSON.parse(this.cleanJson(raw));
 
-    // The core "Pass/Fail" logic driven by the prompt's instruction to ChatGPT
-    const verdict = parsed.verdict as 'continue' | 'passed' | 'failed' || 'continue';
+    // Robust mapping for common JSON keys used by AI models
+    const dialogue = parsed.dialogue || parsed.message || parsed.content || 'ครับ...';
+    const rawVerdict = String(parsed.verdict || parsed.status || 'continue').toLowerCase();
+    
+    let verdict: 'continue' | 'passed' | 'failed' = 'continue';
+    if (rawVerdict.includes('pass')) verdict = 'passed';
+    else if (rawVerdict.includes('fail')) verdict = 'failed';
+    else if (rawVerdict.includes('hang') || rawVerdict.includes('stop')) verdict = 'failed';
 
     return {
-      dialogue:      parsed.dialogue     || 'ครับ...',
+      dialogue,
       verdict,
-      verdictReason: parsed.reason       || parsed.verdictReason || '',
-      score:         parsed.score        ?? undefined,
-      strengths:     parsed.strengths    || undefined,
-      improvements:  parsed.improvements || undefined,
-      coachingTip:   parsed.coachingTip  || undefined,
+      verdictReason: parsed.reason || parsed.verdictReason || parsed.explanation || '',
+      score:         parsed.score ?? parsed.performance ?? undefined,
+      strengths:     parsed.strengths || parsed.positive || undefined,
+      improvements:  parsed.improvements || parsed.negative || undefined,
+      coachingTip:   parsed.coachingTip || parsed.tip || parsed.coaching || undefined,
       // Map verdict → legacy intent field for backward compat with existing UI
       intent:        verdict === 'passed' ? 'buy' : verdict === 'failed' ? 'hang_up' : 'continue',
       isRoundEnd:    verdict === 'passed' || verdict === 'failed',
