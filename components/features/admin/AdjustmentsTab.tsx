@@ -821,7 +821,7 @@ function AiEvalEditor({ data, onSave, onChange, saving, readOnly }: { data: AiEv
           >
             <option value="auto">Auto (Detect Language)</option>
             <option value="openai">OpenAI (GPT-4o mini)</option>
-            <option value="gemini">Google Gemini (2.5 Flash)</option>
+            <option value="gemini">Google Gemini (3.1 Flash)</option>
           </select>
           <p className="text-[9px] text-muted-foreground italic px-1">Choose which AI engine powers the evaluation. &apos;Auto&apos; uses Gemini for Thai and OpenAI for English.</p>
         </div>
