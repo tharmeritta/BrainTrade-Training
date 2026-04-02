@@ -31,6 +31,7 @@ export function PeriodDetail({
   currentUserName, currentUserId
 }: PeriodDetailProps) {
   const t = useTranslations('trainer');
+  const tAdmin = useTranslations('admin');
   const locale = t('management') === 'จัดการการฝึกอบรม' ? 'th-TH' : 'en-GB';
   const [subTab,    setSubTab]    = useState<'days' | 'discipline'>('days');
   const [dayRecs,   setDayRecs]   = useState<TrainingDayRecord[]>([]);
@@ -41,6 +42,7 @@ export function PeriodDetail({
   const [deleting, setDeleting] = useState(false);
   const [summoning, setSummoning] = useState(false);
   const [markingLearned, setMarkingLearned] = useState(false);
+  const [selectedModule, setSelectedModule] = useState<'product' | 'kyc' | 'website'>('product');
 
   // Summon
   const { summon } = useSummon();
@@ -49,13 +51,19 @@ export function PeriodDetail({
   const presence = useAgentPresence(period.agentIds);
   const activeFollowers = Object.values(presence).filter(p => p.status === 'focused').length;
 
+  const getModuleLabel = () => {
+    if (selectedModule === 'kyc') return tAdmin('modules.process');
+    if (selectedModule === 'website') return tAdmin('modules.foundation');
+    return tAdmin('modules.product');
+  };
+
   const handleSummon = async () => {
     setSummoning(true);
     try {
       await summon(
         period.agentIds, 
-        'product', // Valid module ID from COURSE_MODULES
-        'Product Knowledge - Live', 
+        selectedModule, 
+        `${getModuleLabel()} - Live`, 
         currentUserId || period.trainerId || 'trainer', 
         currentUserName || period.trainerName || 'Trainer'
       );
@@ -65,7 +73,8 @@ export function PeriodDetail({
   };
 
   const handleBulkMarkLearned = async () => {
-    if (!confirm(t('markAllLearnedConfirm', { module: 'Product Knowledge' }) || 'Mark "Product Knowledge" as learned for all agents in this period?')) return;
+    const moduleLabel = getModuleLabel();
+    if (!confirm(t('markAllLearnedConfirm', { module: moduleLabel }) || `Mark "${moduleLabel}" as learned for all agents in this period?`)) return;
     
     setMarkingLearned(true);
     try {
@@ -74,7 +83,7 @@ export function PeriodDetail({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           agentIds: period.agentIds,
-          moduleId: 'product'
+          moduleId: selectedModule
         })
       });
       
@@ -208,6 +217,16 @@ export function PeriodDetail({
 
           {canManage && (
             <div className="ml-auto flex items-center gap-2">
+              <select 
+                value={selectedModule} 
+                onChange={e => setSelectedModule(e.target.value as any)}
+                className="bg-secondary/40 border border-border/50 rounded-xl px-3 py-2 text-[11px] font-black uppercase outline-none focus:border-emerald-500/50 transition-colors"
+              >
+                <option value="product">{tAdmin('modules.product')}</option>
+                <option value="kyc">{tAdmin('modules.process')}</option>
+                <option value="website">{tAdmin('modules.foundation')}</option>
+              </select>
+
               <button
                 onClick={handleBulkMarkLearned}
                 disabled={markingLearned || !period.active}
