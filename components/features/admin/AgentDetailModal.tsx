@@ -39,10 +39,11 @@ function DetailedQuizHistory({ stats, onOverride }: { stats: AgentStats, onOverr
                   <button 
                     onClick={() => handleOverride(topic)}
                     disabled={loading === topic}
-                    className="p-1 rounded-md bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 transition-all"
+                    className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 transition-all border border-amber-500/20"
                     title="Manual Pass Override"
                   >
                     {loading === topic ? <Loader2 size={12} className="animate-spin" /> : <ShieldCheck size={12} />}
+                    <span className="text-[10px] font-black uppercase tracking-tight">Override</span>
                   </button>
                 )}
               </div>
@@ -116,10 +117,11 @@ function DetailedAiEvalHistory({ stats, onOverride }: { stats: AgentStats, onOve
                 <button 
                   onClick={() => handleOverride(lv)}
                   disabled={loading === lv}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 transition-all opacity-0 group-hover:opacity-100"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 transition-all border border-purple-500/20"
                   title="Manual Pass Override"
                 >
                   {loading === lv ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+                  <span className="text-[11px] font-black uppercase tracking-tight">Override</span>
                 </button>
               </div>
             );
@@ -130,10 +132,11 @@ function DetailedAiEvalHistory({ stats, onOverride }: { stats: AgentStats, onOve
                    <button 
                     onClick={() => handleOverride(lv)}
                     disabled={loading === lv}
-                    className="absolute right-4 top-4 p-1.5 rounded-lg bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 transition-all opacity-0 group-hover:opacity-100 z-10"
+                    className="absolute right-4 top-4 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 transition-all border border-purple-500/20 z-10"
                     title="Manual Pass Override"
                   >
                     {loading === lv ? <Loader2 size={14} className="animate-spin" /> : <ShieldCheck size={14} />}
+                    <span className="text-[10px] font-black uppercase tracking-tight">Override</span>
                   </button>
                 )}
                 {/* Level header */}
