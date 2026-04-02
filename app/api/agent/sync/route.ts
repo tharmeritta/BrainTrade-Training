@@ -10,14 +10,16 @@ export async function POST(req: NextRequest) {
     const db = getAdminDb();
 
     // 1. Fetch all raw data for this agent
-    const [quizSnap, evalSnap, progressSnap] = await Promise.all([
+    const [quizSnap, evalSnap, learnSnap, progressSnap] = await Promise.all([
       db.collection('quiz_results').where('agentId', '==', agentId).get(),
       db.collection('ai_eval_logs').where('agentId', '==', agentId).get(),
+      db.collection('learning_logs').where('agentId', '==', agentId).get(),
       db.collection('agent_progress').doc(agentId).get()
     ]);
 
-    const quizDocs = quizSnap.docs.map(d => d.data());
-    const evalDocs = evalSnap.docs.map(d => d.data());
+    const quizDocs  = quizSnap.docs.map(d => d.data());
+    const evalDocs  = evalSnap.docs.map(d => d.data());
+    const learnDocs = learnSnap.docs.map(d => d.data());
     const existingProgress = progressSnap.exists ? progressSnap.data() : { learnedModules: [], evalCompletedLevels: [] };
 
     // 2. Determine passed quizzes (normalized)
@@ -28,7 +30,15 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    // 3. Determine AI eval levels completed
+    // 3. Determine learned modules from logs
+    const learnedModules = new Set<string>(existingProgress?.learnedModules || []);
+    learnDocs.forEach(l => {
+      if (l.moduleId) {
+        learnedModules.add(l.moduleId);
+      }
+    });
+
+    // 4. Determine AI eval levels completed
     const passedEvalLevels = new Set<number>(existingProgress?.evalCompletedLevels || []);
     evalDocs.forEach(e => {
       if (e.passed && e.level) {
@@ -36,10 +46,11 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    // 4. Update the aggregate progress document
+    // 5. Update the aggregate progress document
     const updatedProgress = {
       ...existingProgress,
       agentId,
+      learnedModules: Array.from(learnedModules).sort(),
       evalCompletedLevels: Array.from(passedEvalLevels).sort((a, b) => a - b),
       updatedAt: new Date().toISOString(),
       syncSource: 'manual_button'

@@ -85,7 +85,7 @@ export async function GET() {
       const progress       = progressDocs.find(p => p.agentId === agent.id);
       const evalCompleted  = progress?.evalCompletedLevels ?? [];
       const evalPassedScenarios = progress?.evalPassedScenarios ?? [];
-      const learnedModules = (progress?.learnedModules ?? []).map(getCanonicalQuizKey);
+      const learnedModules = progress?.learnedModules ?? [];
       const myHumanEvals   = humanEvals.filter(h => h.agentId === agent.id).sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
 
       const allTimes = [

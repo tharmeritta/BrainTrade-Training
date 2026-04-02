@@ -240,13 +240,13 @@ export default function OverviewTab({ readOnly }: { readOnly?: boolean }) {
                 </span>
               </div>
               <div className="space-y-3">
-                {(['foundation', 'product', 'process', 'payment'] as const).map(topic => {
+                {(['product', 'kyc', 'website'] as const).map(topic => {
                   const count = data.leaderboard.filter(a => (a.learnedModules ?? []).includes(topic)).length;
                   const pct   = data.totalAgents > 0 ? Math.round(count / data.totalAgents * 100) : 0;
                   return (
                     <div key={topic} className="space-y-1">
                       <div className="flex justify-between text-[10px] font-medium">
-                        <span className="capitalize text-muted-foreground">{t(`modules.${topic}`)}</span>
+                        <span className="capitalize text-muted-foreground">{t(`modules.${topic === 'kyc' ? 'process' : topic === 'website' ? 'foundation' : topic}`)}</span>
                         <span className={`font-bold ${scoreColor(pct)}`}>{pct}%</span>
                       </div>
                       <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
