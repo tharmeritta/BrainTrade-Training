@@ -15,54 +15,93 @@ export class AiAuditService {
    */
   static async fetchChatTranscript(link: string): Promise<string> {
     try {
+      console.log(`[AiAuditService] Fetching transcript from: ${link}`);
       const response = await fetch(link, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
         }
       });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch the link: ${response.status} ${response.statusText}`);
+      }
+
       const html = await response.text();
 
       // ChatGPT shared links store data in __NEXT_DATA__ script tag
       const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([^<]+)<\/script>/);
       if (nextDataMatch) {
-        const jsonData = JSON.parse(nextDataMatch[1]);
+        let jsonData;
+        try {
+          jsonData = JSON.parse(nextDataMatch[1]);
+        } catch (e) {
+          console.error('[AiAuditService] JSON parse error for __NEXT_DATA__');
+          throw new Error('Failed to parse ChatGPT data structure.');
+        }
         
-        // Try multiple paths for messages
-        const messages = 
-          jsonData.props?.pageProps?.sharedConversation?.messages || 
-          jsonData.props?.pageProps?.serverResponse?.data?.messages ||
-          jsonData.props?.pageProps?.initialResponse?.data?.messages ||
-          [];
+        const pageProps = jsonData.props?.pageProps || {};
+        const sharedConv = pageProps.sharedConversation || pageProps.serverResponse?.data || pageProps.initialResponse?.data || {};
         
-        if (messages.length > 0) {
+        // 1. Try direct messages array
+        let messages = sharedConv.messages || (sharedConv.conversation?.messages);
+        
+        // 2. Try mapping structure (new ChatGPT format)
+        if (!messages && sharedConv.conversation?.mapping) {
+          const mapping = sharedConv.conversation.mapping;
+          messages = Object.values(mapping)
+            .map((node: any) => node.message)
+            .filter((msg: any) => msg && (msg.role === 'user' || msg.role === 'assistant'));
+          
+          // Sort by create_time if available
+          messages.sort((a: any, b: any) => (a.create_time || 0) - (b.create_time || 0));
+        }
+
+        if (messages && messages.length > 0) {
           return messages
-            .filter((m: any) => m.role === 'user' || m.role === 'assistant')
+            .filter((m: any) => m && (m.role === 'user' || m.role === 'assistant'))
             .map((m: any) => {
               const role = m.role === 'user' ? 'Agent' : 'Customer';
+              
               // Handle different content structures
               let text = '';
-              if (m.content?.parts) {
-                text = m.content.parts.join('\n');
-              } else if (typeof m.content === 'string') {
-                text = m.content;
-              } else if (m.content?.text) {
-                text = m.content.text;
+              const content = m.content;
+              
+              if (content) {
+                if (content.parts) {
+                  text = content.parts.map((p: any) => typeof p === 'string' ? p : (p.text || '')).join('\n');
+                } else if (typeof content === 'string') {
+                  text = content;
+                } else if (content.text) {
+                  text = content.text;
+                }
               }
-              return `${role}: ${text}`;
+              
+              return `${role}: ${text.trim()}`;
             })
+            .filter((line: string) => line.length > 8) // Filter out empty-ish messages
             .join('\n\n');
         }
       }
 
       // If we are here, we might be blocked or the structure changed significantly
-      if (html.includes('Cloudflare') || html.includes('captcha')) {
-          throw new Error('Access to the ChatGPT link was blocked by security filters. Please try again later.');
+      if (html.includes('Cloudflare') || html.includes('captcha') || html.includes('challenge-platform')) {
+          throw new Error('Access to the ChatGPT link was blocked by security filters (Cloudflare). Please try again later or use a different link.');
       }
 
-      return "Transcript could not be extracted automatically. Please ensure the link is a valid ChatGPT shared link.";
-    } catch (err) {
+      console.warn('[AiAuditService] Could not find messages in __NEXT_DATA__. HTML length:', html.length);
+      // Log a bit of the HTML to help debug if needed (not too much to avoid bloat)
+      if (html.length > 0) {
+        console.log('[AiAuditService] HTML snippet:', html.substring(0, 500));
+      }
+
+      return "Transcript could not be extracted automatically. This might be due to a change in ChatGPT's link structure or a temporary block. Please ensure the link is a valid public shared link.";
+    } catch (err: any) {
       console.error('[AiAuditService] fetchChatTranscript error:', err);
-      throw new Error('Failed to fetch transcript from the provided link.');
+      throw err; // Re-throw to be caught by the route handler
     }
   }
 

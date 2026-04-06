@@ -12,8 +12,12 @@ export async function POST(req: NextRequest) {
 
     // 1. Fetch transcript
     const transcript = await AiAuditService.fetchChatTranscript(link);
-    if (!transcript || transcript.startsWith('Transcript could not be extracted')) {
-        return NextResponse.json({ error: 'Could not extract conversation from the provided link.' }, { status: 400 });
+    if (!transcript) {
+        return NextResponse.json({ error: 'Could not fetch transcript. The link might be private or invalid.' }, { status: 400 });
+    }
+    
+    if (transcript.startsWith('Transcript could not be extracted')) {
+        return NextResponse.json({ error: transcript }, { status: 400 });
     }
 
     // 2. Perform Audit
