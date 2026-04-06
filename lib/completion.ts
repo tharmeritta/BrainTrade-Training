@@ -28,15 +28,8 @@ export function getCompletionStatus(stats: AgentStats, activeScenariosCount?: nu
   
   // AI Eval completion: Check if they reached the required level
   const completedLevels = stats.evalCompletedLevels ?? [];
-  const hasHistory = (stats.aiEval?.count ?? 0) > 0;
-  
-  let aiEvalDone = false;
-  if (completedLevels.length > 0) {
-    const maxLevelReached = Math.max(...completedLevels);
-    aiEvalDone = maxLevelReached >= evaluation.requiredLevel; 
-  } else {
-    aiEvalDone = hasHistory;
-  }
+  const maxLevelReached = completedLevels.length > 0 ? Math.max(...completedLevels) : 0;
+  const aiEvalDone = maxLevelReached >= evaluation.requiredLevel;
 
   const trainingComplete = quizComplete && learnComplete && aiEvalDone;
   const humanEvals = stats.humanEvaluations ?? [];

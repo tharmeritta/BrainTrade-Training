@@ -113,12 +113,15 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
   const learnedModules = progressDoc?.learnedModules ?? [];
   const myHumanEvals   = [...humanEvals].sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
 
+  const agent: Agent = { id: agentId, name: agentName, active: true, createdAt: new Date() };
+
   const lastActive = [
     ...quizDocs,
     ...evalDocs,
-  ].map(r => r.timestamp).filter(Boolean).sort().at(-1) ?? null;
+    { timestamp: progressDoc?.updatedAt },
+    { timestamp: agent.createdAt?.toString() },
+  ].map(r => (r as any).timestamp).filter(Boolean).sort().at(-1) ?? null;
 
-  const agent: Agent = { id: agentId, name: agentName, active: true, createdAt: new Date() };
   const partial      = { agent, quiz, aiEval, lastActive, evalCompletedLevels: evalCompleted, evalPassedScenarios: passedScenarios, learnedModules, humanEvaluations: myHumanEvals, activeScenariosCount };
   
   const overallScore = computeOverallScore(partial, weights);
@@ -225,7 +228,8 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
 
   const progressMap = new Map<string, ProgressRecord>();
   for (const p of progressDocs) {
-    progressMap.set(p.agentId, p);
+    const id = p.agentId || (p as any).id;
+    if (id) progressMap.set(id, p);
   }
 
   const weightMap = new Map<string, { quiz: number; human: number; ai: number }>();
@@ -269,6 +273,8 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
     let lastActive: string | null = null;
     for (const q of myQuizzes) if (!lastActive || q.timestamp > lastActive) lastActive = q.timestamp;
     for (const e of myEvals) if (!lastActive || e.timestamp > lastActive) lastActive = e.timestamp;
+    if (progress?.updatedAt && (!lastActive || progress.updatedAt > lastActive)) lastActive = progress.updatedAt;
+    if (agent.createdAt && (!lastActive || agent.createdAt.toString() > lastActive)) lastActive = agent.createdAt.toString();
 
     const partial = { 
       agent, 
@@ -319,7 +325,8 @@ export async function getModuleStats(): Promise<ModuleStat[]> {
 
   const progressMap: Record<string, ProgressRecord> = {};
   progressDocs.forEach(p => {
-    progressMap[p.agentId] = p;
+    const id = p.agentId || (p as any).id;
+    if (id) progressMap[id] = p;
   });
 
   const pct = (n: number) => Math.round((n / total) * 100);
