@@ -14,6 +14,10 @@ export const AiEvalScenarioSchema = z.object({
 
   // NEW: Single ChatGPT instruction prompt (replaces two-phase persona+evaluator)
   systemPrompt: z.string().optional(),
+  
+  // NEW: Prompt for external practice (ChatGPT)
+  externalPrompt: z.string().optional(),
+  auditInstructions: z.string().optional(),
 
   // Legacy Personas & Prompts (kept for backward compat & fallback)
   customerPersona: z.string().optional(),
@@ -104,4 +108,8 @@ export interface AiEvalSession {
 
   // NEW: final verdict reason from ChatGPT
   verdictReason?: string;
+
+  // NEW: AI Audit fields
+  auditLink?: string;
+  auditResult?: AiEvalTurnResponse;
 }

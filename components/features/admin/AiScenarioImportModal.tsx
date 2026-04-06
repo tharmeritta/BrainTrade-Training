@@ -42,7 +42,9 @@ export default function AiScenarioImportModal({ onClose, onSuccess }: AiScenario
         Name: 'The Skeptical Investor',
         Difficulty: 'intermediate',
         Threshold: 7,
-        SystemPrompt: 'เล่นบทเป็นลูกค้าคนไทยที่เคยขาดทุนมาก่อน\nพนักงานชื่อ: {{agentName}}\n\n✅ PASS เมื่อ: พนักงานอธิบายเรื่อง Coach 1:1 ได้ชัดเจน\n❌ FAIL เมื่อ: พนักงานกดดันเกินไป หรือไม่ฟังลูกค้า\n\nตอบกลับเป็น JSON:\n{"dialogue":"...","verdict":"continue","reason":""}',
+        SystemPrompt: 'เล่นบทเป็นลูกค้าคนไทยที่เคยขาดทุนมาก่อน...',
+        ExternalPrompt: 'เล่นบทเป็นลูกค้าคนไทย: The Skeptical Investor\nอารมณ์: กังวลและสงสัย\nเป้าหมาย: เข้าใจความเสี่ยง...',
+        AuditInstructions: 'Check if agent explained the 1:1 coaching and regulatory compliance clearly.',
         Persona: 'A middle-aged business owner who has lost money in stocks before.',
         Objective: 'Understand the risk management and safety of the platform.',
         Mood: 'Cautious and skeptical',
@@ -50,19 +52,6 @@ export default function AiScenarioImportModal({ onClose, onSuccess }: AiScenario
         Criteria: DEFAULT_CRITERIA,
         WinHint: 'Agent explains the 1:1 coaching and regulatory compliance.',
         FailHint: 'Agent is too pushy or dismisses the customer\'s past bad experience.'
-      },
-      {
-        Name: 'The Newcomer',
-        Difficulty: 'beginner',
-        Threshold: 6,
-        SystemPrompt: 'เล่นบทเป็นมือใหม่สนใจการออม\nลูกค้าชื่อ: {{customerName}}\nพนักงานชื่อ: {{agentName}}\n\n✅ PASS เมื่อ: อธิบายขั้นตอนการสมัครได้ง่าย\n❌ FAIL เมื่อ: ใช้ศัพท์เทคนิคเยอะเกินไป',
-        Persona: 'A young professional interested in saving for their first home.',
-        Objective: 'Learn how to start with a small deposit.',
-        Mood: 'Excited but confused',
-        MaxTurns: 10,
-        Criteria: DEFAULT_CRITERIA,
-        WinHint: 'Agent simplifies the registration process.',
-        FailHint: 'Agent uses too much technical jargon.'
       }
     ];
 
@@ -102,6 +91,8 @@ export default function AiScenarioImportModal({ onClose, onSuccess }: AiScenario
             objective: row.Objective || row.objective || row['วัตถุประสงค์'],
             initialMood: row.Mood || row.mood || row.initialMood || row['อารมณ์'],
             maxTurns: parseInt(row.MaxTurns || row.maxTurns || row['รอบสูงสุด'] || row['จำนวนรอบ'] || 12),
+            externalPrompt: row.ExternalPrompt || row.externalPrompt || row['พรอมต์ภายนอก'],
+            auditInstructions: row.AuditInstructions || row.auditInstructions || row['คำแนะนำการตรวจสอบ'],
             winCondition: row.WinHint || row.winHint || row.winCondition || row['เงื่อนไขการชนะ'] || row['คำแนะนำการชนะ'],
             failCondition: row.FailHint || row.failHint || row.failCondition || row['เงื่อนไขการแพ้'] || row['คำแนะนำการแพ้'],
             requiredCriteria: (() => {

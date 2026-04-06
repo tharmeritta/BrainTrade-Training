@@ -149,18 +149,30 @@ function ScenarioForm({
             </Field>
           </div>
 
-          {/* Column 3 — Conditions */}
+          {/* Column 3 — Audit Config */}
           <div className="space-y-4">
-            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 border-b border-border/30 pb-1.5">Win / Fail Conditions</p>
-            <Field label="Win Condition">
-              <textarea className={`${textareaCls} h-28`} value={form.winCondition || ''} onChange={e => onChange({ ...form, winCondition: e.target.value })} placeholder="When should the AI decide the agent passed?" />
+            <p className="text-[9px] font-black uppercase tracking-widest text-primary/80 border-b border-primary/20 pb-1.5">AI Audit Configuration</p>
+            <Field label="External Prompt (for ChatGPT)">
+              <textarea 
+                className={`${textareaCls} h-32 font-mono text-xs`} 
+                value={form.externalPrompt || ''} 
+                onChange={e => onChange({ ...form, externalPrompt: e.target.value })} 
+                placeholder="The prompt the agent will copy to ChatGPT..." 
+              />
             </Field>
-            <Field label="Fail Condition">
-              <textarea className={`${textareaCls} h-[4.5rem]`} value={form.failCondition || ''} onChange={e => onChange({ ...form, failCondition: e.target.value })} placeholder="When should the AI hang up?" />
+            <Field label="Audit Instructions (for Auditor AI)">
+              <textarea 
+                className={`${textareaCls} h-32 font-mono text-xs`} 
+                value={form.auditInstructions || ''} 
+                onChange={e => onChange({ ...form, auditInstructions: e.target.value })} 
+                placeholder="Specific criteria for the auditor to check..." 
+              />
             </Field>
-            <Field label="Bypass Prompt (External AI Practice)">
-              <textarea className={`${textareaCls} h-28`} value={form.bypassPrompt || ''} onChange={e => onChange({ ...form, bypassPrompt: e.target.value })} placeholder="Prompt for ChatGPT/Gemini practice..." />
-            </Field>
+            <div className="grid grid-cols-1 gap-3 pt-2">
+               <Field label="Win Condition (Internal)">
+                <textarea className={`${textareaCls} h-16 text-xs`} value={form.winCondition || ''} onChange={e => onChange({ ...form, winCondition: e.target.value })} placeholder="Pass if..." />
+              </Field>
+            </div>
           </div>
         </div>
       </div>

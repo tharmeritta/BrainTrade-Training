@@ -2,15 +2,15 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, Trophy, XCircle, RotateCcw, ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { getAgentSession } from '@/lib/agent-session';
 import { TRANSITION } from '@/lib/animations';
-import type { PitchMessage } from '@/types';
 import { IntroView } from './IntroView';
 import { ScenarioPicker } from './ScenarioPicker';
-import { ChatView } from './ChatView';
-import type { EvalStep, CustomerProfile, CoachingData, EvalScenario } from './types';
+import { AuditFlow } from './AuditFlow';
+import { CoachingCard } from './CoachingCard';
+import type { EvalStep, CoachingData, EvalScenario } from './types';
 
 const DEFAULT_CRITERIA = ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'];
 
@@ -26,34 +26,24 @@ export default function AiEvaluation() {
   const [completedLevels, setCompletedLevels] = useState<number[]>([]);
   const [passedScenarios, setPassedScenarios] = useState<string[]>([]);
   const [unlockMode,      setUnlockMode]      = useState<'sequential' | 'flexible'>('sequential');
-  const [masterScenarioId, setMasterScenarioId] = useState<string | null>(null);
 
   // ── Agent identity ──
   const [agentId,            setAgentId]            = useState<string | null>(null);
   const [agentName,          setAgentName]          = useState<string | null>(null);
-  // effectiveAgentId/Name track the actual ID used for the active session —
-  // may differ from agentId when a staff user tests without a real agent session.
-  const [effectiveAgentId,   setEffectiveAgentId]   = useState<string | null>(null);
-  const [effectiveAgentName, setEffectiveAgentName] = useState<string | null>(null);
 
-  // ── Chat session ──
-  const [messages,         setMessages]         = useState<PitchMessage[]>([]);
-  const [coaching,         setCoaching]         = useState<Map<number, CoachingData>>(new Map());
-  const [customerProfile,  setCustomerProfile]  = useState<CustomerProfile | null>(null);
-  const [input,            setInput]            = useState('');
+  // ── Audit session ──
+  const [selectedScenario, setSelectedScenario] = useState<EvalScenario | null>(null);
+  const [auditResult,      setAuditResult]      = useState<CoachingData | null>(null);
   const [loading,          setLoading]          = useState(false);
   const [configLoading,    setConfigLoading]    = useState(false);
   const [passed,           setPassed]           = useState(false);
   const [failed,           setFailed]           = useState(false);
   const [error,            setError]            = useState<string | null>(null);
 
-  const bottomRef    = useRef<HTMLDivElement>(null);
-  const textareaRef  = useRef<HTMLTextAreaElement>(null);
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Helpers ──
 
-  // Clear the auto-dismiss timer on unmount to avoid setState on an unmounted component
   useEffect(() => {
     return () => {
       if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
@@ -79,11 +69,6 @@ export default function AiEvaluation() {
       if (data.completedLevels) setCompletedLevels(data.completedLevels);
       if (data.passedScenarios) setPassedScenarios(data.passedScenarios);
       if (data.unlockMode)      setUnlockMode(data.unlockMode);
-      if (data.masterScenarioId) {
-        setMasterScenarioId(data.masterScenarioId);
-        // If there's a master scenario, we skip intro and go to loading
-        setStep('loading');
-      }
     } catch (err) {
       console.error('Failed to fetch AI Eval Config', err);
     } finally {
@@ -91,52 +76,67 @@ export default function AiEvaluation() {
     }
   }, []);
 
-  // ── Session handlers ──
+  // ── Handlers ──
 
-  const startSession = useCallback(async (scenarioId: string) => {
-    // If no agentId (e.g. Staff member), use a mockup ID so they can still test it
+  const selectScenario = useCallback((scenarioId: string) => {
+    const scenario = scenarios.find(s => s.id === scenarioId);
+    if (scenario) {
+      setSelectedScenario(scenario);
+      setStep('audit');
+    }
+  }, [scenarios]);
+
+  const handleAuditSubmit = useCallback(async (link: string) => {
+    if (!selectedScenario || loading) return;
+    
     const effectiveId = agentId || 'staff-test-user';
     const effectiveName = agentName || 'Staff Tester';
-    // Persist effective identity so sendMessage and handleReset can use them
-    setEffectiveAgentId(effectiveId);
-    setEffectiveAgentName(effectiveName);
 
-    setStep('loading'); // Switch to loading step immediately
     setLoading(true);
     setError(null);
+
     try {
-      const res = await fetch('/api/ai-eval', {
+      const res = await fetch('/api/ai-audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agentId: effectiveId, agentName: effectiveName, isStart: true, scenarioId }),
+        body: JSON.stringify({ 
+          agentId: effectiveId, 
+          agentName: effectiveName, 
+          scenarioId: selectedScenario.id,
+          link 
+        }),
       });
+
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.details || errData.error || 'Start failed');
+        throw new Error(errData.error || 'Audit failed');
       }
+
       const data = await res.json();
-      setMessages(data.messages || []);
-      setCustomerProfile(data.customerProfile || null);
+      setAuditResult(data.auditResult);
+      setPassed(data.passed);
+      setFailed(data.failed);
+      setStep('result');
       
-      // Initialize coaching map with any round-end data
-      const newCoaching = new Map<number, CoachingData>();
-      if (data.coaching?.isRoundEnd && data.messages?.length > 0) {
-        newCoaching.set(data.messages.length - 1, data.coaching);
+      if (data.passed && agentId) {
+        fetchConfig(agentId);
       }
-      setCoaching(newCoaching);
-      
-      setPassed(false);
-      setFailed(false);
-      setStep('chat');
     } catch (err: any) {
       showError(err.message);
-      setStep('scenarios'); // Go back on error
     } finally {
       setLoading(false);
     }
-  }, [agentId, agentName, showError]);
+  }, [selectedScenario, loading, agentId, agentName, showError, fetchConfig]);
 
-  // ── Init: load agent session + config ──
+  const handleReset = useCallback(() => {
+    setStep('scenarios');
+    setSelectedScenario(null);
+    setAuditResult(null);
+    setPassed(false);
+    setFailed(false);
+  }, []);
+
+  // ── Init ──
 
   useEffect(() => {
     const session = getAgentSession();
@@ -145,98 +145,9 @@ export default function AiEvaluation() {
       setAgentName(session.name);
       fetchConfig(session.id);
     } else {
-      // For staff or first-time users, still fetch scenarios
       fetchConfig(null);
     }
   }, [fetchConfig]);
-
-  // AUTO-START Master Scenario if it exists and we're in the 'loading' step
-  useEffect(() => {
-    if (masterScenarioId && step === 'loading' && !effectiveAgentId && !loading) {
-      startSession(masterScenarioId);
-    }
-  }, [masterScenarioId, step, effectiveAgentId, loading, startSession]);
-
-  // ── Restore active session if one exists ──
-
-  useEffect(() => {
-    if (!agentId) return;
-    fetch(`/api/ai-eval/active?agentId=${agentId}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        const s = data?.session;
-        if (!s || !s.messages?.length) return;
-        setMessages(s.messages);
-        setCustomerProfile(s.customerProfile);
-        if (s.coaching) {
-          const restored = new Map<number, CoachingData>();
-          Object.entries(s.coaching).forEach(([k, v]) => restored.set(parseInt(k), v as CoachingData));
-          setCoaching(restored);
-        }
-        if (s.status === 'passed') setPassed(true);
-        if (s.status === 'failed') setFailed(true);
-        // Restore the effective IDs so sendMessage works on page reload.
-        setEffectiveAgentId(agentId);
-        setEffectiveAgentName(s.agentName);
-        setStep('chat');
-      })
-      .catch(err => console.error('[AiEval] Failed to restore active session:', err));
-  }, [agentId]);
-
-  // ── Auto-scroll on new messages ──
-
-  useEffect(() => {
-    if (step === 'chat') {
-      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-    }
-  }, [messages, loading, step]);
-
-  const sendMessage = useCallback(async () => {
-    if (!input.trim() || !effectiveAgentId || loading || passed || failed) return;
-    const userMsgContent = input;
-    setInput('');
-    setLoading(true);
-    setMessages(prev => [...prev, { role: 'user', content: userMsgContent, timestamp: new Date().toISOString() }]);
-    try {
-      const res = await fetch('/api/ai-eval', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agentId: effectiveAgentId, agentName: effectiveAgentName, message: userMsgContent }),
-      });
-      if (!res.ok) throw new Error('Connection failure');
-      const data = await res.json();
-      if (data.messages)        setMessages(data.messages);
-      if (data.customerProfile) setCustomerProfile(data.customerProfile);
-      if (data.coaching?.isRoundEnd) {
-        setCoaching(prev => {
-          const next = new Map(prev);
-          next.set(data.messages.length - 1, data.coaching);
-          return next;
-        });
-      }
-      // Use real agentId for progress fetch (staff progress is not tracked)
-      if (data.passed) { setPassed(true); fetchConfig(agentId); }
-      if (data.failed) setFailed(true);
-    } catch (err: any) {
-      showError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [input, effectiveAgentId, effectiveAgentName, loading, passed, failed, showError, fetchConfig, agentId]);
-
-  const handleUseScript = useCallback((text: string) => {
-    setInput(text);
-    textareaRef.current?.focus();
-  }, []);
-
-  const handleReset = useCallback((clearHistory: boolean) => {
-    setStep('scenarios');
-    if (clearHistory && effectiveAgentId) {
-      fetch(`/api/ai-eval/active?agentId=${effectiveAgentId}`, { method: 'DELETE' });
-    }
-    setEffectiveAgentId(null);
-    setEffectiveAgentName(null);
-  }, [effectiveAgentId]);
 
   // ── Render ──
 
@@ -261,7 +172,7 @@ export default function AiEvaluation() {
             completedLevels={completedLevels}
             passedScenarios={passedScenarios}
             unlockMode={unlockMode}
-            onSelect={startSession}
+            onSelect={selectScenario}
             onBack={() => setStep('intro')}
             agentName={agentName}
             error={error}
@@ -272,69 +183,71 @@ export default function AiEvaluation() {
         </motion.div>
       )}
 
-      {step === 'loading' && (
-        <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={TRANSITION.base}>
-          <div className="flex flex-col items-center justify-center min-h-[500px] text-center p-8">
-            <div className="relative mb-8">
-              <motion.div 
-                className="absolute inset-0 bg-primary/20 blur-3xl rounded-full"
-                animate={{ 
-                  scale: [1, 1.5, 1],
-                  opacity: [0.3, 0.6, 0.3]
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
-              />
-              <div className="relative bg-card border-2 border-primary/20 p-6 rounded-3xl shadow-2xl">
-                <Loader2 className="w-12 h-12 text-primary animate-spin" />
-              </div>
-              <motion.div 
-                className="absolute -top-2 -right-2 bg-amber-500 p-2 rounded-xl shadow-lg border-2 border-background"
-                animate={{ y: [0, -4, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <Sparkles className="w-4 h-4 text-white" />
-              </motion.div>
-            </div>
-            
-            <h2 className="text-2xl font-black tracking-tight mb-3">{t('loadingTitle')}</h2>
-            <p className="text-muted-foreground max-w-xs text-sm font-medium leading-relaxed">
-              {t('loadingDesc')}
-            </p>
-            
-            <div className="mt-12 flex gap-1.5">
-              {[0, 1, 2].map((i) => (
-                <motion.div
-                  key={i}
-                  className="w-2 h-2 rounded-full bg-primary/30"
-                  animate={{ opacity: [0.3, 1, 0.3] }}
-                  transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                />
-              ))}
-            </div>
-          </div>
+      {step === 'audit' && selectedScenario && (
+        <motion.div key="audit" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={TRANSITION.base}>
+          <AuditFlow
+            scenario={selectedScenario}
+            onBack={() => setStep('scenarios')}
+            onSubmit={handleAuditSubmit}
+            loading={loading}
+            error={error}
+          />
         </motion.div>
       )}
 
-      {step === 'chat' && (
-        <motion.div key="chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={TRANSITION.base}>
-          <ChatView
-            messages={messages}
-            coaching={coaching}
-            customerProfile={customerProfile}
-            input={input}
-            setInput={setInput}
-            loading={loading}
-            passed={passed}
-            failed={failed}
-            error={error}
-            onSend={sendMessage}
-            onReset={handleReset}
-            onClearError={() => setError(null)}
-            onUseScript={handleUseScript}
-            bottomRef={bottomRef}
-            textareaRef={textareaRef}
-            criteriaKeys={criteriaKeys}
-          />
+      {step === 'result' && auditResult && (
+        <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={TRANSITION.base} className="max-w-4xl mx-auto py-8 px-4">
+          <div className="bg-card rounded-3xl shadow-2xl border border-black/5 dark:border-white/10 overflow-hidden">
+            <div className="p-8 border-b border-black/5 dark:border-white/10 flex flex-col items-center text-center">
+              {passed ? (
+                <div className="w-20 h-20 bg-emerald-500/10 rounded-3xl flex items-center justify-center text-emerald-500 mb-6">
+                  <Trophy size={40} />
+                </div>
+              ) : (
+                <div className="w-20 h-20 bg-rose-500/10 rounded-3xl flex items-center justify-center text-rose-500 mb-6">
+                  <XCircle size={40} />
+                </div>
+              )}
+              <h2 className="text-3xl font-black tracking-tight mb-2">
+                {passed ? 'Audit Passed!' : 'Audit Not Passed'}
+              </h2>
+              <p className="text-muted-foreground max-w-md mx-auto font-medium">
+                {auditResult.verdictReason}
+              </p>
+            </div>
+
+            <div className="p-8 bg-slate-50/50 dark:bg-black/20">
+              <CoachingCard
+                coaching={auditResult}
+                autoExpand={true}
+                criteriaKeys={criteriaKeys}
+              />
+            </div>
+
+            <div className="p-6 border-t border-black/5 dark:border-white/10 flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={handleReset}
+                className="flex-1 flex items-center justify-center gap-2.5 bg-white dark:bg-white/5 text-foreground hover:bg-secondary transition-all px-6 py-4 rounded-2xl font-bold text-sm border border-black/5 shadow-md"
+              >
+                <RotateCcw size={16} /> Try Another Practice
+              </button>
+              {passed ? (
+                <button
+                  onClick={handleReset}
+                  className="flex-1 flex items-center justify-center gap-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-4 rounded-2xl font-bold text-sm shadow-xl shadow-emerald-500/20"
+                >
+                  <ArrowRight size={16} /> Back to Scenarios
+                </button>
+              ) : (
+                <button
+                  onClick={() => setStep('audit')}
+                  className="flex-1 flex items-center justify-center gap-2.5 bg-foreground text-background px-6 py-4 rounded-2xl font-bold text-sm shadow-xl"
+                >
+                  <ArrowRight size={16} /> Re-submit Link
+                </button>
+              )}
+            </div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

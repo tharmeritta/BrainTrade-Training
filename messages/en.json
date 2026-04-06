@@ -14,7 +14,7 @@
     "dashboard": "Dashboard",
     "learn": "Learn",
     "quiz": "Quiz",
-    "aiEval": "AI Evaluation",
+    "aiEval": "AI Audit",
     "admin": "Admin",
     "signOut": "Sign Out",
     "productKnowledge": "Product Knowledge",
@@ -34,8 +34,8 @@
     "learnSub": "Study product information",
     "quiz": "Quiz",
     "quizSub": "Measure your knowledge",
-    "aiEval": "AI Evaluation",
-    "aiEvalSub": "Analyze presentations"
+    "aiEval": "AI Audit",
+    "aiEvalSub": "Audit sales practice links"
   },
   "learn": {
     "product": "Product Knowledge",
@@ -752,12 +752,12 @@
     }
   },
   "aiEval": {
-    "title": "AI Speech Evaluation",
-    "subtitle": "Practice tele-sales skills with simulated AI customers",
-    "introTitle": "Instructions before training",
-    "introDesc": "AI will act as a <span class=\"font-black text-white underline underline-offset-4 decoration-white/30\">Thai customer</span> and test your skills through realistic conversation. You must handle objections professionally.",
-    "levelsTitle": "Training Guideline",
-    "criteriaTitle": "Evaluation Criteria",
+    "title": "AI Practice Audit",
+    "subtitle": "Practice sales with ChatGPT and submit your shared link for AI auditing",
+    "introTitle": "Sales Audit Instructions",
+    "introDesc": "1. Choose a scenario. 2. Copy the prompt to ChatGPT. 3. Practice your sales pitch. 4. Submit the shared link back here for auditing.",
+    "levelsTitle": "Audit Guideline",
+    "criteriaTitle": "Audit Criteria",
     "passCriteria": "Pass (Score ≥ 7)",
     "passDesc": "Excellent! Evaluation completed successfully.",
     "failCriteria": "Fail (Score < 7)",
