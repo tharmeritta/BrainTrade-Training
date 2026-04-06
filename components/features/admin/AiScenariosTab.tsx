@@ -82,21 +82,21 @@ function ScenarioForm({
 
       <div className="p-6 space-y-6">
 
-        {/* System Prompt — full width, primary field */}
+        {/* Internal Auditor Prompt — full width, primary field */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <p className="text-[9px] font-black uppercase tracking-widest text-primary/80 border-b border-primary/20 pb-1.5 flex-1">ChatGPT System Prompt <span className="text-primary">(Main Instruction)</span></p>
+            <p className="text-[9px] font-black uppercase tracking-widest text-primary/80 border-b border-primary/20 pb-1.5 flex-1">AI Auditor Internal Prompt <span className="text-primary">(Hidden from Agent)</span></p>
           </div>
           <p className="text-[10px] text-muted-foreground">
-            This prompt is the <strong>source of truth</strong> for the AI. You can use variables: <code className="bg-secondary/60 px-1 rounded">{"{{agentName}}"}</code>, <code className="bg-secondary/60 px-1 rounded">{"{{customerName}}"}</code>, <code className="bg-secondary/60 px-1 rounded">{"{{level}}"}</code>.
-            It MUST instruct ChatGPT to return JSON with <code className="bg-secondary/60 px-1 rounded">verdict: &quot;continue&quot; | &quot;passed&quot; | &quot;failed&quot;</code>.
+            This prompt defines the <strong>Internal Auditor&apos;s</strong> personality and rules if using the old simulation mode. 
+            For the new <b>AI Audit</b> mode, use the <b>Audit Instructions</b> field below instead.
           </p>
-          <Field label="System Prompt (Thai or English)">
+          <Field label="Auditor System Prompt">
             <textarea
-              className={`${textareaCls} h-64 font-mono text-xs`}
+              className={`${textareaCls} h-32 font-mono text-xs`}
               value={form.systemPrompt || ''}
               onChange={e => onChange({ ...form, systemPrompt: e.target.value })}
-              placeholder={`เล่นบทเป็นลูกค้าคนไทย สุ่มเลือก 1 บทบาท...\nพนักงานชื่อ: {{agentName}}\n\n✅ PASS เมื่อ: ...\n❌ FAIL เมื่อ: ...\n\nตอบกลับเป็น JSON เสมอ:\n{"dialogue":"...","verdict":"continue","reason":"","score":null,"strengths":null,"improvements":null,"coachingTip":null}\n\nห้ามบอก verdict แก่พนักงานใน dialogue เด็ดขาด`}
+              placeholder="System instructions for the auditor..."
             />
           </Field>
         </div>
@@ -126,22 +126,22 @@ function ScenarioForm({
               </Field>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Pass Threshold">
-                <input type="number" className={inputCls} value={form.passThreshold ?? 7} onChange={e => onChange({ ...form, passThreshold: parseInt(e.target.value) })} min={1} max={10} />
+              <Field label="Pass Threshold (%)">
+                <input type="number" className={inputCls} value={form.passThreshold ?? 70} onChange={e => onChange({ ...form, passThreshold: parseInt(e.target.value) })} min={1} max={100} />
               </Field>
-              <Field label="Max Turns">
+              <Field label="Max Turns (Ref)">
                 <input type="number" className={inputCls} value={form.maxTurns ?? 12} onChange={e => onChange({ ...form, maxTurns: parseInt(e.target.value) })} min={1} />
               </Field>
             </div>
           </div>
 
-          {/* Column 2 — Persona (fallback fields) */}
+          {/* Column 2 — Persona */}
           <div className="space-y-4">
-            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 border-b border-border/30 pb-1.5">Customer Persona <span className="normal-case font-medium">(fallback if no system prompt)</span></p>
+            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 border-b border-border/30 pb-1.5">Customer Persona</p>
             <Field label="Persona Description">
               <textarea className={`${textareaCls} h-28`} value={form.customerPersona || ''} onChange={e => onChange({ ...form, customerPersona: e.target.value })} placeholder="Background, personality, knowledge level…" />
             </Field>
-            <Field label="Objective">
+            <Field label="Practice Objective">
               <input className={inputCls} value={form.objective || ''} onChange={e => onChange({ ...form, objective: e.target.value })} placeholder="What does the customer want?" />
             </Field>
             <Field label="Initial Mood">
@@ -151,16 +151,38 @@ function ScenarioForm({
 
           {/* Column 3 — Audit Config */}
           <div className="space-y-4">
-            <p className="text-[9px] font-black uppercase tracking-widest text-primary/80 border-b border-primary/20 pb-1.5">AI Audit Configuration</p>
-            <Field label="External Prompt (for ChatGPT)">
-              <textarea 
-                className={`${textareaCls} h-32 font-mono text-xs`} 
-                value={form.externalPrompt || ''} 
-                onChange={e => onChange({ ...form, externalPrompt: e.target.value })} 
-                placeholder="The prompt the agent will copy to ChatGPT..." 
-              />
+            <p className="text-[9px] font-black uppercase tracking-widest text-primary/80 border-b border-primary/20 pb-1.5">Agent Practice & Audit</p>
+            <Field label="Agent Practice Prompt (ChatGPT)">
+              <div className="relative group">
+                <textarea 
+                  className={`${textareaCls} h-32 font-mono text-xs`} 
+                  value={form.externalPrompt || ''} 
+                  onChange={e => onChange({ ...form, externalPrompt: e.target.value })} 
+                  placeholder="The prompt the agent will copy to ChatGPT..." 
+                />
+                {!form.externalPrompt && (
+                   <button 
+                    onClick={() => {
+                      const auto = `เล่นบทเป็นลูกค้าคนไทย: ${form.customerPersona || form.name}
+อารมณ์: ${form.initialMood || 'ปกติ'}
+เป้าหมาย: ${form.objective}
+กติกา: 
+1. ฉันเป็นพนักงานขายจาก BrainTrade Thailand
+2. เราจะคุยกันทางโทรศัพท์
+3. คุณต้องมีข้อโต้แย้ง และให้ฉันพยายามโน้มน้าวคุณ
+4. คุยกันให้สมจริง เป็นธรรมชาติ ห้ามหลุดบทบาทจนกว่าฉันจะบอกว่าจบการสนทนา
+เริ่มการสนทนาโดยการรับสายจากฉัน`;
+                      onChange({ ...form, externalPrompt: auto });
+                    }}
+                    className="absolute top-2 right-2 p-1 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors"
+                    title="Generate Default"
+                   >
+                     <RotateCcw size={12} />
+                   </button>
+                )}
+              </div>
             </Field>
-            <Field label="Audit Instructions (for Auditor AI)">
+            <Field label="Audit Instructions (Rules for Gemini)">
               <textarea 
                 className={`${textareaCls} h-32 font-mono text-xs`} 
                 value={form.auditInstructions || ''} 
@@ -168,11 +190,9 @@ function ScenarioForm({
                 placeholder="Specific criteria for the auditor to check..." 
               />
             </Field>
-            <div className="grid grid-cols-1 gap-3 pt-2">
-               <Field label="Win Condition (Internal)">
-                <textarea className={`${textareaCls} h-16 text-xs`} value={form.winCondition || ''} onChange={e => onChange({ ...form, winCondition: e.target.value })} placeholder="Pass if..." />
-              </Field>
-            </div>
+            <Field label="Audit Win Condition (Success Criteria)">
+              <textarea className={`${textareaCls} h-16 text-xs`} value={form.winCondition || ''} onChange={e => onChange({ ...form, winCondition: e.target.value })} placeholder="Pass if agent handles objections and closes..." />
+            </Field>
           </div>
         </div>
       </div>
