@@ -88,19 +88,26 @@ export class AiAuditService {
       }
 
       // If we are here, we might be blocked or the structure changed significantly
-      if (html.includes('Cloudflare') || html.includes('captcha') || html.includes('challenge-platform')) {
-          throw new Error('Access to the ChatGPT link was blocked by security filters (Cloudflare). Please try again later or use a different link.');
+      const cloudflareBlock = html.includes('Cloudflare') || html.includes('captcha') || html.includes('challenge-platform') || html.includes('cf-browser-verification');
+      
+      if (cloudflareBlock) {
+          console.warn('[AiAuditService] Cloudflare block detected in ChatGPT link.');
+          throw new Error('Access to the ChatGPT link was blocked by security filters (Cloudflare). This often happens with automated requests. Please try again later or use a different link.');
       }
 
       console.warn('[AiAuditService] Could not find messages in __NEXT_DATA__. HTML length:', html.length);
-      // Log a bit of the HTML to help debug if needed (not too much to avoid bloat)
+      // Log more diagnostic info
       if (html.length > 0) {
-        console.log('[AiAuditService] HTML snippet:', html.substring(0, 500));
+        console.log('[AiAuditService] HTML Title:', html.match(/<title>([^<]+)<\/title>/)?.[1] || 'No title');
+        console.log('[AiAuditService] __NEXT_DATA__ present:', !!nextDataMatch);
+        if (nextDataMatch) {
+            console.log('[AiAuditService] __NEXT_DATA__ preview:', nextDataMatch[1].substring(0, 500));
+        }
       }
 
-      return "Transcript could not be extracted automatically. This might be due to a change in ChatGPT's link structure or a temporary block. Please ensure the link is a valid public shared link.";
+      throw new Error("Transcript could not be extracted automatically. This might be due to a change in ChatGPT's link structure or the link being set to private. Please ensure the link is a valid public shared link.");
     } catch (err: any) {
-      console.error('[AiAuditService] fetchChatTranscript error:', err);
+      console.error('[AiAuditService] fetchChatTranscript error:', err.message);
       throw err; // Re-throw to be caught by the route handler
     }
   }

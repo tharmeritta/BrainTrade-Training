@@ -11,7 +11,15 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Fetch transcript
-    const transcript = await AiAuditService.fetchChatTranscript(link);
+    let transcript: string;
+    try {
+      transcript = await AiAuditService.fetchChatTranscript(link);
+    } catch (fetchErr: any) {
+      return NextResponse.json({ 
+        error: fetchErr.message || 'Could not fetch transcript from the provided link.' 
+      }, { status: 400 });
+    }
+
     if (!transcript) {
         return NextResponse.json({ error: 'Could not fetch transcript. The link might be private or invalid.' }, { status: 400 });
     }
