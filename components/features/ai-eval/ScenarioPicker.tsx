@@ -248,12 +248,10 @@ export const ScenarioPicker = memo(({
                         </div>
 
                         <div className="flex flex-wrap gap-2 pt-2">
-                          {s.initialMood && (
-                            <div className="flex items-center gap-1.5 px-2 py-1 bg-secondary/50 rounded-lg text-[9px] font-bold text-foreground/70">
-                              <Smile size={10} className="opacity-60" />
-                              {s.initialMood}
-                            </div>
-                          )}
+                          <div className="flex items-center gap-1.5 px-2 py-1 bg-primary/5 rounded-lg text-[9px] font-bold text-primary/70">
+                            <ShieldCheck size={10} className="opacity-60" />
+                            AI Audit
+                          </div>
                           {s.objective && (
                             <div className="flex items-center gap-1.5 px-2 py-1 bg-secondary/50 rounded-lg text-[9px] font-bold text-foreground/70 max-w-full">
                               <Target size={10} className="opacity-60 shrink-0" />
@@ -272,7 +270,7 @@ export const ScenarioPicker = memo(({
                                 ? 'bg-emerald-500 text-white shadow-emerald-500/20'
                                 : 'bg-primary text-white shadow-primary/20 group-hover:scale-110'
                             }`}>
-                              <Play size={16} fill="currentColor" className={isCompleted ? '' : 'translate-x-0.5'} />
+                              <ShieldCheck size={16} className={isCompleted ? '' : ''} />
                             </div>
                           </div>
                         )}
