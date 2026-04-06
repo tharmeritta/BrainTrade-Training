@@ -156,7 +156,7 @@ export function AuditFlow({ scenario, onBack, onSubmit, loading, error }: AuditF
               )}
 
               <button
-                disabled={loading || !link.trim() || !link.includes('chatgpt.com/share')}
+                disabled={loading || !link.trim() || !(link.includes('chatgpt.com/') || link.includes('chat.openai.com/') || link.includes('openai.com/s/'))}
                 onClick={() => onSubmit(link)}
                 className="w-full flex items-center justify-center gap-3 bg-primary text-white py-4 rounded-2xl font-black tracking-tight shadow-xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:grayscale disabled:scale-100"
               >

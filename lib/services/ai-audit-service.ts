@@ -26,20 +26,39 @@ export class AiAuditService {
       const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([^<]+)<\/script>/);
       if (nextDataMatch) {
         const jsonData = JSON.parse(nextDataMatch[1]);
-        const messages = jsonData.props?.pageProps?.sharedConversation?.messages || [];
         
-        return messages
-          .filter((m: any) => m.role === 'user' || m.role === 'assistant')
-          .map((m: any) => {
-            const role = m.role === 'user' ? 'Agent' : 'Customer';
-            const text = m.content?.parts?.join('\n') || '';
-            return `${role}: ${text}`;
-          })
-          .join('\n\n');
+        // Try multiple paths for messages
+        const messages = 
+          jsonData.props?.pageProps?.sharedConversation?.messages || 
+          jsonData.props?.pageProps?.serverResponse?.data?.messages ||
+          jsonData.props?.pageProps?.initialResponse?.data?.messages ||
+          [];
+        
+        if (messages.length > 0) {
+          return messages
+            .filter((m: any) => m.role === 'user' || m.role === 'assistant')
+            .map((m: any) => {
+              const role = m.role === 'user' ? 'Agent' : 'Customer';
+              // Handle different content structures
+              let text = '';
+              if (m.content?.parts) {
+                text = m.content.parts.join('\n');
+              } else if (typeof m.content === 'string') {
+                text = m.content;
+              } else if (m.content?.text) {
+                text = m.content.text;
+              }
+              return `${role}: ${text}`;
+            })
+            .join('\n\n');
+        }
       }
 
-      // Fallback: simple regex for pre-rendered content if __NEXT_DATA__ fails
-      // (Though ChatGPT usually relies on __NEXT_DATA__)
+      // If we are here, we might be blocked or the structure changed significantly
+      if (html.includes('Cloudflare') || html.includes('captcha')) {
+          throw new Error('Access to the ChatGPT link was blocked by security filters. Please try again later.');
+      }
+
       return "Transcript could not be extracted automatically. Please ensure the link is a valid ChatGPT shared link.";
     } catch (err) {
       console.error('[AiAuditService] fetchChatTranscript error:', err);
