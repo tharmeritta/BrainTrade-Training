@@ -4,20 +4,23 @@ import { AiAuditService } from '@/lib/services/ai-audit-service';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { agentId, agentName, scenarioId, link } = body;
+    const { agentId, agentName, scenarioId, link, transcript: directTranscript } = body;
 
-    if (!agentId || !scenarioId || !link) {
-      return NextResponse.json({ error: 'agentId, scenarioId, and link are required' }, { status: 400 });
+    if (!agentId || !scenarioId || (!link && !directTranscript)) {
+      return NextResponse.json({ error: 'agentId, scenarioId, and either link or transcript are required' }, { status: 400 });
     }
 
-    // 1. Fetch transcript
-    let transcript: string;
-    try {
-      transcript = await AiAuditService.fetchChatTranscript(link);
-    } catch (fetchErr: any) {
-      return NextResponse.json({ 
-        error: fetchErr.message || 'Could not fetch transcript from the provided link.' 
-      }, { status: 400 });
+    // 1. Fetch transcript or use direct one
+    let transcript: string = directTranscript || '';
+    
+    if (!transcript && link) {
+      try {
+        transcript = await AiAuditService.fetchChatTranscript(link);
+      } catch (fetchErr: any) {
+        return NextResponse.json({ 
+          error: fetchErr.message || 'Could not fetch transcript from the provided link.' 
+        }, { status: 400 });
+      }
     }
 
     if (!transcript) {

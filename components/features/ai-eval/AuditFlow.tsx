@@ -13,7 +13,7 @@ import type { EvalScenario } from './types';
 interface AuditFlowProps {
   scenario: EvalScenario;
   onBack: () => void;
-  onSubmit: (link: string) => void;
+  onSubmit: (link: string, transcript?: string) => void;
   loading: boolean;
   error: string | null;
 }
@@ -21,6 +21,10 @@ interface AuditFlowProps {
 export function AuditFlow({ scenario, onBack, onSubmit, loading, error }: AuditFlowProps) {
   const [copied, setCopied] = useState(false);
   const [link, setLink] = useState('');
+  const [manualTranscript, setManualTranscript] = useState('');
+  const [showManual, setShowManual] = useState(false);
+
+  const isCloudflareError = error?.includes('Cloudflare') || error?.includes('security filters');
 
   const defaultPrompt = `เล่นบทเป็นลูกค้าคนไทย: ${scenario.customerPersona || scenario.name}
 อารมณ์: ${scenario.initialMood || 'ปกติ'}
@@ -38,6 +42,14 @@ export function AuditFlow({ scenario, onBack, onSubmit, loading, error }: AuditF
     navigator.clipboard.writeText(promptToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSubmit = () => {
+    if (showManual) {
+      onSubmit('', manualTranscript);
+    } else {
+      onSubmit(link);
+    }
   };
 
   return (
@@ -119,65 +131,129 @@ export function AuditFlow({ scenario, onBack, onSubmit, loading, error }: AuditF
                 <ShieldCheck size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-black tracking-tight">Step 2: Submit Link</h3>
+                <h3 className="text-lg font-black tracking-tight">Step 2: {showManual ? 'Paste Transcript' : 'Submit Link'}</h3>
                 <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Get AI Audit Results</p>
               </div>
             </div>
 
-            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-              Once you finish the conversation, click <b>&quot;Share Link&quot;</b> in ChatGPT and paste it here. Our AI auditor will analyze your performance.
-            </p>
+            {!showManual ? (
+              <>
+                <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+                  Once you finish the conversation, click <b>&quot;Share Link&quot;</b> in ChatGPT and paste it here. Our AI auditor will analyze your performance.
+                </p>
 
-            <div className="space-y-4">
-              <div className="relative">
-                <div className={`absolute inset-0 bg-white dark:bg-black/20 rounded-2xl border-2 transition-all duration-300 ${
-                  error ? 'border-rose-500/50' : 'border-primary/10 focus-within:border-primary/50'
-                }`} />
-                <div className="relative flex items-center px-4 py-3">
-                  <Search size={18} className="text-muted-foreground mr-3" />
-                  <input
-                    type="url"
-                    value={link}
-                    onChange={(e) => setLink(e.target.value)}
-                    placeholder="https://chatgpt.com/share/..."
-                    className="flex-1 bg-transparent border-none focus:ring-0 text-sm font-bold placeholder:text-muted-foreground/30"
+                <div className="space-y-4">
+                  <div className="relative">
+                    <div className={`absolute inset-0 bg-white dark:bg-black/20 rounded-2xl border-2 transition-all duration-300 ${
+                      error ? 'border-rose-500/50' : 'border-primary/10 focus-within:border-primary/50'
+                    }`} />
+                    <div className="relative flex items-center px-4 py-3">
+                      <Search size={18} className="text-muted-foreground mr-3" />
+                      <input
+                        type="url"
+                        value={link}
+                        onChange={(e) => setLink(e.target.value)}
+                        placeholder="https://chatgpt.com/share/..."
+                        className="flex-1 bg-transparent border-none focus:ring-0 text-sm font-bold placeholder:text-muted-foreground/30"
+                      />
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div className="space-y-2">
+                      <motion.p 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-xs font-bold text-rose-500 px-2"
+                      >
+                        {error}
+                      </motion.p>
+                      {isCloudflareError && (
+                        <button
+                          onClick={() => setShowManual(true)}
+                          className="w-full py-2 text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 rounded-lg border border-primary/20 hover:bg-primary/10 transition-colors"
+                        >
+                          Try Manual Paste Instead
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  <button
+                    disabled={loading || !link.trim() || !(link.includes('chatgpt.com/') || link.includes('chat.openai.com/') || link.includes('openai.com/s/'))}
+                    onClick={handleSubmit}
+                    className="w-full flex items-center justify-center gap-3 bg-primary text-white py-4 rounded-2xl font-black tracking-tight shadow-xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:grayscale disabled:scale-100"
+                  >
+                    {loading ? (
+                      <>
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                        >
+                          <Zap size={20} />
+                        </motion.div>
+                        Auditing...
+                      </>
+                    ) : (
+                      <>
+                        <Send size={18} />
+                        Submit Link
+                      </>
+                    )}
+                  </button>
+                  
+                  <button 
+                    onClick={() => setShowManual(true)}
+                    className="w-full text-[10px] font-bold text-muted-foreground/50 hover:text-primary transition-colors"
+                  >
+                    Or paste transcript manually
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="space-y-4 flex-1 flex flex-col">
+                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                  Copy the entire conversation from ChatGPT and paste it below.
+                </p>
+                <div className="relative flex-1 min-h-[200px]">
+                  <div className={`absolute inset-0 bg-white dark:bg-black/20 rounded-2xl border-2 transition-all duration-300 ${
+                    error ? 'border-rose-500/50' : 'border-primary/10 focus-within:border-primary/50'
+                  }`} />
+                  <textarea
+                    value={manualTranscript}
+                    onChange={(e) => setManualTranscript(e.target.value)}
+                    placeholder="Paste the conversation transcript here..."
+                    className="relative w-full h-full bg-transparent border-none focus:ring-0 p-4 text-xs font-medium leading-relaxed resize-none"
                   />
                 </div>
-              </div>
 
-              {error && (
-                <motion.p 
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-xs font-bold text-rose-500 px-2"
-                >
-                  {error}
-                </motion.p>
-              )}
-
-              <button
-                disabled={loading || !link.trim() || !(link.includes('chatgpt.com/') || link.includes('chat.openai.com/') || link.includes('openai.com/s/'))}
-                onClick={() => onSubmit(link)}
-                className="w-full flex items-center justify-center gap-3 bg-primary text-white py-4 rounded-2xl font-black tracking-tight shadow-xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:grayscale disabled:scale-100"
-              >
-                {loading ? (
-                  <>
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    >
-                      <Zap size={20} />
-                    </motion.div>
-                    Auditing Practice...
-                  </>
-                ) : (
-                  <>
-                    <Send size={18} />
-                    Submit for AI Audit
-                  </>
+                {error && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs font-bold text-rose-500 px-2"
+                  >
+                    {error}
+                  </motion.p>
                 )}
-              </button>
-            </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowManual(false)}
+                    className="flex-1 py-4 rounded-2xl font-black tracking-tight bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-all"
+                  >
+                    Back to Link
+                  </button>
+                  <button
+                    disabled={loading || manualTranscript.trim().length < 20}
+                    onClick={handleSubmit}
+                    className="flex-[2] flex items-center justify-center gap-3 bg-primary text-white py-4 rounded-2xl font-black tracking-tight shadow-xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                  >
+                    {loading ? 'Auditing...' : 'Submit Transcript'}
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="mt-auto pt-8">
               <div className="p-4 bg-white/50 dark:bg-black/20 rounded-2xl border border-black/5">

@@ -86,7 +86,7 @@ export default function AiEvaluation() {
     }
   }, [scenarios]);
 
-  const handleAuditSubmit = useCallback(async (link: string) => {
+  const handleAuditSubmit = useCallback(async (link: string, transcript?: string) => {
     if (!selectedScenario || loading) return;
     
     const effectiveId = agentId || 'staff-test-user';
@@ -103,7 +103,8 @@ export default function AiEvaluation() {
           agentId: effectiveId, 
           agentName: effectiveName, 
           scenarioId: selectedScenario.id,
-          link 
+          link,
+          transcript
         }),
       });
 

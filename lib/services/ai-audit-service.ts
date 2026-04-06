@@ -121,6 +121,9 @@ export class AiAuditService {
     scenarioId: string,
     transcript: string
   ): Promise<AiEvalTurnResponse> {
+    if (!transcript || transcript.trim().length < 10) {
+      throw new Error('Transcript is too short or empty. Please provide a valid conversation.');
+    }
     const scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, scenarioId);
     if (!scenario) throw new Error('Scenario not found');
 
