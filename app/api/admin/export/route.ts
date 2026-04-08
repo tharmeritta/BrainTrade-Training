@@ -93,13 +93,21 @@ function buildIndividualSheet(stat: AgentStats) {
     [],
     [],
     ['HUMAN EVALUATIONS (Quality Assurance)'],
-    ['Evaluator', 'Score', 'Date', 'Comments'],
-    ...(stat.humanEvaluations || []).map(h => [
-      h.evaluatorName,
-      h.totalScore,
-      h.evaluatedAt.slice(0, 10),
-      h.comments
-    ]),
+    ['Evaluator', 'Score', 'Result', 'Date', 'Red Flags', 'QA Thoughts', 'General Remark', 'Comments'],
+    ...(stat.humanEvaluations || []).map(h => {
+      const c = h.criteria as any;
+      const redFlags = c?.redFlags ? Object.entries(c.redFlags).filter(([_, v]) => v).map(([k]) => k).join(', ') : '';
+      return [
+        h.evaluatorName,
+        h.totalScore,
+        c?.finalResult?.toUpperCase() || (h.totalScore >= 70 ? 'PASSED' : 'FAILED'),
+        h.evaluatedAt.slice(0, 10),
+        redFlags,
+        c?.qaThoughts || '',
+        c?.generalRemark || '',
+        h.comments
+      ];
+    }),
   ];
 
   const ws = XLSX.utils.aoa_to_sheet(rows);

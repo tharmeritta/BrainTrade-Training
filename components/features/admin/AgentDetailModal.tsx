@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { Target, Zap, TrendingUp, ClipboardCheck, X, Clock, GraduationCap, ShieldCheck, Loader2, Copy, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Target, Zap, TrendingUp, ClipboardCheck, X, Clock, GraduationCap, ShieldCheck, Loader2, Copy, CheckCircle2, AlertCircle, AlertTriangle, Flag, ShieldAlert } from 'lucide-react';
 import type { AgentStats } from '@/types';
 import { BadgePill } from './AdminComponents';
 import { scoreColor, timeAgo } from './AdminHelpers';
+import DetailedEvaluation from './DetailedEvaluation';
 
 // --- Bypass Modal Component ---
 
@@ -394,38 +395,18 @@ function DetailedAiEvalHistory({
 function DetailedHumanEvaluations({ stats }: { stats: AgentStats }) {
   const t = useTranslations('admin');
   const evals = stats.humanEvaluations || [];
+  
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
         <ClipboardCheck size={18} className="text-blue-500" />
         <h4 className="font-bold text-base">{t('agentDetail.humanQa')}</h4>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-6">
         {evals.length === 0 ? (
           <div className="text-center py-8 bg-secondary/20 rounded-2xl border border-dashed border-border text-muted-foreground text-xs">{t('agentDetail.noHumanEvals')}</div>
         ) : evals.map((ev, i) => (
-          <div key={i} className="bg-secondary/20 p-4 rounded-2xl border border-border/50 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center font-black text-blue-400 text-sm border border-blue-500/20">
-                  {ev.totalScore}
-                </div>
-                <div>
-                  <div className="text-[10px] text-muted-foreground uppercase font-bold">{t('agentDetail.evaluatedBy')}</div>
-                  <div className="text-xs font-bold text-foreground">{ev.evaluatorName}</div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-[10px] text-muted-foreground uppercase font-bold">{new Date(ev.evaluatedAt).toLocaleDateString(t('tabs.overview') === 'ภาพรวม' ? 'th-TH' : 'en-GB', { day: 'numeric', month: 'short' })}</div>
-                <div className="text-[9px] text-muted-foreground/60">{timeAgo(ev.evaluatedAt, t)}</div>
-              </div>
-            </div>
-            {ev.comments && (
-              <div className="bg-card/40 p-3 rounded-xl border border-border/30">
-                <p className="text-[11px] text-muted-foreground leading-relaxed italic">&quot;{ev.comments}&quot;</p>
-              </div>
-            )}
-          </div>
+          <DetailedEvaluation key={i} ev={ev} />
         ))}
       </div>
     </div>
