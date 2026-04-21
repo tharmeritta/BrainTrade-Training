@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { fsAdd } from '@/lib/firestore-db';
 import { MOCKUP_AGENT_ID } from '@/lib/agent-session';
 import { getCanonicalQuizKey } from '@/lib/registry';
+import { updateGlobalQuizStats, updateAgentOverallScore } from '@/lib/services/stats-service';
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,7 +11,11 @@ export async function POST(req: NextRequest) {
     const moduleId = getCanonicalQuizKey(rawModuleId);
 
     if (agentId && agentName && agentId !== MOCKUP_AGENT_ID) {
-      await fsAdd('quiz_results', { agentId, agentName, moduleId, score, totalQuestions, passed, percentage });
+      await Promise.all([
+        fsAdd('quiz_results', { agentId, agentName, moduleId, score, totalQuestions, passed, percentage }),
+        updateGlobalQuizStats(moduleId, percentage, passed),
+        updateAgentOverallScore(agentId, agentName)
+      ]);
     }
 
     return NextResponse.json({ passed, score, totalQuestions });

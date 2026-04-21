@@ -2,7 +2,8 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { Activity, Zap, Target, Clock, User } from 'lucide-react';
+import { Activity, Zap, Target } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface FeedItem {
   id: string;
@@ -18,6 +19,13 @@ interface FeedItem {
 
 export default function LiveFeed({ feed }: { feed: FeedItem[] }) {
   const t = useTranslations('admin');
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    // Update every minute to keep "timeAgo" accurate without excessive renders
+    const interval = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -29,7 +37,7 @@ export default function LiveFeed({ feed }: { feed: FeedItem[] }) {
   };
 
   const timeAgo = (iso: string) => {
-    const diff = Date.now() - new Date(iso).getTime();
+    const diff = now - new Date(iso).getTime();
     const m = Math.floor(diff / 60000);
     if (m < 1) return 'now';
     if (m < 60) return `${m}m`;
@@ -100,4 +108,3 @@ export default function LiveFeed({ feed }: { feed: FeedItem[] }) {
     </div>
   );
 }
-

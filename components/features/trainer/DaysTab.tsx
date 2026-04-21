@@ -106,7 +106,12 @@ const DayRecordForm = memo(function DayRecordForm({
               <AnimatePresence>
                 {showOptions && (
                   <>
-                    <div className="fixed inset-0 z-10" onClick={() => setShowOptions(false)} />
+                    <button 
+                      type="button"
+                      className="fixed inset-0 z-10 w-full h-full cursor-default bg-transparent border-none" 
+                      onClick={() => setShowOptions(false)}
+                      aria-label="Close options"
+                    />
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95, y: 5 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -293,6 +298,16 @@ export function DaysTab({ period, records, onRecordSaved, onPeriodUpdated, onRem
                 setExpandedDay(isExpanded ? null : day);
                 setVisibleCount(10); // Reset count when switching days
               }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setExpandedDay(isExpanded ? null : day);
+                  setVisibleCount(10);
+                }
+              }}
+              aria-expanded={isExpanded}
             >
               <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm flex-shrink-0"
                 style={{ background: badgeBg, color: badgeColor, border: `1px solid ${badgeBorder}` }}>

@@ -119,11 +119,19 @@ export default function SandboxManagerModal({ onClose, onSuccess }: SandboxManag
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
     >
+      <div 
+        className="absolute inset-0 z-0" 
+        onClick={onClose}
+        aria-hidden="true"
+      />
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-        className="bg-card border border-border rounded-3xl p-6 w-full max-w-lg shadow-2xl"
+        className="bg-card border border-border rounded-3xl p-6 w-full max-w-lg shadow-2xl z-10"
+        role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
       >
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
@@ -148,6 +156,14 @@ export default function SandboxManagerModal({ onClose, onSuccess }: SandboxManag
 
           <div 
             onClick={() => fileInputRef.current?.click()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                fileInputRef.current?.click();
+              }
+            }}
+            role="button"
+            tabIndex={0}
             className={`border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all ${file ? 'border-primary/50 bg-primary/5' : 'border-border hover:border-primary/30 hover:bg-secondary/30'}`}
           >
             <Upload size={32} className={file ? 'text-primary' : 'text-muted-foreground'} />

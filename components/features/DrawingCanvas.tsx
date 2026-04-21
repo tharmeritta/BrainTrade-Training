@@ -147,6 +147,12 @@ export default function DrawingCanvas({
       onTouchStart={handleStart}
       onTouchMove={handleMove}
       onTouchEnd={handleEnd}
+      role="button"
+      aria-label="Presentation drawing canvas"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') handleEnd();
+      }}
+      tabIndex={isActive && mode ? 0 : -1}
     >
       <canvas 
         ref={canvasRef} 

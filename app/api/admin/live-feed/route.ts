@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdminManagerOrTrainer } from '@/lib/session';
-import { fsGetAll } from '@/lib/firestore-db';
+import { fsQuery } from '@/lib/firestore-db';
 
 interface FeedItem {
   id: string;
@@ -22,10 +22,15 @@ export async function GET() {
   }
 
   try {
+    const queryOptions = {
+      orderBy: { field: 'timestamp', direction: 'desc' as const },
+      limit: 50
+    };
+
     const [quizDocs, evalDocs, learnDocs] = await Promise.all([
-      fsGetAll<{ id: string; agentId: string; agentName: string; moduleId: string; score: number; totalQuestions: number; passed: boolean; timestamp: string }>('quiz_results'),
-      fsGetAll<{ id: string; agentId: string; agentName: string; level: number; score: number; timestamp: string; passed: boolean }>('ai_eval_logs'),
-      fsGetAll<{ id: string; agentId: string; agentName: string; moduleId: string; timestamp: string }>('learning_logs'),
+      fsQuery<{ id: string; agentId: string; agentName: string; moduleId: string; score: number; totalQuestions: number; passed: boolean; timestamp: string }>('quiz_results', queryOptions),
+      fsQuery<{ id: string; agentId: string; agentName: string; level: number; score: number; timestamp: string; passed: boolean }>('ai_eval_logs', queryOptions),
+      fsQuery<{ id: string; agentId: string; agentName: string; moduleId: string; timestamp: string }>('learning_logs', queryOptions),
     ]);
 
     const feed: FeedItem[] = [

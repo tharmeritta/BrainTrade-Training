@@ -12,7 +12,7 @@ import { TrainerService } from '@/lib/services/trainer-service';
 import { DaysTab } from './DaysTab';
 import { DisciplineTab } from './DisciplineTab';
 import { useAgentPresence } from '@/lib/presence';
-import { useSummon } from '../SummonProvider';
+import { useSummon } from '../SessionProvider';
 import { useLivePresentation } from '@/lib/live-presentation';
 
 interface PeriodDetailProps {

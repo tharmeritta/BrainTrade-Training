@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
         const agent = await fsAdd('agents', { 
           name: a.name.trim(), 
           stageName: a.stageName?.trim() || '',
+          normalizedName: a.name.trim().toLowerCase().replace(/\s+/g, ' '),
           active: true 
         });
         results.push(agent);
@@ -67,6 +68,7 @@ export async function POST(req: NextRequest) {
     const agent = await fsAdd('agents', { 
       name: name.trim(), 
       stageName: stageName?.trim() || '',
+      normalizedName: name.trim().toLowerCase().replace(/\s+/g, ' '),
       active: true 
     });
     return NextResponse.json(agent);

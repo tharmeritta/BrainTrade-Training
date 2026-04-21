@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerUser } from '@/lib/session';
-import { fsGetAll, fsAdd } from '@/lib/firestore-db';
+import { fsQuery, fsAdd } from '@/lib/firestore-db';
 import type { AgentEvaluation } from '@/types';
 
 export async function GET(req: Request) {
@@ -13,13 +13,16 @@ export async function GET(req: Request) {
   const agentId      = searchParams.get('agentId');
   const evaluatorId  = searchParams.get('evaluatorId');
 
-  const evals = await fsGetAll<AgentEvaluation>('agent_evaluations');
-  let filtered = evals;
-  if (agentId)     filtered = filtered.filter(e => e.agentId === agentId);
-  if (evaluatorId) filtered = filtered.filter(e => e.evaluatorId === evaluatorId);
+  const where: any[] = [];
+  if (agentId)     where.push({ field: 'agentId', op: '==', value: agentId });
+  if (evaluatorId) where.push({ field: 'evaluatorId', op: '==', value: evaluatorId });
 
-  filtered.sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
-  return NextResponse.json({ evaluations: filtered });
+  const evals = await fsQuery<AgentEvaluation>('agent_evaluations', {
+    where,
+    orderBy: { field: 'evaluatedAt', direction: 'desc' }
+  });
+
+  return NextResponse.json({ evaluations: evals });
 }
 
 export async function POST(req: Request) {

@@ -6,8 +6,11 @@ import { motion } from 'framer-motion';
 export const BackgroundEffects = memo(({ badgeColor }: { badgeColor: string }) => (
   <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
     <div 
-      className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03] contrast-125 brightness-100 mix-blend-overlay" 
-      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} 
+      className="absolute inset-0 opacity-[0.01] dark:opacity-[0.02] contrast-100 brightness-100" 
+      style={{ 
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        mixBlendMode: 'overlay'
+      }} 
     />
 
     <motion.div 
@@ -29,15 +32,17 @@ export const BackgroundEffects = memo(({ badgeColor }: { badgeColor: string }) =
       transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
     />
     
-    <motion.div 
-      className="absolute inset-0 opacity-[0.02]"
-      style={{
-        backgroundImage: `linear-gradient(var(--hub-grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--hub-grid-color) 1px, transparent 1px)`,
-        backgroundSize: '64px 64px',
-      }}
-      animate={{ backgroundPosition: ['0px 0px', '64px 64px'] }}
-      transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
-    />
+    <div className="absolute inset-0 opacity-[0.02] overflow-hidden">
+      <motion.div 
+        className="absolute w-[200%] h-[200%] -top-1/2 -left-1/2 will-change-transform"
+        style={{
+          backgroundImage: `linear-gradient(var(--hub-grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--hub-grid-color) 1px, transparent 1px)`,
+          backgroundSize: '64px 64px',
+        }}
+        animate={{ x: [0, 64], y: [0, 64] }}
+        transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+      />
+    </div>
   </div>
 ));
 

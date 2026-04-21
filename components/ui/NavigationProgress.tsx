@@ -8,20 +8,22 @@ export default function NavigationProgress() {
   const [visible, setVisible] = useState(false);
   const [width, setWidth] = useState(0);
   const pathname = usePathname();
-  const doneTimer = useRef<ReturnType<typeof setTimeout>>();
+  const doneTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // When pathname actually changes → complete the bar
   useEffect(() => {
     if (!visible) return;
     setWidth(100);
     doneTimer.current = setTimeout(() => setVisible(false), 350);
-    return () => clearTimeout(doneTimer.current);
+    return () => {
+      if (doneTimer.current) clearTimeout(doneTimer.current);
+    };
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Listen for nav:start from NavBar clicks
   useEffect(() => {
     function handleStart() {
-      clearTimeout(doneTimer.current);
+      if (doneTimer.current) clearTimeout(doneTimer.current);
       setVisible(true);
       setWidth(0);
       // Two rAFs ensure the width:0 paint lands before we animate to 72%

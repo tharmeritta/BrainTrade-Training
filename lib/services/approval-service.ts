@@ -1,5 +1,6 @@
 import { fsAdd, fsUpdate, fsDelete, fsGet, fsSet } from '@/lib/firestore-db';
 import type { ApprovalRequest, ApprovalActionType } from '@/types';
+import { updateGlobalAgentCounts } from './stats-service';
 
 export async function createApprovalRequest(
   requester: { uid: string; name: string },
@@ -74,15 +75,23 @@ async function executeApprovedAction(request: ApprovalRequest) {
       break;
     case 'create_agent':
       await fsAdd('agents', data);
+      await updateGlobalAgentCounts(1, data.active ? 1 : 0);
       break;
     case 'edit_agent':
       if (targetId) await fsUpdate('agents', targetId, data);
       break;
     case 'delete_agent':
-      if (targetId) await fsDelete('agents', targetId);
+      if (targetId) {
+        const agent = await fsGet<any>('agents', targetId);
+        await fsDelete('agents', targetId);
+        if (agent) await updateGlobalAgentCounts(-1, agent.active ? -1 : 0);
+      }
       break;
     case 'toggle_agent':
-      if (targetId) await fsUpdate('agents', targetId, { active: data.active });
+      if (targetId) {
+        await fsUpdate('agents', targetId, { active: data.active });
+        await updateGlobalAgentCounts(0, data.active ? 1 : -1);
+      }
       break;
     case 'request_interactive_access':
       const until = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();

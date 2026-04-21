@@ -10,6 +10,10 @@ import { getAuth, Auth } from 'firebase-admin/auth';
 function cleanValue(val: string | undefined): string {
   if (!val) return '';
   let s = val.trim();
+  // Handle double-escaped backslashes (common in some env setups)
+  if (s.includes('\\\"')) {
+    s = s.replace(/\\\"/g, '"').replace(/\\\\/g, '\\');
+  }
   while ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
     s = s.substring(1, s.length - 1).trim();
   }
@@ -142,7 +146,7 @@ function getAdminApp(): App {
     const databaseURL = cleanValue(process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL);
     
     // --- Admin Emulator Logic ---
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === 'true') {
       console.log('[Firebase Admin] Setting emulator environment variables...');
       process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8080';
       process.env.FIREBASE_DATABASE_EMULATOR_HOST = 'localhost:9000';

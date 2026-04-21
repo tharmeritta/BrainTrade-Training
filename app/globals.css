@@ -95,8 +95,13 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-dm-sans), system-ui, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+}
+
+.font-mono {
+  font-family: var(--font-dm-mono), monospace;
 }
 
 /* Glass utility — light and dark variants */

@@ -52,21 +52,31 @@ if (typeof window !== 'undefined') {
   }
 }
 
-export const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+let app: any;
+try {
+  app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+} catch (err) {
+  console.error('[Firebase] Initialization failed:', err);
+  app = getApps().length ? getApp() : initializeApp({ apiKey: 'dummy' });
+}
+
+export { app };
 export const db  = getFirestore(app);
 export const rtdb = getDatabase(app);
 export const storage = getStorage(app);
 export const auth = getAuth(app);
 
 // --- Emulator Logic ---
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === 'true') {
   if (typeof window !== 'undefined') {
-    console.log('[Firebase Client] Connecting to emulators...');
+    console.log('[Firebase Client] Connecting to local emulators...');
     connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
     connectFirestoreEmulator(db, 'localhost', 8080);
     connectDatabaseEmulator(rtdb, 'localhost', 9000);
     connectStorageEmulator(storage, 'localhost', 9199);
   }
+} else if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+  console.log('[Firebase Client] Using production Firebase project (emulator not enabled).');
 }
 
 // Analytics is browser-only

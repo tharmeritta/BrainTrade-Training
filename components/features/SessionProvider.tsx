@@ -1,11 +1,20 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { ref, onValue, set, remove, serverTimestamp } from 'firebase/database';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { ref, onValue, set, remove } from 'firebase/database';
 import { rtdb } from '@/lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Radio, X, ArrowRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { 
+  getAgentSession, 
+  setAgentSession as saveAgentSession, 
+  clearAgentSession as removeAgentSession,
+  AgentSession 
+} from '@/lib/agent-session';
+import { useTrackPresence } from '@/lib/presence';
+
+// --- Types ---
 
 interface SummonMessage {
   trainerId: string;
@@ -15,21 +24,55 @@ interface SummonMessage {
   timestamp: number;
 }
 
-interface SummonContextType {
+interface SessionContextType {
+  // Agent Session
+  agent: AgentSession | null;
+  setAgent: (session: AgentSession) => void;
+  logoutAgent: () => void;
+  isLoading: boolean;
+  
+  // Summoning
   summon: (agentIds: string[], moduleId: string, moduleTitle: string, trainerId: string, trainerName: string) => Promise<void>;
 }
 
-const SummonContext = createContext<SummonContextType | undefined>(undefined);
+// --- Context ---
 
-export const SummonProvider: React.FC<{ children: React.ReactNode; agentId?: string; locale: string }> = ({ children, agentId, locale }) => {
+const SessionContext = createContext<SessionContextType | undefined>(undefined);
+
+// --- Provider ---
+
+export const SessionProvider: React.FC<{ children: React.ReactNode; locale: string }> = ({ children, locale }) => {
+  const [agent, setAgentState] = useState<AgentSession | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeSummon, setActiveSummon] = useState<SummonMessage | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
-  // 1. Listen for summons (Agent Side)
+  // 1. Initialize Session
   useEffect(() => {
-    if (!agentId) return;
+    const session = getAgentSession();
+    setAgentState(session);
+    setIsLoading(false);
 
-    const summonRef = ref(rtdb, `summons/${agentId}`);
+    // Sync state if localStorage changes in another tab or via clearAgentSession
+    const handleStorageChange = () => {
+      setAgentState(getAgentSession());
+    };
+    window.addEventListener('agent-session-changed', handleStorageChange);
+    return () => window.removeEventListener('agent-session-changed', handleStorageChange);
+  }, []);
+
+  // 2. Presence Tracking
+  useTrackPresence(agent?.id, agent?.name);
+
+  // 3. Summon Listening
+  useEffect(() => {
+    if (!agent?.id) {
+      setActiveSummon(null);
+      return;
+    }
+
+    const summonRef = ref(rtdb, `summons/${agent.id}`);
     const unsubscribe = onValue(summonRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val() as SummonMessage;
@@ -43,9 +86,21 @@ export const SummonProvider: React.FC<{ children: React.ReactNode; agentId?: str
     });
 
     return () => unsubscribe();
-  }, [agentId]);
+  }, [agent?.id]);
 
-  // 2. Send summon (Trainer Side)
+  // 4. Session Actions
+  const setAgent = useCallback((session: AgentSession) => {
+    saveAgentSession(session);
+    setAgentState(session);
+  }, []);
+
+  const logoutAgent = useCallback(() => {
+    removeAgentSession();
+    setAgentState(null);
+    router.push(`/${locale}/login/agent`);
+  }, [locale, router]);
+
+  // 5. Summon Actions
   const summon = async (agentIds: string[], moduleId: string, moduleTitle: string, trainerId: string, trainerName: string) => {
     const payload: SummonMessage = {
       trainerId,
@@ -64,18 +119,27 @@ export const SummonProvider: React.FC<{ children: React.ReactNode; agentId?: str
     }, 60000);
   };
 
-  const handleJoin = () => {
-    if (activeSummon) {
+  const handleJoinSummon = () => {
+    if (activeSummon && agent?.id) {
       router.push(`/${locale}/learn/${activeSummon.moduleId}`);
-      remove(ref(rtdb, `summons/${agentId}`));
+      remove(ref(rtdb, `summons/${agent.id}`));
       setActiveSummon(null);
     }
   };
 
+  const value = {
+    agent,
+    setAgent,
+    logoutAgent,
+    isLoading,
+    summon
+  };
+
   return (
-    <SummonContext.Provider value={{ summon }}>
+    <SessionContext.Provider value={value}>
       {children}
       
+      {/* Universal Summon UI */}
       <AnimatePresence>
         {activeSummon && (
           <motion.div
@@ -102,7 +166,7 @@ export const SummonProvider: React.FC<{ children: React.ReactNode; agentId?: str
             </p>
 
             <button
-              onClick={handleJoin}
+              onClick={handleJoinSummon}
               className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 text-sm font-black text-white transition-all active:scale-95 hover:bg-primary/90"
             >
               JOIN SESSION <ArrowRight size={18} />
@@ -110,12 +174,20 @@ export const SummonProvider: React.FC<{ children: React.ReactNode; agentId?: str
           </motion.div>
         )}
       </AnimatePresence>
-    </SummonContext.Provider>
+    </SessionContext.Provider>
   );
 };
 
-export const useSummon = () => {
-  const context = useContext(SummonContext);
-  if (!context) throw new Error('useSummon must be used within a SummonProvider');
+// --- Hooks ---
+
+export const useSession = () => {
+  const context = useContext(SessionContext);
+  if (!context) throw new Error('useSession must be used within a SessionProvider');
   return context;
+};
+
+/** Compatibility hook for legacy code expecting useSummon */
+export const useSummon = () => {
+  const { summon } = useSession();
+  return { summon };
 };

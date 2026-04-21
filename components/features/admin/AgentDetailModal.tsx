@@ -84,9 +84,9 @@ function BypassModal({
         
         <div className="p-8 space-y-6">
           <div className="space-y-3">
-            <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest px-1">1. External AI Practice Prompt</label>
+            <label htmlFor="bypass-prompt" className="text-[10px] font-black uppercase text-muted-foreground tracking-widest px-1">1. External AI Practice Prompt</label>
             <div className="relative group">
-              <div className="w-full bg-secondary/40 p-5 rounded-2xl border border-border text-sm leading-relaxed font-medium italic text-foreground/80 pr-12">
+              <div id="bypass-prompt" className="w-full bg-secondary/40 p-5 rounded-2xl border border-border text-sm leading-relaxed font-medium italic text-foreground/80 pr-12">
                 {promptContent}
               </div>
               <button 
@@ -102,8 +102,9 @@ function BypassModal({
           </div>
 
           <div className="space-y-3">
-            <label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest px-1">2. Bypass Reason</label>
+            <label htmlFor="bypass-reason" className="text-[10px] font-black uppercase text-muted-foreground tracking-widest px-1">2. Bypass Reason</label>
             <textarea 
+              id="bypass-reason"
               value={reason}
               onChange={e => setReason(e.target.value)}
               placeholder="e.g. System outage, manually verified via Discord roleplay..."

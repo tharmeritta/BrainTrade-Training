@@ -104,7 +104,7 @@ export default function AdjustmentsTab({ role, readOnly }: { role: string; readO
   const isIT = role === 'it';
   const confirmITAction = useCallback(() => {
     if (!isIT) return true;
-    return confirm("Confirm to send this request for administrator approval?");
+    return typeof window !== 'undefined' ? window.confirm("Confirm to send this request for administrator approval?") : true;
   }, [isIT]);
 
   const initialConfigsRef = useRef<ConfigData>({});
@@ -161,7 +161,7 @@ export default function AdjustmentsTab({ role, readOnly }: { role: string; readO
 
   const confirmTabChange = (newTab: ConfigType) => {
     if (hasUnsavedChanges) {
-      if (confirm('You have unsaved changes. Are you sure you want to switch tabs? Your changes will be lost.')) {
+      if (typeof window !== 'undefined' && window.confirm('You have unsaved changes. Are you sure you want to switch tabs? Your changes will be lost.')) {
         setActiveTab(newTab);
         setHasUnsavedChanges(false);
         // Reset to initial state for that tab if needed, but for now we just switch
@@ -170,6 +170,16 @@ export default function AdjustmentsTab({ role, readOnly }: { role: string; readO
       setActiveTab(newTab);
     }
   };
+
+  const initialModules = useMemo(() => {
+    const baseline = { ...COURSE_MODULES } as unknown as Record<string, LearnModule>;
+    if (configs.learn?.modules) {
+      Object.keys(configs.learn.modules).forEach(id => {
+        baseline[id] = configs.learn!.modules[id];
+      });
+    }
+    return baseline;
+  }, [configs.learn]);
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-24 gap-4">
@@ -246,6 +256,7 @@ export default function AdjustmentsTab({ role, readOnly }: { role: string; readO
       <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
         {activeTab === 'learn' && (
           <LearnEditor 
+            initialModules={initialModules}
             data={configs.learn} 
             onSave={(data) => handleSave('learn', data)} 
             onChange={() => setHasUnsavedChanges(true)}
@@ -480,7 +491,7 @@ function QuizzesEditor({ data, onSave, onChange, saving, readOnly }: { data: Qui
 
   const handleDeleteQuiz = (id: string) => {
     const title = definitions[id]?.title?.en || id;
-    if (confirm(`Delete quiz "${title}" (${id})?`)) {
+    if (typeof window !== 'undefined' && window.confirm(`Delete quiz "${title}" (${id})?`)) {
       const updated = { ...definitions };
       delete updated[id];
       setDefinitions(updated);
@@ -500,7 +511,7 @@ function QuizzesEditor({ data, onSave, onChange, saving, readOnly }: { data: Qui
 
   const deleteSelectedQuestions = () => {
     if (!selectedQuiz) return;
-    if (confirm(`Delete ${selectedQuestions.length} questions?`)) {
+    if (typeof window !== 'undefined' && window.confirm(`Delete ${selectedQuestions.length} questions?`)) {
       const updated = { ...definitions };
       updated[selectedQuiz].questions = (updated[selectedQuiz].questions || []).filter((_, i) => !selectedQuestions.includes(i));
       setDefinitions(updated);
@@ -599,8 +610,9 @@ function QuizzesEditor({ data, onSave, onChange, saving, readOnly }: { data: Qui
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase opacity-50 px-1">Internal ID (No spaces)</label>
+              <label htmlFor="internal-id" className="text-[10px] font-black uppercase opacity-50 px-1">Internal ID (No spaces)</label>
               <input 
+                id="internal-id"
                 type="text" 
                 defaultValue={selectedQuiz} 
                 onBlur={e => handleUpdateQuizId(selectedQuiz, e.target.value)} 
@@ -608,8 +620,9 @@ function QuizzesEditor({ data, onSave, onChange, saving, readOnly }: { data: Qui
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase opacity-50 px-1">Pass Threshold (%)</label>
+              <label htmlFor="pass-threshold" className="text-[10px] font-black uppercase opacity-50 px-1">Pass Threshold (%)</label>
               <input 
+                id="pass-threshold"
                 type="number" 
                 value={Math.round((definitions[selectedQuiz]?.passThreshold || 0.7) * 100)} 
                 onChange={e => handleUpdateQuiz(selectedQuiz, 'passThreshold', parseInt(e.target.value) / 100)} 
@@ -617,7 +630,7 @@ function QuizzesEditor({ data, onSave, onChange, saving, readOnly }: { data: Qui
               />
             </div>
             <div className="space-y-1 sm:col-span-1">
-               <label className="text-[10px] font-black uppercase opacity-50 px-1 flex items-center gap-1"><Sparkles size={10} /> Quick Actions</label>
+               <span className="text-[10px] font-black uppercase opacity-50 px-1 flex items-center gap-1"><Sparkles size={10} /> Quick Actions</span>
                <div className="flex gap-2">
                  <button onClick={downloadTemplate} className="flex-1 py-2.5 rounded-xl border border-border bg-secondary/20 text-[10px] font-black uppercase flex items-center justify-center gap-1.5 hover:bg-secondary/40 transition-all">
                    <Download size={12} /> Template
@@ -632,19 +645,19 @@ function QuizzesEditor({ data, onSave, onChange, saving, readOnly }: { data: Qui
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase opacity-50 px-1">Display Title EN</label>
-              <input type="text" value={definitions[selectedQuiz]?.title?.en || ''} onChange={e => handleUpdateQuiz(selectedQuiz, 'title.en', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+              <label htmlFor="title-en" className="text-[10px] font-black uppercase opacity-50 px-1">Display Title EN</label>
+              <input id="title-en" type="text" value={definitions[selectedQuiz]?.title?.en || ''} onChange={e => handleUpdateQuiz(selectedQuiz, 'title.en', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-black uppercase opacity-50 px-1">Display Title TH</label>
-              <input type="text" value={definitions[selectedQuiz]?.title?.th || ''} onChange={e => handleUpdateQuiz(selectedQuiz, 'title.th', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+              <label htmlFor="title-th" className="text-[10px] font-black uppercase opacity-50 px-1">Display Title TH</label>
+              <input id="title-th" type="text" value={definitions[selectedQuiz]?.title?.th || ''} onChange={e => handleUpdateQuiz(selectedQuiz, 'title.th', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
             </div>
           </div>
 
           <div className="space-y-3 pt-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
               <div className="flex items-center gap-3">
-                <label className="text-xs font-black uppercase tracking-tighter">Questions ({(definitions[selectedQuiz]?.questions || []).length})</label>
+                <span className="text-xs font-black uppercase tracking-tighter">Questions ({(definitions[selectedQuiz]?.questions || []).length})</span>
                 <div className="flex p-0.5 rounded-lg bg-secondary/50 border border-border">
                   <button onClick={() => setImportMode('replace')} className={`px-2 py-1 text-[10px] font-black rounded-md transition-all ${importMode === 'replace' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}>Replace</button>
                   <button onClick={() => setImportMode('append')} className={`px-2 py-1 text-[10px] font-black rounded-md transition-all ${importMode === 'append' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'}`}>Append</button>
@@ -723,7 +736,7 @@ function QuizzesEditor({ data, onSave, onChange, saving, readOnly }: { data: Qui
                       </div>
                       <button 
                         onClick={() => {
-                          if (confirm('Delete this question?')) {
+                          if (typeof window !== 'undefined' && window.confirm('Delete this question?')) {
                             const updated = { ...definitions };
                             updated[selectedQuiz].questions = (updated[selectedQuiz].questions || []).filter((_, idx) => idx !== i);
                             setDefinitions(updated);
@@ -813,8 +826,9 @@ function AiEvalEditor({ data, onSave, onChange, saving, readOnly }: { data: AiEv
       {/* Settings Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pb-4 border-b border-border">
         <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase opacity-50 px-1">AI Provider</label>
+          <label htmlFor="ai-provider" className="text-[10px] font-black uppercase opacity-50 px-1">AI Provider</label>
           <select 
+            id="ai-provider"
             value={provider} 
             onChange={e => handleUpdate('provider', e.target.value)}
             className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all font-bold"
@@ -826,9 +840,10 @@ function AiEvalEditor({ data, onSave, onChange, saving, readOnly }: { data: AiEv
             <p className="text-[9px] text-muted-foreground italic px-1">Choose the AI engine for evaluations. &apos;Auto&apos; defaults to Gemini 3.1 Flash for optimized performance.</p>
         </div>
         <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase opacity-50 px-1">Default Pass Threshold (Score 1-10)</label>
+          <label htmlFor="pass-threshold-range" className="text-[10px] font-black uppercase opacity-50 px-1">Default Pass Threshold (Score 1-10)</label>
           <div className="flex items-center gap-3">
             <input 
+              id="pass-threshold-range"
               type="range" 
               min="1" 
               max="10" 
@@ -842,8 +857,9 @@ function AiEvalEditor({ data, onSave, onChange, saving, readOnly }: { data: AiEv
           <p className="text-[9px] text-muted-foreground italic px-1">Global fallback threshold if not defined in the scenario.</p>
         </div>
         <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase opacity-50 px-1">Global Criteria Keys</label>
+          <label htmlFor="criteria-keys" className="text-[10px] font-black uppercase opacity-50 px-1">Global Criteria Keys</label>
           <input 
+            id="criteria-keys"
             type="text" 
             value={criteria.join(', ')} 
             onChange={e => handleUpdate('criteria', e.target.value.split(',').map(s => s.trim()).filter(Boolean))} 
@@ -885,7 +901,9 @@ function AiEvalEditor({ data, onSave, onChange, saving, readOnly }: { data: AiEv
             </div>
           ) : (
             <>
+              <label htmlFor="intro-guideline" className="sr-only">Introduction Guideline</label>
               <textarea
+                id="intro-guideline"
                 value={agentGuideline}
                 onChange={e => handleUpdate('guideline', e.target.value)}
                 className="w-full h-[400px] bg-secondary/20 p-4 rounded-xl border text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none"
@@ -903,18 +921,7 @@ function AiEvalEditor({ data, onSave, onChange, saving, readOnly }: { data: AiEv
 }
 
 
-function LearnEditor({ data, onSave, onChange, saving, readOnly }: { data: LearnConfig | undefined, onSave: (d: LearnConfig) => void, onChange: () => void, saving: boolean, readOnly?: boolean }) {
-  // Merge baseline from lib/courses.ts with data from Firestore
-  const initialModules = useMemo(() => {
-    const baseline = { ...COURSE_MODULES } as unknown as Record<string, LearnModule>;
-    if (data?.modules) {
-      Object.keys(data.modules).forEach(id => {
-        baseline[id] = data.modules[id];
-      });
-    }
-    return baseline;
-  }, [data?.modules]);
-
+function LearnEditor({ initialModules, data, onSave, onChange, saving, readOnly }: { initialModules: Record<string, LearnModule>, data: LearnConfig | undefined, onSave: (d: LearnConfig) => void, onChange: () => void, saving: boolean, readOnly?: boolean }) {
   const [modules, setModules] = useState<Record<string, LearnModule>>(initialModules);
   const [order, setOrder] = useState<string[]>(data?.order || Object.keys(modules));
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -977,7 +984,7 @@ function LearnEditor({ data, onSave, onChange, saving, readOnly }: { data: Learn
       setUploadStatus(prev => ({ ...prev, [key]: 'done' }));
       onChange();
     } catch (err: any) { 
-      alert(err.message); 
+      if (typeof window !== 'undefined') window.alert(err.message); 
       setUploadStatus(prev => ({ ...prev, [key]: 'error' })); 
     }
   };
@@ -987,7 +994,7 @@ function LearnEditor({ data, onSave, onChange, saving, readOnly }: { data: Learn
       const trimmed = value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
       if (!trimmed || trimmed === id || modules[trimmed]) return;
       
-      if (!confirm(`Warning: Changing the ID will not move existing slides in Storage. You should re-upload slides after changing the ID. Continue?`)) return;
+      if (typeof window !== 'undefined' && !window.confirm(`Warning: Changing the ID will not move existing slides in Storage. You should re-upload slides after changing the ID. Continue?`)) return;
 
       const updated = { ...modules }; 
       updated[trimmed] = { ...updated[id], id: trimmed }; 
@@ -1042,7 +1049,7 @@ function LearnEditor({ data, onSave, onChange, saving, readOnly }: { data: Learn
   };
 
   const handleDeleteModule = (id: string) => {
-    if (confirm(`Delete course "${modules[id].title}" (${id})?`)) {
+    if (typeof window !== 'undefined' && window.confirm(`Delete course "${modules[id].title}" (${id})?`)) {
       const updated = { ...modules };
       delete updated[id];
       setModules(updated);
@@ -1074,7 +1081,6 @@ function LearnEditor({ data, onSave, onChange, saving, readOnly }: { data: Learn
         {order.map((id, idx) => {
           const mod = modules[id];
           if (!mod) return null;
-          const slideCount = (mod.presentations?.en?.slideUrls?.length || 0) + (mod.presentations?.th?.slideUrls?.length || 0);
           return (
             <div key={id} className={`group p-4 rounded-xl border transition-all ${editingId === id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-secondary/10 hover:border-primary/30'}`}>
               <div className="flex justify-between items-start mb-3">
@@ -1138,32 +1144,32 @@ function LearnEditor({ data, onSave, onChange, saving, readOnly }: { data: Learn
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase opacity-50 px-1">Internal ID (Affects storage path)</label>
-                <input type="text" value={modules[editingId].id} onBlur={e => handleUpdateModule(editingId, 'id', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm font-mono focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
+                <label htmlFor={`mod-id-${editingId}`} className="text-[10px] font-black uppercase opacity-50 px-1">Internal ID (Affects storage path)</label>
+                <input id={`mod-id-${editingId}`} type="text" value={modules[editingId].id} onBlur={e => handleUpdateModule(editingId, 'id', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm font-mono focus:ring-2 focus:ring-primary/20 outline-none transition-all" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase opacity-50 px-1">Title EN</label>
-                  <input type="text" value={modules[editingId].title} onChange={e => handleUpdateModule(editingId, 'title', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Title EN" />
+                  <label htmlFor={`mod-title-en-${editingId}`} className="text-[10px] font-black uppercase opacity-50 px-1">Title EN</label>
+                  <input id={`mod-title-en-${editingId}`} type="text" value={modules[editingId].title} onChange={e => handleUpdateModule(editingId, 'title', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Title EN" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase opacity-50 px-1">Title TH</label>
-                  <input type="text" value={modules[editingId].titleTh} onChange={e => handleUpdateModule(editingId, 'titleTh', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Title TH" />
+                  <label htmlFor={`mod-title-th-${editingId}`} className="text-[10px] font-black uppercase opacity-50 px-1">Title TH</label>
+                  <input id={`mod-title-th-${editingId}`} type="text" value={modules[editingId].titleTh} onChange={e => handleUpdateModule(editingId, 'titleTh', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Title TH" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase opacity-50 px-1">Description EN</label>
-                  <textarea value={modules[editingId].description} onChange={e => handleUpdateModule(editingId, 'description', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm h-20 focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none" placeholder="Description EN" />
+                  <label htmlFor={`mod-desc-en-${editingId}`} className="text-[10px] font-black uppercase opacity-50 px-1">Description EN</label>
+                  <textarea id={`mod-desc-en-${editingId}`} value={modules[editingId].description} onChange={e => handleUpdateModule(editingId, 'description', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm h-20 focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none" placeholder="Description EN" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase opacity-50 px-1">Description TH</label>
-                  <textarea value={modules[editingId].descriptionTh} onChange={e => handleUpdateModule(editingId, 'descriptionTh', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm h-20 focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none" placeholder="Description TH" />
+                  <label htmlFor={`mod-desc-th-${editingId}`} className="text-[10px] font-black uppercase opacity-50 px-1">Description TH</label>
+                  <textarea id={`mod-desc-th-${editingId}`} value={modules[editingId].descriptionTh} onChange={e => handleUpdateModule(editingId, 'descriptionTh', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm h-20 focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none" placeholder="Description TH" />
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase opacity-50 px-1">Visual Gradient (Tailwind classes)</label>
-                <input type="text" value={modules[editingId].gradient} onChange={e => handleUpdateModule(editingId, 'gradient', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm font-mono focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="e.g. from-blue-600 to-indigo-700" />
+                <label htmlFor={`mod-gradient-${editingId}`} className="text-[10px] font-black uppercase opacity-50 px-1">Visual Gradient (Tailwind classes)</label>
+                <input id={`mod-gradient-${editingId}`} type="text" value={modules[editingId].gradient} onChange={e => handleUpdateModule(editingId, 'gradient', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm font-mono focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="e.g. from-blue-600 to-indigo-700" />
                 <div className={`mt-2 h-4 w-full rounded-full bg-gradient-to-r ${modules[editingId].gradient}`} />
               </div>
             </div>
@@ -1188,8 +1194,9 @@ function LearnEditor({ data, onSave, onChange, saving, readOnly }: { data: Learn
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <label className="text-[9px] font-black uppercase opacity-40 px-1">Presentation ID</label>
+                          <label htmlFor={`pres-id-${editingId}-${lang}`} className="text-[9px] font-black uppercase opacity-40 px-1">Presentation ID</label>
                           <input 
+                            id={`pres-id-${editingId}-${lang}`}
                             type="text" 
                             value={pres?.presentationId || ''} 
                             onChange={e => handleUpdateModule(editingId, `presentations.${lang}.presentationId`, e.target.value)} 
@@ -1198,8 +1205,9 @@ function LearnEditor({ data, onSave, onChange, saving, readOnly }: { data: Learn
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[9px] font-black uppercase opacity-40 px-1">Total Slides</label>
+                          <label htmlFor={`total-slides-${editingId}-${lang}`} className="text-[9px] font-black uppercase opacity-40 px-1">Total Slides</label>
                           <input 
+                            id={`total-slides-${editingId}-${lang}`}
                             type="number" 
                             value={pres?.totalSlides || 0} 
                             onChange={e => handleUpdateModule(editingId, `presentations.${lang}.totalSlides`, parseInt(e.target.value) || 0)} 
@@ -1223,8 +1231,8 @@ function LearnEditor({ data, onSave, onChange, saving, readOnly }: { data: Learn
                         <span className="text-[10px] font-black uppercase opacity-60">Manual Slide Upload (PNG)</span>
                       </div>
                       <div className="flex gap-2">
-                        <input type="file" id={`up-${lang}`} className="hidden" multiple accept="image/*" onChange={e => e.target.files && handleFileUpload(editingId, lang as any, e.target.files)} />
-                        <button onClick={() => document.getElementById(`up-${lang}`)?.click()} className="flex-1 py-2.5 rounded-xl border border-primary/20 bg-primary/5 text-[10px] font-black uppercase text-primary flex items-center justify-center gap-2 hover:bg-primary/10 transition-all">
+                        <input type="file" id={`up-${editingId}-${lang}`} className="hidden" multiple accept="image/*" onChange={e => e.target.files && handleFileUpload(editingId, lang as any, e.target.files)} />
+                        <button onClick={() => document.getElementById(`up-${editingId}-${lang}`)?.click()} className="flex-1 py-2.5 rounded-xl border border-primary/20 bg-primary/5 text-[10px] font-black uppercase text-primary flex items-center justify-center gap-2 hover:bg-primary/10 transition-all">
                           <Upload size={14} /> {hasUploaded ? 'Re-upload' : 'Upload PNGs'}
                         </button>
                       </div>
@@ -1237,7 +1245,7 @@ function LearnEditor({ data, onSave, onChange, saving, readOnly }: { data: Learn
                             </p>
                             <button 
                               onClick={() => {
-                                 if (confirm('Clear all uploaded slides?')) {
+                                 if (typeof window !== 'undefined' && window.confirm('Clear all uploaded slides?')) {
                                    handleUpdateModule(editingId, `presentations.${lang}.slideUrls`, []);
                                    if (!pres.presentationId) handleUpdateModule(editingId, `presentations.${lang}.totalSlides`, 0);
                                  }
@@ -1265,7 +1273,7 @@ function LearnEditor({ data, onSave, onChange, saving, readOnly }: { data: Learn
                                   </button>
                                   <button 
                                     onClick={() => {
-                                      if (confirm('Delete this slide?')) {
+                                      if (typeof window !== 'undefined' && window.confirm('Delete this slide?')) {
                                         const urls = pres.slideUrls!.filter((_: any, i: number) => i !== sIdx);
                                         handleUpdateModule(editingId, `presentations.${lang}.slideUrls`, urls);
                                         if (!pres.presentationId) handleUpdateModule(editingId, `presentations.${lang}.totalSlides`, urls.length);
@@ -1299,7 +1307,7 @@ function LearnEditor({ data, onSave, onChange, saving, readOnly }: { data: Learn
   );
 }
 
-function SystemEditor({ data, onSave, onChange, saving, readOnly }: { data: FeaturesConfig | undefined, onSave: (d: FeaturesConfig) => void, onChange: () => void, saving: boolean, readOnly?: boolean }) {
+function SystemEditor({ data, onSave, onChange, saving }: { data: FeaturesConfig | undefined, onSave: (d: FeaturesConfig) => void, onChange: () => void, saving: boolean, readOnly?: boolean }) {
   const [config, setConfig] = useState<FeaturesConfig>(data || { allowMockupMode: true });
 
   const handleToggle = (key: keyof FeaturesConfig) => {
@@ -1345,4 +1353,3 @@ function SystemEditor({ data, onSave, onChange, saving, readOnly }: { data: Feat
     </div>
   );
 }
-

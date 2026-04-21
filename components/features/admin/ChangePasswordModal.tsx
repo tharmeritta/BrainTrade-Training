@@ -63,14 +63,14 @@ export default function ChangePasswordModal({ isOpen, onClose }: { isOpen: boole
 
             <div className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">New Password</label>
+                <label htmlFor="new-password" className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">New Password</label>
                 <input
+                  id="new-password"
                   type="text"
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
                   className="w-full bg-secondary/40 border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
                   placeholder="Enter new password"
-                  autoFocus
                 />
               </div>
 

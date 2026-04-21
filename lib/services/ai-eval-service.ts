@@ -1,3 +1,4 @@
+import { updateGlobalAiEvalStats, updateAgentOverallScore } from './stats-service';
 import { getOpenAI } from '@/lib/openai';
 import { fsGet, fsSet, fsDelete, fsAdd } from '@/lib/firestore-db';
 import crypto from 'crypto';
@@ -413,17 +414,21 @@ export class AiEvalService {
     const scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, session.scenarioId);
     const level = scenario?.level || session.level || 1;
 
-    await fsAdd(this.COLLECTION_LOGS, {
-      agentId:        session.agentId,
-      agentName:      session.agentName,
-      scenarioId:     session.scenarioId,
-      level,
-      difficulty:     scenario?.difficulty || 'beginner',
-      passed,
-      score,
-      finalTurnCount: session.turnCount,
-      timestamp:      new Date().toISOString(),
-    });
+    await Promise.all([
+      fsAdd(this.COLLECTION_LOGS, {
+        agentId:        session.agentId,
+        agentName:      session.agentName,
+        scenarioId:     session.scenarioId,
+        level,
+        difficulty:     scenario?.difficulty || 'beginner',
+        passed,
+        score,
+        finalTurnCount: session.turnCount,
+        timestamp:      new Date().toISOString(),
+      }),
+      updateGlobalAiEvalStats(score, passed),
+      updateAgentOverallScore(session.agentId, session.agentName)
+    ]);
 
     if (passed) {
       const existing = await fsGet<any>('agent_progress', session.agentId)

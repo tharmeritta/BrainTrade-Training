@@ -1,11 +1,16 @@
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
-const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
+const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  transpilePackages: ['framer-motion'],
+  transpilePackages: ['framer-motion', 'motion-dom', 'motion-utils'],
+  
+  // Next.js 16 top-level options
+  reactCompiler: true,
+  // cacheComponents: true, // Disabling experimental Dynamic IO as it is too strict for current PR logic
+
   // Firebase client config is public by design — security is enforced by Firebase Security Rules.
   // These values are baked into the client bundle at build time.
   env: {
@@ -23,6 +28,7 @@ const nextConfig: NextConfig = {
       allowedOrigins: ['localhost:3000', 'braintrade-training-cb55d.web.app', 'braintrade-training-cb55d.firebaseapp.com'],
     },
   },
+  serverExternalPackages: ['firebase-admin'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },

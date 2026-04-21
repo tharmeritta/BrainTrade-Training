@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { makeSessionToken } from '@/lib/session';
-import { fsGetAll } from '@/lib/firestore-db';
+import { fsGetWhere } from '@/lib/firestore-db';
 import { getAdminAuth } from '@/lib/firebase-admin';
 import type { StaffAccount } from '@/types';
 
@@ -44,18 +44,22 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    let staff = await fsGetAll<StaffAccount>('staff_accounts');
-    let account = staff.find(
-      s => s.username === username && s.password === password && s.active,
-    );
+    // Optimized: Use fsGetWhere to query directly by username
+    const staffMatches = await fsGetWhere<StaffAccount>('staff_accounts', 'username', username);
+    let account = staffMatches.find(s => s.password === password && s.active);
 
     if (!account) {
-      const users = await fsGetAll<any>('users');
-      const userMatch = users.find(
-        u => (u.username === username || u.email === username) && 
-             (u.password === password || u.password === undefined) &&
-             u.active
+      // Optimized: Use fsGetWhere for legacy users collection (checking both username and email)
+      const [userByUsername, userByEmail] = await Promise.all([
+        fsGetWhere<any>('users', 'username', username),
+        fsGetWhere<any>('users', 'email', username)
+      ]);
+      
+      const allMatches = [...userByUsername, ...userByEmail];
+      const userMatch = allMatches.find(
+        u => (u.password === password || u.password === undefined) && u.active
       );
+      
       if (userMatch) {
         account = {
           id: userMatch.uid || userMatch.id,

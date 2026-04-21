@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ref, onValue, set, update, onDisconnect } from 'firebase/database';
 import { rtdb } from './firebase';
 
@@ -79,13 +79,13 @@ export function useLivePresentation(moduleId: string, userId?: string, userName?
   const syncSlide = useCallback(async (slide: number, lang: 'en' | 'th') => {
     if (!isTrainer || !session?.active) return;
     await update(sessionRef, { slide, lang, updatedAt: Date.now() });
-  }, [isTrainer, session?.active, sessionRef]);
+  }, [isTrainer, session, sessionRef]);
 
   const updateLaser = useCallback((pos: Point | null) => {
     if (!isTrainer || !session?.active) return;
     // We use set for laser to avoid merging, it's a high-frequency update
     set(ref(rtdb, `live_sessions/${moduleId}/laserPos`), pos);
-  }, [isTrainer, session?.active, moduleId]);
+  }, [isTrainer, session, moduleId]);
 
   const addDrawingPath = useCallback(async (path: DrawingPath) => {
     if (!isTrainer || !session?.active) return;
@@ -94,12 +94,12 @@ export function useLivePresentation(moduleId: string, userId?: string, userName?
       drawings: [...currentDrawings, path],
       updatedAt: Date.now() 
     });
-  }, [isTrainer, session?.active, session?.drawings, sessionRef]);
+  }, [isTrainer, session, sessionRef]);
 
   const clearDrawings = useCallback(async () => {
     if (!isTrainer || !session?.active) return;
     await update(sessionRef, { drawings: [], updatedAt: Date.now() });
-  }, [isTrainer, session?.active, sessionRef]);
+  }, [isTrainer, session, sessionRef]);
 
   return {
     session,

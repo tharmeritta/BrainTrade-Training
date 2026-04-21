@@ -11,11 +11,12 @@ import { getCompletionStatus, type CompletionStatus } from '@/lib/completion';
 import { setAgentSession } from '@/lib/agent-session';
 import AgentDetailModal from './AgentDetailModal';
 import BulkImportModal from './BulkImportModal';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 export default function AgentsTab({ role, readOnly }: { role: 'admin' | 'manager' | 'it' | 'trainer' | 'hr'; readOnly?: boolean }) {
   const t = useTranslations('admin');
   const router = useRouter();
+  const pathname = usePathname();
   const [agents,       setAgents]       = useState<AgentStats[]>([]);
   const [loading,      setLoading]      = useState(true);
   const [search,       setSearch]       = useState('');
@@ -46,9 +47,8 @@ export default function AgentsTab({ role, readOnly }: { role: 'admin' | 'manager
 
   function inspectAgent(a: AgentStats['agent']) {
     setAgentSession({ id: a.id, name: a.name, stageName: a.stageName ?? '' });
-    // Use window.location to ensure a clean state/redirect
-    const locale = window.location.pathname.split('/')[1] ?? 'th';
-    window.location.href = `/${locale}/dashboard`;
+    const locale = pathname.split('/')[1] ?? 'th';
+    router.push(`/${locale}/dashboard`);
   }
 
   useEffect(() => { load(); }, [load]);
@@ -219,7 +219,7 @@ export default function AgentsTab({ role, readOnly }: { role: 'admin' | 'manager
               onChange={e => setNewName(e.target.value)}
               placeholder={t('agents.addPlaceholder')}
               className="flex-1 bg-secondary/40 border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground placeholder:text-muted-foreground"
-              required autoFocus
+              required
             />
             <button type="submit" disabled={adding}
               className="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50"

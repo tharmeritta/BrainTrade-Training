@@ -35,6 +35,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (typeof body.name === 'string') {
     if (!body.name.trim()) return NextResponse.json({ error: 'Name required' }, { status: 400 });
     update.name = body.name.trim();
+    update.normalizedName = body.name.trim().toLowerCase().replace(/\s+/g, ' ');
   }
   if (typeof body.stageName === 'string') update.stageName = body.stageName.trim();
   await fsUpdate('agents', id, update);

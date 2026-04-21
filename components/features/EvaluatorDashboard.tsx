@@ -1242,7 +1242,14 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
             <AnimatePresence>
               {profileOpen && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setProfileOpen(false)} 
+                    onKeyDown={(e) => { if (e.key === 'Escape') setProfileOpen(false); }}
+                    role="button"
+                    tabIndex={-1}
+                    aria-label="Close profile popover"
+                  />
                   <motion.div
                     initial={{ opacity: 0, y: 6, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -1251,6 +1258,7 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
                     className={`absolute z-50 top-full mt-2 bg-card/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl shadow-black/20 overflow-hidden
                       ${sidebarCollapsed ? 'left-full ml-2 top-0 mt-0 w-[220px]' : 'left-3 right-3'}
                     `}
+                    role="menu"
                   >
                     <div className="px-4 py-3 border-b border-border/50 flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black uppercase border shrink-0 bg-blue-500/15 text-blue-400 border-blue-500/20">

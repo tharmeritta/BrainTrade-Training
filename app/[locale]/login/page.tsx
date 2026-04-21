@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
@@ -17,8 +17,8 @@ const PURPLE = '#7C3AED';
 
 export default function LoginPage() {
   const t = useTranslations('auth');
-  const pathname = usePathname();
-  const locale = pathname.split('/')[1] ?? 'th';
+  const params = useParams();
+  const locale = (params?.locale as string) || 'th';
   
   const [role, setRole]         = useState<Tab>('admin');
   const [username, setUsername] = useState('');
@@ -132,21 +132,22 @@ export default function LoginPage() {
             boxShadow: '0 40px 80px -20px rgba(0,0,0,0.25)' 
           }}
         >
-          {/* Animated border glow */}
+          {/* Animated border glow - Simplified */}
           <div className="absolute -inset-[1px] rounded-[32px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm pointer-events-none"
-            style={{ background: `linear-gradient(90deg, transparent, ${cfg.accent}44, transparent)` }}
+            style={{ background: `linear-gradient(90deg, transparent, ${cfg.accent}33, transparent)` }}
           />
 
-          <div style={{ background: 'var(--entry-card-bg)', borderRadius: 31, backdropFilter: 'blur(32px)', overflow: 'hidden', position: 'relative' }}>
-            {/* Dynamic top-bar gradient */}
+          <div style={{ background: 'var(--entry-card-bg)', borderRadius: 31, backdropFilter: 'blur(16px)', overflow: 'hidden', position: 'relative' }}>
+            {/* Dynamic top-bar gradient - Optimized */}
             <motion.div 
-              className="absolute top-0 left-0 right-0 h-[3px]"
-              animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+              className="absolute top-0 left-0 right-0 h-[2px]"
+              animate={{ opacity: [0.6, 1, 0.6] }}
               style={{ 
                 background: `linear-gradient(90deg, ${cfg.accent}, ${PURPLE}, ${cfg.accent})`,
-                backgroundSize: '200% 100%'
+                backgroundSize: '200% 100%',
+                willChange: 'opacity'
               }}
-              transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
             />
 
             <div style={{ padding: '36px 32px' }}>

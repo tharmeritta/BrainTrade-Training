@@ -1,51 +1,32 @@
 'use client';
 
 /**
- * Dashboard page — orchestrates the agent entry → training hub flow.
- *
- * State machine:
- *  No localStorage agent → AgentEntry (full-page username selection)
- *  Agent selected        → AgentTrainingHub (module progress, locking)
- *
- * On mount: checks localStorage for existing agent selection.
+ * Dashboard page — The Training Hub for Agents.
+ * Protected by AgentAuthGuard.
  * Fetches /api/agent/progress?agentId={id} for stats.
- *   → This endpoint needs to be created; it should return { stats: AgentStats }.
- *     It can reuse the existing lib/agents.ts computeAgentStats() logic.
- *
- * The NavBar is intentionally hidden on the entry screen so it doesn't
- * clutter the full-page onboarding experience.
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import AgentEntry from '@/components/features/AgentEntry';
+import { motion } from 'framer-motion';
 import AgentTrainingHub from '@/components/features/AgentTrainingHub';
+import AgentAuthGuard from '@/components/features/AgentAuthGuard';
 import type { AgentStats } from '@/types';
 import { saveProgress, getProgress } from '@/lib/localCache';
-import { getAgentSession, clearAgentSession } from '@/lib/agent-session';
+import { useRouter, useParams } from 'next/navigation';
+import { useSession } from '@/components/features/SessionProvider';
 
 export default function DashboardPage() {
-  const [mounted, setMounted]         = useState(false);
-  const [agentId, setAgentId]         = useState<string | null>(null);
-  const [agentName, setAgentName]     = useState<string | null>(null);
-  const [agentStageName, setAgentStageName] = useState<string>('');
-  const [stats, setStats]             = useState<AgentStats | null>(null);
-
-  // Hydration guard — read session only after mount
-  useEffect(() => {
-    setMounted(true);
-    const session = getAgentSession();
-    if (session) {
-      setAgentId(session.id);
-      setAgentName(session.name);
-      setAgentStageName(session.stageName);
-    }
-  }, []);
+  const { agent, logoutAgent } = useSession();
+  const [stats, setStats] = useState<AgentStats | null>(null);
+  
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
 
   const fetchStats = useCallback(() => {
-    if (!agentId) return;
+    if (!agent) return;
     const ts = Date.now();
-    fetch(`/api/agent/progress?agentId=${agentId}&agentName=${encodeURIComponent(agentName ?? '')}&t=${ts}`, {
+    fetch(`/api/agent/progress?agentId=${agent.id}&agentName=${encodeURIComponent(agent.name ?? '')}&t=${ts}`, {
       cache: 'no-store'
     })
       .then(r => r.json())
@@ -53,10 +34,10 @@ export default function DashboardPage() {
         const serverStats = d.stats ?? null;
         setStats(serverStats);
         // Mirror progress to localStorage so the browser has a copy
-        if (serverStats && agentId) {
-          saveProgress(agentId, {
-            agentId,
-            agentName: agentName ?? '',
+        if (serverStats && agent.id) {
+          saveProgress(agent.id, {
+            agentId: agent.id,
+            agentName: agent.name ?? '',
             evalCompletedLevels: serverStats.evalCompletedLevels ?? [],
             learnedModules: serverStats.learnedModules ?? [],
             updatedAt: new Date().toISOString(),
@@ -65,10 +46,10 @@ export default function DashboardPage() {
       })
       .catch(() => {
         // Server unreachable — load from localStorage backup
-        const cached = agentId ? getProgress(agentId) : null;
+        const cached = agent.id ? getProgress(agent.id) : null;
         if (cached) {
           setStats({
-            agent: { id: agentId, name: agentName ?? '', active: true, createdAt: new Date() },
+            agent: { id: agent.id, name: agent.name ?? '', active: true, createdAt: new Date() },
             quiz: {},
             aiEval: null,
             lastActive: cached.updatedAt ?? null,
@@ -81,64 +62,40 @@ export default function DashboardPage() {
           setStats(null);
         }
       });
-  }, [agentId, agentName]);
+  }, [agent]);
 
-  // Fetch agent progress whenever agentId changes.
+  // Fetch agent progress whenever agent changes.
   useEffect(() => {
-    if (!agentId) return;
+    if (!agent) return;
     fetchStats();
 
     // Listen for custom event to refresh when mockup simulation toggles
     const handleRefresh = () => fetchStats();
     window.addEventListener('agent-stats-refresh', handleRefresh);
     return () => window.removeEventListener('agent-stats-refresh', handleRefresh);
-  }, [agentId, fetchStats]);
-
-  function handleAgentSelected(id: string, name: string, stageName: string) {
-    setAgentId(id);
-    setAgentName(name);
-    setAgentStageName(stageName);
-  }
-  function handleLogout() {
-    clearAgentSession();
-    setAgentId(null);
-    setAgentName(null);
-    setStats(null);
-  }
-
-  if (!mounted) return null;
+  }, [agent, fetchStats]);
 
   return (
-    <AnimatePresence mode="wait">
-      {!agentId || !agentName ? (
-        <motion.div
-          key="entry"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 0.35 }}
-        >
-          <AgentEntry onAgentSelected={handleAgentSelected} />
-        </motion.div>
-      ) : (
-        <motion.div
-          key="hub"
-          className="h-full"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        >
+    <AgentAuthGuard>
+      <motion.div
+        key="hub"
+        className="h-full"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {agent && (
           <AgentTrainingHub
-            agentId={agentId}
-            agentName={agentName}
-            agentStageName={agentStageName}
+            agentId={agent.id}
+            agentName={agent.name}
+            agentStageName={agent.stageName}
             stats={stats}
-            onLogout={handleLogout}
+            onLogout={logoutAgent}
             refresh={fetchStats}
           />
-        </motion.div>
-      )}
-    </AnimatePresence>
+        )}
+      </motion.div>
+    </AgentAuthGuard>
   );
 }

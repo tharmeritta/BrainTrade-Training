@@ -7,7 +7,10 @@
  */
 
 import { getAdminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 import crypto from 'crypto';
+
+export { FieldValue };
 
 // ── Add (auto-id) ──────────────────────────────────────────────────────────
 
@@ -50,6 +53,54 @@ export async function fsGetWhere<T>(collection: string, field: string, value: an
   const db   = getAdminDb();
   const snap = await db.collection(collection).where(field, '==', value).get();
   return snap.docs.map(d => ({ id: d.id, ...d.data() } as T));
+}
+
+// ── Advanced Query (where, orderBy, limit) ──────────────────────────────────
+
+export async function fsQuery<T>(
+  collection: string,
+  options: {
+    where?: { field: string; op: '==' | '<' | '<=' | '>' | '>=' | 'array-contains'; value: any }[];
+    orderBy?: { field: string; direction?: 'asc' | 'desc' };
+    limit?: number;
+  }
+): Promise<T[]> {
+  const db = getAdminDb();
+  let query: FirebaseFirestore.Query = db.collection(collection);
+
+  if (options.where) {
+    options.where.forEach(w => {
+      query = query.where(w.field, w.op, w.value);
+    });
+  }
+
+  if (options.orderBy) {
+    query = query.orderBy(options.orderBy.field, options.orderBy.direction || 'asc');
+  }
+
+  if (options.limit) {
+    query = query.limit(options.limit);
+  }
+
+  const snap = await query.get();
+  return snap.docs.map(d => ({ id: d.id, ...d.data() } as T));
+}
+
+// ── Count documents in a collection (aggregation) ──────────────────────────
+
+export async function fsCount(
+  collection: string, 
+  field?: string, 
+  value?: any, 
+  op: '==' | '<' | '<=' | '>' | '>=' | 'array-contains' = '=='
+): Promise<number> {
+  const db = getAdminDb();
+  let query: FirebaseFirestore.Query = db.collection(collection);
+  if (field && value !== undefined) {
+    query = query.where(field, op, value);
+  }
+  const snap = await query.count().get();
+  return snap.data().count;
 }
 
 // ── Partial update (patch) ─────────────────────────────────────────────────

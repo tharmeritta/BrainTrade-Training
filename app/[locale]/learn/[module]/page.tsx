@@ -3,17 +3,19 @@ import PresentationViewer from '@/components/features/PresentationViewer';
 import { getCourseModule } from '@/lib/courses-server';
 import type { CourseLang } from '@/lib/courses';
 import { getServerUser } from '@/lib/session';
+import { setRequestLocale } from 'next-intl/server';
+import { Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
 
-export default async function LearnPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ locale: string; module: string }>;
-  searchParams: Promise<{ lang?: string }>;
+async function LearnPageContent({ 
+  locale, 
+  moduleSlug, 
+  lang 
+}: { 
+  locale: string; 
+  moduleSlug: string; 
+  lang?: string 
 }) {
-  const { locale, module: moduleSlug } = await params;
-  const { lang } = await searchParams;
-
   const course = await getCourseModule(moduleSlug);
   if (!course) redirect('/dashboard');
 
@@ -27,5 +29,27 @@ export default async function LearnPage({
       initialLang={initialLang}
       user={user}
     />
+  );
+}
+
+export default async function LearnPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string; module: string }>;
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  const { locale, module: moduleSlug } = await params;
+  setRequestLocale(locale);
+  const { lang } = await searchParams;
+
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="animate-spin text-primary" size={32} />
+      </div>
+    }>
+      <LearnPageContent locale={locale} moduleSlug={moduleSlug} lang={lang} />
+    </Suspense>
   );
 }

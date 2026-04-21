@@ -27,8 +27,13 @@ export interface Agent {
   id: string;
   name: string;
   stageName?: string;
+  normalizedName?: string; // name.trim().toLowerCase().replace(/\s+/g, ' ')
   active: boolean;
   createdAt: Date;
+  // Persisted aggregates for fast listing/sorting
+  overallScore?: number;
+  badge?: 'elite' | 'strong' | 'developing' | 'needs-work';
+  lastActive?: string | null;
 }
 
 export interface ModuleQuizStat {

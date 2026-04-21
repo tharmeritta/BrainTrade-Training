@@ -25,6 +25,73 @@ import ChangePasswordModal from './admin/ChangePasswordModal';
 
 type Tab = 'overview' | 'hranalytics' | 'agents' | 'reports' | 'staff' | 'evaluations' | 'training' | 'adjustments' | 'approvals' | 'aiscenarios';
 
+interface TabItem {
+  id: Tab;
+  labelKey: string;
+  icon: React.ElementType;
+}
+
+function NavGroup({ 
+  label, 
+  items, 
+  sidebarCollapsed, 
+  activeTabId, 
+  onSelectTab,
+  t
+}: { 
+  label?: string; 
+  items: TabItem[]; 
+  sidebarCollapsed: boolean; 
+  activeTabId: Tab; 
+  onSelectTab: (id: Tab) => void;
+  t: any;
+}) {
+  if (items.length === 0) return null;
+  return (
+    <div className="mb-2">
+      {label && !sidebarCollapsed && (
+        <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 px-3 mb-1.5 mt-3">
+          {label}
+        </p>
+      )}
+      {label && sidebarCollapsed && <div className="my-2 border-t border-border/30" />}
+      <div className="flex flex-col gap-0.5">
+        {items.map(item => {
+          const Icon = item.icon;
+          const active = activeTabId === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => onSelectTab(item.id)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectTab(item.id); } }}
+              title={sidebarCollapsed ? t(`tabs.${item.labelKey}`) : undefined}
+              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all group
+                ${active
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+                }
+                ${sidebarCollapsed ? 'justify-center px-2' : ''}
+              `}
+            >
+              {active && (
+                <motion.div
+                  layoutId="sidebar-indicator"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-full"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                />
+              )}
+              <Icon size={16} className={`shrink-0 ${active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
+              {!sidebarCollapsed && (
+                <span className="flex-1 text-left">{t(`tabs.${item.labelKey}`)}</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function logout() {
   fetch('/api/auth/session', { method: 'DELETE' });
   window.location.replace('/login');
@@ -96,8 +163,8 @@ export default function AdminDashboard({ role, uid, name, passwordChanged, inter
     }
   }
 
-  const mainTabs  = visibleTabs.filter(t => t.group === 'main');
-  const adminTabs = visibleTabs.filter(t => t.group === 'admin');
+  const mainTabs  = visibleTabs.filter(t => t.group === 'main') as TabItem[];
+  const adminTabs = visibleTabs.filter(t => t.group === 'admin') as TabItem[];
 
   const activeTab = visibleTabs.find(t => t.id === tab);
 
@@ -106,52 +173,6 @@ export default function AdminDashboard({ role, uid, name, passwordChanged, inter
     role === 'it'      ? 'bg-blue-500/15 text-blue-400 border-blue-500/20' :
     role === 'trainer' ? 'bg-amber-500/15 text-amber-400 border-amber-500/20' :
                          'bg-slate-500/15 text-slate-400 border-slate-500/20';
-
-  function NavGroup({ label, items }: { label?: string; items: typeof visibleTabs }) {
-    if (items.length === 0) return null;
-    return (
-      <div className="mb-2">
-        {label && !sidebarCollapsed && (
-          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 px-3 mb-1.5 mt-3">
-            {label}
-          </p>
-        )}
-        {label && sidebarCollapsed && <div className="my-2 border-t border-border/30" />}
-        <div className="flex flex-col gap-0.5">
-          {items.map(item => {
-            const Icon = item.icon;
-            const active = tab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setTab(item.id)}
-                title={sidebarCollapsed ? t(`tabs.${item.labelKey}`) : undefined}
-                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all group
-                  ${active
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
-                  }
-                  ${sidebarCollapsed ? 'justify-center px-2' : ''}
-                `}
-              >
-                {active && (
-                  <motion.div
-                    layoutId="sidebar-indicator"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-full"
-                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                  />
-                )}
-                <Icon size={16} className={`shrink-0 ${active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
-                {!sidebarCollapsed && (
-                  <span className="flex-1 text-left">{t(`tabs.${item.labelKey}`)}</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background relative selection:bg-primary/20">
@@ -211,7 +232,14 @@ export default function AdminDashboard({ role, uid, name, passwordChanged, inter
               {profileOpen && (
                 <>
                   {/* Backdrop */}
-                  <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setProfileOpen(false)} 
+                    onKeyDown={(e) => { if (e.key === 'Escape') setProfileOpen(false); }}
+                    role="button"
+                    tabIndex={-1}
+                    aria-label="Close profile popover"
+                  />
                   <motion.div
                     initial={{ opacity: 0, y: 6, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -220,6 +248,7 @@ export default function AdminDashboard({ role, uid, name, passwordChanged, inter
                     className={`absolute z-50 top-full mt-2 bg-card/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl shadow-black/20 overflow-hidden
                       ${sidebarCollapsed ? 'left-full ml-2 top-0 mt-0 w-[220px]' : 'left-3 right-3'}
                     `}
+                    role="menu"
                   >
                     {/* Header */}
                     <div className={`px-4 py-3 border-b border-border/50 flex items-center gap-3`}>
@@ -249,8 +278,23 @@ export default function AdminDashboard({ role, uid, name, passwordChanged, inter
 
           {/* Nav */}
           <nav className="flex-1 overflow-y-auto px-2 py-2 scrollbar-hide">
-            <NavGroup items={mainTabs} />
-            {adminTabs.length > 0 && <NavGroup label="Admin" items={adminTabs} />}
+            <NavGroup 
+              items={mainTabs} 
+              sidebarCollapsed={sidebarCollapsed} 
+              activeTabId={tab} 
+              onSelectTab={setTab} 
+              t={t}
+            />
+            {adminTabs.length > 0 && (
+              <NavGroup 
+                label="Admin" 
+                items={adminTabs} 
+                sidebarCollapsed={sidebarCollapsed} 
+                activeTabId={tab} 
+                onSelectTab={setTab} 
+                t={t}
+              />
+            )}
             
             {isReadOnlyRole && !sidebarCollapsed && (
               <div className="mt-6 px-3">

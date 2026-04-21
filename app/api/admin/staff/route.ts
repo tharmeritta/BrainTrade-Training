@@ -28,7 +28,14 @@ export async function GET() {
     });
 
     console.log(`[GET /api/admin/staff] Success: found ${staff.length} accounts`);
-    return NextResponse.json({ staff });
+    
+    // Sanitize: remove passwords before sending to client
+    const sanitizedStaff = staff.map(s => {
+      const { password, ...rest } = s;
+      return rest;
+    });
+
+    return NextResponse.json({ staff: sanitizedStaff });
   } catch (err: any) {
     console.error('[GET /api/admin/staff] CRITICAL ERROR:', err);
     return NextResponse.json({ 

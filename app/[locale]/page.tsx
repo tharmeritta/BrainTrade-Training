@@ -13,6 +13,7 @@ const CYAN = '#00B4D8';
 const PURPLE = '#7C3AED';
 
 export default function LandingPage() {
+  const tCommon = useTranslations('common');
   const t = useTranslations('landing');
   const params = useParams();
   const locale = params.locale as string;
@@ -45,7 +46,7 @@ export default function LandingPage() {
         >
           <motion.div variants={FADE_IN} className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 backdrop-blur-sm mb-6">
             <div className="w-1.5 h-1.5 rounded-full animate-pulse bg-brand-cyan" />
-            <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-brand-cyan">Sales Excellence Academy</span>
+            <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-brand-cyan">{tCommon('appName')}</span>
           </motion.div>
 
           <motion.h1 
@@ -71,7 +72,7 @@ export default function LandingPage() {
         >
           {/* Agent Entry Card */}
           <motion.div variants={STAGGER_ITEM}>
-            <Link href={`/${locale}/dashboard`} className="group block h-full">
+            <Link href={`/${locale}/login/agent`} className="group block h-full">
               <div 
                 className="h-full p-8 rounded-[32px] transition-all duration-500 relative overflow-hidden flex flex-col items-start text-left"
                 style={{ 

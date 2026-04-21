@@ -33,7 +33,7 @@ export default function AgentAuthGuard({
     if (!session) {
       // Extract locale from path (e.g. /th/quiz → th)
       const locale = pathname.split('/')[1] ?? 'th';
-      router.replace(`/${locale}/dashboard`);
+      router.replace(`/${locale}/login/agent`);
     } else {
       setReady(true);
     }

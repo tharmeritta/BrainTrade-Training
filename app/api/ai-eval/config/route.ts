@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/firebase-admin';
 
-export const revalidate = 0; // Disable caching
-
 const FALLBACK_AGENT_GUIDELINE = `สวัสดีครับ/ค่ะ! ยินดีต้อนรับสู่ AI Evaluation
 
 ในการทดสอบนี้ คุณจะได้รับสายจาก "ลูกค้าคนไทย" ที่ขับเคลื่อนด้วย AI

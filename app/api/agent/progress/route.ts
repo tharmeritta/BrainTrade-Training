@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { fsGet, fsSet, fsDelete } from '@/lib/firestore-db';
 import { getAgentStats } from '@/lib/agents';
 import { MOCKUP_AGENT_ID } from '@/lib/agent-session';
+import { updateGlobalLearningStats } from '@/lib/services/stats-service';
 
 export interface ProgressRecord {
   agentId: string;
@@ -65,12 +66,15 @@ export async function POST(req: NextRequest) {
     // Log newly learned modules for the live feed
     if (newlyLearned.length > 0) {
       await Promise.all(newlyLearned.map(modId => 
-        fsSet('learning_logs', `${agentId}_${modId}`, {
-          agentId,
-          agentName: merged.agentName,
-          moduleId: modId,
-          timestamp: new Date().toISOString()
-        })
+        Promise.all([
+          fsSet('learning_logs', `${agentId}_${modId}`, {
+            agentId,
+            agentName: merged.agentName,
+            moduleId: modId,
+            timestamp: new Date().toISOString()
+          }),
+          updateGlobalLearningStats(modId)
+        ])
       ));
     }
 

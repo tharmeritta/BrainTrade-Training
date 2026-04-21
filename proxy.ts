@@ -17,7 +17,7 @@ export const config = {
     // - _next (static files)
     // - _static (public files)
     // - _vercel (Vercel specific files)
-    // - all files with an extension (e.g. favicon.ico)
+    // - Static files (favicon.ico, manifest.json, robots.txt, etc.)
     '/((?!api|_next|_static|_vercel|[\\w-]+\\.\\w+).*)',
     // Match the root
     '/'

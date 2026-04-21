@@ -1,4 +1,7 @@
 {
+  "common": {
+    "appName": "Sales Excellence Academy"
+  },
   "landing": {
     "title": "Welcome to <span class=\"text-primary\">BrainTrade</span>",
     "subtitle": "Professional sales training and skill development platform.",

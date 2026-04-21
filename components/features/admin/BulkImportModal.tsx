@@ -102,15 +102,24 @@ export default function BulkImportModal({ onClose, onSuccess }: BulkImportModalP
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
     >
+      <div 
+        className="absolute inset-0 z-0" 
+        onClick={onClose}
+        aria-hidden="true"
+      />
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl"
+        className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl z-10"
+        role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
       >
+
         <div className="flex items-center justify-between mb-5">
           <h3 className="font-bold text-lg text-foreground">{t('agents.importTitle')}</h3>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
@@ -124,6 +133,14 @@ export default function BulkImportModal({ onClose, onSuccess }: BulkImportModalP
 
         <div 
           onClick={() => fileInputRef.current?.click()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
+          role="button"
+          tabIndex={0}
           className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors ${file ? 'border-primary/50 bg-primary/5' : 'border-border hover:border-primary/30 hover:bg-secondary/30'}`}
         >
           <div className={`p-3 rounded-full ${file ? 'bg-primary/20 text-primary' : 'bg-secondary text-muted-foreground'}`}>
