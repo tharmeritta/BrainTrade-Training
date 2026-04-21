@@ -59,7 +59,9 @@ function getAdminApp(): App {
       rawKey = parsed.private_key || '';
       if (!projectId && parsed.project_id)   projectId   = cleanId(parsed.project_id);
       if (!clientEmail && parsed.client_email) clientEmail = cleanEmail(parsed.client_email);
-    } catch (e) {}
+    } catch (e) {
+      console.warn('[Firebase Admin] Failed to parse JSON-in-PrivateKey:', (e as Error).message);
+    }
   }
 
   // 4. Base64 check for the private key
