@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getServerUser } from '@/lib/session';
 import { fsQuery, fsAdd } from '@/lib/firestore-db';
+import { BatchService } from '@/lib/services/batch-service';
+import { updateAgentOverallScore } from '@/lib/services/stats-service';
 import type { AgentEvaluation } from '@/types';
 
 export async function GET(req: Request) {
@@ -32,9 +34,29 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
+  const agentId = body.agentId;
+
+  // Find active training period for this agent
+  const activePeriod = await BatchService.findActivePeriodForAgent(agentId);
+  const trainingPeriodId = activePeriod?.id;
+
   const record = await fsAdd<Omit<AgentEvaluation, 'id'>>('agent_evaluations', {
     ...body,
+    trainingPeriodId, // Link to the batch
     evaluatedAt: new Date().toISOString(),
   });
+
+  // If we found a period, check if it's now complete
+  if (trainingPeriodId) {
+    await BatchService.checkBatchCompletion(trainingPeriodId);
+  }
+
+  // Update agent overall score and persist stats
+  await updateAgentOverallScore(agentId, body.agentName || 'Agent', {
+    id: user.uid,
+    name: user.name,
+    role: user.role
+  });
+
   return NextResponse.json({ evaluation: record });
 }

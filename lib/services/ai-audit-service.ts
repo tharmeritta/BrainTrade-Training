@@ -1,6 +1,7 @@
 import { getOpenAI } from '@/lib/openai';
 import { getGeminiModel } from '@/lib/gemini';
 import { fsGet, fsSet, fsAdd } from '@/lib/firestore-db';
+import { updateGlobalAiEvalStats, updateAgentOverallScore } from './stats-service';
 import {
   AiEvalScenario,
   AiEvalTurnResponse,
@@ -232,7 +233,7 @@ RESPONSE FORMAT (JSON):
     return auditResult;
   }
 
-  private static async logAuditCompletion(
+private static async logAuditCompletion(
     agentId: string,
     agentName: string,
     scenario: AiEvalScenario,
@@ -241,6 +242,7 @@ RESPONSE FORMAT (JSON):
     const passed = result.verdict === 'passed';
     const score = result.score || 0;
 
+    // 1. Log the audit result
     await fsAdd(this.COLLECTION_LOGS, {
       agentId,
       agentName,
@@ -253,6 +255,7 @@ RESPONSE FORMAT (JSON):
       timestamp: new Date().toISOString(),
     });
 
+    // 2. Update agent_progress (aggregate record)
     if (passed) {
       const existing = await fsGet<any>('agent_progress', agentId)
         || { agentId, evalCompletedLevels: [], evalPassedScenarios: [] };
@@ -267,5 +270,11 @@ RESPONSE FORMAT (JSON):
         evalPassedScenarios: scenarios 
       });
     }
+
+    // 3. Update scores and global stats (must happen AFTER progress update for accuracy)
+    await Promise.all([
+      updateGlobalAiEvalStats(score, passed),
+      updateAgentOverallScore(agentId, agentName)
+    ]);
   }
 }

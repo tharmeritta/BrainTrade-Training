@@ -151,7 +151,9 @@ export function NewPeriodModal({ agents, trainers, currentUser, onClose, onCreat
             <div className="rounded-xl overflow-hidden max-h-48 overflow-y-auto border border-border">
               {agents.length === 0 ? (
                 <div className="px-4 py-3 text-sm text-muted-foreground">{t('noAgents')}</div>
-              ) : agents.map(a => (
+              ) : agents.map(a => {
+                const agentData = (a as any); // cast for extra fields
+                return (
                 <button
                   key={a.id} type="button"
                   onClick={() => toggleAgent(a.id)}
@@ -165,9 +167,16 @@ export function NewPeriodModal({ agents, trainers, currentUser, onClose, onCreat
                     }}>
                     {selectedIds.has(a.id) && <Check size={11} className="text-white" />}
                   </div>
-                  <span className={`text-sm ${selectedIds.has(a.id) ? 'text-foreground' : 'text-muted-foreground'}`}>{a.name}</span>
+                  <div className="flex-1 min-w-0">
+                    <span className={`text-sm ${selectedIds.has(a.id) ? 'text-foreground' : 'text-muted-foreground'}`}>{a.name}</span>
+                    {agentData.graduated && (
+                      <span className="ml-2 text-[8px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-500 px-1 py-0.5 rounded border border-emerald-500/20">
+                        Graduated
+                      </span>
+                    )}
+                  </div>
                 </button>
-              ))}
+              );})}
             </div>
           </div>
 

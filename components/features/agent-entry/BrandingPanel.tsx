@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { Users, Award, Layers, BookOpen, Settings, Bot, CheckCircle2 } from 'lucide-react';
 import { StatCounter } from '@/components/ui/StatCounter';
+import { BrandedTitle } from '@/components/ui/BrandedTitle';
 import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
 import { FloatingDecoration } from './FloatingDecoration';
 
@@ -45,8 +46,11 @@ export const BrandingPanel = () => {
         <motion.div variants={FADE_IN}>
           <h1 className="text-5xl xl:text-6xl font-black leading-[1.1] tracking-tight text-[color:var(--hub-text)] mb-4"
             style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.05))' }}
-            dangerouslySetInnerHTML={{ __html: tEntry.raw('title') }}
-          />
+          >
+            {tEntry.rich('title', {
+              highlight: (chunks) => <BrandedTitle type="gradient">{chunks}</BrandedTitle>
+            })}
+          </h1>
           <p className="text-base leading-relaxed max-w-[380px] font-medium" style={{ color: 'var(--hub-muted)' }}>
             {tEntry('subtitle')}
           </p>

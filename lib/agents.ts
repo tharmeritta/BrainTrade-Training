@@ -44,7 +44,7 @@ export function computeOverallScore(
 
 // ── Single-agent stats (used by /api/agent/progress GET) ──────────────────
 
-export async function getAgentStats(agentId: string, agentName: string): Promise<AgentStats> {
+export async function getAgentStats(agentId: string, agentName: string, targetPeriodId?: string): Promise<AgentStats> {
   const modules = TRAINING_REGISTRY.quiz.required;
   // Handle Mockup Agent
   if (agentId === MOCKUP_AGENT_ID) {
@@ -84,22 +84,33 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
   ]);
 
   // Combine and deduplicate if necessary, though buildAiEval handles multiple anyway
-  const evalDocs = [...evalDocsLegacy, ...evalDocsV2];
+  let evalDocs = [...evalDocsLegacy, ...evalDocsV2];
+  let filteredQuizDocs = quizDocs;
+  let filteredHumanEvals = humanEvals;
 
-  // Find the active period this agent belongs to
-  const myPeriod = periodsSnap.find(p => p.active && p.agentIds.includes(agentId));
-  const weights = myPeriod?.scoringWeights;
+  // Find the active period this agent belongs to or use the targeted one
+  const myActivePeriod = periodsSnap.find(p => p.active && p.agentIds.includes(agentId));
+  const effectivePeriodId = targetPeriodId || myActivePeriod?.id;
+
+  if (effectivePeriodId) {
+    filteredQuizDocs = quizDocs.filter(q => q.trainingPeriodId === effectivePeriodId);
+    evalDocs = evalDocs.filter(e => (e as any).trainingPeriodId === effectivePeriodId);
+    filteredHumanEvals = humanEvals.filter(h => h.trainingPeriodId === effectivePeriodId);
+  }
+
+  const weights = effectivePeriodId ? periodsSnap.find(p => p.id === effectivePeriodId)?.scoringWeights : myActivePeriod?.scoringWeights;
 
   // Quiz per module
   const quiz: AgentStats['quiz'] = {};
   for (const mod of modules) {
-    const results = quizDocs.filter(r => getCanonicalQuizKey(r.moduleId) === mod);
+    const results = filteredQuizDocs.filter(r => getCanonicalQuizKey(r.moduleId) === mod);
     if (results.length > 0) {
       quiz[mod] = {
         bestScore: Math.max(...results.map(r => Math.round((r.score / r.totalQuestions) * 100))),
         passed:    results.some(r => r.passed),
         attempts:  results.length,
-        history:   results.map(r => ({ score: r.score, total: r.totalQuestions, passed: r.passed, timestamp: r.timestamp })),
+        history:   results.map(r => ({ score: r.score, total: r.totalQuestions, passed: r.passed, timestamp: r.timestamp, trainingPeriodId: (r as any).trainingPeriodId })),
+        trainingPeriodId: (results[0] as any).trainingPeriodId
       };
     }
   }
@@ -107,22 +118,54 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
   // AI Eval
   const aiEval = buildAiEval(evalDocs);
 
-  const evalCompleted  = progressDoc?.evalCompletedLevels ?? [];
-  const passedScenarios = progressDoc?.evalPassedScenarios ?? [];
+  // Derive completed levels and passed scenarios from logs to ensure accuracy
+  // even if agent_progress doc is out of sync or missing updates.
+  const logPassedLevels = aiEval 
+    ? Object.keys(aiEval.levels)
+        .filter(lvl => aiEval.levels[Number(lvl)].passed)
+        .map(Number)
+    : [];
+  
+  const logPassedScenarios = evalDocs
+    .filter(e => e.passed && e.scenarioId)
+    .map(e => e.scenarioId!);
+
+  // When calculating stats for a specific period, we only care about progress IN THAT period
+  const evalCompleted = effectivePeriodId 
+    ? logPassedLevels.sort((a, b) => a - b)
+    : Array.from(new Set([
+        ...logPassedLevels,
+        ...(progressDoc?.evalCompletedLevels ?? [])
+      ])).sort((a, b) => a - b);
+
+  const passedScenarios = effectivePeriodId
+    ? logPassedScenarios
+    : Array.from(new Set([
+        ...logPassedScenarios,
+        ...(progressDoc?.evalPassedScenarios ?? [])
+      ]));
+
   const activeScenariosCount = scenariosSnap.filter(s => s.isActive).length;
   const learnedModules = progressDoc?.learnedModules ?? [];
-  const myHumanEvals   = [...humanEvals].sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
+  const myHumanEvals   = [...filteredHumanEvals].sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt));
 
-  const agent: Agent = { id: agentId, name: agentName, active: true, createdAt: new Date() };
+  const agent: Agent = { 
+    id: agentId, 
+    name: agentName, 
+    active: true, 
+    createdAt: new Date(),
+    graduated: progressDoc?.graduated || false,
+    graduatedAt: progressDoc?.graduatedAt
+  };
 
   const lastActive = [
-    ...quizDocs,
+    ...filteredQuizDocs,
     ...evalDocs,
     { timestamp: progressDoc?.updatedAt },
     { timestamp: agent.createdAt?.toString() },
   ].map(r => (r as any).timestamp).filter(Boolean).sort().at(-1) ?? null;
 
-  const partial      = { agent, quiz, aiEval, lastActive, evalCompletedLevels: evalCompleted, evalPassedScenarios: passedScenarios, learnedModules, humanEvaluations: myHumanEvals, activeScenariosCount };
+  const partial      = { agent, quiz, aiEval, lastActive, evalCompletedLevels: evalCompleted, evalPassedScenarios: passedScenarios, learnedModules, humanEvaluations: myHumanEvals, activeScenariosCount, activePeriodId: effectivePeriodId };
   
   const overallScore = computeOverallScore(partial, weights);
 
@@ -131,9 +174,9 @@ export async function getAgentStats(agentId: string, agentName: string): Promise
 
 // ── Data types matching GCS records ───────────────────────────────────────
 
-interface QuizRecord     { id: string; agentId: string; moduleId: string; score: number; totalQuestions: number; passed: boolean; timestamp: string; }
-interface EvalRecord     { id: string; agentId: string; score: number; level: number; passed: boolean; timestamp: string; }
-interface ProgressRecord { agentId: string; evalCompletedLevels: number[]; evalPassedScenarios?: string[]; learnedModules?: string[]; evalSavedLevel: number | null; updatedAt: string; }
+interface QuizRecord     { id: string; agentId: string; moduleId: string; score: number; totalQuestions: number; passed: boolean; timestamp: string; trainingPeriodId?: string; }
+interface EvalRecord     { id: string; agentId: string; score: number; level: number; passed: boolean; timestamp: string; scenarioId?: string; trainingPeriodId?: string; }
+interface ProgressRecord { agentId: string; evalCompletedLevels: number[]; evalPassedScenarios?: string[]; learnedModules?: string[]; evalSavedLevel: number | null; updatedAt: string; graduated?: boolean; graduatedAt?: string; }
 
 type LevelData = { attempts: number; avgScore: number; bestScore: number; passed: boolean; lastTimestamp: string };
 
@@ -191,7 +234,7 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
 
     // ── Analytics ─────────────────────────────────────────────────────────────
 
-    export async function getAllAgentStats(): Promise<AgentStats[]> {
+    export async function getAllAgentStats(targetPeriodId?: string): Promise<AgentStats[]> {
     const modules = TRAINING_REGISTRY.quiz.required;
     const [agents, quizDocs, evalDocsLegacy, evalDocsV2, progressDocs, humanEvals, scenariosSnap, periodsSnap] = await Promise.all([
     gcsGetAll<Agent & { id: string }>('agents'),
@@ -204,9 +247,34 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
     gcsGetAll<TrainingPeriod>('training_periods'),
     ]);
 
-    const evalDocs = [...evalDocsLegacy, ...evalDocsV2];
-  const activeAgents = agents.filter(a => a.active);
-  const activeScenariosCount = scenariosSnap.filter(s => s.isActive).length;
+    const evalDocsRaw = [...evalDocsLegacy, ...evalDocsV2];
+    const activeScenariosCount = scenariosSnap.filter(s => s.isActive).length;
+
+    // Mapping for weights
+    const weightMap = new Map<string, { quiz: number; human: number; ai: number }>();
+    const activePeriods = periodsSnap.filter(p => p.active);
+    
+    // If we target a specific period, only care about agents in that period
+    let filteredAgents = agents.filter(a => a.active);
+    let effectivePeriodId = targetPeriodId;
+
+    if (effectivePeriodId) {
+      const period = periodsSnap.find(p => p.id === effectivePeriodId);
+      if (period) {
+        filteredAgents = agents.filter(a => period.agentIds.includes(a.id));
+        for (const aid of period.agentIds) {
+          if (period.scoringWeights) weightMap.set(aid, period.scoringWeights);
+        }
+      }
+    } else {
+      for (const p of activePeriods) {
+        if (p.scoringWeights) {
+          for (const aid of p.agentIds) {
+            weightMap.set(aid, p.scoringWeights);
+          }
+        }
+      }
+    }
 
   const quizMap = new Map<string, QuizRecord[]>();
   for (const r of quizDocs) {
@@ -215,7 +283,7 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
   }
 
   const evalMap = new Map<string, EvalRecord[]>();
-  for (const e of evalDocs) {
+  for (const e of evalDocsRaw) {
     if (!evalMap.has(e.agentId)) evalMap.set(e.agentId, []);
     evalMap.get(e.agentId)!.push(e);
   }
@@ -232,22 +300,22 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
     if (id) progressMap.set(id, p);
   }
 
-  const weightMap = new Map<string, { quiz: number; human: number; ai: number }>();
-  const activePeriods = periodsSnap.filter(p => p.active);
-  for (const p of activePeriods) {
-    if (p.scoringWeights) {
-      for (const aid of p.agentIds) {
-        weightMap.set(aid, p.scoringWeights);
-      }
-    }
-  }
-
   const results: AgentStats[] = [];
   
-  for (const agent of activeAgents) {
-    const myQuizzes = quizMap.get(agent.id) ?? [];
-    const myEvals   = evalMap.get(agent.id) ?? [];
-    const myHuman   = humanMap.get(agent.id) ?? [];
+  for (const agent of filteredAgents) {
+    // Determine the period for this agent
+    const agentPeriodId = effectivePeriodId || periodsSnap.find(p => p.active && p.agentIds.includes(agent.id))?.id;
+
+    let myQuizzes = quizMap.get(agent.id) ?? [];
+    let myEvals   = evalMap.get(agent.id) ?? [];
+    let myHuman   = humanMap.get(agent.id) ?? [];
+    
+    if (agentPeriodId) {
+      myQuizzes = myQuizzes.filter(q => q.trainingPeriodId === agentPeriodId);
+      myEvals   = myEvals.filter(e => (e as any).trainingPeriodId === agentPeriodId);
+      myHuman   = myHuman.filter(h => h.trainingPeriodId === agentPeriodId);
+    }
+
     const progress  = progressMap.get(agent.id);
     const weights   = weightMap.get(agent.id);
 
@@ -260,12 +328,39 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
           bestScore: Math.max(...modResults.map(r => Math.round((r.score / r.totalQuestions) * 100))),
           passed:    modResults.some(r => r.passed),
           attempts:  modResults.length,
-          history:   modResults.map(r => ({ score: r.score, total: r.totalQuestions, passed: r.passed, timestamp: r.timestamp })),
+          history:   modResults.map(r => ({ score: r.score, total: r.totalQuestions, passed: r.passed, timestamp: r.timestamp, trainingPeriodId: r.trainingPeriodId })),
+          trainingPeriodId: (modResults[0] as any).trainingPeriodId
         };
       }
     }
 
     const aiEval = buildAiEval(myEvals);
+
+    // Derive completed levels and passed scenarios from logs to ensure accuracy
+    const logPassedLevels = aiEval 
+      ? Object.keys(aiEval.levels)
+          .filter(lvl => aiEval.levels[Number(lvl)].passed)
+          .map(Number)
+      : [];
+    
+    const logPassedScenarios = myEvals
+      .filter(e => e.passed && e.scenarioId)
+      .map(e => e.scenarioId!);
+
+    const evalCompleted = agentPeriodId 
+      ? logPassedLevels.sort((a, b) => a - b)
+      : Array.from(new Set([
+          ...logPassedLevels,
+          ...(progress?.evalCompletedLevels ?? [])
+        ])).sort((a, b) => a - b);
+
+    const passedScenarios = agentPeriodId
+      ? logPassedScenarios
+      : Array.from(new Set([
+          ...logPassedScenarios,
+          ...(progress?.evalPassedScenarios ?? [])
+        ]));
+
     const sortedHuman = myHuman.length > 0 
       ? [...myHuman].sort((a, b) => b.evaluatedAt.localeCompare(a.evaluatedAt))
       : [];
@@ -281,11 +376,12 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
       quiz, 
       aiEval, 
       lastActive, 
-      evalCompletedLevels: progress?.evalCompletedLevels ?? [], 
-      evalPassedScenarios: progress?.evalPassedScenarios ?? [], 
+      evalCompletedLevels: evalCompleted, 
+      evalPassedScenarios: passedScenarios, 
       learnedModules: progress?.learnedModules ?? [], 
       humanEvaluations: sortedHuman,
-      activeScenariosCount
+      activeScenariosCount,
+      activePeriodId: agentPeriodId
     };
     
     const overallScore = computeOverallScore(partial, weights);

@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { BookOpen, Settings, Bot, LucideIcon } from 'lucide-react';
 import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
+import { BrandedTitle } from '@/components/ui/BrandedTitle';
 
 interface ModuleChip {
   Icon: LucideIcon;
@@ -19,11 +20,10 @@ const MODULES: ModuleChip[] = [
 
 interface MobileHeaderProps {
   appName: string;
-  titleHtml: string;
-  t: (key: string) => string;
+  t: any; // Using any for simplicity as it's a translation function
 }
 
-export function MobileHeader({ appName, titleHtml, t }: MobileHeaderProps) {
+export function MobileHeader({ appName, t }: MobileHeaderProps) {
   return (
     <>
       {/* Mobile-only header */}
@@ -32,9 +32,11 @@ export function MobileHeader({ appName, titleHtml, t }: MobileHeaderProps) {
           <div className="w-1.5 h-1.5 rounded-full animate-pulse bg-brand-cyan" />
           <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-brand-cyan">{appName}</span>
         </div>
-        <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--hub-text)' }}
-          dangerouslySetInnerHTML={{ __html: titleHtml }}
-        />
+        <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--hub-text)' }}>
+          {t.rich('title', {
+            highlight: (chunks: any) => <BrandedTitle type="gradient">{chunks}</BrandedTitle>
+          })}
+        </h1>
       </motion.div>
 
       {/* This part usually goes at the bottom of the container in the original file, 

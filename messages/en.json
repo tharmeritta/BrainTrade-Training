@@ -3,7 +3,7 @@
     "appName": "Sales Excellence Academy"
   },
   "landing": {
-    "title": "Welcome to <span class=\"text-primary\">BrainTrade</span>",
+    "title": "Welcome to <highlight>BrainTrade</highlight>",
     "subtitle": "Professional sales training and skill development platform.",
     "agentTitle": "For Agents",
     "agentDesc": "Log in to start training, take quizzes, and get AI evaluations.",
@@ -27,7 +27,7 @@
   },
   "dashboard": {
     "title": "Training Dashboard",
-    "headerTitle": "Development <span class=\"text-primary\">Dashboard</span>",
+    "headerTitle": "Development <highlight>Dashboard</highlight>",
     "headerSub": "Select a topic to start practicing",
     "welcome": "Welcome back",
     "progress": "Your Progress",
@@ -99,7 +99,7 @@
     "practiceRun": "Practice Run"
   },
   "agentEntry": {
-    "title": "Empower your <span style=\"background: linear-gradient(100deg, #00B4D8 0%, #7C3AED 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;\">Sales</span> skills",
+    "title": "Empower your <highlight>Sales</highlight> skills",
     "subtitle": "Sales training program to develop skills through interactive learning and smart AI.",
     "agents": "Agents",
     "passed": "Passed",
@@ -186,11 +186,13 @@
       "hranalytics": "HR Analytics",
       "agents": "Agents",
       "training": "Training",
+      "history": "Training History",
       "evaluations": "Evaluations",
       "reports": "Reports",
       "approvals": "Approvals",
       "requestStatus": "Request Status",
       "staff": "Staff Accounts",
+      "accounts": "Staff & Agents",
       "adjustments": "Adjustments",
       "aiscenarios": "AI Scenarios",
       "profile": "User Profile"
@@ -447,6 +449,9 @@
       "noHumanEvals": "No human evaluations yet",
       "overridePrompt": "Enter manual score (0-100) for \"{mod}\" for {name}:",
       "overrideConfirm": "Are you sure you want to manually mark \"{mod}\" as PASSED with {score}% for {name}?",
+      "masterPassConfirm": "Are you sure you want to mark ALL quizzes and AI levels as PASSED for {name}? This action will be logged for audit.",
+      "masterPassSuccess": "Agent has been marked as passed for all modules.",
+      "quickPass": "Quick Pass",
       "tabs": {
         "summary": "Overview",
         "quiz": "Quiz History",

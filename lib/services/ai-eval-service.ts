@@ -6,8 +6,9 @@ import {
   AiEvalScenario,
   AiEvalSession,
   AiEvalTurnResponse,
-} from '@/types/ai-eval';
-import { PitchMessage } from '@/types';
+  } from '@/types/ai-eval';
+  import { PitchMessage } from '@/types';
+  import { getActiveTrainingPeriod } from '@/lib/training-server';
 
 /* ─── Service Implementation ────────────────────────────────────────────────── */
 
@@ -32,6 +33,8 @@ export class AiEvalService {
       scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, scenarioId) || await this.seedDefaultScenario();
     }
 
+    const activePeriod = await getActiveTrainingPeriod(agentId);
+
     const session: AiEvalSession = {
       id: crypto.randomUUID(),
       agentId,
@@ -53,6 +56,7 @@ export class AiEvalService {
       turnCountInRound: 0,
       startTime: new Date().toISOString(),
       lastUpdate: new Date().toISOString(),
+      trainingPeriodId: activePeriod?.id,
     };
 
     return session;
@@ -425,6 +429,7 @@ export class AiEvalService {
         score,
         finalTurnCount: session.turnCount,
         timestamp:      new Date().toISOString(),
+        trainingPeriodId: session.trainingPeriodId,
       }),
       updateGlobalAiEvalStats(score, passed),
       updateAgentOverallScore(session.agentId, session.agentName)

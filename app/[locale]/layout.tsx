@@ -4,6 +4,7 @@ import { SessionProvider } from '@/components/features/SessionProvider';
 import NavigationProgress from '@/components/ui/NavigationProgress';
 import { DM_Sans, DM_Mono } from 'next/font/google';
 import type { Metadata } from 'next';
+import ThemeScript from '@/components/ui/ThemeScript';
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -17,19 +18,6 @@ const dmMono = DM_Mono({
   display: 'swap',
   variable: '--font-dm-mono',
 });
-
-// Inline script runs synchronously before paint — prevents theme flash.
-const themeScript = `
-  (function() {
-    try {
-      var stored = localStorage.getItem('brainstrade_theme');
-      var theme = stored === 'light' ? 'light' : 'dark';
-      document.documentElement.classList.toggle('dark', theme === 'dark');
-    } catch(e) {
-      document.documentElement.classList.add('dark');
-    }
-  })();
-`;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -63,7 +51,7 @@ export default async function LocaleLayout(props: {
   return (
     <html lang={locale} className={`dark ${dmSans.variable} ${dmMono.variable}`} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <ThemeScript />
       </head>
       <body className="bg-background min-h-screen antialiased">
         <NextIntlClientProvider messages={messages} locale={locale}>

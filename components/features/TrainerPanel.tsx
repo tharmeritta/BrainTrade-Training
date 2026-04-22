@@ -101,6 +101,9 @@ export default function TrainerPanel({ role, uid, name, readOnly }: TrainerPanel
     setSelectedPeriodId(prev => prev === id ? null : prev);
   }
 
+  const activePeriods = periods.filter(p => p.active);
+  const completedPeriods = periods.filter(p => !p.active);
+
   return (
     <div className="flex flex-col" style={{ minHeight: 'calc(100vh - 160px)' }}>
       {/* Panel header */}
@@ -133,7 +136,7 @@ export default function TrainerPanel({ role, uid, name, readOnly }: TrainerPanel
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto space-y-6 pr-1 custom-scrollbar">
             {loadingPeriods ? (
               <div className="flex items-center justify-center py-12 gap-3 text-muted-foreground">
                 <Spinner /> <span className="text-xs font-bold uppercase tracking-widest">{t('loading')}</span>
@@ -144,57 +147,43 @@ export default function TrainerPanel({ role, uid, name, readOnly }: TrainerPanel
                 <p className="text-xs font-bold text-muted-foreground leading-relaxed">{t('noPeriods')}</p>
                 {canManage && <p className="text-[10px] mt-2 opacity-50 uppercase tracking-widest">{t('newPeriodHint')}</p>}
               </div>
-            ) : periods.map(p => (
-              <motion.button
-                key={p.id}
-                onClick={() => setSelectedPeriodId(p.id)}
-                whileHover={{ x: 4 }}
-                whileTap={{ scale: 0.98 }}
-                className={`w-full text-left rounded-2xl overflow-hidden transition-all border ${
-                  selectedPeriodId === p.id 
-                    ? 'shadow-lg ring-1 ring-amber-500/20' 
-                    : 'bg-card/50 hover:bg-card border-border/40'
-                }`}
-                style={selectedPeriodId === p.id ? { 
-                  background: 'linear-gradient(145deg, rgba(245,158,11,0.12), rgba(245,158,11,0.05))', 
-                  borderColor: T.amberBorder 
-                } : {}}
-              >
-                <div className="flex h-full">
-                  <div className="w-1.5 flex-shrink-0 transition-colors" 
-                    style={{ background: p.active ? T.amber : 'var(--hub-dim-border)' }} />
-                  <div className="flex-1 px-4 py-4">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="flex flex-col gap-1 min-w-0">
-                        <span className={`text-[13px] font-black leading-tight tracking-tight truncate ${selectedPeriodId === p.id ? 'text-amber-500' : 'text-foreground'}`}>
-                          {p.name}
-                        </span>
-                        {p.active && Object.values(liveSessions).some(v => v) && (
-                          <div className="flex items-center gap-1.5 text-[9px] font-black text-red-500 uppercase tracking-widest animate-pulse">
-                            <Radio size={10} /> LIVE NOW
-                          </div>
-                        )}
-                      </div>
-                      <StatusBadge 
-                        status={p.active ? 'active' : 'inactive'} 
-                        label={p.active ? t('active') : t('inactive')} 
-                        size="xs"
-                        pulse={p.active}
+            ) : (
+              <>
+                {activePeriods.length > 0 && (
+                  <div className="space-y-2.5">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-amber-500/60 px-1">Active Waves</p>
+                    {activePeriods.map(p => (
+                      <PeriodListItem 
+                        key={p.id} 
+                        p={p} 
+                        isSelected={selectedPeriodId === p.id} 
+                        onClick={() => setSelectedPeriodId(p.id)}
+                        locale={locale}
+                        liveSessions={liveSessions}
+                        t={t}
                       />
-                    </div>
-                    
-                    <div className="flex items-center gap-3 text-[10px] font-bold text-muted-foreground mb-3 opacity-60">
-                      <span className="flex items-center gap-1.5"><Users size={12} className="opacity-70" /> {p.agentIds.length}</span>
-                      <span className="flex items-center gap-1.5"><BookOpen size={12} className="opacity-70" /> {p.totalDays}d</span>
-                    </div>
-
-                    <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/40">
-                      <span className="text-[10px] font-bold text-muted-foreground opacity-40">{fmtDate(p.startDate, locale)}</span>
-                    </div>
+                    ))}
                   </div>
-                </div>
-              </motion.button>
-            ))}
+                )}
+
+                {completedPeriods.length > 0 && (
+                  <div className="space-y-2.5">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 px-1">Completed Waves</p>
+                    {completedPeriods.map(p => (
+                      <PeriodListItem 
+                        key={p.id} 
+                        p={p} 
+                        isSelected={selectedPeriodId === p.id} 
+                        onClick={() => setSelectedPeriodId(p.id)}
+                        locale={locale}
+                        liveSessions={liveSessions}
+                        t={t}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
 
@@ -240,3 +229,61 @@ export default function TrainerPanel({ role, uid, name, readOnly }: TrainerPanel
     </div>
   );
 }
+
+function PeriodListItem({ p, isSelected, onClick, locale, liveSessions, t }: { 
+  p: TrainingPeriod, isSelected: boolean, onClick: () => void, locale: string, liveSessions: any, t: any 
+}) {
+  return (
+    <motion.button
+      onClick={onClick}
+      whileHover={{ x: 4 }}
+      whileTap={{ scale: 0.98 }}
+      className={`w-full text-left rounded-2xl overflow-hidden transition-all border ${
+        isSelected 
+          ? 'shadow-lg ring-1 ring-amber-500/20' 
+          : 'bg-card/50 hover:bg-card border-border/40'
+      } ${!p.active ? 'opacity-70' : ''}`}
+      style={isSelected ? { 
+        background: 'linear-gradient(145deg, rgba(245,158,11,0.12), rgba(245,158,11,0.05))', 
+        borderColor: T.amberBorder 
+      } : {}}
+    >
+      <div className="flex h-full">
+        <div className="w-1.5 flex-shrink-0 transition-colors" 
+          style={{ background: p.active ? T.amber : 'var(--hub-dim-border)' }} />
+        <div className="flex-1 px-4 py-4">
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <div className="flex flex-col gap-1 min-w-0">
+              <span className={`text-[13px] font-black leading-tight tracking-tight truncate ${isSelected ? 'text-amber-500' : 'text-foreground'}`}>
+                {p.name}
+              </span>
+              {p.active && Object.values(liveSessions).some(v => v) && (
+                <div className="flex items-center gap-1.5 text-[9px] font-black text-red-500 uppercase tracking-widest animate-pulse">
+                  <Radio size={10} /> LIVE NOW
+                </div>
+              )}
+            </div>
+            <StatusBadge 
+              status={p.active ? 'active' : 'inactive'} 
+              label={p.active ? t('active') : p.completedAt ? 'Finished' : t('inactive')} 
+              size="xs"
+              pulse={p.active}
+            />
+          </div>
+          
+          <div className="flex items-center gap-3 text-[10px] font-bold text-muted-foreground mb-3 opacity-60">
+            <span className="flex items-center gap-1.5"><Users size={12} className="opacity-70" /> {p.agentIds.length}</span>
+            <span className="flex items-center gap-1.5"><BookOpen size={12} className="opacity-70" /> {p.totalDays}d</span>
+          </div>
+
+          <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/40">
+            <span className="text-[10px] font-bold text-muted-foreground opacity-40">
+              {p.completedAt ? `Done: ${fmtDate(p.completedAt, locale)}` : fmtDate(p.startDate, locale)}
+            </span>
+          </div>
+        </div>
+      </div>
+    </motion.button>
+  );
+}
+

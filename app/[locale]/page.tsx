@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Users, ShieldCheck, ArrowRight, BookOpen, Bot, GraduationCap } from 'lucide-react';
 import { BackgroundEffects } from '@/components/ui/BackgroundEffects';
+import { BrandedTitle } from '@/components/ui/BrandedTitle';
 import LangToggle from '@/components/ui/LangToggle';
 import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM, EASE } from '@/lib/animations';
 
@@ -52,8 +53,11 @@ export default function LandingPage() {
           <motion.h1 
             variants={FADE_IN}
             className="text-4xl md:text-6xl font-black leading-[1.1] tracking-tight text-[color:var(--hub-text)] mb-6"
-            dangerouslySetInnerHTML={{ __html: t.raw('title') }}
-          />
+          >
+            {t.rich('title', {
+              highlight: (chunks) => <BrandedTitle>{chunks}</BrandedTitle>
+            })}
+          </motion.h1>
           
           <motion.p 
             variants={FADE_IN}

@@ -2,7 +2,7 @@
 
 import LangToggle  from '@/components/ui/LangToggle';
 import ThemeToggle from '@/components/ui/ThemeToggle';
-import { TabItem } from './useAdminDashboard';
+import { TabItem } from './dashboard-policy';
 
 interface AdminHeaderProps {
   activeTab?: TabItem;

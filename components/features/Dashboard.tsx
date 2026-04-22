@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { BookOpen, ClipboardList, BarChart3, LucideIcon } from 'lucide-react';
+import { BrandedTitle } from '@/components/ui/BrandedTitle';
 import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
 
 import { useTranslations } from 'next-intl';
@@ -63,10 +64,11 @@ const DashboardHeader = () => {
       className="flex flex-col md:flex-row md:items-end justify-between gap-6"
     >
       <div>
-        <h1 
-          className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl"
-          dangerouslySetInnerHTML={{ __html: t.raw('headerTitle') }}
-        />
+        <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
+          {t.rich('headerTitle', {
+            highlight: (chunks) => <BrandedTitle>{chunks}</BrandedTitle>
+          })}
+        </h1>
         <p className="text-muted-foreground mt-2 text-lg">{t('headerSub')}</p>
       </div>
 

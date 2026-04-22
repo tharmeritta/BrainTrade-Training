@@ -10,15 +10,16 @@ export async function POST(req: NextRequest) {
     const db = getAdminDb();
 
     // 1. Fetch all raw data for this agent
-    const [quizSnap, evalSnap, learnSnap, progressSnap] = await Promise.all([
+    const [quizSnap, evalSnapLegacy, evalSnapV2, learnSnap, progressSnap] = await Promise.all([
       db.collection('quiz_results').where('agentId', '==', agentId).get(),
       db.collection('ai_eval_logs').where('agentId', '==', agentId).get(),
+      db.collection('ai_eval_logs_v2').where('agentId', '==', agentId).get(),
       db.collection('learning_logs').where('agentId', '==', agentId).get(),
       db.collection('agent_progress').doc(agentId).get()
     ]);
 
     const quizDocs  = quizSnap.docs.map(d => d.data());
-    const evalDocs  = evalSnap.docs.map(d => d.data());
+    const evalDocs  = [...evalSnapLegacy.docs.map(d => d.data()), ...evalSnapV2.docs.map(d => d.data())];
     const learnDocs = learnSnap.docs.map(d => d.data());
     const existingProgress = progressSnap.exists ? progressSnap.data() : { learnedModules: [], evalCompletedLevels: [] };
 

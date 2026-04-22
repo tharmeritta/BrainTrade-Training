@@ -34,13 +34,22 @@ export interface Agent {
   overallScore?: number;
   badge?: 'elite' | 'strong' | 'developing' | 'needs-work';
   lastActive?: string | null;
+  graduated?: boolean;
+  graduatedAt?: string;
 }
 
 export interface ModuleQuizStat {
   bestScore: number;       // 0–100 percentage
   passed: boolean;
   attempts: number;
-  history?: { score: number; total: number; passed: boolean; timestamp: string }[];
+  trainingPeriodId?: string; // Link to specific training batch
+  history?: { 
+    score: number; 
+    total: number; 
+    passed: boolean; 
+    timestamp: string;
+    trainingPeriodId?: string;
+  }[];
 }
 
 export interface AgentStats {
@@ -57,6 +66,7 @@ export interface AgentStats {
       bestScore: number;
       passed: boolean;
       attempts: number;
+      trainingPeriodId?: string;
       history: { 
         score: number; 
         total: number; 
@@ -64,6 +74,7 @@ export interface AgentStats {
         timestamp: string;
         manualOverride?: boolean;
         overriddenBy?: string;
+        trainingPeriodId?: string;
       }[];
     }
   };
@@ -71,6 +82,7 @@ export interface AgentStats {
   aiEval: {
     avgScore: number;
     count: number;
+    trainingPeriodId?: string;
     history: { 
       score: number; 
       level: number; 
@@ -80,6 +92,7 @@ export interface AgentStats {
       overriddenBy?: string;
       isBypassed?: boolean;
       bypassReason?: string;
+      trainingPeriodId?: string;
     }[];
     /** per-level breakdown so staff can see where agents struggle */
     levels: {
@@ -89,6 +102,7 @@ export interface AgentStats {
         bestScore: number;
         passed: boolean;
         lastTimestamp: string;
+        trainingPeriodId?: string;
       };
     };
   } | null;
@@ -102,6 +116,8 @@ export interface AgentStats {
   evalPassedScenarios?: string[];
   /** Total count of active AI scenarios currently in the system */
   activeScenariosCount?: number;
+  /** The current active training period ID for this agent */
+  activePeriodId?: string;
 }
 
 // ── Admin API response shapes ───────────────────────────────────────────────
@@ -123,6 +139,7 @@ export interface AdminOverviewData {
   moduleStats: ModuleStat[];
   leaderboard: AgentStats[];
   passFail: { passed: number; failed: number };
+  trainingWaves?: TrainingPeriod[];
 }
 
 // ── Evaluator ──────────────────────────────────────────────────────────────
@@ -179,6 +196,7 @@ export interface AgentEvaluation {
   agentName: string;
   evaluatorId: string;
   evaluatorName: string;
+  trainingPeriodId?: string; // Link to specific training batch
   criteria: SalesCallCriteria;
   totalScore: number;          // 0–100: 100 − (redFlagCount × 25)
   comments: string;            // summary comment shown in lists
@@ -232,6 +250,7 @@ export interface TrainingPeriod {
   };
   createdAt: string;
   updatedAt?: string;
+  completedAt?: string;
 }
 
 export interface TrainingDayRecord {
@@ -307,3 +326,4 @@ export interface ApprovalRequest {
   resolvedByName?: string;
   rejectionReason?: string;
 }
+

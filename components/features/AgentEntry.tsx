@@ -66,7 +66,6 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
           
           <MobileHeader 
             appName={tCommon('appName')} 
-            titleHtml={t.raw('title')} 
             t={t} 
           />
 

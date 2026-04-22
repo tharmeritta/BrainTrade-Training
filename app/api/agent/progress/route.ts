@@ -3,6 +3,7 @@ import { fsGet, fsSet, fsDelete } from '@/lib/firestore-db';
 import { getAgentStats } from '@/lib/agents';
 import { MOCKUP_AGENT_ID } from '@/lib/agent-session';
 import { updateGlobalLearningStats } from '@/lib/services/stats-service';
+import { getActiveTrainingPeriod } from '@/lib/training-server';
 
 export interface ProgressRecord {
   agentId: string;
@@ -65,13 +66,17 @@ export async function POST(req: NextRequest) {
 
     // Log newly learned modules for the live feed
     if (newlyLearned.length > 0) {
+      const activePeriod = await getActiveTrainingPeriod(agentId);
+      const trainingPeriodId = activePeriod?.id;
+
       await Promise.all(newlyLearned.map(modId => 
         Promise.all([
           fsSet('learning_logs', `${agentId}_${modId}`, {
             agentId,
             agentName: merged.agentName,
             moduleId: modId,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            trainingPeriodId
           }),
           updateGlobalLearningStats(modId)
         ])

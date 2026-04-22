@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut, Zap, ChevronRight } from 'lucide-react';
-import { Tab, TabItem } from './useAdminDashboard';
+import { Tab, TabItem, UserRole } from './dashboard-policy';
 
 interface NavGroupProps {
   label?: string;

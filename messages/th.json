@@ -3,7 +3,7 @@
     "appName": "Sales Excellence Academy"
   },
   "landing": {
-    "title": "ยินดีต้อนรับสู่ <span class=\"text-primary\">BrainTrade</span>",
+    "title": "ยินดีต้อนรับสู่ <highlight>BrainTrade</highlight>",
     "subtitle": "แพลตฟอร์มการฝึกอบรมและพัฒนาทักษะการขายระดับมืออาชีพ",
     "agentTitle": "สำหรับเอเจนต์",
     "agentDesc": "เข้าสู่ระบบเพื่อเริ่มการฝึกอบรม ทำแบบทดสอบ และประเมินผลด้วย AI",
@@ -27,7 +27,7 @@
   },
   "dashboard": {
     "title": "แดชบอร์ดการฝึกอบรม",
-    "headerTitle": "แดชบอร์ด <span class=\"text-primary\">การพัฒนาทักษะ</span>",
+    "headerTitle": "แดชบอร์ด <highlight>การพัฒนาทักษะ</highlight>",
     "headerSub": "เลือกหัวข้อเพื่อเริ่มต้นการฝึกฝน",
     "welcome": "ยินดีต้อนรับกลับมา",
     "progress": "ความคืบหน้าของคุณ",
@@ -99,7 +99,7 @@
     "practiceRun": "โหมดฝึกฝน"
   },
   "agentEntry": {
-    "title": "เสริมทักษะ <span style=\"background: linear-gradient(100deg, #00B4D8 0%, #7C3AED 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block;\">การขาย</span> ของคุณ",
+    "title": "เสริมทักษะ <highlight>การขาย</highlight> ของคุณ",
     "subtitle": "โปรแกรมฝึกอบรมพัฒนาทักษะการขาย ผ่านการเรียนรู้แบบโต้ตอบและ AI ที่ชาญฉลาด",
     "agents": "เอเจนต์",
     "passed": "ผ่านการทดสอบ",
@@ -186,11 +186,13 @@
       "hranalytics": "การวิเคราะห์ HR",
       "agents": "เอเจนต์",
       "training": "การฝึกอบรม",
+      "history": "ประวัติการฝึก",
       "evaluations": "การประเมิน",
       "reports": "รายงาน",
       "approvals": "การอนุมัติ",
       "requestStatus": "สถานะการส่งคำขอ",
       "staff": "บัญชีเจ้าหน้าที่",
+      "accounts": "จัดการบัญชี (Staff & Agent)",
       "adjustments": "การปรับแต่ง",
       "aiscenarios": "สถานการณ์ AI",
       "profile": "โปรไฟล์ผู้ใช้"
@@ -447,6 +449,9 @@
       "noHumanEvals": "ยังไม่มีการประเมินโดยเจ้าหน้าที่",
       "overridePrompt": "ระบุคะแนน (0-100) สำหรับ \"{mod}\" ของ {name}:",
       "overrideConfirm": "ยืนยันการทำ Override ให้ \"{mod}\" ผ่านด้วยคะแนน {score}% สำหรับ {name} หรือไม่?",
+      "masterPassConfirm": "ยืนยันการทำให้ {name} ผ่าน 'ทุกโมดูล' (ทั้งแบบทดสอบและ AI Eval) หรือไม่? การกระทำนี้จะถูกบันทึกในประวัติการตรวจสอบ",
+      "masterPassSuccess": "เอเจนต์ได้รับสถานะ 'ผ่าน' ครบทุกโมดูลแล้ว",
+      "quickPass": "Quick Pass",
       "tabs": {
         "summary": "ภาพรวม",
         "quiz": "ประวัติควิซ",

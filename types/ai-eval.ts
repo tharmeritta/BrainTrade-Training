@@ -105,6 +105,7 @@ export interface AiEvalSession {
   turnCountInRound: number; // kept for backward compat
   startTime: string;
   lastUpdate: string;
+  trainingPeriodId?: string;
 
   // NEW: final verdict reason from ChatGPT
   verdictReason?: string;
