@@ -3,7 +3,7 @@
 import React, { memo, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { LogOut, CheckCircle2, Lock, Trophy, Target, ChevronRight, RefreshCw } from 'lucide-react';
-import { ScoreRing } from '@/components/ui/ScoreRing';
+import { ScoreRing, scoreHex } from '@/components/ui/ScoreRing';
 import { FADE_IN, EASE, TRANSITION } from '@/lib/animations';
 import { StepState } from '@/lib/training';
 import { STEPS, BADGE, BadgeType } from '@/constants/training';
@@ -80,12 +80,13 @@ export const ProfileSidebar = memo(({
         <div className="relative mb-3 lg:mb-4 scale-90 lg:scale-100">
           <div className="absolute inset-0 rounded-full scale-[1.5] blur-[12px]"
             style={{
-              background: `radial-gradient(circle, ${ringColor}20 30%, transparent 70%)`,
+              background: `radial-gradient(circle, ${scoreHex(score)}20 30%, transparent 70%)`,
             }} />
-          <ScoreRing score={score} color={ringColor} size={116} />
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+          <div style={{ width: 116, height: 116 }} className="flex items-center justify-center">
+             <ScoreRing score={score} size="lg" />
+          </div>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 pointer-events-none">
             <span className="text-2xl font-black leading-none text-[color:var(--hub-text)]">{initials}</span>
-            <span className="text-sm font-black" style={{ color: ringColor }}>{score}%</span>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import {
@@ -109,6 +109,11 @@ export default function AdminDashboard({ role, uid, name, passwordChanged, inter
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [requestingAccess, setRequestingAccess] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isReadOnlyRole = role === 'it' || role === 'manager' || role === 'hr';
   const isInteractive = role === 'admin' || role === 'trainer' || (
@@ -355,7 +360,7 @@ export default function AdminDashboard({ role, uid, name, passwordChanged, inter
                       {t(`tabs.${activeTab.labelKey}`)}
                     </h1>
                     <p className="text-[10px] text-muted-foreground leading-tight">
-                      {new Date().toLocaleDateString(
+                      {mounted && new Date().toLocaleDateString(
                         t('tabs.overview') === 'ภาพรวม' ? 'th-TH' : 'en-GB',
                         { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }
                       )}

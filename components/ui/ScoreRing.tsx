@@ -4,42 +4,49 @@ import { motion } from 'framer-motion';
 
 interface ScoreRingProps {
   score: number;
-  color: string;
-  size: number;
+  size?: 'sm' | 'md' | 'lg';
 }
 
-export function ScoreRing({ score, color, size }: ScoreRingProps) {
-  const sw   = Math.max(4, Math.round(size * 0.043));
-  const r    = (size - sw) / 2;
+export function scoreHex(n: number) {
+  if (n >= 70) return '#60A5FA'; // blue-400
+  if (n >= 50) return '#FBBF24'; // amber-400
+  return '#F87171'; // red-400
+}
+
+export function ScoreRing({ score, size = 'md' }: ScoreRingProps) {
+  const dim  = size === 'sm' ? 52 : size === 'lg' ? 84 : 68;
+  const r    = size === 'sm' ? 18 : size === 'lg' ? 32 : 26;
+  const sw   = size === 'sm' ? 3.5 : size === 'lg' ? 5.5 : 4.5;
+  const fs   = size === 'sm' ? 12 : size === 'lg' ? 18 : 15;
   const circ = 2 * Math.PI * r;
-  const dash = (score / 100) * circ;
+  const clr  = scoreHex(score);
 
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox={`0 0 ${size} ${size}`}
-      style={{ transform: 'rotate(-90deg)' }}
-    >
-      <circle
-        cx={size / 2} cy={size / 2} r={r}
-        fill="none"
-        stroke={color}
-        strokeOpacity={0.15}
-        strokeWidth={sw}
-      />
-      <motion.circle
-        cx={size / 2} cy={size / 2} r={r}
-        fill="none"
-        stroke={color}
-        strokeWidth={sw}
-        strokeLinecap="round"
-        strokeDasharray={circ}
-        initial={{ strokeDashoffset: circ }}
-        animate={{ strokeDashoffset: circ - dash }}
-        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-        style={{ filter: `drop-shadow(0 0 6px ${color}80)` }}
-      />
-    </svg>
+    <div className="relative flex items-center justify-center shrink-0" style={{ width: dim, height: dim }}>
+      <svg className="absolute inset-0" viewBox={`0 0 ${dim} ${dim}`} style={{ transform: 'rotate(-90deg)' }}>
+        <circle 
+          cx={dim/2} cy={dim/2} r={r} 
+          fill="none" 
+          stroke="currentColor" 
+          className="text-muted-foreground/15" 
+          strokeWidth={sw} 
+        />
+        <motion.circle
+          cx={dim/2} cy={dim/2} r={r} 
+          fill="none" 
+          stroke={clr} 
+          strokeWidth={sw}
+          strokeLinecap="round" 
+          strokeDasharray={circ}
+          initial={{ strokeDashoffset: circ }}
+          animate={{ strokeDashoffset: circ - (score / 100) * circ }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          style={{ filter: `drop-shadow(0 0 4px ${clr}50)` }}
+        />
+      </svg>
+      <span className="font-black tabular-nums" style={{ color: clr, fontSize: fs }}>
+        {score}
+      </span>
+    </div>
   );
 }

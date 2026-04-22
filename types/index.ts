@@ -137,7 +137,7 @@ export interface Evaluator {
 // ── Sales call evaluation schema ────────────────────────────────────────────
 
 export interface SalesCallPerformanceItem {
-  agentInvolve: boolean;   // Y = yes this item was observed
+  agentInvolve: boolean | null;   // null = not evaluated, true = yes, false = no
   comment: string;
   remark?: string;
 }

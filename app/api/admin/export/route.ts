@@ -93,10 +93,17 @@ function buildIndividualSheet(stat: AgentStats) {
     [],
     [],
     ['HUMAN EVALUATIONS (Quality Assurance)'],
-    ['Evaluator', 'Score', 'Result', 'Date', 'Red Flags', 'QA Thoughts', 'General Remark', 'Comments'],
+    ['Evaluator', 'Score', 'Result', 'Date', 'Red Flags', 'QA Thoughts', 'General Remark', 'Performance Breakdown'],
     ...(stat.humanEvaluations || []).map(h => {
       const c = h.criteria as any;
       const redFlags = c?.redFlags ? Object.entries(c.redFlags).filter(([_, v]) => v).map(([k]) => k).join(', ') : '';
+      
+      const perfBreakdown = c?.performance ? Object.entries(c.performance).map(([k, v]: [string, any]) => {
+        const label = k.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+        const result = v.agentInvolve === true ? 'YES' : v.agentInvolve === false ? 'NO' : 'N/A';
+        return `${label}: ${result}${v.comment ? ` (${v.comment})` : ''}`;
+      }).join(' | ') : 'N/A';
+
       return [
         h.evaluatorName,
         h.totalScore,
@@ -105,7 +112,7 @@ function buildIndividualSheet(stat: AgentStats) {
         redFlags,
         c?.qaThoughts || '',
         c?.generalRemark || '',
-        h.comments
+        perfBreakdown
       ];
     }),
   ];

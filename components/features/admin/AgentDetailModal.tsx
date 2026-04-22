@@ -8,6 +8,7 @@ import type { AgentStats } from '@/types';
 import { BadgePill } from './AdminComponents';
 import { scoreColor, timeAgo } from './AdminHelpers';
 import DetailedEvaluation from './DetailedEvaluation';
+import { AgentPerformancePanel } from '@/components/features/evaluator/AgentPerformancePanel';
 
 // --- Bypass Modal Component ---
 
@@ -416,7 +417,7 @@ function DetailedHumanEvaluations({ stats }: { stats: AgentStats }) {
 
 export default function AgentDetailModal({ stats, onClose, onRefresh }: { stats: AgentStats; onClose: () => void; onRefresh?: () => void }) {
   const t = useTranslations('admin');
-  const [activeTab, setActiveTab] = useState<'quiz' | 'ai' | 'qa'>('quiz');
+  const [activeTab, setActiveTab] = useState<'summary' | 'quiz' | 'ai' | 'qa'>('summary');
 
   const handleOverride = async (moduleId: string, type: 'quiz' | 'ai-eval', score?: number, extra?: any) => {
     try {
@@ -486,9 +487,10 @@ export default function AgentDetailModal({ stats, onClose, onRefresh }: { stats:
         <div className="px-8 border-b border-border bg-card shrink-0">
           <div className="flex gap-8 overflow-x-auto scrollbar-hide">
             {[
-              { id: 'quiz',  label: t('agentDetail.tabs.quiz'), icon: Target },
-              { id: 'ai',    label: t('agentDetail.tabs.ai'),   icon: Zap },
-              { id: 'qa',    label: t('agentDetail.tabs.qa'), icon: ClipboardCheck },
+              { id: 'summary', label: t('agentDetail.tabs.summary'), icon: TrendingUp },
+              { id: 'quiz',    label: t('agentDetail.tabs.quiz'),    icon: Target },
+              { id: 'ai',      label: t('agentDetail.tabs.ai'),      icon: Zap },
+              { id: 'qa',      label: t('agentDetail.tabs.qa'),      icon: ClipboardCheck },
             ].map(t => (
               <button
                 key={t.id}
@@ -513,6 +515,11 @@ export default function AgentDetailModal({ stats, onClose, onRefresh }: { stats:
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.2 }}
             >
+              {activeTab === 'summary' && (
+                <div className="max-w-2xl mx-auto">
+                  <AgentPerformancePanel stats={stats} loading={false} />
+                </div>
+              )}
               {activeTab === 'quiz'  && <DetailedQuizHistory stats={stats} onOverride={handleOverride} />}
               {activeTab === 'ai'    && <DetailedAiEvalHistory stats={stats} onOverride={handleOverride} onBypass={handleBypass} />}
               {activeTab === 'qa'    && <DetailedHumanEvaluations stats={stats} />}

@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { 
   ClipboardCheck, X, Clock, AlertCircle, AlertTriangle, 
-  Flag, ShieldAlert, CheckCircle2, Zap 
+  Flag, ShieldAlert, CheckCircle2, Zap, Circle
 } from 'lucide-react';
 import { scoreColor, timeAgo } from './AdminHelpers';
 
@@ -66,17 +66,27 @@ export default function DetailedEvaluation({ ev }: DetailedEvaluationProps) {
           {['agentStruggle', 'unhandledQuestions', 'toneOfVoice', 'chemistryFriendliness'].map(key => {
             const p = (c?.performance as any)?.[key];
             if (!p) return null;
+            const isNA = p.agentInvolve === null;
+            const isY  = p.agentInvolve === true;
+            const isN  = p.agentInvolve === false;
+
             return (
-              <div key={key} className={`bg-card/40 border rounded-2xl p-4 flex gap-4 transition-all ${p.agentInvolve ? 'border-blue-500/30 bg-blue-500/[0.02]' : 'border-border/40'}`}>
-                <div className={`mt-0.5 w-7 h-7 rounded-xl flex items-center justify-center shrink-0 border ${p.agentInvolve ? 'bg-blue-500 text-white border-blue-400' : 'bg-secondary text-muted-foreground/30 border-border/50'}`}>
-                  {p.agentInvolve ? <CheckCircle2 size={16} strokeWidth={3} /> : <X size={16} strokeWidth={3} />}
+              <div key={key} className={`bg-card/40 border rounded-2xl p-4 flex gap-4 transition-all ${isY ? 'border-blue-500/30 bg-blue-500/[0.02]' : isNA ? 'border-border/20 opacity-60' : 'border-border/40'}`}>
+                <div className={`mt-0.5 w-7 h-7 rounded-xl flex items-center justify-center shrink-0 border transition-colors ${isY ? 'bg-blue-500 text-white border-blue-400' : isNA ? 'bg-secondary/50 text-muted-foreground/20 border-border/30' : 'bg-secondary text-muted-foreground/30 border-border/50'}`}>
+                  {isY ? <CheckCircle2 size={16} strokeWidth={3} /> : isNA ? <Circle size={14} className="opacity-40" /> : <X size={16} strokeWidth={3} />}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="text-[10px] font-black text-muted-foreground/80 uppercase tracking-tight">{evT(`performanceItems.${key}`)}</div>
-                    <span className={`text-[9px] font-black uppercase ${p.agentInvolve ? 'text-blue-500' : 'text-muted-foreground/40'}`}>{p.agentInvolve ? evT('yLabel') : evT('nLabel')}</span>
+                    <span className={`text-[9px] font-black uppercase ${isY ? 'text-blue-500' : isNA ? 'text-muted-foreground/30' : 'text-muted-foreground/40'}`}>
+                      {isY ? evT('yLabel') : isN ? evT('nLabel') : evT('naLabel')}
+                    </span>
                   </div>
-                  {p.comment && <p className="text-sm text-foreground font-medium leading-relaxed mb-2">{p.comment}</p>}
+                  {p.comment ? (
+                    <p className="text-sm text-foreground font-medium leading-relaxed mb-2">{p.comment}</p>
+                  ) : isNA && (
+                    <p className="text-[11px] text-muted-foreground/40 font-bold italic mb-2 uppercase tracking-widest">{evT('notEvaluated')}</p>
+                  )}
                   {p.remark && (
                     <div className="mt-2 pt-2 border-t border-border/30 text-[11px] text-muted-foreground italic">
                       {p.remark}

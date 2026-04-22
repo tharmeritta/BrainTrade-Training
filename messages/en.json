@@ -329,7 +329,8 @@
       "avgScoreLabel": "Avg Score",
       "passPct": "{pct}% Pass",
       "readyForLive": "{count} agents have cleared all training modules and are ready for live operation.",
-      "livePulse": "Live Activity"
+      "livePulse": "Live Activity",
+      "noActiveAgents": "No active agents"
     },
     "hranalytics": {
       "totalActive": "Total Active Agents",
@@ -447,6 +448,7 @@
       "overridePrompt": "Enter manual score (0-100) for \"{mod}\" for {name}:",
       "overrideConfirm": "Are you sure you want to manually mark \"{mod}\" as PASSED with {score}% for {name}?",
       "tabs": {
+        "summary": "Overview",
         "quiz": "Quiz History",
         "ai": "AI Roleplay",
         "qa": "QA Feedback"
@@ -643,6 +645,8 @@
     "columnComment": "Comment",
     "yLabel": "Y",
     "nLabel": "N",
+    "naLabel": "N/A",
+    "notEvaluated": "Not Evaluated",
     "commentPlaceholder": "Comment...",
     "qaHeader": "QA Thoughts",
     "qaLabel": "What might be the main reasons that the agent struggled or did not achieve EPA?",
