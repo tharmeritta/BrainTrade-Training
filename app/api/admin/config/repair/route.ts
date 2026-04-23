@@ -44,17 +44,20 @@ export async function POST(req: NextRequest) {
         if (wasFinalized) fixedCount++;
       }
 
+      // Also trigger a deep link sync
+      const linkedCount = await BatchService.relinkOrphanedEvaluations();
+
       await AuditService.log({
         userId: user.uid,
         userName: user.name,
         userRole: user.role,
         action: 'system_repair',
-        details: { type: 'batch_sync', checked: activePeriods.length, fixed: fixedCount }
+        details: { type: 'batch_sync', checked: activePeriods.length, fixed: fixedCount, linked: linkedCount }
       });
 
       return NextResponse.json({ 
         success: true, 
-        message: `Checked ${activePeriods.length} active batches. Finalized ${fixedCount}.` 
+        message: `Checked ${activePeriods.length} active batches. Finalized ${fixedCount}. Relinked ${linkedCount} evaluations.` 
       });
     }
 

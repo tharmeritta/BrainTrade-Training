@@ -47,14 +47,19 @@ export async function GET(req: NextRequest) {
       fsGetAll<Agent>('agents')
     ]);
     const agentIds = new Set(agents.map(a => a.id));
-    const orphans = evals.filter(e => !agentIds.has(e.agentId));
+    const agentOrphans = evals.filter(e => !agentIds.has(e.agentId));
+    const batchOrphans = evals.filter(e => !e.trainingPeriodId);
     
     results.push({
       id: 'integrity',
       name: 'Relational Integrity',
-      status: orphans.length === 0 ? 'pass' : 'warn',
-      message: orphans.length === 0 ? 'No orphaned records' : `${orphans.length} orphaned evaluations`,
-      details: orphans.length > 0 ? 'Evaluations found for agents that no longer exist in the system.' : 'All records correctly linked.'
+      status: (agentOrphans.length === 0 && batchOrphans.length === 0) ? 'pass' : 'warn',
+      message: (agentOrphans.length === 0 && batchOrphans.length === 0) 
+        ? 'No orphaned records' 
+        : `${agentOrphans.length} agent-orphans, ${batchOrphans.length} batch-orphans`,
+      details: batchOrphans.length > 0 
+        ? 'Some evaluations are not linked to any training batch. They won\'t appear in archives.' 
+        : agentOrphans.length > 0 ? 'Evaluations found for agents that no longer exist.' : 'All records correctly linked.'
     });
 
     // 4. Batch Consistency

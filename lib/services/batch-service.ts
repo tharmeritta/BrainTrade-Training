@@ -12,6 +12,53 @@ export const BatchService = {
   },
 
   /**
+   * Deeply synchronize evaluations that were recorded without a trainingPeriodId.
+   */
+  async relinkOrphanedEvaluations(): Promise<number> {
+    const db = getAdminDb();
+    const [evals, periods] = await Promise.all([
+      fsGetAll<AgentEvaluation>('agent_evaluations'),
+      fsGetAll<TrainingPeriod>('training_periods')
+    ]);
+
+    // Find evals missing a batch link
+    const orphans = evals.filter(e => !e.trainingPeriodId);
+    if (orphans.length === 0) return 0;
+
+    let fixedCount = 0;
+    const batch = db.batch();
+
+    for (const ev of orphans) {
+      // Find a period where:
+      // 1. Agent was part of the batch
+      // 2. Evaluation timestamp is between period start and period completion
+      const evDate = new Date(ev.evaluatedAt).getTime();
+      
+      const matchingPeriod = periods.find(p => {
+        const isAgentInBatch = p.agentIds?.includes(ev.agentId);
+        if (!isAgentInBatch) return false;
+
+        const startTime = new Date(p.startDate).getTime();
+        const endTime = p.completedAt ? new Date(p.completedAt).getTime() : Infinity;
+        
+        return evDate >= startTime && evDate <= endTime;
+      });
+
+      if (matchingPeriod) {
+        const ref = db.collection('agent_evaluations').doc(ev.id);
+        batch.update(ref, { trainingPeriodId: matchingPeriod.id });
+        fixedCount++;
+      }
+    }
+
+    if (fixedCount > 0) {
+      await batch.commit();
+    }
+
+    return fixedCount;
+  },
+
+  /**
    * Check if all agents in a training period have graduated.
    * If yes, finalize the batch.
    */

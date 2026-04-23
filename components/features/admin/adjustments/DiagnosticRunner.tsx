@@ -163,6 +163,19 @@ export default function DiagnosticRunner() {
                    <div className="max-w-[200px]">
                       <p className="text-[9px] text-muted-foreground leading-tight italic">{r.details}</p>
                    </div>
+                   {r.status !== 'pass' && (
+                     <div className="p-1.5 bg-card border border-border rounded-lg text-primary hover:bg-primary hover:text-white transition-all cursor-help group relative">
+                        <Info size={14} />
+                        <div className="absolute bottom-full right-0 mb-2 w-48 p-3 bg-popover border border-border rounded-xl shadow-xl text-[10px] hidden group-hover:block z-50">
+                           <p className="font-bold mb-1">Recommended Fix:</p>
+                           <p className="text-muted-foreground">
+                              {r.id === 'counters' ? 'Run "Global Stats Sync" below.' : 
+                               r.id === 'batches' || r.id === 'integrity' ? 'Run "Batch Status Sync" below.' : 
+                               'Contact system administrator for manual repair.'}
+                           </p>
+                        </div>
+                     </div>
+                   )}
                 </div>
               </motion.div>
             ))}
