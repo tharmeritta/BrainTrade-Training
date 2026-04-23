@@ -19,15 +19,23 @@ export const BatchService = {
     if (!period || !period.active) return false;
 
     // Get all evaluations for this specific batch
-    const evaluations = await fsQuery<AgentEvaluation>('agent_evaluations', {
-      where: [{ field: 'trainingPeriodId', op: '==', value: periodId }]
-    });
+    const [evaluations, overrides] = await Promise.all([
+      fsQuery<AgentEvaluation>('agent_evaluations', {
+        where: [{ field: 'trainingPeriodId', op: '==', value: periodId }]
+      }),
+      fsQuery<any>('admin_overrides', {
+        where: [{ field: 'type', op: '==', value: 'bulk-pass' }]
+      })
+    ]);
 
-    // Unique agent IDs who have been evaluated in this batch
-    const evaluatedAgentIds = new Set(evaluations.map(e => e.agentId));
+    // Unique agent IDs who have been evaluated or bulk-passed
+    const finishedAgentIds = new Set([
+      ...evaluations.map(e => e.agentId),
+      ...overrides.map(o => o.agentId)
+    ]);
 
-    // Check if every agent in the batch has at least one evaluation
-    const isComplete = period.agentIds.every(id => evaluatedAgentIds.has(id));
+    // Check if every agent in the batch has at least one evaluation OR a bulk-pass
+    const isComplete = period.agentIds.every(id => finishedAgentIds.has(id));
 
     if (isComplete) {
       console.log(`[BatchService] Finalizing training period: ${period.name} (${periodId})`);

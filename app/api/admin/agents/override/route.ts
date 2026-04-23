@@ -4,6 +4,7 @@ import { getServerUser } from '@/lib/session';
 import { getCanonicalQuizKey, TRAINING_REGISTRY } from '@/lib/registry';
 import { updateAgentOverallScore, updateGlobalAiEvalStats, updateGlobalQuizStats } from '@/lib/services/stats-service';
 import { AuditService } from '@/lib/services/audit-service';
+import { BatchService } from '@/lib/services/batch-service';
 
 /**
  * GET: List all manual overrides for auditing/management
@@ -137,8 +138,18 @@ export async function POST(req: NextRequest) {
           transaction.set(progressRef, {
             evalCompletedLevels,
             learnedModules,
-            updatedAt: timestamp
+            updatedAt: timestamp,
+            graduated: true,
+            graduatedAt: timestamp
           }, { merge: true });
+
+          // 4. Mark agent as graduated in main doc
+          const agentRef = db.collection('agents').doc(agentId);
+          transaction.update(agentRef, {
+            graduated: true,
+            graduatedAt: timestamp,
+            updatedAt: timestamp
+          });
         });
 
         console.log(`[Override API] Transaction committed for agent: ${agentId}`);
@@ -157,6 +168,11 @@ export async function POST(req: NextRequest) {
           name: user.name,
           role: user.role
         });
+
+        // If part of a period, check if it's now complete
+        if (trainingPeriodId) {
+          await BatchService.checkBatchCompletion(trainingPeriodId);
+        }
 
         // Log the audit event
         await AuditService.log({
@@ -272,6 +288,11 @@ export async function POST(req: NextRequest) {
       name: user.name,
       role: user.role
     });
+
+    // If part of a period, check if it's now complete
+    if (trainingPeriodId) {
+      await BatchService.checkBatchCompletion(trainingPeriodId);
+    }
 
     // Log the audit event
     await AuditService.log({
