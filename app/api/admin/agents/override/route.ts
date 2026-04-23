@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
 
     const db = getAdminDb();
     const timestamp = new Date().toISOString();
+    const finalScore = (typeof score === 'number' && !isNaN(score)) ? score : 100;
 
     // Find the active training period for this agent to ensure stats reflect in reports
     const periodsSnap = await db.collection('training_periods').where('active', '==', true).get();
@@ -55,6 +56,12 @@ export async function POST(req: NextRequest) {
       
       try {
         await db.runTransaction(async (transaction) => {
+          const progressRef = db.collection('agent_progress').doc(agentId);
+          const progressDoc = await transaction.get(progressRef);
+          
+          let evalCompletedLevels = progressDoc.exists ? (progressDoc.data()?.evalCompletedLevels || []) : [];
+          let learnedModules = progressDoc.exists ? (progressDoc.data()?.learnedModules || []) : [];
+
           // 0. Log to central overrides collection for audit trail
           const overrideId = `${agentId}_bulk-pass_${Date.now()}`;
           const overrideRef = db.collection('admin_overrides').doc(overrideId);
@@ -63,7 +70,7 @@ export async function POST(req: NextRequest) {
             agentName: agentName || 'Unknown Agent',
             moduleId: 'all-required',
             type: 'bulk-pass',
-            score: 100,
+            score: finalScore,
             isBypassed: true,
             bypassReason: bypassReason || 'Bulk training pass',
             adminName: user.name,
@@ -78,7 +85,7 @@ export async function POST(req: NextRequest) {
             transaction.set(quizRef, {
               agentId,
               moduleId: canonicalId,
-              score: 100,
+              score: finalScore,
               totalQuestions: 100,
               passed: true,
               timestamp,
@@ -90,19 +97,13 @@ export async function POST(req: NextRequest) {
 
           // 2. Mark all AI Eval levels up to requiredLevel as passed
           const requiredLevel = TRAINING_REGISTRY.eval.requiredLevel;
-          const progressRef = db.collection('agent_progress').doc(agentId);
-          const progressDoc = await transaction.get(progressRef);
-          
-          let evalCompletedLevels = progressDoc.exists ? (progressDoc.data()?.evalCompletedLevels || []) : [];
-          let learnedModules = progressDoc.exists ? (progressDoc.data()?.learnedModules || []) : [];
-
           for (let level = 1; level <= requiredLevel; level++) {
             // v1 and v2 logs
             const evalRef = db.collection('ai_eval_logs').doc(`${agentId}_lv${level}_override`);
             transaction.set(evalRef, {
               agentId,
               level,
-              score: 100,
+              score: finalScore,
               passed: true,
               timestamp,
               manualOverride: true,
@@ -118,7 +119,7 @@ export async function POST(req: NextRequest) {
               level,
               difficulty: difficultyMap[level] || 'beginner',
               passed: true,
-              score: 100,
+              score: finalScore,
               timestamp,
               manualOverride: true,
               overriddenBy: user.name,
@@ -156,10 +157,10 @@ export async function POST(req: NextRequest) {
 
         // Update global stats and agent score (outside transaction as they are secondary)
         for (const quizId of TRAINING_REGISTRY.quiz.required) {
-          await updateGlobalQuizStats(getCanonicalQuizKey(quizId), 100, true).catch(e => console.error('Stat update error (quiz):', e));
+          await updateGlobalQuizStats(getCanonicalQuizKey(quizId), finalScore, true).catch(e => console.error('Stat update error (quiz):', e));
         }
         for (let level = 1; level <= TRAINING_REGISTRY.eval.requiredLevel; level++) {
-          await updateGlobalAiEvalStats(100, true).catch(e => console.error('Stat update error (eval):', e));
+          await updateGlobalAiEvalStats(finalScore, true).catch(e => console.error('Stat update error (eval):', e));
         }
 
         // Trigger agent overall score update
@@ -182,7 +183,7 @@ export async function POST(req: NextRequest) {
           action: 'override_create',
           targetId: agentId,
           targetName: agentName,
-          details: { type: 'bulk-pass', score: 100 }
+          details: { type: 'bulk-pass', score: finalScore }
         });
 
         return NextResponse.json({ success: true });
@@ -193,7 +194,6 @@ export async function POST(req: NextRequest) {
     }
 
     const canonicalId = getCanonicalQuizKey(moduleId);
-    const finalScore = typeof score === 'number' ? score : 100;
 
     // Log to central overrides collection
     const overrideId = `${agentId}_${type}_${moduleId}_${Date.now()}`;

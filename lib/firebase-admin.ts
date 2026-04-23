@@ -175,7 +175,10 @@ export const getAdminStorage = () => {
 };
 
 // Module-level cache for the Firestore instance
-let cachedDb: Firestore | null = null;
+// In development, we use global to survive hot reloads
+const globalWithFirestore = global as typeof globalThis & {
+  cachedDb?: Firestore;
+};
 
 /**
  * Returns the Firestore Admin DB instance, initializing the App if necessary.
@@ -183,12 +186,24 @@ let cachedDb: Firestore | null = null;
  */
 export const getAdminDb = (): Firestore => {
   try {
-    if (!cachedDb) {
-      const app = getAdminApp();
-      cachedDb = getFirestore(app);
-      cachedDb.settings({ ignoreUndefinedProperties: true });
+    if (globalWithFirestore.cachedDb) {
+      return globalWithFirestore.cachedDb;
     }
-    return cachedDb;
+
+    const app = getAdminApp();
+    const db = getFirestore(app);
+    
+    // settings() can only be called before any other methods on the Firestore object.
+    // If it's already been called (e.g. from a previous HMR execution), it will throw.
+    try {
+      db.settings({ ignoreUndefinedProperties: true });
+    } catch (e) {
+      // In some environments, it might already be initialized; we proceed if so.
+      console.warn('[Firebase Admin] Firestore settings already applied or cannot be set:', (e as Error).message);
+    }
+
+    globalWithFirestore.cachedDb = db;
+    return db;
   } catch (e: any) {
     console.error('[Firebase Admin] getAdminDb fatal error:', e.message);
     throw e;

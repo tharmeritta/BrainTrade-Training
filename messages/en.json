@@ -503,7 +503,16 @@
       "noEvalsDesc": "Evaluators can submit scores from the Evaluator Panel",
       "loading": "Loading evaluations...",
       "evaluatedBy": "evaluated by",
-      "redFlags": "{count} 🚩 red flag{count, plural, =1 {} other {s}}"
+      "redFlags": "{count} 🚩 red flag{count, plural, =1 {} other {s}}",
+      "batchSelect": "Select Batch:",
+      "allBatches": "All Batches (Global)",
+      "activeTraining": "Active Training",
+      "completedBatches": "Completed Batches",
+      "liveStream": "Live Evaluation Stream",
+      "allRecent": "All Recent Evaluations",
+      "historyTitle": "History: {name}",
+      "archivedRecords": "Archived Performance Records",
+      "filtering": "Filtering evaluation data..."
     },
     "it": {
       "readOnlyMode": "Read-Only Mode",

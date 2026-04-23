@@ -107,12 +107,20 @@ export async function updateAgentOverallScore(
   const newStatus = getCompletionStatus(stats).status;
 
   // 1. Update main doc with essential sortable/filterable fields
-  await db.collection('agents').doc(agentId).update({
+  const agentUpdate: any = {
     overallScore: stats.overallScore,
     badge: stats.badge,
     lastActive: stats.lastActive,
     updatedAt: new Date().toISOString()
-  });
+  };
+
+  // Auto-graduate if status is 'cleared'
+  if (newStatus === 'cleared') {
+    agentUpdate.graduated = true;
+    agentUpdate.graduatedAt = agentUpdate.updatedAt;
+  }
+
+  await db.collection('agents').doc(agentId).update(agentUpdate);
 
   // 2. Save heavy payload to sub-collection projection
   await db.collection('agents').doc(agentId).collection('projections').doc('stats').set({

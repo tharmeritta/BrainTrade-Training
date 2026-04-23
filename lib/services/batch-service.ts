@@ -1,4 +1,5 @@
 import { fsGet, fsUpdate, fsQuery, fsGetAll, fsUpdateMany } from '@/lib/firestore-db';
+import { getAdminDb } from '@/lib/firebase-admin';
 import type { TrainingPeriod, AgentEvaluation, Agent } from '@/types';
 
 export const BatchService = {
@@ -11,54 +12,45 @@ export const BatchService = {
   },
 
   /**
-   * Check if all agents in a training period have been evaluated.
+   * Check if all agents in a training period have graduated.
    * If yes, finalize the batch.
    */
   async checkBatchCompletion(periodId: string): Promise<boolean> {
-    const period = await fsGet<TrainingPeriod>('training_periods', periodId);
-    if (!period || !period.active) return false;
+    const db = getAdminDb();
+    const periodRef = db.collection('training_periods').doc(periodId);
+    const periodDoc = await periodRef.get();
+    
+    if (!periodDoc.exists || !periodDoc.data()?.active) return false;
+    const period = periodDoc.data() as TrainingPeriod;
 
-    // Get all evaluations for this specific batch
-    const [evaluations, overrides] = await Promise.all([
-      fsQuery<AgentEvaluation>('agent_evaluations', {
-        where: [{ field: 'trainingPeriodId', op: '==', value: periodId }]
-      }),
-      fsQuery<any>('admin_overrides', {
-        where: [{ field: 'type', op: '==', value: 'bulk-pass' }]
-      })
-    ]);
+    // Get all agents in this batch to check their graduation status
+    const agentIds = period.agentIds || [];
+    if (agentIds.length === 0) return false;
 
-    // Unique agent IDs who have been evaluated or bulk-passed
-    const finishedAgentIds = new Set([
-      ...evaluations.map(e => e.agentId),
-      ...overrides.map(o => o.agentId)
-    ]);
+    // Fetch agents in chunks of 30 (Firestore in limit)
+    const graduatedStatuses: boolean[] = [];
+    for (let i = 0; i < agentIds.length; i += 30) {
+      const chunk = agentIds.slice(i, i + 30);
+      const snap = await db.collection('agents').where('__name__', 'in', chunk).get();
+      snap.docs.forEach(doc => {
+        graduatedStatuses.push(!!doc.data().graduated);
+      });
+    }
 
-    // Check if every agent in the batch has at least one evaluation OR a bulk-pass
-    const isComplete = period.agentIds.every(id => finishedAgentIds.has(id));
+    // Check if every agent in the batch is graduated
+    const isComplete = graduatedStatuses.length === agentIds.length && graduatedStatuses.every(g => g === true);
 
     if (isComplete) {
       console.log(`[BatchService] Finalizing training period: ${period.name} (${periodId})`);
       
       const now = new Date().toISOString();
       
-      // 1. Mark period as inactive
-      await fsUpdate('training_periods', periodId, {
+      // Mark period as inactive
+      await periodRef.update({
         active: false,
         completedAt: now,
         updatedAt: now
       });
-
-      // 2. Mark all agents in this batch as graduated
-      const agentUpdates = period.agentIds.map(id => ({
-        id,
-        patch: {
-          graduated: true,
-          graduatedAt: now
-        } as Partial<Agent>
-      }));
-
-      await fsUpdateMany('agents', agentUpdates);
       
       return true;
     }

@@ -198,7 +198,6 @@ export default function OverridesManager({ readOnly }: { readOnly?: boolean }) {
                           setType(t as any); 
                           setModuleId(''); 
                           if (t === 'bulk-pass') {
-                            setScore(100);
                             setIsBypassed(true);
                           }
                         }} 
@@ -234,7 +233,7 @@ export default function OverridesManager({ readOnly }: { readOnly?: boolean }) {
                     <div className="flex items-center gap-2"><input type="checkbox" id="ov-bypass" checked={isBypassed} onChange={e => setIsBypassed(e.target.checked)} disabled={type === 'bulk-pass'} /><label htmlFor="ov-bypass" className="text-[10px] font-black uppercase text-amber-600">Bypass</label></div>
                     <div className="flex-1 flex items-center gap-2">
                       <label htmlFor="ov-score" className="text-[9px] font-black opacity-40 uppercase">Score</label>
-                      <input id="ov-score" type="number" min="0" max="100" value={score} onChange={e => setScore(parseInt(e.target.value))} disabled={type === 'bulk-pass'} className="w-16 bg-background border p-1.5 rounded-lg text-xs font-bold text-center" />
+                      <input id="ov-score" type="number" min="0" max="100" value={score} onChange={e => setScore(parseInt(e.target.value))} className="w-16 bg-background border p-1.5 rounded-lg text-xs font-bold text-center" />
                     </div>
                   </div>
                   <button type="submit" disabled={submitting || !agentId || (type !== 'bulk-pass' && !moduleId)} className="w-full bg-primary text-white py-3 rounded-xl text-xs font-black uppercase flex items-center justify-center gap-2 disabled:opacity-50">{submitting ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />} {type === 'bulk-pass' ? 'Apply Bulk Pass' : 'Apply Now'}</button>

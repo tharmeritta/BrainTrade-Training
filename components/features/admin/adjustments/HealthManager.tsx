@@ -1,14 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Activity, RefreshCw, AlertTriangle, CheckCircle2, Loader2, ShieldAlert } from 'lucide-react';
+import { Activity, RefreshCw, AlertTriangle, CheckCircle2, Loader2, ShieldAlert, Layout, Search } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
+import DiagnosticRunner from './DiagnosticRunner';
 
 export default function HealthManager({ readOnly }: { readOnly?: boolean }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [status, setStatus] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
-  const handleRepair = async (type: 'global' | 'all_agents') => {
+  const handleRepair = async (type: 'global' | 'all_agents' | 'batches') => {
     if (!confirm(`Are you sure you want to trigger a ${type.replace('_', ' ')} recalculation? This is a heavy operation.`)) return;
     
     setLoading(type);
@@ -47,6 +48,9 @@ export default function HealthManager({ readOnly }: { readOnly?: boolean }) {
           <p className="text-xs font-bold">{status.message}</p>
         </div>
       )}
+
+      {/* New Diagnostic Engine */}
+      {!readOnly && <DiagnosticRunner />}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <GlassCard className="p-6 border-amber-500/20 bg-amber-500/5">
@@ -88,6 +92,27 @@ export default function HealthManager({ readOnly }: { readOnly?: boolean }) {
             className="w-full bg-purple-500 text-white py-3 rounded-xl font-black text-[11px] uppercase tracking-widest hover:bg-purple-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading === 'all_agents' ? <Loader2 size={14} className="animate-spin" /> : 'Rebuild All Projections'}
+          </button>
+        </GlassCard>
+
+        <GlassCard className="p-6 border-blue-500/20 bg-blue-500/5">
+          <div className="flex items-start justify-between mb-4">
+            <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-500">
+              <Layout size={24} className={loading === 'batches' ? 'animate-spin' : ''} />
+            </div>
+            <ShieldAlert size={20} className="text-blue-500/30" />
+          </div>
+          <h4 className="font-bold text-base mb-1">Batch Status Sync</h4>
+          <p className="text-xs text-muted-foreground mb-6 leading-relaxed">
+            Synchronize and finalize completed training periods based on agent graduation. 
+            Fixes batches that stay "Active" in Evaluations after everyone has passed.
+          </p>
+          <button
+            onClick={() => handleRepair('batches')}
+            disabled={!!loading || readOnly}
+            className="w-full bg-blue-500 text-white py-3 rounded-xl font-black text-[11px] uppercase tracking-widest hover:bg-blue-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {loading === 'batches' ? <Loader2 size={14} className="animate-spin" /> : 'Sync Batch Archives'}
           </button>
         </GlassCard>
       </div>

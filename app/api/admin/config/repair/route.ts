@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerUser } from '@/lib/session';
 import { recalculateGlobalStats, updateAgentOverallScore } from '@/lib/services/stats-service';
 import { AuditService } from '@/lib/services/audit-service';
+import { BatchService } from '@/lib/services/batch-service';
 import { fsGetAll } from '@/lib/firestore-db';
-import { Agent } from '@/types';
+import { Agent, TrainingPeriod } from '@/types';
 
 /**
  * POST: Trigger a system repair/recalculation
@@ -31,6 +32,31 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({ success: true, message: 'Global stats recalculated' });
     } 
+
+    if (type === 'batches') {
+      console.log('[Repair] Starting batch synchronization...');
+      const periods = await fsGetAll<TrainingPeriod>('training_periods');
+      const activePeriods = periods.filter(p => p.active);
+      let fixedCount = 0;
+
+      for (const p of activePeriods) {
+        const wasFinalized = await BatchService.checkBatchCompletion(p.id);
+        if (wasFinalized) fixedCount++;
+      }
+
+      await AuditService.log({
+        userId: user.uid,
+        userName: user.name,
+        userRole: user.role,
+        action: 'system_repair',
+        details: { type: 'batch_sync', checked: activePeriods.length, fixed: fixedCount }
+      });
+
+      return NextResponse.json({ 
+        success: true, 
+        message: `Checked ${activePeriods.length} active batches. Finalized ${fixedCount}.` 
+      });
+    }
 
     if (type === 'agent' && agentId) {
       console.log(`[Repair] Starting repair for agent: ${agentId}`);

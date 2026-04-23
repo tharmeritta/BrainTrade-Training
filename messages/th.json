@@ -503,7 +503,16 @@
       "noEvalsDesc": "ผู้ประเมินสามารถส่งคะแนนได้จากแผงผู้ประเมิน",
       "loading": "กำลังโหลดการประเมิน...",
       "evaluatedBy": "ประเมินโดย",
-      "redFlags": "{count} 🚩 Red Flag"
+      "redFlags": "{count} 🚩 Red Flag",
+      "batchSelect": "เลือกกลุ่ม:",
+      "allBatches": "ทุกกลุ่ม (ภาพรวม)",
+      "activeTraining": "กลุ่มที่กำลังฝึก",
+      "completedBatches": "กลุ่มที่จบแล้ว",
+      "liveStream": "ข้อมูลการประเมินสด",
+      "allRecent": "การประเมินล่าสุดทั้งหมด",
+      "historyTitle": "ประวัติ: {name}",
+      "archivedRecords": "บันทึกผลการประเมินย้อนหลัง",
+      "filtering": "กำลังกรองข้อมูลการประเมิน..."
     },
     "it": {
       "readOnlyMode": "โหมดอ่านอย่างเดียว",
