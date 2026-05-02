@@ -26,7 +26,7 @@ export default function TrainerPanel({ role, uid, name, readOnly }: TrainerPanel
   const locale = t('management') === 'จัดการการฝึกอบรม' ? 'th-TH' : 'en-GB';
   
   const [periods,          setPeriods]          = useState<TrainingPeriod[]>([]);
-  const [agents,           setAgents]           = useState<{ id: string; name: string }[]>([]);
+  const [agents,           setAgents]           = useState<{ id: string; name: string; graduated?: boolean; activePeriodId?: string }[]>([]);
   const [staff,            setStaff]            = useState<{ id: string; name: string; role: string }[]>([]);
   const [selectedPeriodId, setSelectedPeriodId] = useState<string | null>(null);
   const [loadingPeriods,   setLoadingPeriods]   = useState(true);
@@ -72,7 +72,12 @@ export default function TrainerPanel({ role, uid, name, readOnly }: TrainerPanel
     // Fetch agents for selection
     fetch('/api/admin/agents')
       .then(r => r.json())
-      .then(d => setAgents((d.agents ?? []).map((a: AgentStats) => ({ id: a.agent.id, name: a.agent.name }))))
+      .then(d => setAgents((d.agents ?? []).map((a: AgentStats) => ({ 
+        id: a.agent.id, 
+        name: a.agent.name,
+        graduated: a.agent.graduated,
+        activePeriodId: a.activePeriodId
+      }))))
       .catch(() => {});
 
     // Fetch staff if admin/manager/it to allow assigning trainers

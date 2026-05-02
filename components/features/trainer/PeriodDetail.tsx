@@ -17,7 +17,7 @@ import { useLivePresentation } from '@/lib/live-presentation';
 
 interface PeriodDetailProps {
   period: TrainingPeriod;
-  agents: { id: string; name: string }[];
+  agents: { id: string; name: string; graduated?: boolean; activePeriodId?: string }[];
   role: 'admin' | 'manager' | 'it' | 'trainer' | 'hr';
   readOnly?: boolean;
   onPeriodUpdated: (p: TrainingPeriod) => void;
@@ -43,6 +43,13 @@ export function PeriodDetail({
   const [summoning, setSummoning] = useState(false);
   const [markingLearned, setMarkingLearned] = useState(false);
   const [selectedModule, setSelectedModule] = useState<'product' | 'kyc' | 'website'>('product');
+
+  // Filter available agents for adding: not in THIS period, not in ANY active period, and not graduated
+  const availableToAdd = agents.filter(a => 
+    !period.agentIds.includes(a.id) && 
+    !a.activePeriodId && 
+    !a.graduated
+  );
 
   // Summon
   const { summon } = useSummon();
@@ -205,7 +212,7 @@ export function PeriodDetail({
     <div className="flex-1 flex flex-col min-h-0">
       <div className="px-6 pt-5 pb-0 flex-shrink-0">
         <div className="flex items-center gap-2.5 mb-3">
-          <h2 className="text-lg font-black text-foreground leading-tight">{period.name}</h2>
+          <h2 className="text-xl font-black text-foreground tracking-tight leading-tight">{period.name}</h2>
           <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold"
             style={{
               background: period.active ? 'rgba(52,211,153,0.12)' : 'rgba(156,163,175,0.12)',
@@ -284,11 +291,11 @@ export function PeriodDetail({
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               <select value={selectedToAdd} onChange={e => setSelectedToAdd(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-1.5 rounded-lg text-xs outline-none text-foreground"
+                className="flex-1 min-w-0 px-3 py-1.5 rounded-lg text-xs outline-none text-foreground font-bold"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}
               >
                 <option value="">{t('selectAgentToAdd')}</option>
-                {agents && agents.filter(a => !period.agentIds.includes(a.id)).map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                {availableToAdd.map(a => <option key={a.id} value={a.id} className="bg-[#0A1424]">{a.name}</option>)}
               </select>
               <button onClick={handleAddAgent} disabled={!selectedToAdd || addingAgent}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-40 whitespace-nowrap"

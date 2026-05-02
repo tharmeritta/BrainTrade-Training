@@ -9,7 +9,7 @@ import { T, Spinner } from './TrainerConstants';
 import { TrainerService } from '@/lib/services/trainer-service';
 
 interface NewPeriodModalProps {
-  agents: { id: string; name: string }[];
+  agents: { id: string; name: string; graduated?: boolean; activePeriodId?: string }[];
   trainers: { id: string; name: string }[];
   currentUser: { uid?: string; name?: string; role: string };
   onClose: () => void;
@@ -28,6 +28,9 @@ export function NewPeriodModal({ agents, trainers, currentUser, onClose, onCreat
 
   const canPickTrainer = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.role === 'it';
 
+  // Filter out agents who are already in a training wave or have graduated
+  const availableAgents = agents.filter(a => !a.graduated && !a.activePeriodId);
+
   function toggleAgent(id: string) {
     setSelectedIds(prev => {
       const next = new Set(prev);
@@ -39,6 +42,7 @@ export function NewPeriodModal({ agents, trainers, currentUser, onClose, onCreat
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) { setErr(t('batchName')); return; }
+    if (selectedIds.size === 0) { setErr(t('selectAgents', { count: 0 })); return; }
     setSaving(true);
     setErr('');
     try {
@@ -89,8 +93,10 @@ export function NewPeriodModal({ agents, trainers, currentUser, onClose, onCreat
       >
         <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: `1px solid ${T.border}` }}>
           <div className="flex items-center gap-2">
-            <GraduationCap size={18} style={{ color: T.amber }} />
-            <span className="font-bold text-base text-foreground">{t('createPeriodTitle')}</span>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-amber-500/10 border border-amber-500/20">
+              <GraduationCap size={18} style={{ color: T.amber }} />
+            </div>
+            <span className="font-black text-lg text-foreground tracking-tight">{t('createPeriodTitle')}</span>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg transition-colors hover:bg-muted/30 text-muted-foreground">
             <X size={16} />
@@ -99,26 +105,26 @@ export function NewPeriodModal({ agents, trainers, currentUser, onClose, onCreat
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5 text-muted-foreground">{t('batchName')}</label>
+            <label className="block text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-muted-foreground/50">{t('batchName')}</label>
             <input
               value={name} onChange={e => setName(e.target.value)}
               placeholder={t('batchNamePlaceholder')}
               required
-              className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-colors text-foreground"
-              style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}` }}
+              className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all text-foreground font-bold focus:ring-1 focus:ring-amber-500/30"
+              style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${T.border}` }}
             />
           </div>
 
           {canPickTrainer && trainers.length > 0 && (
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5 text-muted-foreground">{t('trainerLabel')}</label>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-muted-foreground/50">{t('trainerLabel')}</label>
               <select
                 value={trainerId} onChange={e => setTrainerId(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-colors text-foreground"
-                style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}` }}
+                className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all text-foreground font-bold"
+                style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${T.border}` }}
               >
                 {trainers.map(tr => (
-                  <option key={tr.id} value={tr.id}>{tr.name}</option>
+                  <option key={tr.id} value={tr.id} className="bg-[#0A1424]">{tr.name}</option>
                 ))}
               </select>
             </div>
@@ -126,75 +132,90 @@ export function NewPeriodModal({ agents, trainers, currentUser, onClose, onCreat
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5 text-muted-foreground">{t('startDate')}</label>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-muted-foreground/50">{t('startDate')}</label>
               <input
                 type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-colors text-foreground"
-                style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}` }}
+                className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all text-foreground font-bold"
+                style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${T.border}` }}
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5 text-muted-foreground">{t('totalDays')}</label>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] mb-2 text-muted-foreground/50">{t('totalDays')}</label>
               <input
                 type="number" min={1} max={60} value={totalDays}
                 onChange={e => setTotalDays(Math.max(1, parseInt(e.target.value) || 5))}
-                className="w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-colors text-foreground"
-                style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${T.border}` }}
+                className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all text-foreground font-bold"
+                style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${T.border}` }}
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider mb-2 text-muted-foreground">
-              {t('selectAgents', { count: selectedIds.size })}
-            </label>
-            <div className="rounded-xl overflow-hidden max-h-48 overflow-y-auto border border-border">
-              {agents.length === 0 ? (
-                <div className="px-4 py-3 text-sm text-muted-foreground">{t('noAgents')}</div>
-              ) : agents.map(a => {
-                const agentData = (a as any); // cast for extra fields
-                return (
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                {t('selectAgents', { count: selectedIds.size })}
+              </label>
+              <span className="text-[9px] font-black text-amber-500/50 uppercase tracking-widest">
+                {availableAgents.length} Available
+              </span>
+            </div>
+            <div className="rounded-xl overflow-hidden max-h-48 overflow-y-auto border border-border/40 bg-white/5 shadow-inner custom-scrollbar">
+              {availableAgents.length === 0 ? (
+                <div className="px-4 py-8 text-center">
+                  <p className="text-xs font-bold text-muted-foreground/40 italic">{t('noAgents')}</p>
+                </div>
+              ) : availableAgents.map(a => (
                 <button
                   key={a.id} type="button"
                   onClick={() => toggleAgent(a.id)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/30"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/5 group"
                   style={{ borderBottom: `1px solid ${T.border}` }}
                 >
-                  <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-colors"
+                  <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all"
                     style={{
-                      background: selectedIds.has(a.id) ? T.amber : 'rgba(255,255,255,0.06)',
+                      background: selectedIds.has(a.id) ? T.amber : 'rgba(255,255,255,0.04)',
                       border: `1px solid ${selectedIds.has(a.id) ? T.amber : T.border}`,
+                      boxShadow: selectedIds.has(a.id) ? '0 0 12px rgba(245,158,11,0.3)' : 'none'
                     }}>
-                    {selectedIds.has(a.id) && <Check size={11} className="text-white" />}
+                    {selectedIds.has(a.id) && <Check size={11} className="text-white" strokeWidth={4} />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className={`text-sm ${selectedIds.has(a.id) ? 'text-foreground' : 'text-muted-foreground'}`}>{a.name}</span>
-                    {agentData.graduated && (
-                      <span className="ml-2 text-[8px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-500 px-1 py-0.5 rounded border border-emerald-500/20">
-                        Graduated
-                      </span>
-                    )}
+                    <span className={`text-sm font-bold transition-colors ${selectedIds.has(a.id) ? 'text-amber-500' : 'text-foreground/80 group-hover:text-foreground'}`}>
+                      {a.name}
+                    </span>
                   </div>
                 </button>
-              );})}
+              ))}
             </div>
           </div>
 
           {err && (
-            <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2">{err}</p>
+            <motion.p 
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-[11px] font-bold text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5 flex items-center gap-2"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              {err}
+            </motion.p>
           )}
 
-          <div className="flex gap-3 pt-1">
+          <div className="flex gap-3 pt-4">
             <button
               type="submit" disabled={saving}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-opacity"
-              style={{ background: T.amber, color: '#fff', opacity: saving ? 0.7 : 1 }}
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg disabled:cursor-not-allowed"
+              style={{ 
+                background: `linear-gradient(135deg, ${T.amber}, #D97706)`, 
+                color: '#fff', 
+                opacity: saving ? 0.7 : 1,
+                boxShadow: '0 8px 24px rgba(245,158,11,0.2)'
+              }}
             >
-              {saving ? <Spinner /> : <Plus size={15} />}
+              {saving ? <Spinner /> : <Plus size={16} strokeWidth={3} />}
               {saving ? t('creating') : t('createBtn')}
             </button>
             <button type="button" onClick={onClose}
-              className="px-5 py-2.5 rounded-xl text-sm transition-colors hover:bg-muted/30 text-muted-foreground">
+              className="px-6 py-3.5 rounded-xl text-sm font-bold transition-all hover:bg-white/5 text-muted-foreground/60 hover:text-foreground active:scale-95">
               {t('cancel')}
             </button>
           </div>
