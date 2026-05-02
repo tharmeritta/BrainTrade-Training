@@ -287,45 +287,54 @@ export function PeriodDetail({
         </div>
 
         {canManage && (
-          <div className="flex items-center gap-2 flex-wrap p-2 rounded-xl mb-4"
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <div className="flex items-center gap-1.5 flex-1 min-w-0">
-              <select value={selectedToAdd} onChange={e => setSelectedToAdd(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-1.5 rounded-lg text-xs outline-none text-foreground font-bold"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}
-              >
-                <option value="">{t('selectAgentToAdd')}</option>
-                {availableToAdd.map(a => <option key={a.id} value={a.id} className="bg-[#0A1424]">{a.name}</option>)}
-              </select>
+          <div className="flex items-center gap-4 flex-wrap p-4 rounded-3xl mb-8 shadow-sm bg-muted/20 border border-border/40">
+            <div className="flex items-center gap-3 flex-1 min-w-[240px]">
+              <div className="relative flex-1 group">
+                <select value={selectedToAdd} onChange={e => setSelectedToAdd(e.target.value)}
+                  className="w-full appearance-none px-5 py-3 rounded-2xl text-xs outline-none text-foreground font-black uppercase tracking-wider transition-all bg-background/50 border border-border/60 hover:border-amber-500/30 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5"
+                >
+                  <option value="" className="bg-card">{t('selectAgentToAdd')}</option>
+                  {availableToAdd.map(a => <option key={a.id} value={a.id} className="bg-card">{a.name}</option>)}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-30 group-hover:opacity-60 transition-opacity">
+                  <Plus size={14} />
+                </div>
+              </div>
               <button onClick={handleAddAgent} disabled={!selectedToAdd || addingAgent}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-40 whitespace-nowrap"
+                className="flex items-center gap-2 px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-[0.15em] transition-all active:scale-95 disabled:opacity-40 whitespace-nowrap shadow-lg shadow-amber-500/10"
                 style={{ background: T.amberBg, color: T.amber, border: `1px solid ${T.amberBorder}` }}
               >
-                {addingAgent ? <Spinner /> : <Plus size={13} />}
+                {addingAgent ? <Spinner size={14} /> : <Plus size={16} strokeWidth={3} />}
                 {addingAgent ? t('addingAgent') : t('addAgent')}
               </button>
             </div>
-            <div className="w-px h-6 self-center" style={{ background: 'rgba(255,255,255,0.10)' }} />
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="text-[11px] text-muted-foreground whitespace-nowrap">{t('daysAdjust')}</span>
-              <div className="flex items-center rounded-lg overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.12)' }}>
-                <button onClick={() => adjustDays(-1)} className="w-7 h-7 flex items-center justify-center text-sm font-bold hover:bg-muted/30 transition-colors" style={{ color: T.amber }}>−</button>
-                <span className="px-2.5 text-sm font-black text-foreground" style={{ background: 'rgba(255,255,255,0.05)' }}>{period.totalDays}</span>
-                <button onClick={() => adjustDays(+1)} className="w-7 h-7 flex items-center justify-center text-sm font-bold hover:bg-muted/30 transition-colors" style={{ color: T.amber }}>+</button>
+            
+            <div className="hidden lg:block w-px h-10 self-center bg-border/40" />
+            
+            <div className="flex items-center gap-4 flex-shrink-0">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">{t('daysAdjust')}</span>
+              <div className="flex items-center rounded-2xl overflow-hidden bg-background/50 border border-border/60 p-1">
+                <button onClick={() => adjustDays(-1)} className="w-10 h-10 flex items-center justify-center text-xl font-bold hover:bg-amber-500/10 rounded-xl transition-all" style={{ color: T.amber }}>−</button>
+                <span className="min-w-[44px] text-center text-sm font-black text-foreground tracking-tighter">{period.totalDays}</span>
+                <button onClick={() => adjustDays(+1)} className="w-10 h-10 flex items-center justify-center text-xl font-bold hover:bg-amber-500/10 rounded-xl transition-all" style={{ color: T.amber }}>+</button>
               </div>
             </div>
-            <div className="w-px h-6 self-center" style={{ background: 'rgba(255,255,255,0.10)' }} />
-            <button onClick={toggleActive} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex-shrink-0"
+
+            <div className="hidden lg:block w-px h-10 self-center bg-border/40" />
+
+            <button onClick={toggleActive} className="flex items-center gap-3 px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all flex-shrink-0 active:scale-95 shadow-sm"
               style={{
-                background: period.active ? 'rgba(52,211,153,0.10)' : 'rgba(255,255,255,0.04)',
-                color: period.active ? '#34D399' : '#9CA3AF',
-                border: `1px solid ${period.active ? 'rgba(52,211,153,0.25)' : 'rgba(255,255,255,0.10)'}`,
+                background: period.active ? 'rgba(52,211,153,0.08)' : 'rgba(0,0,0,0.03)',
+                color: period.active ? '#10B981' : 'var(--muted-foreground)',
+                border: `1px solid ${period.active ? 'rgba(52,211,153,0.2)' : 'rgba(0,0,0,0.1)'}`,
               }}>
-              {period.active ? <ToggleRight size={15} /> : <ToggleLeft size={15} />}
+              {period.active ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
               {period.active ? t('active') : t('inactive')}
             </button>
           </div>
         )}
+
+
 
         <div className="flex gap-0.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           {(['days', 'discipline'] as const).map(st => (

@@ -43,11 +43,11 @@ const DayRecordForm = memo(function DayRecordForm({
   const [showOptions, setShowOptions] = useState(false);
 
   const ATTENDANCE_COLORS: Record<string, string> = {
-    present:          'bg-emerald-500/15 text-emerald-400',
-    late:             'bg-amber-500/15 text-amber-400',
-    sick_leave:       'bg-blue-500/15 text-blue-400',
-    personal_leave:   'bg-violet-500/15 text-violet-400',
-    absent_no_reason: 'bg-red-500/15 text-red-400',
+    present:          'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 dark:bg-emerald-500/15',
+    late:             'bg-amber-500/10 text-amber-600 dark:text-amber-400 dark:bg-amber-500/15',
+    sick_leave:       'bg-blue-500/10 text-blue-600 dark:text-blue-400 dark:bg-blue-500/15',
+    personal_leave:   'bg-violet-500/10 text-violet-600 dark:text-violet-400 dark:bg-violet-500/15',
+    absent_no_reason: 'bg-red-500/10 text-red-600 dark:text-red-400 dark:bg-red-500/15',
   };
 
   async function handleSave() {
@@ -266,37 +266,35 @@ export function DaysTab({ period, records, onRecordSaved, onPeriodUpdated, onRem
         const isComplete = total > 0 && done === total;
         const isPartial  = done > 0 && done < total;
 
-        const accentColor  = isComplete ? '#34D399' : isPartial ? T.amber : 'rgba(255,255,255,0.15)';
+        const accentColor  = isComplete ? '#10B981' : isPartial ? T.amber : 'var(--border)';
         const borderColor  = isExpanded
-          ? (isComplete ? 'rgba(52,211,153,0.3)' : T.amberBorder)
-          : 'rgba(255,255,255,0.10)';
+          ? (isComplete ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)')
+          : 'var(--border)';
         const headerBg     = isExpanded
-          ? (isComplete ? 'rgba(52,211,153,0.05)' : 'rgba(245,158,11,0.06)')
-          : undefined;
-        const badgeBg      = isComplete ? 'rgba(52,211,153,0.15)' : T.amberBg;
-        const badgeColor   = isComplete ? '#34D399' : T.amber;
-        const badgeBorder  = isComplete ? 'rgba(52,211,153,0.3)' : T.amberBorder;
-        const barColor     = isComplete ? '#34D399' : T.amber;
+          ? (isComplete ? 'rgba(16, 185, 129, 0.03)' : 'rgba(245, 158, 11, 0.03)')
+          : 'transparent';
+        const badgeBg      = isComplete ? 'rgba(16, 185, 129, 0.1)' : isPartial ? 'rgba(245, 158, 11, 0.1)' : 'var(--muted)';
+        const badgeColor   = isComplete ? '#10B981' : isPartial ? T.amber : 'var(--muted-foreground)';
+        const badgeBorder  = isComplete ? 'rgba(16, 185, 129, 0.2)' : isPartial ? 'rgba(245, 158, 11, 0.2)' : 'var(--border)';
+        const barColor     = isComplete ? '#10B981' : T.amber;
 
         const dayTopic = period.dayTopics?.[day] || '';
 
         return (
           <div key={day}
-            className="rounded-2xl overflow-hidden transition-all bg-card border"
+            className="rounded-[1.5rem] overflow-hidden transition-all bg-card border relative"
             style={{
-              borderTopColor: borderColor,
-              borderRightColor: borderColor,
-              borderBottomColor: borderColor,
               borderLeftColor: accentColor,
-              borderLeftWidth: '3px',
+              borderLeftWidth: '4px',
+              boxShadow: isExpanded ? '0 10px 30px -10px rgba(0,0,0,0.1)' : 'none'
             }}
           >
             <div
-              className="w-full flex items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-muted/40 cursor-pointer"
-              style={{ background: headerBg ?? 'transparent' }}
+              className="w-full flex items-center gap-4 px-6 py-5 text-left transition-all hover:bg-muted/30 cursor-pointer"
+              style={{ background: headerBg }}
               onClick={() => {
                 setExpandedDay(isExpanded ? null : day);
-                setVisibleCount(10); // Reset count when switching days
+                setVisibleCount(10);
               }}
               role="button"
               tabIndex={0}
@@ -309,25 +307,25 @@ export function DaysTab({ period, records, onRecordSaved, onPeriodUpdated, onRem
               }}
               aria-expanded={isExpanded}
             >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm flex-shrink-0"
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm flex-shrink-0 shadow-sm"
                 style={{ background: badgeBg, color: badgeColor, border: `1px solid ${badgeBorder}` }}>
                 {day}
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="font-bold text-sm text-foreground flex items-center gap-2">
+                <div className="font-black text-sm text-foreground flex items-center gap-2 tracking-tight">
                   {t('day', { day })}
                   {dayTopic && (
-                    <span className="font-normal text-muted-foreground truncate italic">— {dayTopic}</span>
+                    <span className="font-bold text-muted-foreground truncate italic opacity-60">— {dayTopic}</span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-xs text-muted-foreground">{t('recordsDone', { done, total })}</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{t('recordsDone', { done, total })}</span>
                   {total > 0 && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter"
                       style={{
-                        background: isComplete ? 'rgba(52,211,153,0.12)' : isPartial ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.06)',
-                        color: isComplete ? '#34D399' : isPartial ? T.amber : 'rgba(255,255,255,0.35)',
+                        background: isComplete ? 'rgba(16, 185, 129, 0.1)' : isPartial ? 'rgba(245, 158, 11, 0.1)' : 'var(--muted)',
+                        color: isComplete ? '#10B981' : isPartial ? T.amber : 'var(--muted-foreground)',
                       }}>
                       {isComplete ? t('dayComplete') : isPartial ? `${pct}%` : t('dayNotStarted')}
                     </span>
@@ -335,19 +333,18 @@ export function DaysTab({ period, records, onRecordSaved, onPeriodUpdated, onRem
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="flex items-center gap-4 flex-shrink-0">
                 {total > 0 && (
-                  <div className="flex flex-col items-end gap-1 hidden sm:flex">
-                    <div className="w-28 h-2 rounded-full overflow-hidden bg-muted">
-                      <div className="h-full rounded-full transition-all duration-500"
+                  <div className="flex flex-col items-end gap-1.5 hidden md:flex">
+                    <div className="w-32 h-1.5 rounded-full overflow-hidden bg-muted">
+                      <div className="h-full rounded-full transition-all duration-700 ease-out"
                         style={{ background: barColor, width: `${pct}%` }} />
                     </div>
-                    <span className="text-[10px] text-muted-foreground">{t('dayAgentsProgress', { done, total })}</span>
                   </div>
                 )}
-                {isExpanded
-                  ? <ChevronDown size={16} className="text-muted-foreground" />
-                  : <ChevronRight size={16} className="text-muted-foreground" />}
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isExpanded ? 'bg-secondary rotate-180' : 'hover:bg-secondary'}`}>
+                  <ChevronDown size={18} className="text-muted-foreground" />
+                </div>
               </div>
             </div>
 
@@ -357,30 +354,30 @@ export function DaysTab({ period, records, onRecordSaved, onPeriodUpdated, onRem
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                   className="overflow-hidden"
                 >
-                  <div className="px-5 py-4 border-t border-border bg-muted/30">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-500/80">
-                        <BookOpen size={12} /> {t('topics')}
+                  <div className="px-6 py-5 border-t border-border/40 bg-muted/10">
+                    <div className="flex flex-col gap-2">
+                      <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-amber-500/80">
+                        <BookOpen size={14} /> {t('topics')}
                       </label>
-                      <div className="flex gap-2">
+                      <div className="flex gap-3">
                         <input
                           value={editingTopic?.day === day ? editingTopic.value : dayTopic}
                           onChange={e => setEditingTopic({ day, value: e.target.value })}
                           placeholder={t('topicsPlaceholder')}
                           disabled={readOnly}
-                          className="flex-1 px-3.5 py-2 rounded-xl text-xs outline-none text-foreground transition-all focus:ring-1 focus:ring-amber-500/30 bg-background border border-border"
+                          className="flex-1 px-5 py-3 rounded-2xl text-xs outline-none transition-all font-bold bg-background border border-border/60 hover:border-amber-500/30 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5"
                           style={{ opacity: readOnly ? 0.7 : 1 }}
                         />
                         {!readOnly && editingTopic?.day === day && (
                           <button
                             onClick={() => handleSaveTopic(day)}
                             disabled={savingTopic}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50"
+                            className="flex items-center gap-2 px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50 shadow-lg shadow-amber-500/20"
                           >
-                            {savingTopic ? <Spinner /> : <Save size={14} />}
+                            {savingTopic ? <Spinner size={14} color="white" /> : <Save size={16} />}
                             {savingTopic ? t('saving') : t('save')}
                           </button>
                         )}
@@ -388,23 +385,22 @@ export function DaysTab({ period, records, onRecordSaved, onPeriodUpdated, onRem
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between px-5 py-2.5 border-t border-border bg-muted/20">
-                    <span className="text-[11px] font-semibold text-muted-foreground">
+                  <div className="flex items-center justify-between px-6 py-3 border-t border-border/40 bg-muted/5">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
                       {period.agentIds.length === 0 ? t('noAgentsInPeriod') : done === 0
                         ? t('dayNoRecords')
                         : t('dayAgentsRecorded', { done, total })}
                     </span>
                     {isComplete && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                        style={{ background: 'rgba(52,211,153,0.12)', color: '#34D399', border: '1px solid rgba(52,211,153,0.2)' }}>
-                        {t('dayAllDone')}
-                      </span>
+                      <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-black text-emerald-600 uppercase tracking-widest">
+                        <Check size={10} strokeWidth={4} /> {t('dayAllDone')}
+                      </div>
                     )}
                   </div>
 
                   {period.agentIds.length > 0 && (
-                    <div className="px-5 pb-5 pt-3 space-y-4 bg-muted/10">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="px-6 pb-8 pt-4 space-y-6 bg-muted/[0.02]">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {period.agentIds.slice(0, visibleCount).map(agentId => (
                           <DayRecordForm
                             key={agentId}
@@ -422,22 +418,22 @@ export function DaysTab({ period, records, onRecordSaved, onPeriodUpdated, onRem
                           />
                         ))}
                       </div>
-                      
+
                       {visibleCount < total && (
-                        <div className="flex flex-col items-center gap-3 pt-2">
-                          <p className="text-[11px] text-muted-foreground">
+                        <div className="flex flex-col items-center gap-4 pt-4 border-t border-border/20">
+                          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">
                             Showing {visibleCount} of {total} agents
                           </p>
-                          <div className="flex gap-2">
+                          <div className="flex gap-3">
                             <button
                               onClick={() => setVisibleCount(prev => Math.min(prev + 10, total))}
-                              className="px-6 py-2 rounded-xl bg-card border border-border text-xs font-bold text-foreground hover:bg-muted/50 transition-all flex items-center gap-2"
+                              className="px-8 py-3 rounded-2xl bg-card border border-border text-[11px] font-black uppercase tracking-widest text-foreground hover:bg-muted transition-all flex items-center gap-2 shadow-sm"
                             >
                               <ChevronDown size={14} /> Load 10 More
                             </button>
                             <button
                               onClick={() => setVisibleCount(total)}
-                              className="px-6 py-2 rounded-xl bg-card border border-border text-xs font-bold text-foreground hover:bg-muted/50 transition-all"
+                              className="px-8 py-3 rounded-2xl bg-card border border-border text-[11px] font-black uppercase tracking-widest text-foreground hover:bg-muted transition-all shadow-sm"
                             >
                               Show All
                             </button>
@@ -452,6 +448,7 @@ export function DaysTab({ period, records, onRecordSaved, onPeriodUpdated, onRem
           </div>
         );
       })}
+
     </div>
   );
 }

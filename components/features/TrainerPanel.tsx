@@ -245,26 +245,26 @@ function PeriodListItem({ p, isSelected, onClick, locale, liveSessions, t }: {
       whileTap={{ scale: 0.98 }}
       className={`w-full text-left rounded-2xl overflow-hidden transition-all border ${
         isSelected 
-          ? 'shadow-lg ring-1 ring-amber-500/20' 
-          : 'bg-card/50 hover:bg-card border-border/40'
-      } ${!p.active ? 'opacity-70' : ''}`}
+          ? 'shadow-xl ring-2 ring-amber-500/20 z-10' 
+          : 'bg-card/50 hover:bg-card border-border/40 hover:border-border'
+      } ${!p.active ? 'opacity-60' : ''}`}
       style={isSelected ? { 
-        background: 'linear-gradient(145deg, rgba(245,158,11,0.12), rgba(245,158,11,0.05))', 
-        borderColor: T.amberBorder 
+        background: 'linear-gradient(145deg, var(--card), rgba(245,158,11,0.05))', 
+        borderColor: T.amber 
       } : {}}
     >
       <div className="flex h-full">
         <div className="w-1.5 flex-shrink-0 transition-colors" 
-          style={{ background: p.active ? T.amber : 'var(--hub-dim-border)' }} />
-        <div className="flex-1 px-4 py-4">
+          style={{ background: p.active ? T.amber : 'var(--muted)' }} />
+        <div className="flex-1 px-5 py-5">
           <div className="flex items-start justify-between gap-2 mb-2">
             <div className="flex flex-col gap-1 min-w-0">
-              <span className={`text-[13px] font-black leading-tight tracking-tight truncate ${isSelected ? 'text-amber-500' : 'text-foreground'}`}>
+              <span className={`text-sm font-black leading-tight tracking-tight truncate ${isSelected ? 'text-amber-600 dark:text-amber-500' : 'text-foreground'}`}>
                 {p.name}
               </span>
               {p.active && Object.values(liveSessions).some(v => v) && (
-                <div className="flex items-center gap-1.5 text-[9px] font-black text-red-500 uppercase tracking-widest animate-pulse">
-                  <Radio size={10} /> LIVE NOW
+                <div className="flex items-center gap-1.5 text-[9px] font-black text-red-500 uppercase tracking-[0.2em] animate-pulse">
+                  <Radio size={10} /> LIVE SESSION
                 </div>
               )}
             </div>
@@ -276,13 +276,13 @@ function PeriodListItem({ p, isSelected, onClick, locale, liveSessions, t }: {
             />
           </div>
           
-          <div className="flex items-center gap-3 text-[10px] font-bold text-muted-foreground mb-3 opacity-60">
-            <span className="flex items-center gap-1.5"><Users size={12} className="opacity-70" /> {p.agentIds.length}</span>
-            <span className="flex items-center gap-1.5"><BookOpen size={12} className="opacity-70" /> {p.totalDays}d</span>
+          <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-3">
+            <span className="flex items-center gap-2"><Users size={12} className="opacity-70" /> {p.agentIds.length}</span>
+            <span className="flex items-center gap-2"><BookOpen size={12} className="opacity-70" /> {p.totalDays}D</span>
           </div>
 
-          <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/40">
-            <span className="text-[10px] font-bold text-muted-foreground opacity-40">
+          <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/40">
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">
               {p.completedAt ? `Done: ${fmtDate(p.completedAt, locale)}` : fmtDate(p.startDate, locale)}
             </span>
           </div>
@@ -291,4 +291,5 @@ function PeriodListItem({ p, isSelected, onClick, locale, liveSessions, t }: {
     </motion.button>
   );
 }
+
 
