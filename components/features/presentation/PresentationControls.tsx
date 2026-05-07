@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Keyboard, Maximize2, Minimize2 } from 'lucide-react';
+import { Keyboard, Maximize2, Minimize2, CheckCircle2, Loader2 } from 'lucide-react';
 
 interface PresentationControlsProps {
   t: (key: string) => string;
@@ -15,12 +15,15 @@ interface PresentationControlsProps {
   isModuleComplete: boolean;
   toggleFullscreen: () => void;
   isFullscreen: boolean;
+  markAsComplete?: () => void;
+  isSaving?: boolean;
 }
 
 export function PresentationControls({
   t, progress, slide, total, hasContent,
   isTrainer, viewedCount, isModuleComplete,
-  toggleFullscreen, isFullscreen
+  toggleFullscreen, isFullscreen,
+  markAsComplete, isSaving
 }: PresentationControlsProps) {
   return (
     <div className="relative z-10 shrink-0">
@@ -58,6 +61,22 @@ export function PresentationControls({
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Manual Complete Button */}
+          {!isTrainer && !isModuleComplete && markAsComplete && (
+            <button
+              onClick={markAsComplete}
+              disabled={isSaving}
+              className="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-1.5 text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-emerald-500/20 transition-all active:scale-95 disabled:opacity-50 hover:bg-emerald-600"
+            >
+              {isSaving ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <CheckCircle2 size={14} />
+              )}
+              {t('markComplete') || 'Complete'}
+            </button>
+          )}
+
           <div className="hidden items-center gap-1.5 rounded-lg bg-black/5 px-3 py-1 text-[10px] font-bold text-muted-foreground opacity-50 sm:flex dark:bg-white/5">
             <Keyboard size={11} />
             <span>{t('arrowsNavigate')}</span>

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>/ — graphify tree viewer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      margin: 20px 0 0 24px;
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #1e3a56;
+    }
+    .controls {
+      margin: 20px 0 15px 24px;
+    }
+    button {
+      margin-right: 10px;
+      padding: 8px 18px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s ease-in-out;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    button:active {
+      background: #004085;
+    }
+    #tree-container {
+      width: calc(100vw - 48px); /* Adjust for body margin/padding */
+      height: 85vh;
+      overflow: auto;
+      border-radius: 8px;
+      background: #fff;
+      margin-left: 24px;
+      margin-right: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border: 1px solid #ddd;
+    }
+    svg {
+      background: #fff;
+      border-radius: 8px;
+      display: block; /* Important for D3 */
+    }
+    .node circle {
+      stroke-width: 2.5px;
+    }
+    .node text { /* Base style for the <text> container */
+      font: 13px 'Segoe UI', sans-serif;
+      paint-order: stroke fill; /* Ensures text is readable over lines */
+      stroke: #fff; /* White halo */
+      stroke-width: 3px; /* Halo thickness */
+      stroke-linejoin: round;
+      stroke-opacity: 0.85; /* Halo opacity */
+    }
+    .link {
+      fill: none;
+      stroke-opacity: 0.7;
+      stroke-width: 2px;
+    }
+  </style>
+</head>
+<body>
+  <h1>/ — Knowledge Graph</h1>
+  <div class="controls">
+    <button onclick="expandAll()">Expand All</button>
+    <button onclick="collapseAll()">Collapse All</button>
+    <button onclick="resetView()">Reset View</button>
+  </div>
+  <div id="tree-container">
+    <svg id="tree-svg" width="6000" height="8000"></svg>
+  </div>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    const initialJsonData = {"name":"/","total_count":432,"children":[{"name":"app","total_count":105,"children":[{"name":"[locale]","total_count":29,"children":[{"name":"admin","total_count":2,"children":[{"name":"page.tsx","total_count":2,"children":[{"name":"AdminPage()","total_count":1,"children":[]},{"name":"AdminPageContent()","total_count":1,"children":[]}]}]},{"name":"ai-eval","total_count":3,"children":[{"name":"layout.tsx","total_count":1,"children":[{"name":"AiEvalLayout()","total_count":1,"children":[]}]},{"name":"page.tsx","total_count":1,"children":[{"name":"Loading()","total_count":1,"children":[]}]},{"name":"loading.tsx","total_count":1,"children":[]}]},{"name":"dashboard","total_count":2,"children":[{"name":"layout.tsx","total_count":1,"children":[{"name":"DashboardLayout()","total_count":1,"children":[]}]},{"name":"page.tsx","total_count":1,"children":[{"name":"DashboardPage()","total_count":1,"children":[]}]}]},{"name":"error.tsx","total_count":1,"children":[{"name":"Error()","total_count":1,"children":[]}]},{"name":"evaluator","total_count":3,"children":[{"name":"layout.tsx","total_count":1,"children":[{"name":"EvaluatorLayout()","total_count":1,"children":[]}]},{"name":"page.tsx","total_count":2,"children":[{"name":"EvaluatorPage()","total_count":1,"children":[]},{"name":"EvaluatorPageContent()","total_count":1,"children":[]}]}]},{"name":"layout.tsx","total_count":2,"children":[{"name":"generateMetadata()","total_count":1,"children":[]},{"name":"LocaleLayout()","total_count":1,"children":[]}]},{"name":"learn","total_count":4,"children":[{"name":"[module]","total_count":2,"children":[{"name":"page.tsx","total_count":2,"children":[{"name":"LearnPage()","total_count":1,"children":[]},{"name":"LearnPageContent()","total_count":1,"children":[]}]}]},{"name":"layout.tsx","total_count":1,"children":[{"name":"LearnLayout()","total_count":1,"children":[]}]},{"name":"page.tsx","total_count":1,"children":[{"name":"LearnIndexPage()","total_count":1,"children":[]}]}]},{"name":"loading.tsx","total_count":1,"children":[{"name":"LocaleLoading()","total_count":1,"children":[]}]},{"name":"login","total_count":3,"children":[{"name":"agent","total_count":1,"children":[{"name":"page.tsx","total_count":1,"children":[{"name":"AgentLoginPage()","total_count":1,"children":[]}]}]},{"name":"page.tsx","total_count":2,"children":[{"name":"handleLogin()","total_count":1,"children":[]},{"name":"switchRole()","total_count":1,"children":[]}]}]},{"name":"quiz","total_count":7,"children":[{"name":"[module]","total_count":2,"children":[{"name":"page.tsx","total_count":2,"children":[{"name":"QuizPage()","total_count":1,"children":[]},{"name":"QuizPageContent()","total_count":1,"children":[]}]}]},{"name":"layout.tsx","total_count":1,"children":[{"name":"QuizLayout()","total_count":1,"children":[]}]},{"name":"page.tsx","total_count":3,"children":[{"name":"ModuleCard()","total_count":1,"children":[]},{"name":"PrereqConnector()","total_count":1,"children":[]},{"name":"SectionHeader()","total_count":1,"children":[]}]},{"name":"loading.tsx","total_count":1,"children":[]}]},{"name":"page.tsx","total_count":1,"children":[]}]},{"name":"api","total_count":74,"children":[{"name":"admin","total_count":36,"children":[{"name":"agents","total_count":5,"children":[{"name":"[id]","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[]}]},{"name":"override","total_count":3,"children":[{"name":"route.ts","total_count":3,"children":[{"name":"DELETE()","total_count":1,"children":[]},{"name":"GET()","total_count":1,"children":[]},{"name":"POST()","total_count":1,"children":[]}]}]},{"name":"route.ts","total_count":1,"children":[{"name":"POST()","total_count":1,"children":[]}]}]},{"name":"ai-scenarios","total_count":4,"children":[{"name":"route.ts","total_count":4,"children":[{"name":"DELETE()","total_count":1,"children":[]},{"name":"GET()","total_count":1,"children":[]},{"name":"PATCH()","total_count":1,"children":[]},{"name":"POST()","total_count":1,"children":[]}]}]},{"name":"approvals","total_count":2,"children":[{"name":"route.ts","total_count":2,"children":[{"name":"GET()","total_count":1,"children":[]},{"name":"POST()","total_count":1,"children":[]}]}]},{"name":"bulk-progress","total_count":2,"children":[{"name":"route.ts","total_count":2,"children":[{"name":"defaults()","total_count":1,"children":[]},{"name":"POST()","total_count":1,"children":[]}]}]},{"name":"change-password","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"POST()","total_count":1,"children":[]}]}]},{"name":"config","total_count":4,"children":[{"name":"diagnostics","total_count":2,"children":[{"name":"ai-audit","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[]}]},{"name":"route.ts","total_count":1,"children":[{"name":"GET()","total_count":1,"children":[]}]}]},{"name":"repair","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"POST()","total_count":1,"children":[]}]}]},{"name":"route.ts","total_count":1,"children":[{"name":"PATCH()","total_count":1,"children":[]}]}]},{"name":"create-user","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[]}]},{"name":"evaluations","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[]}]},{"name":"export","total_count":4,"children":[{"name":"route.ts","total_count":4,"children":[{"name":"buildIndividualSheet()","total_count":1,"children":[]},{"name":"buildOverviewSheet()","total_count":1,"children":[]},{"name":"GET()","total_count":1,"children":[]},{"name":"scoreFill()","total_count":1,"children":[]}]}]},{"name":"export-slides","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"POST()","total_count":1,"children":[]}]}]},{"name":"export-staff","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"GET()","total_count":1,"children":[]}]}]},{"name":"history","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"GET()","total_count":1,"children":[]}]}]},{"name":"live-feed","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"GET()","total_count":1,"children":[]}]}]},{"name":"overview","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"GET()","total_count":1,"children":[]}]}]},{"name":"parse-quiz","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"POST()","total_count":1,"children":[]}]}]},{"name":"seed","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"POST()","total_count":1,"children":[]}]}]},{"name":"staff","total_count":4,"children":[{"name":"[id]","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[]}]},{"name":"route.ts","total_count":3,"children":[{"name":"GET()","total_count":1,"children":[]},{"name":"PATCH()","total_count":1,"children":[]},{"name":"POST()","total_count":1,"children":[]}]}]},{"name":"training","total_count":1,"children":[{"name":"finalize","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"POST()","total_count":1,"children":[]}]}]}]}]},{"name":"agent","total_count":4,"children":[{"name":"progress","total_count":3,"children":[{"name":"route.ts","total_count":3,"children":[{"name":"defaults()","total_count":1,"children":[]},{"name":"GET()","total_count":1,"children":[]},{"name":"POST()","total_count":1,"children":[]}]}]},{"name":"sync","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"POST()","total_count":1,"children":[]}]}]}]},{"name":"agents","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"GET()","total_count":1,"children":[]}]}]},{"name":"ai-audit","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"POST()","total_count":1,"children":[]}]}]},{"name":"ai-eval","total_count":5,"children":[{"name":"active","total_count":2,"children":[{"name":"route.ts","total_count":2,"children":[{"name":"DELETE()","total_count":1,"children":[]},{"name":"GET()","total_count":1,"children":[]}]}]},{"name":"config","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[]}]},{"name":"route.ts","total_count":1,"children":[{"name":"POST()","total_count":1,"children":[]}]},{"name":"start","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"POST()","total_count":1,"children":[]}]}]}]},{"name":"auth","total_count":6,"children":[{"name":"agent-login","total_count":2,"children":[{"name":"route.ts","total_count":2,"children":[{"name":"normalizeName()","total_count":1,"children":[]},{"name":"POST()","total_count":1,"children":[]}]}]},{"name":"firebase-token","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"GET()","total_count":1,"children":[]}]}]},{"name":"session","total_count":3,"children":[{"name":"route.ts","total_count":3,"children":[{"name":"DELETE()","total_count":1,"children":[]},{"name":"POST()","total_count":1,"children":[]},{"name":"setSession()","total_count":1,"children":[]}]}]}]},{"name":"config","total_count":1,"children":[{"name":"public","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"GET()","total_count":1,"children":[]}]}]}]},{"name":"courses","total_count":2,"children":[{"name":"[id]","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"GET()","total_count":1,"children":[]}]}]},{"name":"route.ts","total_count":1,"children":[{"name":"GET()","total_count":1,"children":[]}]}]},{"name":"evaluator","total_count":5,"children":[{"name":"agent-stats","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"GET()","total_count":1,"children":[]}]}]},{"name":"all-agent-stats","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"GET()","total_count":1,"children":[]}]}]},{"name":"evaluations","total_count":3,"children":[{"name":"[id]","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[]}]},{"name":"route.ts","total_count":2,"children":[{"name":"GET()","total_count":1,"children":[]},{"name":"POST()","total_count":1,"children":[]}]}]}]},{"name":"quiz","total_count":3,"children":[{"name":"config","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"GET()","total_count":1,"children":[]}]}]},{"name":"status","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"GET()","total_count":1,"children":[]}]}]},{"name":"submit","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"POST()","total_count":1,"children":[]}]}]}]},{"name":"slide","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[{"name":"GET()","total_count":1,"children":[]}]}]},{"name":"trainer","total_count":9,"children":[{"name":"discipline","total_count":3,"children":[{"name":"[id]","total_count":1,"children":[{"name":"route.ts","total_count":1,"children":[]}]},{"name":"route.ts","total_count":2,"children":[{"name":"GET()","total_count":1,"children":[]},{"name":"POST()","total_count":1,"children":[]}]}]},{"name":"training-periods","total_count":6,"children":[{"name":"[id]","total_count":4,"children":[{"name":"days","total_count":2,"children":[{"name":"route.ts","total_count":2,"children":[{"name":"GET()","total_count":1,"children":[]},{"name":"POST()","total_count":1,"children":[]}]}]},{"name":"route.ts","total_count":2,"children":[{"name":"DELETE()","total_count":1,"children":[]},{"name":"PATCH()","total_count":1,"children":[]}]}]},{"name":"route.ts","total_count":2,"children":[{"name":"GET()","total_count":1,"children":[]},{"name":"POST()","total_count":1,"children":[]}]}]}]}]},{"name":"layout.tsx","total_count":1,"children":[{"name":"RootLayout()","total_count":1,"children":[]}]},{"name":"not-found.tsx","total_count":1,"children":[{"name":"NotFound()","total_count":1,"children":[]}]}]},{"name":"components","total_count":196,"children":[{"name":"features","total_count":179,"children":[{"name":"admin","total_count":90,"children":[{"name":"adjustments","total_count":19,"children":[{"name":"AiEvalEditor.tsx","total_count":1,"children":[{"name":"AiEvalEditor()","total_count":1,"children":[]}]},{"name":"DiagnosticRunner.tsx","total_count":3,"children":[{"name":"getStatusIcon()","total_count":1,"children":[]},{"name":"runAiAudit()","total_count":1,"children":[]},{"name":"runDiagnostics()","total_count":1,"children":[]}]},{"name":"HealthManager.tsx","total_count":1,"children":[{"name":"handleRepair()","total_count":1,"children":[]}]},{"name":"LearnEditor.tsx","total_count":4,"children":[{"name":"ensureFirebaseSession()","total_count":1,"children":[]},{"name":"handleFileUpload()","total_count":1,"children":[]},{"name":"handleUpdate()","total_count":1,"children":[]},{"name":"moveModule()","total_count":1,"children":[]}]},{"name":"OverridesManager.tsx","total_count":3,"children":[{"name":"handleApplyOverride()","total_count":1,"children":[]},{"name":"handleFinalizeBatch()","total_count":1,"children":[]},{"name":"handleRevert()","total_count":1,"children":[]}]},{"name":"QuizzesEditor.tsx","total_count":3,"children":[{"name":"downloadTemplate()","total_count":1,"children":[]},{"name":"handleFileImport()","total_count":1,"children":[]},{"name":"handleUpdate()","total_count":1,"children":[]}]},{"name":"SharedUI.tsx","total_count":3,"children":[{"name":"EditorHeader()","total_count":1,"children":[]},{"name":"EmptyState()","total_count":1,"children":[]},{"name":"FormField()","total_count":1,"children":[]}]},{"name":"SystemEditor.tsx","total_count":1,"children":[{"name":"SystemEditor()","total_count":1,"children":[]}]}]},{"name":"AdjustmentsTab.tsx","total_count":1,"children":[{"name":"confirmTabChange()","total_count":1,"children":[]}]},{"name":"AdminComponents.tsx","total_count":1,"children":[{"name":"KpiCard()","total_count":1,"children":[]}]},{"name":"AdminHelpers.ts","total_count":3,"children":[{"name":"scoreBg()","total_count":1,"children":[]},{"name":"scoreColor()","total_count":1,"children":[]},{"name":"timeAgo()","total_count":1,"children":[]}]},{"name":"AdminSidebar.tsx","total_count":1,"children":[{"name":"sidebarCollapsed()","total_count":1,"children":[]}]},{"name":"agent-detail","total_count":5,"children":[{"name":"BypassModal.tsx","total_count":1,"children":[{"name":"BypassModal()","total_count":1,"children":[]}]},{"name":"HistorySections.tsx","total_count":3,"children":[{"name":"ActionBtn()","total_count":1,"children":[]},{"name":"handleOverride()","total_count":1,"children":[]},{"name":"requestOverride()","total_count":1,"children":[]}]},{"name":"ProfileHeader.tsx","total_count":1,"children":[]}]},{"name":"AgentDetailModal.tsx","total_count":1,"children":[{"name":"AgentDetailModal()","total_count":1,"children":[]}]},{"name":"ai-scenarios","total_count":4,"children":[{"name":"ScenarioForm.tsx","total_count":2,"children":[{"name":"Field()","total_count":1,"children":[]},{"name":"ScenarioForm()","total_count":1,"children":[]}]},{"name":"ScenarioList.tsx","total_count":1,"children":[{"name":"ScenarioCard()","total_count":1,"children":[]}]},{"name":"constants.ts","total_count":1,"children":[]}]},{"name":"AiScenarioImportModal.tsx","total_count":1,"children":[{"name":"AiScenarioImportModal()","total_count":1,"children":[]}]},{"name":"AiScenariosTab.tsx","total_count":12,"children":[{"name":"cancelForm()","total_count":1,"children":[]},{"name":"clearSelection()","total_count":1,"children":[]},{"name":"handleBulkDelete()","total_count":1,"children":[]},{"name":"handleCreate()","total_count":1,"children":[]},{"name":"handleDelete()","total_count":1,"children":[]},{"name":"handleEdit()","total_count":1,"children":[]},{"name":"handleFormChange()","total_count":1,"children":[]},{"name":"handleSave()","total_count":1,"children":[]},{"name":"handleToggleActive()","total_count":1,"children":[]},{"name":"selectAll()","total_count":1,"children":[]},{"name":"toggleSelect()","total_count":1,"children":[]},{"name":"updateGlobalConfig()","total_count":1,"children":[]}]},{"name":"ApprovalsTab.tsx","total_count":3,"children":[{"name":"getActionIcon()","total_count":1,"children":[]},{"name":"getCategoryIcon()","total_count":1,"children":[]},{"name":"resolve()","total_count":1,"children":[]}]},{"name":"BulkImportModal.tsx","total_count":1,"children":[{"name":"BulkImportModal()","total_count":1,"children":[]}]},{"name":"ChangePasswordModal.tsx","total_count":1,"children":[{"name":"handleSave()","total_count":1,"children":[]}]},{"name":"dashboard-policy.ts","total_count":2,"children":[{"name":"getDefaultTab()","total_count":1,"children":[]},{"name":"getVisibleTabs()","total_count":1,"children":[]}]},{"name":"evaluations","total_count":5,"children":[{"name":"EvaluationsDashboard.tsx","total_count":1,"children":[{"name":"t()","total_count":1,"children":[]}]},{"name":"useEvaluationsData.ts","total_count":1,"children":[{"name":"useEvaluationsData()","total_count":1,"children":[]}]},{"name":"ActiveBatchHeader.tsx","total_count":1,"children":[]},{"name":"ArchiveSelectionGrid.tsx","total_count":1,"children":[]},{"name":"EvalRow.tsx","total_count":1,"children":[]}]},{"name":"HistoryTab.tsx","total_count":1,"children":[{"name":"loadPeriodDetail()","total_count":1,"children":[]}]},{"name":"HRAnalyticsTab.tsx","total_count":1,"children":[{"name":"fetchData()","total_count":1,"children":[]}]},{"name":"LiveFeed.tsx","total_count":2,"children":[{"name":"getIcon()","total_count":1,"children":[]},{"name":"timeAgo()","total_count":1,"children":[]}]},{"name":"overview","total_count":5,"children":[{"name":"KpiSection.tsx","total_count":1,"children":[{"name":"KpiSection()","total_count":1,"children":[]}]},{"name":"CompletionGrid.tsx","total_count":1,"children":[]},{"name":"GraduationRoster.tsx","total_count":1,"children":[]},{"name":"LeaderboardTable.tsx","total_count":1,"children":[]},{"name":"TrainingWavesSection.tsx","total_count":1,"children":[]}]},{"name":"OverviewTab.tsx","total_count":1,"children":[{"name":"handleViewAgent()","total_count":1,"children":[]}]},{"name":"ReportsTab.tsx","total_count":2,"children":[{"name":"handleExport()","total_count":1,"children":[]},{"name":"toggleSort()","total_count":1,"children":[]}]},{"name":"SandboxManagerModal.tsx","total_count":1,"children":[{"name":"SandboxManagerModal()","total_count":1,"children":[]}]},{"name":"staff","total_count":11,"children":[{"name":"AccessNotes.tsx","total_count":1,"children":[{"name":"AccessNotes()","total_count":1,"children":[]}]},{"name":"AgentSection.tsx","total_count":4,"children":[{"name":"addAgent()","total_count":1,"children":[]},{"name":"deleteAgent()","total_count":1,"children":[]},{"name":"saveAgentEdit()","total_count":1,"children":[]},{"name":"toggleAgentActive()","total_count":1,"children":[]}]},{"name":"StaffSection.tsx","total_count":6,"children":[{"name":"createStaff()","total_count":1,"children":[]},{"name":"deleteStaff()","total_count":1,"children":[]},{"name":"moveStaff()","total_count":1,"children":[]},{"name":"saveArrangement()","total_count":1,"children":[]},{"name":"saveStaffEdit()","total_count":1,"children":[]},{"name":"toggleStaffActive()","total_count":1,"children":[]}]}]},{"name":"StaffTab.tsx","total_count":1,"children":[{"name":"StaffTab()","total_count":1,"children":[]}]},{"name":"useAdminDashboard.ts","total_count":1,"children":[{"name":"useAdminDashboard()","total_count":1,"children":[]}]},{"name":"AdminHeader.tsx","total_count":1,"children":[]},{"name":"AdminTabContent.tsx","total_count":1,"children":[]},{"name":"DetailedEvaluation.tsx","total_count":1,"children":[]},{"name":"EvaluationsTab.tsx","total_count":1,"children":[]}]},{"name":"AdminDashboard.tsx","total_count":2,"children":[{"name":"AdminDashboard()","total_count":1,"children":[]},{"name":"AmbientBackground()","total_count":1,"children":[]}]},{"name":"agent-entry","total_count":11,"children":[{"name":"MobileHeader.tsx","total_count":2,"children":[{"name":"MobileHeader()","total_count":1,"children":[]},{"name":"MobileModuleChips()","total_count":1,"children":[]}]},{"name":"ReturningUserBanner.tsx","total_count":3,"children":[{"name":"getInitials()","total_count":1,"children":[]},{"name":"normalizeName()","total_count":1,"children":[]},{"name":"ReturningUserBanner()","total_count":1,"children":[]}]},{"name":"useAgentEntry.ts","total_count":2,"children":[{"name":"normalizeName()","total_count":1,"children":[]},{"name":"useAgentEntry()","total_count":1,"children":[]}]},{"name":"BrandingPanel.tsx","total_count":1,"children":[]},{"name":"EntryAvatar.tsx","total_count":1,"children":[]},{"name":"FloatingDecoration.tsx","total_count":1,"children":[]},{"name":"LoginForm.tsx","total_count":1,"children":[]}]},{"name":"agent-training","total_count":10,"children":[{"name":"celebration","total_count":4,"children":[{"name":"CongratulationsCard.tsx","total_count":2,"children":[{"name":"handleMouseLeave()","total_count":1,"children":[]},{"name":"handleMouseMove()","total_count":1,"children":[]}]},{"name":"Confetti.tsx","total_count":1,"children":[]},{"name":"TrophyHero.tsx","total_count":1,"children":[]}]},{"name":"index.tsx","total_count":1,"children":[{"name":"handleSync()","total_count":1,"children":[]}]},{"name":"ProfileSidebar.tsx","total_count":1,"children":[{"name":"handleSync()","total_count":1,"children":[]}]},{"name":"BackgroundEffects.tsx","total_count":1,"children":[]},{"name":"ModuleCard.tsx","total_count":1,"children":[]},{"name":"ModuleHeader.tsx","total_count":1,"children":[]},{"name":"StepTimeline.tsx","total_count":1,"children":[]}]},{"name":"AgentAuthGuard.tsx","total_count":1,"children":[{"name":"AgentAuthGuard()","total_count":1,"children":[]}]},{"name":"AgentEntry.tsx","total_count":2,"children":[{"name":"getInitials()","total_count":1,"children":[]},{"name":"normalizeName()","total_count":1,"children":[]}]},{"name":"ai-eval","total_count":11,"children":[{"name":"AuditFlow.tsx","total_count":2,"children":[{"name":"handleCopy()","total_count":1,"children":[]},{"name":"handleSubmit()","total_count":1,"children":[]}]},{"name":"CoachingCard.tsx","total_count":2,"children":[{"name":"SCORE_STYLE()","total_count":1,"children":[]},{"name":"tc()","total_count":1,"children":[]}]},{"name":"IntroView.tsx","total_count":1,"children":[{"name":"tc()","total_count":1,"children":[]}]},{"name":"ChatView.tsx","total_count":1,"children":[]},{"name":"index.tsx","total_count":1,"children":[]},{"name":"MessageBubble.tsx","total_count":1,"children":[]},{"name":"ScenarioPicker.tsx","total_count":1,"children":[]},{"name":"StepProgress.tsx","total_count":1,"children":[]},{"name":"types.ts","total_count":1,"children":[]}]},{"name":"DrawingCanvas.tsx","total_count":1,"children":[{"name":"DrawingCanvas()","total_count":1,"children":[]}]},{"name":"evaluator","total_count":6,"children":[{"name":"EvalForm.tsx","total_count":2,"children":[{"name":"setPerf()","total_count":1,"children":[]},{"name":"setRedFlag()","total_count":1,"children":[]}]},{"name":"useEvaluatorDashboard.ts","total_count":1,"children":[{"name":"useEvaluatorDashboard()","total_count":1,"children":[]}]},{"name":"AgentPerformancePanel.tsx","total_count":1,"children":[]},{"name":"EvalHistoryCard.tsx","total_count":1,"children":[]},{"name":"OverviewPanel.tsx","total_count":1,"children":[]}]},{"name":"EvaluatorDashboard.tsx","total_count":2,"children":[{"name":"EvaluatorDashboard()","total_count":1,"children":[]},{"name":"useKeyboardShortcuts()","total_count":1,"children":[]}]},{"name":"presentation","total_count":6,"children":[{"name":"PresentationHeader.tsx","total_count":1,"children":[{"name":"PresentationHeader()","total_count":1,"children":[]}]},{"name":"usePresentation.ts","total_count":3,"children":[{"name":"slideKey()","total_count":1,"children":[]},{"name":"usePresentation()","total_count":1,"children":[]},{"name":"viewedKey()","total_count":1,"children":[]}]},{"name":"PresentationControls.tsx","total_count":1,"children":[]},{"name":"TrainerToolbar.tsx","total_count":1,"children":[]}]},{"name":"PresentationViewer.tsx","total_count":1,"children":[{"name":"PresentationViewer()","total_count":1,"children":[]}]},{"name":"quiz","total_count":6,"children":[{"name":"index.tsx","total_count":1,"children":[{"name":"QuizSkeleton()","total_count":1,"children":[]}]},{"name":"QuizBriefing.tsx","total_count":1,"children":[{"name":"tSelection()","total_count":1,"children":[]}]},{"name":"QuizSession.tsx","total_count":1,"children":[{"name":"handleFillSubmit()","total_count":1,"children":[]}]},{"name":"shared.ts","total_count":1,"children":[{"name":"isAnswerCorrect()","total_count":1,"children":[]}]},{"name":"QuizResult.tsx","total_count":1,"children":[]},{"name":"types.ts","total_count":1,"children":[]}]},{"name":"SessionProvider.tsx","total_count":3,"children":[{"name":"handleJoinSummon()","total_count":1,"children":[]},{"name":"handleStorageChange()","total_count":1,"children":[]},{"name":"summon()","total_count":1,"children":[]}]},{"name":"trainer","total_count":19,"children":[{"name":"DaysTab.tsx","total_count":5,"children":[{"name":"dayCompletionCount()","total_count":1,"children":[]},{"name":"getRecord()","total_count":1,"children":[]},{"name":"handleSave()","total_count":1,"children":[]},{"name":"handleSaveTopic()","total_count":1,"children":[]},{"name":"t()","total_count":1,"children":[]}]},{"name":"DisciplineTab.tsx","total_count":1,"children":[{"name":"DisciplineTab()","total_count":1,"children":[]}]},{"name":"NewPeriodModal.tsx","total_count":1,"children":[{"name":"NewPeriodModal()","total_count":1,"children":[]}]},{"name":"PeriodDetail.tsx","total_count":10,"children":[{"name":"adjustDays()","total_count":1,"children":[]},{"name":"getModuleLabel()","total_count":1,"children":[]},{"name":"handleAddAgent()","total_count":1,"children":[]},{"name":"handleBulkMarkLearned()","total_count":1,"children":[]},{"name":"handleDaySaved()","total_count":1,"children":[]},{"name":"handleDeactivateAgent()","total_count":1,"children":[]},{"name":"handleDeletePeriod()","total_count":1,"children":[]},{"name":"handleRemoveAgent()","total_count":1,"children":[]},{"name":"handleSummon()","total_count":1,"children":[]},{"name":"toggleActive()","total_count":1,"children":[]}]},{"name":"TrainerConstants.tsx","total_count":2,"children":[{"name":"fmtDate()","total_count":1,"children":[]},{"name":"Spinner()","total_count":1,"children":[]}]}]},{"name":"TrainerPanel.tsx","total_count":3,"children":[{"name":"handlePeriodCreated()","total_count":1,"children":[]},{"name":"handlePeriodDeleted()","total_count":1,"children":[]},{"name":"handlePeriodUpdated()","total_count":1,"children":[]}]},{"name":"AgentTrainingHub.tsx","total_count":1,"children":[]},{"name":"AiEvaluation.tsx","total_count":1,"children":[]},{"name":"CourseHub.tsx","total_count":1,"children":[]},{"name":"Dashboard.tsx","total_count":1,"children":[]},{"name":"QuizSystem.tsx","total_count":1,"children":[]}]},{"name":"ui","total_count":17,"children":[{"name":"GlassCard.tsx","total_count":1,"children":[{"name":"GlassCard()","total_count":1,"children":[]}]},{"name":"LangToggle.tsx","total_count":1,"children":[{"name":"LangToggle()","total_count":1,"children":[]}]},{"name":"NavBar.tsx","total_count":5,"children":[{"name":"backToAdmin()","total_count":1,"children":[]},{"name":"guardedNavigate()","total_count":1,"children":[]},{"name":"handleNavClick()","total_count":1,"children":[]},{"name":"isActive()","total_count":1,"children":[]},{"name":"refresh()","total_count":1,"children":[]}]},{"name":"NavigationProgress.tsx","total_count":1,"children":[{"name":"handleStart()","total_count":1,"children":[]}]},{"name":"ScoreRing.tsx","total_count":1,"children":[{"name":"scoreHex()","total_count":1,"children":[]}]},{"name":"StatCounter.tsx","total_count":1,"children":[{"name":"StatCounter()","total_count":1,"children":[]}]},{"name":"StatusBadge.tsx","total_count":1,"children":[{"name":"StatusBadge()","total_count":1,"children":[]}]},{"name":"ThemeScript.tsx","total_count":1,"children":[{"name":"ThemeScript()","total_count":1,"children":[]}]},{"name":"ThemeToggle.tsx","total_count":1,"children":[{"name":"ThemeToggle()","total_count":1,"children":[]}]},{"name":"ActiveAgentUI.tsx","total_count":1,"children":[]},{"name":"BackgroundEffects.tsx","total_count":1,"children":[]},{"name":"BrandedTitle.tsx","total_count":1,"children":[]},{"name":"LiveIndicator.tsx","total_count":1,"children":[]}]}]},{"name":"constants","total_count":1,"children":[{"name":"training.ts","total_count":1,"children":[]}]},{"name":"GEMINI.md","total_count":2,"children":[{"name":"GEMINI.md","total_count":1,"children":[]},{"name":"graphify","total_count":1,"children":[]}]},{"name":"i18n","total_count":1,"children":[{"name":"request.ts","total_count":1,"children":[]}]},{"name":"lib","total_count":109,"children":[{"name":"agent-session.ts","total_count":4,"children":[{"name":"clearAgentSession()","total_count":1,"children":[]},{"name":"getAgentSession()","total_count":1,"children":[]},{"name":"isMockupAgent()","total_count":1,"children":[]},{"name":"setAgentSession()","total_count":1,"children":[]}]},{"name":"agents.ts","total_count":6,"children":[{"name":"buildAiEval()","total_count":1,"children":[]},{"name":"computeBadge()","total_count":1,"children":[]},{"name":"computeOverallScore()","total_count":1,"children":[]},{"name":"getAgentStats()","total_count":1,"children":[]},{"name":"getAllAgentStats()","total_count":1,"children":[]},{"name":"getModuleStats()","total_count":1,"children":[]}]},{"name":"animations.ts","total_count":1,"children":[{"name":"stagger()","total_count":1,"children":[]}]},{"name":"completion.ts","total_count":1,"children":[{"name":"getCompletionStatus()","total_count":1,"children":[]}]},{"name":"courses-server.ts","total_count":2,"children":[{"name":"getCourseModule()","total_count":1,"children":[]},{"name":"getCourseModules()","total_count":1,"children":[]}]},{"name":"evaluator-helpers.ts","total_count":4,"children":[{"name":"calcScore()","total_count":1,"children":[]},{"name":"emptyCriteria()","total_count":1,"children":[]},{"name":"emptyPerf()","total_count":1,"children":[]},{"name":"timeAgo()","total_count":1,"children":[]}]},{"name":"fetcher.ts","total_count":2,"children":[{"name":"fetchWithCache()","total_count":1,"children":[]},{"name":"invalidateCache()","total_count":1,"children":[]}]},{"name":"firebase-admin.ts","total_count":7,"children":[{"name":"cleanEmail()","total_count":1,"children":[]},{"name":"cleanId()","total_count":1,"children":[]},{"name":"cleanValue()","total_count":1,"children":[]},{"name":"getAdminApp()","total_count":1,"children":[]},{"name":"getAdminAuth()","total_count":1,"children":[]},{"name":"getAdminDb()","total_count":1,"children":[]},{"name":"getAdminStorage()","total_count":1,"children":[]}]},{"name":"firebase.ts","total_count":2,"children":[{"name":"clean()","total_count":1,"children":[]},{"name":"getClientAnalytics()","total_count":1,"children":[]}]},{"name":"firestore-db.ts","total_count":10,"children":[{"name":"fsAdd()","total_count":1,"children":[]},{"name":"fsCount()","total_count":1,"children":[]},{"name":"fsDelete()","total_count":1,"children":[]},{"name":"fsGet()","total_count":1,"children":[]},{"name":"fsGetAll()","total_count":1,"children":[]},{"name":"fsGetWhere()","total_count":1,"children":[]},{"name":"fsQuery()","total_count":1,"children":[]},{"name":"fsSet()","total_count":1,"children":[]},{"name":"fsUpdate()","total_count":1,"children":[]},{"name":"fsUpdateMany()","total_count":1,"children":[]}]},{"name":"gemini.ts","total_count":1,"children":[{"name":"getGeminiModel()","total_count":1,"children":[]}]},{"name":"hooks","total_count":2,"children":[{"name":"useConfigEditor.ts","total_count":2,"children":[{"name":"updateDeep()","total_count":1,"children":[]},{"name":"useConfigEditor()","total_count":1,"children":[]}]}]},{"name":"live-presentation.ts","total_count":1,"children":[{"name":"useLivePresentation()","total_count":1,"children":[]}]},{"name":"localCache.ts","total_count":9,"children":[{"name":"clearEvalSession()","total_count":1,"children":[]},{"name":"getEvalSession()","total_count":1,"children":[]},{"name":"getProgress()","total_count":1,"children":[]},{"name":"key()","total_count":1,"children":[]},{"name":"load()","total_count":1,"children":[]},{"name":"remove()","total_count":1,"children":[]},{"name":"save()","total_count":1,"children":[]},{"name":"saveEvalSession()","total_count":1,"children":[]},{"name":"saveProgress()","total_count":1,"children":[]}]},{"name":"openai.ts","total_count":1,"children":[{"name":"getOpenAI()","total_count":1,"children":[]}]},{"name":"presence.ts","total_count":2,"children":[{"name":"useAgentPresence()","total_count":1,"children":[]},{"name":"useTrackPresence()","total_count":1,"children":[]}]},{"name":"registry.ts","total_count":1,"children":[{"name":"getCanonicalQuizKey()","total_count":1,"children":[]}]},{"name":"services","total_count":37,"children":[{"name":"ai-audit-service.ts","total_count":4,"children":[{"name":".auditTranscript()","total_count":1,"children":[]},{"name":".fetchChatTranscript()","total_count":1,"children":[]},{"name":".logAuditCompletion()","total_count":1,"children":[]},{"name":"AiAuditService","total_count":1,"children":[]}]},{"name":"ai-eval-service.ts","total_count":10,"children":[{"name":".buildFallbackSystemPrompt()","total_count":1,"children":[]},{"name":".callChatGPT()","total_count":1,"children":[]},{"name":".cleanJson()","total_count":1,"children":[]},{"name":".injectVariables()","total_count":1,"children":[]},{"name":".logCompletion()","total_count":1,"children":[]},{"name":".processTurn()","total_count":1,"children":[]},{"name":".seedAllScenarios()","total_count":1,"children":[]},{"name":".seedDefaultScenario()","total_count":1,"children":[]},{"name":".startSession()","total_count":1,"children":[]},{"name":"AiEvalService","total_count":1,"children":[]}]},{"name":"approval-service.ts","total_count":3,"children":[{"name":"createApprovalRequest()","total_count":1,"children":[]},{"name":"executeApprovedAction()","total_count":1,"children":[]},{"name":"resolveApprovalRequest()","total_count":1,"children":[]}]},{"name":"audit-service.ts","total_count":3,"children":[{"name":".getRecentLogs()","total_count":1,"children":[]},{"name":".log()","total_count":1,"children":[]},{"name":"AuditService","total_count":1,"children":[]}]},{"name":"semantic-audit-service.ts","total_count":8,"children":[{"name":".auditAgentJourneys()","total_count":1,"children":[]},{"name":".auditConfigs()","total_count":1,"children":[]},{"name":".auditEvaluations()","total_count":1,"children":[]},{"name":".fetchAgents()","total_count":1,"children":[]},{"name":".fetchConfigs()","total_count":1,"children":[]},{"name":".fetchEvaluations()","total_count":1,"children":[]},{"name":".runFullAudit()","total_count":1,"children":[]},{"name":"SemanticAuditService","total_count":1,"children":[]}]},{"name":"stats-service.ts","total_count":7,"children":[{"name":"getGlobalStats()","total_count":1,"children":[]},{"name":"recalculateGlobalStats()","total_count":1,"children":[]},{"name":"updateAgentOverallScore()","total_count":1,"children":[]},{"name":"updateGlobalAgentCounts()","total_count":1,"children":[]},{"name":"updateGlobalAiEvalStats()","total_count":1,"children":[]},{"name":"updateGlobalLearningStats()","total_count":1,"children":[]},{"name":"updateGlobalQuizStats()","total_count":1,"children":[]}]},{"name":"batch-service.ts","total_count":1,"children":[]},{"name":"trainer-service.ts","total_count":1,"children":[]}]},{"name":"session-client.ts","total_count":1,"children":[{"name":"hasStaffSession()","total_count":1,"children":[]}]},{"name":"session.ts","total_count":10,"children":[{"name":"getServerUser()","total_count":1,"children":[]},{"name":"makeSessionToken()","total_count":1,"children":[]},{"name":"requireAdmin()","total_count":1,"children":[]},{"name":"requireAdminManagerOrTrainer()","total_count":1,"children":[]},{"name":"requireAdminOrIT()","total_count":1,"children":[]},{"name":"requireAdminOrManager()","total_count":1,"children":[]},{"name":"requireAuth()","total_count":1,"children":[]},{"name":"requireEvaluator()","total_count":1,"children":[]},{"name":"requireHR()","total_count":1,"children":[]},{"name":"requireTrainer()","total_count":1,"children":[]}]},{"name":"training-server.ts","total_count":1,"children":[{"name":"getActiveTrainingPeriod()","total_count":1,"children":[]}]},{"name":"training.ts","total_count":2,"children":[{"name":"deriveSteps()","total_count":1,"children":[]},{"name":"scoreColor()","total_count":1,"children":[]}]},{"name":"courses.ts","total_count":1,"children":[]},{"name":"quiz-data.ts","total_count":1,"children":[]}]},{"name":"scripts","total_count":10,"children":[{"name":"debug-firebase.mjs","total_count":2,"children":[{"name":"cleanValue()","total_count":1,"children":[]},{"name":"debug()","total_count":1,"children":[]}]},{"name":"list-models.mjs","total_count":1,"children":[{"name":"listModels()","total_count":1,"children":[]}]},{"name":"seed-admin.mjs","total_count":1,"children":[{"name":"run()","total_count":1,"children":[]}]},{"name":"seed-final.mjs","total_count":1,"children":[{"name":"seed()","total_count":1,"children":[]}]},{"name":"seed-full-config.mjs","total_count":3,"children":[{"name":"main()","total_count":1,"children":[]},{"name":"seedLearnCourses()","total_count":1,"children":[]},{"name":"seedQuizzes()","total_count":1,"children":[]}]},{"name":"seed-quizzes.mjs","total_count":2,"children":[{"name":"initAdmin()","total_count":1,"children":[]},{"name":"seed()","total_count":1,"children":[]}]}]},{"name":"types","total_count":2,"children":[{"name":"ai-eval.ts","total_count":1,"children":[]},{"name":"index.ts","total_count":1,"children":[]}]},{"name":"eslint.config.mjs","total_count":1,"children":[]},{"name":"next-env.d.ts","total_count":1,"children":[]},{"name":"next.config.ts","total_count":1,"children":[]},{"name":"postcss.config.js","total_count":1,"children":[]},{"name":"proxy.ts","total_count":1,"children":[]},{"name":"tailwind.config.ts","total_count":1,"children":[]}]};
+
+    function transformData(jsonData) {
+        // Helper function to recursively build the children structure
+        function processNode(node, parentL1StageName) {
+            let displayName = node.name;
+            // Append total_count if it exists and is not already in the name
+            if (node.total_count !== undefined) {
+                if (!/\(Total Count: \d+\)$/.test(displayName)) {
+                    displayName += ` (Total Count: ${node.total_count})`;
+                }
+            }
+
+            const newNode = { name: displayName };
+
+            if (parentL1StageName === "Root") {
+                 newNode.originalStageName = node.name;
+            } else {
+                newNode.originalStageName = parentL1StageName;
+            }
+
+            if (node.children && node.children.length > 0) {
+                const stageNameToPass = (parentL1StageName === "Root") ? node.name : parentL1StageName;
+                newNode.children = node.children.map(child => processNode(child, stageNameToPass));
+            }
+
+            return newNode;
+        }
+
+        let rootDisplayName = jsonData.name;
+        if (jsonData.total_count !== undefined && !/\(Total Count: \d+\)$/.test(rootDisplayName)) {
+            rootDisplayName += ` (Total Count: ${jsonData.total_count})`;
+        }
+
+        return {
+            name: rootDisplayName,
+            originalStageName: "Root",
+            children: (jsonData.children || []).map(child => processNode(child, "Root"))
+        };
+    }
+
+    const treeData = transformData(initialJsonData);
+
+    // Auto-populated phaseColors: every depth-1 child of the root gets
+    // a stable colour from a bigger palette so all top-level dirs are
+    // distinguishable.
+    const PALETTE = [
+      ["#3498DB","#2980B9","#AED6F1"], ["#2ECC71","#27AE60","#A9DFBF"],
+      ["#E74C3C","#C0392B","#F5B7B1"], ["#9B59B6","#8E44AD","#D7BDE2"],
+      ["#F39C12","#D68910","#FAD7A0"], ["#1ABC9C","#117864","#A2D9CE"],
+      ["#34495E","#1B2631","#ABB2B9"], ["#E67E22","#BA4A00","#F5CBA7"],
+      ["#16A085","#0E6655","#A2D9CE"], ["#D35400","#A04000","#EDBB99"],
+      ["#7F8C8D","#566573","#D5DBDB"], ["#C0392B","#7B241C","#F5B7B1"],
+      ["#2E86C1","#1B4F72","#A9CCE3"], ["#28B463","#196F3D","#A9DFBF"],
+      ["#AF7AC5","#6C3483","#D2B4DE"],
+    ];
+    const phaseColors = { "Root": { fill: "#4A4A4A", stroke: "#333333", collapsedFill: "#6C757D" },
+                          "Default": { fill: "#BDC3C7", stroke: "#95A5A6", collapsedFill: "#ECF0F1" } };
+    (initialJsonData.children || []).forEach((c, i) => {
+      const pal = PALETTE[i % PALETTE.length];
+      phaseColors[c.name] = { fill: pal[0], stroke: pal[1], collapsedFill: pal[2] };
+    });
+
+    const levelSpecificPalettes = {
+      0: { fill: "#4A4A4A", stroke: "#333333", collapsedFill: "#6C757D" },
+      2: { fill: "#6ab04c", stroke: "#508a38", collapsedFill: "#a3d391" },
+      3: { fill: "#f0932b", stroke: "#d0730f", collapsedFill: "#f6c07e" },
+      4: { fill: "#be2edd", stroke: "#a01cb3", collapsedFill: "#e08bf2" },
+      5: { fill: "#00a8ff", stroke: "#007ac1", collapsedFill: "#74d2ff" },
+      6: { fill: "#e55039", stroke: "#c23620", collapsedFill: "#f09a8d" },
+      default: { fill: "#747d8c", stroke: "#57606f", collapsedFill: "#a4b0be" }
+    };
+
+    const svgElement = d3.select("#tree-svg");
+    const initialSvgWidth = +svgElement.attr("width");
+    const initialSvgHeight = +svgElement.attr("height");
+    const margin = { top: 40, right: 120, bottom: 80, left: 450 };
+    let width = initialSvgWidth - margin.left - margin.right;
+    let height = initialSvgHeight - margin.top - margin.bottom;
+    const duration = 500;
+    let nodeCounter = 0;
+    const g = svgElement.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+    const treemap = d3.tree().nodeSize([40, 0]);
+    let rootNode = d3.hierarchy(treeData, d => d.children);
+    rootNode.x0 = 0;
+    rootNode.y0 = 0;
+
+    if (rootNode.children) {
+      rootNode.children.forEach(d_child => {
+        if (d_child.children) { collapseBranch(d_child); }
+      });
+    }
+    updateTree(rootNode);
+
+    function collapseBranch(d) { if (d.children) { d._children = d.children; d._children.forEach(collapseBranch); d.children = null; } }
+    function expandBranch(d) { if (d._children) { d.children = d._children; d._children = null; } if (d.children) { d.children.forEach(expandBranch); } }
+    window.expandAll = () => { expandBranch(rootNode); updateTree(rootNode); };
+    window.collapseAll = () => { if (rootNode.children) { rootNode.children.forEach(collapseBranch); } updateTree(rootNode); };
+    window.resetView = () => { if (rootNode.children) { rootNode.children.forEach(d_child => { if (d_child.children || d_child._children) { collapseBranch(d_child); } }); } if (rootNode._children && !rootNode.children) { rootNode.children = rootNode._children; rootNode._children = null; } updateTree(rootNode); };
+
+    function updateTree(source) {
+      const treeLayoutData = treemap(rootNode);
+      let nodes = treeLayoutData.descendants();
+      let links = treeLayoutData.descendants().slice(1);
+
+      let minX = 0;
+      let maxX = 0;
+      if (nodes.length > 0) {
+        minX = d3.min(nodes, d => d.x);
+        maxX = d3.max(nodes, d => d.x);
+      }
+
+      let neededHeight = Math.max(initialSvgHeight, maxX - minX + margin.top + margin.bottom + 100);
+      svgElement.transition().duration(duration / 2).attr("height", neededHeight);
+      g.transition().duration(duration / 2).attr("transform", `translate(${margin.left},${margin.top - minX + 40})`);
+
+      nodes.forEach(d => { d.y = d.depth * 400; }); // Adjust horizontal separation if needed
+
+      const node = g.selectAll('g.node').data(nodes, d => d.id || (d.id = ++nodeCounter));
+      const nodeEnter = node.enter().append('g')
+        .attr('class', d => "node" + (d.children || d._children ? " node--internal" : " node--leaf") + (d._children ? " _children" : ""))
+        .attr('transform', d => `translate(${source.y0},${source.x0})`)
+        .on('click', (event, d) => { if (d.children) { d._children = d.children; d.children = null; } else if (d._children) { d.children = d._children; d._children = null; } updateTree(d); })
+        .style('cursor', d => (d.children || d._children) ? 'pointer' : 'default');
+
+      nodeEnter.append('circle').attr('r', 1e-6);
+
+      nodeEnter.append('text')
+        .attr('dy', '.35em')
+        .attr('x', d => d.children || d._children ? -14 : 14)
+        .attr('text-anchor', d => d.children || d._children ? 'end' : 'start')
+        .style("fill-opacity", 1e-6)
+        .call(wrapText, 380);
+
+      const nodeUpdate = nodeEnter.merge(node);
+      nodeUpdate.transition().duration(duration)
+        .attr('transform', d => `translate(${d.y},${d.x})`)
+        .attr('class', d => "node" + (d.children ? " node--internal" : " node--leaf") + (d._children ? " node--internal _children" : ""));
+
+      nodeUpdate.select('circle').attr('r', 8.5)
+        .style('fill', d => {
+            let palette;
+            if (d.depth === 0) {
+                palette = levelSpecificPalettes[0];
+            } else if (d.depth === 1) {
+                palette = phaseColors[d.data.originalStageName] || phaseColors.Default;
+            } else {
+                palette = levelSpecificPalettes[d.depth] || levelSpecificPalettes.default;
+            }
+            if (d._children) return palette.collapsedFill;
+            if (d.children) return palette.fill;
+            return "#fff";
+        })
+        .style('stroke', d => {
+            let palette;
+            if (d.depth === 0) {
+                palette = levelSpecificPalettes[0];
+            } else if (d.depth === 1) {
+                palette = phaseColors[d.data.originalStageName] || phaseColors.Default;
+            } else {
+                palette = levelSpecificPalettes[d.depth] || levelSpecificPalettes.default;
+            }
+            return palette.stroke;
+        });
+      nodeUpdate.select('text').style("fill-opacity", 1).call(wrapText, 380);
+
+      const nodeExit = node.exit().transition().duration(duration).attr('transform', d => `translate(${source.y},${source.x})`).remove();
+      nodeExit.select('circle').attr('r', 1e-6);
+      nodeExit.select('text').style('fill-opacity', 1e-6);
+
+      const link = g.selectAll('path.link').data(links, d => d.id);
+      const linkEnter = link.enter().insert('path', "g").attr('class', 'link').attr('d', d => { const o = { x: source.x0, y: source.y0 }; return diagonal(o, o); });
+
+      linkEnter.merge(link).transition().duration(duration).attr('d', d => diagonal(d, d.parent))
+        .style('stroke', d => {
+            const sourceNode = d.parent;
+            if (!sourceNode) return phaseColors.Default.stroke;
+            const l1AncestorName = sourceNode.data.originalStageName;
+            const colorPalette = phaseColors[l1AncestorName] || phaseColors.Default;
+            return colorPalette.stroke;
+        });
+      link.exit().transition().duration(duration).attr('d', d => { const o = { x: source.x, y: source.y }; return diagonal(o, o); }).remove();
+      nodes.forEach(d => { d.x0 = d.x; d.y0 = d.y; });
+    }
+
+    function diagonal(s, d) { return `M ${s.y} ${s.x} C ${(s.y + d.y) / 2} ${s.x}, ${(s.y + d.y) / 2} ${d.x}, ${d.y} ${d.x}`; }
+
+    function wrapText(textElements, maxWidth) {
+        const textPartColors = {
+            name: '#343a40',
+            count: '#0056b3'
+        };
+        const countRegex = /(\s\(Total Count: \d+\))$/;
+
+        textElements.each(function () {
+            const textD3 = d3.select(this);
+            const originalNodeText = textD3.datum().data.name;
+            const x = parseFloat(textD3.attr("x") || 0);
+            const initialDy = textD3.attr("dy");
+            const textAnchor = textD3.attr("text-anchor");
+            const lineHeight = 1.1;
+
+            textD3.text(null);
+
+            let namePart = originalNodeText;
+            let countPartText = "";
+
+            const countMatch = originalNodeText.match(countRegex);
+            if (countMatch && originalNodeText.endsWith(countMatch[0])) {
+                namePart = originalNodeText.substring(0, originalNodeText.length - countMatch[0].length).trim();
+                countPartText = countMatch[0].trim();
+            }
+
+            const tokens = [];
+            namePart.split(/\s+/).filter(Boolean).forEach(word => {
+                tokens.push({ text: word, type: 'name' });
+            });
+            if (countPartText) {
+                tokens.push({ text: countPartText, type: 'count' });
+            }
+
+            if (tokens.length === 0 && originalNodeText) {
+                tokens.push({ text: originalNodeText, type: 'name' });
+            }
+
+            let currentTspan = textD3.append("tspan").attr("x", x).attr("dy", initialDy);
+            if (textAnchor === "end") currentTspan.attr("text-anchor", "end");
+
+            let lineTokens = [];
+
+            for (let i = 0; i < tokens.length; i++) {
+                const tokenObj = tokens[i];
+
+                lineTokens.push(tokenObj);
+                currentTspan.text(lineTokens.map(t => t.text).join(" "));
+
+                if (currentTspan.node().getComputedTextLength() > maxWidth && lineTokens.length > 1) {
+                    lineTokens.pop();
+
+                    currentTspan.text(null);
+                    lineTokens.forEach((prevToken, idx) => {
+                        currentTspan.append("tspan")
+                            .text((idx > 0 ? " " : "") + prevToken.text)
+                            .style("fill", textPartColors[prevToken.type] || textPartColors.name)
+                            .style("font-weight", prevToken.type === 'count' ? "bold" : "normal");
+                    });
+
+                    lineTokens = [tokenObj];
+                    currentTspan = textD3.append("tspan").attr("x", x).attr("dy", lineHeight + "em");
+                    if (textAnchor === "end") currentTspan.attr("text-anchor", "end");
+                }
+            }
+
+            currentTspan.text(null);
+            lineTokens.forEach((token, idx) => {
+                currentTspan.append("tspan")
+                    .text((idx > 0 ? " " : "") + token.text)
+                    .style("fill", textPartColors[token.type] || textPartColors.name)
+                    .style("font-weight", token.type === 'count' ? "bold" : "normal");
+            });
+
+            if (textD3.selectAll("tspan > tspan").empty() && textD3.select("tspan").text().length === 0 && originalNodeText) {
+                let t = textD3.select("tspan");
+                let displayText = originalNodeText;
+                t.text(displayText).style("fill", textPartColors.name);
+                if (t.node() && t.node().getComputedTextLength() > maxWidth && displayText.length > 20) {
+                    let estimatedChars = Math.floor(maxWidth / (t.node().getComputedTextLength()/displayText.length) );
+                    displayText = displayText.substring(0, Math.max(0, estimatedChars - 3)) + "...";
+                    t.text(displayText);
+                }
+            }
+        });
+    }
+  </script>
+</body>
+</html>

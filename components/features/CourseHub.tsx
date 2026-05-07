@@ -3,13 +3,15 @@
 import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import Image from 'next/image';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { BookOpen, ChevronRight, Layers, Globe, Loader2 } from 'lucide-react';
+import { BookOpen, ChevronRight, Layers, Globe, Loader2, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { type CourseLang, type CourseModule } from '@/lib/courses';
 import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM, TRANSITION, stagger } from '@/lib/animations';
 import { getAgentSession } from '@/lib/agent-session';
 import { ActiveAgentUI } from '@/components/ui/ActiveAgentUI';
+import { fetchWithCache, invalidateCache } from '@/lib/fetcher';
+import type { AgentStats } from '@/types';
 
 // ─── Interfaces ─────────────────────────────────────────────────────────────
 
@@ -29,6 +31,8 @@ interface CourseCardProps {
   lang: CourseLang;
   index: number;
   onStart: (id: string) => void;
+  isCompleted: boolean;
+  onMarkComplete: (id: string) => void;
 }
 
 interface PlaceholderCardProps {
@@ -113,9 +117,10 @@ CourseHeader.displayName = 'CourseHeader';
 /**
  * Individual course card
  */
-const CourseCard = memo(({ module, lang, index, onStart }: CourseCardProps) => {
+const CourseCard = memo(({ module, lang, index, onStart, isCompleted, onMarkComplete }: CourseCardProps) => {
   const t = useTranslations('courseHub');
   const [imgStatus, setImgStatus] = useState<'loading' | 'error' | 'success'>('loading');
+  const [isMarking, setIsMarking] = useState(false);
   const pres = module.presentations[lang];
   const title = lang === 'th' ? module.titleTh : module.title;
   const desc  = lang === 'th' ? module.descriptionTh : module.description;
@@ -125,22 +130,45 @@ const CourseCard = memo(({ module, lang, index, onStart }: CourseCardProps) => {
     onStart(module.id);
   }, [module.id, onStart]);
 
+  const handleMarkComplete = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isCompleted || isMarking) return;
+    setIsMarking(true);
+    await onMarkComplete(module.id);
+    setIsMarking(false);
+  }, [module.id, isCompleted, isMarking, onMarkComplete]);
+
   return (
     <motion.div
       variants={STAGGER_ITEM}
       custom={index}
       whileHover={{ y: -6, transition: TRANSITION.base }}
-      className="group relative flex flex-col rounded-[24px]
-                 border border-black/5 dark:border-white/8
-                 bg-white/50 dark:bg-white/5 backdrop-blur-md
-                 hover:bg-white dark:hover:bg-white/10
-                 hover:border-primary/20 dark:hover:border-primary/30
-                 overflow-hidden transition-all duration-500
-                 hover:shadow-2xl hover:shadow-primary/5
-                 cursor-pointer"
+      className={`group relative flex flex-col rounded-[24px]
+                 border backdrop-blur-md overflow-hidden transition-all duration-500
+                 hover:shadow-2xl hover:shadow-primary/5 cursor-pointer
+                 ${isCompleted 
+                   ? 'bg-emerald-50/50 dark:bg-emerald-500/5 border-emerald-500/20 hover:border-emerald-500/40' 
+                   : 'bg-white/50 dark:bg-white/5 border-black/5 dark:border-white/8 hover:bg-white dark:hover:bg-white/10 hover:border-primary/20 dark:hover:border-primary/30'
+                 }`}
       onClick={() => handleStart()}
     >
       <div className={`relative h-44 bg-gradient-to-br ${module.gradient} overflow-hidden flex items-center justify-center`}>
+        {/* Completion Ribbon */}
+        <AnimatePresence>
+          {isCompleted && (
+            <motion.div
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              className="absolute top-4 left-4 z-40"
+            >
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white rounded-full text-[10px] font-black uppercase tracking-wider shadow-lg shadow-emerald-500/20 border border-white/20">
+                <CheckCircle2 size={12} />
+                {t('completed') || 'Completed'}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Animated Placeholder/Fallback */}
         <AnimatePresence>
           {(imgStatus === 'loading' || imgStatus === 'error') && (
@@ -207,20 +235,41 @@ const CourseCard = memo(({ module, lang, index, onStart }: CourseCardProps) => {
           </p>
         </div>
 
-        <button
-          onClick={handleStart}
-          className="mt-2 flex items-center justify-center gap-2 w-full py-3 px-4
-                     rounded-[18px] bg-secondary/50 border border-black/5 dark:border-white/10
-                     text-foreground text-sm font-bold
-                     hover:bg-primary hover:text-white hover:border-primary hover:shadow-lg hover:shadow-primary/30
-                     transition-all duration-300 group/btn"
-        >
-          {t('beginTraining')}
-          <ChevronRight
-            size={16}
-            className="group-hover/btn:translate-x-1 transition-transform"
-          />
-        </button>
+        <div className="flex flex-col gap-2 pt-2">
+          <button
+            onClick={handleStart}
+            className={`flex items-center justify-center gap-2 w-full py-3 px-4
+                       rounded-[18px] border font-bold transition-all duration-300 group/btn
+                       ${isCompleted 
+                         ? 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-600 shadow-md shadow-emerald-500/20' 
+                         : 'bg-secondary/50 border-black/5 dark:border-white/10 text-foreground hover:bg-primary hover:text-white hover:border-primary hover:shadow-lg hover:shadow-primary/30'
+                       }`}
+          >
+            {isCompleted ? t('reviewTraining') || 'Review Training' : t('beginTraining')}
+            <ChevronRight
+              size={16}
+              className="group-hover/btn:translate-x-1 transition-transform"
+            />
+          </button>
+
+          {!isCompleted && (
+            <button
+              onClick={handleMarkComplete}
+              disabled={isMarking}
+              className="flex items-center justify-center gap-2 w-full py-2.5 px-4
+                         rounded-[18px] bg-emerald-500/10 border border-emerald-500/20
+                         text-emerald-600 dark:text-emerald-400 text-[11px] font-black uppercase tracking-wider
+                         hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all duration-300"
+            >
+              {isMarking ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <CheckCircle2 size={12} />
+              )}
+              {t('markComplete') || 'Mark as Completed'}
+            </button>
+          )}
+        </div>
       </div>
     </motion.div>
   );
@@ -274,11 +323,52 @@ export default function CourseHub({ initialModules }: { initialModules: CourseMo
   const [modules, setModules] = useState<CourseModule[]>(initialModules);
   const [loading, setLoading] = useState(false);
   const [agentName, setAgentName] = useState<string | null>(null);
+  const [agentId, setAgentId] = useState<string | null>(null);
+  const [stats, setStats] = useState<AgentStats | null>(null);
 
   useEffect(() => {
     const session = getAgentSession();
-    if (session) setAgentName(session.name);
+    if (session) {
+      setAgentName(session.name);
+      setAgentId(session.id);
+    }
   }, []);
+
+  useEffect(() => {
+    if (agentId) {
+      fetchWithCache<{ stats: AgentStats | null }>(`/api/agent/progress?agentId=${agentId}`)
+        .then(data => setStats(data.stats))
+        .catch(err => console.error('Failed to fetch stats:', err));
+    }
+  }, [agentId]);
+
+  const handleMarkComplete = useCallback(async (moduleId: string) => {
+    if (!agentId) return;
+    
+    try {
+      await fetch('/api/agent/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agentId,
+          agentName: agentName || '',
+          learnedModules: [moduleId]
+        })
+      });
+      
+      setStats(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          learnedModules: Array.from(new Set([...(prev.learnedModules || []), moduleId]))
+        };
+      });
+      
+      invalidateCache(`/api/agent/progress?agentId=${agentId}`);
+    } catch (err) {
+      console.error('Failed to mark complete:', err);
+    }
+  }, [agentId, agentName]);
 
   // State managed by URL query param 'lang'
   const [lang, setLang] = useState<CourseLang>(() => {
@@ -323,6 +413,8 @@ export default function CourseHub({ initialModules }: { initialModules: CourseMo
                   lang={lang} 
                   index={idx}
                   onStart={start} 
+                  isCompleted={!!stats?.learnedModules?.includes(mod.id)}
+                  onMarkComplete={handleMarkComplete}
                 />
               ))}
 

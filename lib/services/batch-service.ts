@@ -1,5 +1,6 @@
 import { fsGet, fsUpdate, fsQuery, fsGetAll, fsUpdateMany } from '@/lib/firestore-db';
 import { getAdminDb } from '@/lib/firebase-admin';
+import { HistoryService } from './history-service';
 import type { TrainingPeriod, AgentEvaluation, Agent } from '@/types';
 
 export const BatchService = {
@@ -59,8 +60,8 @@ export const BatchService = {
   },
 
   /**
-   * Check if all agents in a training period have graduated.
-   * If yes, finalize the batch.
+   * Check if all agents in a training period have been evaluated.
+   * If yes, finalize the batch and archive it.
    */
   async checkBatchCompletion(periodId: string): Promise<boolean> {
     const db = getAdminDb();
@@ -70,29 +71,28 @@ export const BatchService = {
     if (!periodDoc.exists || !periodDoc.data()?.active) return false;
     const period = periodDoc.data() as TrainingPeriod;
 
-    // Get all agents in this batch to check their graduation status
     const agentIds = period.agentIds || [];
     if (agentIds.length === 0) return false;
 
-    // Fetch agents in chunks of 30 (Firestore in limit)
-    const graduatedStatuses: boolean[] = [];
-    for (let i = 0; i < agentIds.length; i += 30) {
-      const chunk = agentIds.slice(i, i + 30);
-      const snap = await db.collection('agents').where('__name__', 'in', chunk).get();
-      snap.docs.forEach(doc => {
-        graduatedStatuses.push(!!doc.data().graduated);
-      });
-    }
+    // Check how many agents in this batch have a finalized evaluation
+    const evaluationSnap = await db.collection('agent_evaluations')
+      .where('trainingPeriodId', '==', periodId)
+      .get();
+    
+    const evaluatedAgentIds = new Set(evaluationSnap.docs.map(doc => doc.data().agentId));
 
-    // Check if every agent in the batch is graduated
-    const isComplete = graduatedStatuses.length === agentIds.length && graduatedStatuses.every(g => g === true);
+    // A batch is complete if EVERY agent has at least one evaluation record in this period
+    const isComplete = agentIds.every(id => evaluatedAgentIds.has(id));
 
     if (isComplete) {
       console.log(`[BatchService] Finalizing training period: ${period.name} (${periodId})`);
       
       const now = new Date().toISOString();
       
-      // Mark period as inactive
+      // 1. Create a frozen snapshot in history
+      await HistoryService.archiveBatch(periodId);
+
+      // 2. Mark period as inactive
       await periodRef.update({
         active: false,
         completedAt: now,

@@ -57,6 +57,7 @@ export default function PresentationViewer({
     total, hasContent,
     activeTool, setActiveTool,
     isTrainer,
+    markAsComplete, isSaving,
     session, startLive, stopLive, updateLaser, addDrawingPath, clearDrawings, isLive, isControlledByOthers
   } = usePresentation(module, user, initialLang, locale);
 
@@ -214,6 +215,7 @@ export default function PresentationViewer({
         t={t} progress={progress} slide={slide} total={total} hasContent={hasContent}
         isTrainer={isTrainer} viewedCount={viewedSlides.size} isModuleComplete={isModuleComplete}
         toggleFullscreen={toggleFullscreen} isFullscreen={isFullscreen}
+        markAsComplete={markAsComplete} isSaving={isSaving}
       />
     </div>
   );

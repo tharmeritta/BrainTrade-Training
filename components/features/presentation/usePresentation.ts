@@ -9,11 +9,12 @@ import { useLivePresentation } from '@/lib/live-presentation';
 
 const LOAD_TIMEOUT_MS = 12_000;
 
-const slideKey = (moduleId: string, lang: CourseLang) =>
-  `brainstrade_slide_${moduleId}_${lang}`;
+// Versioned keys with userId to prevent leakage between sessions
+const slideKey = (moduleId: string, lang: CourseLang, userId: string) =>
+  `bt_v2_slide_${userId}_${moduleId}_${lang}`;
 
-const viewedKey = (moduleId: string, lang: CourseLang) =>
-  `brainstrade_viewed_${moduleId}_${lang}`;
+const viewedKey = (moduleId: string, lang: CourseLang, userId: string) =>
+  `bt_v2_viewed_${userId}_${moduleId}_${lang}`;
 
 export function usePresentation(
   module: CourseModule,
@@ -27,6 +28,23 @@ export function usePresentation(
   
   const isTrainer = !!(user && ['admin', 'trainer', 'manager'].includes(user.role));
 
+  // Identify the session immediately if possible (client-side)
+  const [agentId, setAgentId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return getAgentSession()?.id || null;
+  });
+  const [agentName, setAgentName] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return getAgentSession()?.name || null;
+  });
+
+  // Unique identifier for this session's progress
+  const effectiveId = useMemo(() => {
+    if (agentId) return `agent_${agentId}`;
+    if (user?.uid) return `user_${user.uid}`;
+    return 'guest';
+  }, [agentId, user?.uid]);
+
   // Live Sync Hook
   const { 
     session, startLive, stopLive, syncSlide, updateLaser, 
@@ -35,7 +53,7 @@ export function usePresentation(
 
   const [slide, setSlide] = useState(() => {
     if (typeof window === 'undefined') return 1;
-    const saved = localStorage.getItem(slideKey(module.id, initialLang));
+    const saved = localStorage.getItem(slideKey(module.id, initialLang, effectiveId));
     const n = saved ? parseInt(saved, 10) : 1;
     const total = module.presentations[initialLang].totalSlides;
     return n >= 1 && n <= total ? n : 1;
@@ -43,7 +61,7 @@ export function usePresentation(
 
   const [viewedSlides, setViewedSlides] = useState<Set<number>>(() => {
     if (typeof window === 'undefined') return new Set();
-    const saved = localStorage.getItem(viewedKey(module.id, initialLang));
+    const saved = localStorage.getItem(viewedKey(module.id, initialLang, effectiveId));
     if (saved) {
       try {
         const arr = JSON.parse(saved);
@@ -58,8 +76,6 @@ export function usePresentation(
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [agentName, setAgentName] = useState<string | null>(null);
-  const [agentId, setAgentId] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const slideRef = useRef(slide);
@@ -69,12 +85,39 @@ export function usePresentation(
   const [preloadingProgress, setPreloadingProgress] = useState(0);
   const [isPreloading, setIsPreloading] = useState(false);
   const [preloadedSlides, setPreloadedSlides] = useState<Set<number>>(new Set());
+  const [isSaving, setIsSaving] = useState(false);
 
   const { presentationId, totalSlides: total, cacheKey, slideUrls } = module.presentations[lang];
   const hasContent = !!((slideUrls && slideUrls.length > 0) || presentationId);
   const isModuleComplete = viewedSlides.size >= total;
 
   useEffect(() => { slideRef.current = slide; }, [slide]);
+
+  const markAsComplete = useCallback(async () => {
+    if (!agentId || !module.id || isTrainer || isSaving) return;
+    
+    setIsSaving(true);
+    try {
+      await fetch('/api/agent/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agentId,
+          agentName: agentName || '',
+          learnedModules: [module.id]
+        })
+      });
+      // Also update local viewedSlides to "all" to show UI feedback immediately
+      const allSlides = new Set<number>();
+      for (let i = 1; i <= total; i++) allSlides.add(i);
+      setViewedSlides(allSlides);
+      localStorage.setItem(viewedKey(module.id, lang, effectiveId), JSON.stringify(Array.from(allSlides)));
+    } catch (err) {
+      console.error('Failed to save learning progress:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [agentId, module.id, isTrainer, isSaving, agentName, total, lang, effectiveId]);
 
   // Sync lang state if prop changes from outside (non-trainer)
   useEffect(() => {
@@ -96,12 +139,13 @@ export function usePresentation(
     }
   }, [slide, lang, isTrainer, isLive, syncSlide]);
 
+  // Reload progress when module, lang, or identity changes
   useEffect(() => {
     setIsLoaded(false);
     setLoadError(false);
     setPreloadedSlides(new Set()); 
 
-    const saved = localStorage.getItem(viewedKey(module.id, lang));
+    const saved = localStorage.getItem(viewedKey(module.id, lang, effectiveId));
     if (saved) {
       try {
         const arr = JSON.parse(saved);
@@ -112,8 +156,18 @@ export function usePresentation(
     } else {
       setViewedSlides(new Set());
     }
-  }, [slideUrls, presentationId, lang, module.id]);
 
+    // Also reload current slide for this session
+    const savedSlide = localStorage.getItem(slideKey(module.id, lang, effectiveId));
+    if (savedSlide) {
+      const n = parseInt(savedSlide, 10);
+      if (n >= 1 && n <= total) setSlide(n);
+    } else {
+      setSlide(1);
+    }
+  }, [slideUrls, presentationId, lang, module.id, effectiveId, total]);
+
+  // Handle identity changes (e.g. if session is loaded late)
   useEffect(() => {
     const session = getAgentSession();
     if (session) {
@@ -128,11 +182,11 @@ export function usePresentation(
       setViewedSlides(prev => {
         if (prev.has(slide)) return prev;
         const next = new Set(prev).add(slide);
-        localStorage.setItem(viewedKey(module.id, lang), JSON.stringify(Array.from(next)));
+        localStorage.setItem(viewedKey(module.id, lang, effectiveId), JSON.stringify(Array.from(next)));
         return next;
       });
     }
-  }, [slide, isLoaded, hasContent, module.id, lang]);
+  }, [slide, isLoaded, hasContent, module.id, lang, effectiveId]);
 
   // Auto-credit for live followers
   useEffect(() => {
@@ -140,13 +194,13 @@ export function usePresentation(
       setViewedSlides(prev => {
         if (prev.has(slide)) return prev;
         const next = new Set(prev).add(slide);
-        localStorage.setItem(viewedKey(module.id, lang), JSON.stringify(Array.from(next)));
+        localStorage.setItem(viewedKey(module.id, lang, effectiveId), JSON.stringify(Array.from(next)));
         return next;
       });
     }
-  }, [slide, isLive, isTrainer, isLoaded, hasContent, module.id, lang]);
+  }, [slide, isLive, isTrainer, isLoaded, hasContent, module.id, lang, effectiveId]);
 
-  // Track completion
+  // Track completion on server
   useEffect(() => {
     if (!agentId || !module.id || !total || isTrainer) return;
     if (isModuleComplete && isLoaded) {
@@ -223,10 +277,10 @@ export function usePresentation(
     return () => { active = false; };
   }, [slide, presentationId, total, cacheKey, slideUrls, hasContent, preloadedSlides]);
 
-  // Standard Handlers
+  // Persistent current slide for this session
   useEffect(() => {
-    localStorage.setItem(slideKey(module.id, lang), String(slide));
-  }, [slide, module.id, lang]);
+    localStorage.setItem(slideKey(module.id, lang, effectiveId), String(slide));
+  }, [slide, module.id, lang, effectiveId]);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -250,7 +304,7 @@ export function usePresentation(
 
   const handleLangChange = useCallback((next: CourseLang) => {
     if (next === lang) return;
-    const saved = localStorage.getItem(slideKey(module.id, next));
+    const saved = localStorage.getItem(slideKey(module.id, next, effectiveId));
     const nextTotal = module.presentations[next].totalSlides;
     const n = saved ? parseInt(saved, 10) : 1;
     const restoredSlide = n >= 1 && n <= nextTotal ? n : 1;
@@ -267,7 +321,7 @@ export function usePresentation(
     url.searchParams.set('lang', next);
     url.searchParams.set('slide', String(restoredSlide));
     window.history.replaceState(null, '', url.toString());
-  }, [lang, module.id, module.presentations, isLive, syncSlide]);
+  }, [lang, module.id, module.presentations, isLive, syncSlide, effectiveId]);
 
   const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
@@ -339,6 +393,7 @@ export function usePresentation(
     total, hasContent,
     activeTool, setActiveTool,
     isTrainer,
+    markAsComplete, isSaving,
     session, startLive, stopLive, updateLaser, addDrawingPath, clearDrawings, isLive, isControlledByOthers
   };
 }
