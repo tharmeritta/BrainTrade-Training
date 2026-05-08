@@ -7,6 +7,8 @@ import { fsGet } from '@/lib/firestore-db';
 
 const DEFAULT_SECRET = 'fallback-secret-for-dev-only';
 
+export const VALID_ROLES: UserRole[] = ['admin', 'manager', 'it', 'evaluator', 'agent', 'trainer', 'hr'];
+
 export async function getServerUser(): Promise<{ uid: string; name: string; role: UserRole; passwordChanged: boolean; interactiveAccessUntil?: string } | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get('session')?.value;
@@ -38,7 +40,7 @@ export async function getServerUser(): Promise<{ uid: string; name: string; role
     }
   }
 
-  if (role && uid && name && ['admin', 'manager', 'it', 'evaluator', 'agent', 'trainer', 'hr'].includes(role)) {
+  if (role && uid && name && VALID_ROLES.includes(role)) {
     let interactiveAccessUntil: string | undefined;
     if (role === 'it' || role === 'manager' || role === 'hr') {
       const staff = await fsGet<StaffAccount>('staff_accounts', uid);
@@ -48,6 +50,12 @@ export async function getServerUser(): Promise<{ uid: string; name: string; role
   }
 
   return null;
+}
+
+export function hasRole(user: { role: UserRole } | null, allowedRoles: UserRole[]): boolean {
+  if (!user) return false;
+  if (user.role === 'admin') return true; // Admin always has access
+  return allowedRoles.includes(user.role);
 }
 
 export function makeSessionToken(role: UserRole, uid: string, name: string, passwordChanged: boolean = false): string {
@@ -69,36 +77,36 @@ export async function requireAdmin() {
 
 export async function requireHR() {
   const user = await requireAuth();
-  if (user.role !== 'admin' && user.role !== 'hr') throw new Error('Forbidden');
+  if (!hasRole(user, ['hr'])) throw new Error('Forbidden');
   return user;
 }
 
 export async function requireAdminOrIT() {
   const user = await requireAuth();
-  if (user.role !== 'admin' && user.role !== 'it') throw new Error('Forbidden');
+  if (!hasRole(user, ['it'])) throw new Error('Forbidden');
   return user;
 }
 
 export async function requireAdminOrManager() {
   const user = await requireAuth();
-  if (user.role !== 'admin' && user.role !== 'manager' && user.role !== 'it' && user.role !== 'hr') throw new Error('Forbidden');
+  if (!hasRole(user, ['manager', 'it', 'hr'])) throw new Error('Forbidden');
   return user;
 }
 
 export async function requireEvaluator() {
   const user = await requireAuth();
-  if (user.role !== 'evaluator') throw new Error('Forbidden');
+  if (!hasRole(user, ['evaluator'])) throw new Error('Forbidden');
   return user;
 }
 
 export async function requireAdminManagerOrTrainer() {
   const user = await requireAuth();
-  if (!['admin', 'manager', 'it', 'trainer', 'hr'].includes(user.role)) throw new Error('Forbidden');
+  if (!hasRole(user, ['manager', 'it', 'trainer', 'hr'])) throw new Error('Forbidden');
   return user;
 }
 
 export async function requireTrainer() {
   const user = await requireAuth();
-  if (!['admin', 'trainer'].includes(user.role)) throw new Error('Forbidden');
+  if (!hasRole(user, ['trainer'])) throw new Error('Forbidden');
   return user;
 }

@@ -1,10 +1,11 @@
-import { getAdminDb } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
+import { fsUpdate, fsGet, fsSet, fsIncrement, fsGetAll } from '@/lib/firestore-db';
 import { getAgentStats, getAllAgentStats } from '@/lib/agents';
 import { TRAINING_REGISTRY } from '@/lib/registry';
 import { getCompletionStatus } from '@/lib/completion';
 import { AuditService } from './audit-service';
 import { AgentStats } from '@/types';
+import { getAdminDb } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 const GLOBAL_STATS_DOC = 'stats/global';
 
@@ -120,7 +121,7 @@ export async function updateAgentOverallScore(
     agentUpdate.graduatedAt = agentUpdate.updatedAt;
   }
 
-  await db.collection('agents').doc(agentId).update(agentUpdate);
+  await fsUpdate('agents', agentId, agentUpdate);
 
   // 2. Save heavy payload to sub-collection projection
   await db.collection('agents').doc(agentId).collection('projections').doc('stats').set({
@@ -150,7 +151,6 @@ export async function updateAgentOverallScore(
  * Used for "Repair" or "Full Sync" scenarios.
  */
 export async function recalculateGlobalStats() {
-  const db = getAdminDb();
   const allStats = await getAllAgentStats();
   const activeAgents = allStats.filter(s => s.agent.active);
   const totalAgents = allStats.length;
@@ -208,12 +208,10 @@ export async function recalculateGlobalStats() {
     }
   }
 
-  await db.doc(GLOBAL_STATS_DOC).set(newGlobal);
+  await fsSet('stats', 'global', newGlobal);
   return newGlobal;
 }
 
 export async function getGlobalStats(): Promise<GlobalStats | null> {
-  const db = getAdminDb();
-  const snap = await db.doc(GLOBAL_STATS_DOC).get();
-  return snap.exists ? (snap.data() as GlobalStats) : null;
+  return await fsGet<GlobalStats>('stats', 'global');
 }

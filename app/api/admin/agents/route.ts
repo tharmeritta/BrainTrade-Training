@@ -1,29 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminOrManager, requireAdminManagerOrTrainer } from '@/lib/session';
+import { withApiAuth, apiError } from '@/lib/api-utils';
 import { fsAdd } from '@/lib/firestore-db';
 import { createApprovalRequest } from '@/lib/services/approval-service';
 import { getAllAgentStats } from '@/lib/agents';
 
-export async function GET() {
-  try { await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
-  try {
-    const agents = await getAllAgentStats();
-    return NextResponse.json({ agents });
-  } catch (err: any) {
-    console.error('admin agents error:', err);
-    return NextResponse.json({ error: 'Failed to fetch agents', details: err.message }, { status: 500 });
-  }
-}
+export const GET = withApiAuth(async () => {
+  const agents = await getAllAgentStats();
+  return NextResponse.json({ agents });
+}, ['admin', 'manager', 'it', 'trainer', 'hr']);
 
-export async function POST(req: NextRequest) {
-  let user;
-  try { user = await requireAdminOrManager(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
-  
+export const POST = withApiAuth(async (req, _, user) => {
   let body;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    return apiError('Invalid JSON body', 400);
   }
 
   // Handle IT and Manager role approval (Always require approval for changes)
@@ -40,40 +31,30 @@ export async function POST(req: NextRequest) {
   // Handle bulk import
   if (Array.isArray(body)) {
     const agentsToCreate = body.filter(a => a.name?.trim());
-    if (agentsToCreate.length === 0) return NextResponse.json({ error: 'No valid agents provided' }, { status: 400 });
+    if (agentsToCreate.length === 0) return apiError('No valid agents provided', 400);
 
-    try {
-      const results = [];
-      for (const a of agentsToCreate) {
-        const agent = await fsAdd('agents', { 
-          name: a.name.trim(), 
-          stageName: a.stageName?.trim() || '',
-          normalizedName: a.name.trim().toLowerCase().replace(/\s+/g, ' '),
-          active: true 
-        });
-        results.push(agent);
-      }
-      return NextResponse.json({ success: true, count: results.length, agents: results });
-    } catch (err: any) {
-      console.error('Bulk create agents error:', err);
-      return NextResponse.json({ error: 'Failed to create agents', details: err.message }, { status: 500 });
+    const results = [];
+    for (const a of agentsToCreate) {
+      const agent = await fsAdd('agents', { 
+        name: a.name.trim(), 
+        stageName: a.stageName?.trim() || '',
+        normalizedName: a.name.trim().toLowerCase().replace(/\s+/g, ' '),
+        active: true 
+      });
+      results.push(agent);
     }
+    return NextResponse.json({ success: true, count: results.length, agents: results });
   }
 
   // Handle single creation
   const { name, stageName } = body;
-  if (!name?.trim()) return NextResponse.json({ error: 'Name required' }, { status: 400 });
+  if (!name?.trim()) return apiError('Name required', 400);
 
-  try {
-    const agent = await fsAdd('agents', { 
-      name: name.trim(), 
-      stageName: stageName?.trim() || '',
-      normalizedName: name.trim().toLowerCase().replace(/\s+/g, ' '),
-      active: true 
-    });
-    return NextResponse.json(agent);
-  } catch (err: any) {
-    console.error('Create agent error:', err);
-    return NextResponse.json({ error: 'Failed to create agent', details: err.message }, { status: 500 });
-  }
-}
+  const agent = await fsAdd('agents', { 
+    name: name.trim(), 
+    stageName: stageName?.trim() || '',
+    normalizedName: name.trim().toLowerCase().replace(/\s+/g, ' '),
+    active: true 
+  });
+  return NextResponse.json(agent);
+}, ['admin', 'manager']);

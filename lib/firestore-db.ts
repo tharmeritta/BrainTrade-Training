@@ -103,6 +103,21 @@ export async function fsCount(
   return snap.data().count;
 }
 
+// ── Increment a numeric field ──────────────────────────────────────────────
+
+export async function fsIncrement(
+  collection: string,
+  id: string,
+  field: string,
+  value: number = 1
+): Promise<void> {
+  const db = getAdminDb();
+  await db.collection(collection).doc(id).update({
+    [field]: FieldValue.increment(value),
+    updatedAt: new Date().toISOString()
+  });
+}
+
 // ── Partial update (patch) ─────────────────────────────────────────────────
 
 export async function fsUpdate<T extends object>(

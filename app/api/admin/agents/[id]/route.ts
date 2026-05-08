@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminOrIT, requireAdminManagerOrTrainer } from '@/lib/session';
+import { withApiAuth, apiError } from '@/lib/api-utils';
 import { fsUpdate, fsDelete, fsGet } from '@/lib/firestore-db';
 import { createApprovalRequest } from '@/lib/services/approval-service';
 
-export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  let user;
-  try { user = await requireAdminManagerOrTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
-  
+export const PATCH = withApiAuth(async (req, { params }, user) => {
   const { id } = await params;
   const body = await req.json();
   const update: Record<string, unknown> = {};
@@ -28,23 +25,21 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   if (typeof body.active === 'boolean') {
     if (user.role !== 'admin') {
-      return NextResponse.json({ error: 'Only admins can change agent status' }, { status: 403 });
+      return apiError('Only admins can change agent status', 403);
     }
     update.active = body.active;
   }
   if (typeof body.name === 'string') {
-    if (!body.name.trim()) return NextResponse.json({ error: 'Name required' }, { status: 400 });
+    if (!body.name.trim()) return apiError('Name required', 400);
     update.name = body.name.trim();
     update.normalizedName = body.name.trim().toLowerCase().replace(/\s+/g, ' ');
   }
   if (typeof body.stageName === 'string') update.stageName = body.stageName.trim();
   await fsUpdate('agents', id, update);
   return NextResponse.json({ ok: true });
-}
+}, ['admin', 'manager', 'it', 'trainer', 'hr']);
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  let user;
-  try { user = await requireAdminOrIT(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }
+export const DELETE = withApiAuth(async (_req, { params }, user) => {
   const { id } = await params;
 
   const target = await fsGet<any>('agents', id);
@@ -63,4 +58,4 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
   await fsDelete('agents', id);
   return NextResponse.json({ ok: true });
-}
+}, ['admin', 'it']);
