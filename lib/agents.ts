@@ -1,9 +1,10 @@
-import { fsGet as gcsGet, fsGetAll as gcsGetAll, fsGetWhere as gcsGetWhere } from './firestore-db';
+import { fsGet as gcsGet, fsGetAll as gcsGetAll, fsGetWhere as gcsGetWhere } from '@/lib/server/db';
 import type { Agent, AgentStats, ModuleStat, AgentEvaluation, TrainingPeriod } from '@/types';
-import { MOCKUP_AGENT_ID } from './agent-session';
+import type { AiEvalScenario } from '@/types/ai-eval';
+import { MOCKUP_AGENT_ID } from '@/lib/session/agent';
 import { TRAINING_REGISTRY, getCanonicalQuizKey } from './registry';
 
-// ── Score helpers ─────────────────────────────────────────────────────────
+// -- Score helpers ---------------------------------------------------------
 
 export function computeBadge(score: number): AgentStats['badge'] {
   if (score >= 85) return 'elite';
@@ -18,31 +19,37 @@ export function computeOverallScore(
     evalPassedScenarios?: string[]; 
     activeScenariosCount?: number 
   },
-  weights?: { quiz: number; human: number; ai: number }
+  weights?: { quiz: number; human: number; ai: number },
+  config?: { requiredQuizIds?: readonly string[]; requiredScenarioIds?: readonly string[] }
 ): number {
   const w = weights ?? { quiz: 0.4, human: 0.3, ai: 0.3 };
-  const modules = TRAINING_REGISTRY.quiz.required;
+  const modules = config?.requiredQuizIds || TRAINING_REGISTRY.quiz.required;
   
   const quizScores    = modules.map(m => stats.quiz[m]?.bestScore ?? 0);
-  const avgQuiz       = quizScores.reduce((a, b) => a + b, 0) / modules.length;
+  const avgQuiz       = modules.length > 0 ? quizScores.reduce((a, b) => a + b, 0) / modules.length : 0;
   const aiEval        = stats.aiEval?.avgScore ?? 0;
   
-  // Human/Simulation Eval progress: 25% per level reached (up to Level 4)
+  // AI Eval progress
   const levels        = stats.evalCompletedLevels ?? [];
   const maxL          = levels.length > 0 ? Math.max(...levels) : 0;
   
-  // If we have actual human evaluations, we could use those. 
-  // For now, we simulate with max level progress if no human evaluations exist.
+  // If we have required scenarios, we can calculate AI progress based on those
+  let aiProgress = maxL >= 4 ? 100 : Math.min(aiEval, maxL * 25);
+  if (config?.requiredScenarioIds && config.requiredScenarioIds.length > 0) {
+    const passedCount = config.requiredScenarioIds.filter(id => stats.evalPassedScenarios?.includes(id)).length;
+    const passRate = (passedCount / config.requiredScenarioIds.length) * 100;
+    aiProgress = passRate;
+  }
+  
   const hasHumanEvals = stats.humanEvaluations && stats.humanEvaluations.length > 0;
   const humanScore    = hasHumanEvals 
     ? stats.humanEvaluations[0].totalScore 
-    : (maxL >= 4 ? 100 : Math.min(aiEval, maxL * 25));
+    : aiProgress;
   
-  // Apply Weights
   return Math.round(avgQuiz * w.quiz + humanScore * w.human + aiEval * w.ai);
 }
 
-// ── Single-agent stats (used by /api/agent/progress GET) ──────────────────
+// -- Single-agent stats (used by /api/agent/progress GET) ------------------
 
 export async function getAgentStats(agentId: string, agentName: string, targetPeriodId?: string): Promise<AgentStats> {
   const modules = TRAINING_REGISTRY.quiz.required;
@@ -73,15 +80,20 @@ export async function getAgentStats(agentId: string, agentName: string, targetPe
   }
 
   // Optimize: Only fetch records belonging to THIS agent.
-  const [quizDocs, evalDocsLegacy, evalDocsV2, progressDoc, humanEvals, scenariosSnap, periodsSnap] = await Promise.all([
+  const [quizDocs, evalDocsLegacy, evalDocsV2, progressDoc, humanEvals, scenariosSnap, periodsSnap, quizzesSnap] = await Promise.all([
     gcsGetWhere<QuizRecord>('quiz_results', 'agentId', agentId),
     gcsGetWhere<EvalRecord>('ai_eval_logs', 'agentId', agentId),
     gcsGetWhere<EvalRecord>('ai_eval_logs_v2', 'agentId', agentId),
     gcsGet<ProgressRecord>('agent_progress', agentId).catch(() => null),
     gcsGetWhere<AgentEvaluation>('agent_evaluations', 'agentId', agentId),
-    gcsGetAll<{ isActive: boolean }>('aiev_scenarios'),
+    gcsGetAll<AiEvalScenario & { id: string }>('aiev_scenarios'),
     gcsGetAll<TrainingPeriod>('training_periods'),
+    gcsGet<{ required: string[] }>('module_config', 'quizzes').catch(() => null),
   ]);
+
+  const requiredQuizIds = quizzesSnap?.required || TRAINING_REGISTRY.quiz.required;
+  const requiredScenarioIds = scenariosSnap.filter(s => s.isActive && s.required).map(s => s.id);
+  const config = { requiredQuizIds, requiredScenarioIds };
 
   // Combine and deduplicate if necessary, though buildAiEval handles multiple anyway
   let evalDocs = [...evalDocsLegacy, ...evalDocsV2];
@@ -89,7 +101,18 @@ export async function getAgentStats(agentId: string, agentName: string, targetPe
   let filteredHumanEvals = humanEvals;
 
   // Find the active period this agent belongs to or use the targeted one
-  const myActivePeriod = periodsSnap.find(p => p.active && p.agentIds.includes(agentId));
+  let myActivePeriod = periodsSnap.find(p => p.active && p.agentIds.includes(agentId));
+  
+  // If no active period found and this is a graduate, find their last period
+  if (!myActivePeriod && !targetPeriodId) {
+    const myPeriods = periodsSnap
+      .filter(p => p.agentIds.includes(agentId))
+      .sort((a, b) => (b.completedAt || b.updatedAt || '').localeCompare(a.completedAt || a.updatedAt || ''));
+    if (myPeriods.length > 0) {
+      myActivePeriod = myPeriods[0];
+    }
+  }
+
   const effectivePeriodId = targetPeriodId || myActivePeriod?.id;
 
   if (effectivePeriodId) {
@@ -155,7 +178,9 @@ export async function getAgentStats(agentId: string, agentName: string, targetPe
     active: true, 
     createdAt: new Date(),
     graduated: progressDoc?.graduated || false,
-    graduatedAt: progressDoc?.graduatedAt
+    graduatedAt: progressDoc?.graduatedAt,
+    acknowledged: progressDoc?.acknowledged || false,
+    acknowledgedAt: progressDoc?.acknowledgedAt
   };
 
   const lastActive = [
@@ -172,11 +197,11 @@ export async function getAgentStats(agentId: string, agentName: string, targetPe
   return { ...partial, overallScore, badge: computeBadge(overallScore) };
 }
 
-// ── Data types matching GCS records ───────────────────────────────────────
+// -- Data types matching GCS records ---------------------------------------
 
 interface QuizRecord     { id: string; agentId: string; moduleId: string; score: number; totalQuestions: number; passed: boolean; timestamp: string; trainingPeriodId?: string; }
 interface EvalRecord     { id: string; agentId: string; score: number; level: number; passed: boolean; timestamp: string; scenarioId?: string; trainingPeriodId?: string; }
-interface ProgressRecord { agentId: string; evalCompletedLevels: number[]; evalPassedScenarios?: string[]; learnedModules?: string[]; evalSavedLevel: number | null; updatedAt: string; graduated?: boolean; graduatedAt?: string; }
+interface ProgressRecord { agentId: string; evalCompletedLevels: number[]; evalPassedScenarios?: string[]; learnedModules?: string[]; evalSavedLevel: number | null; updatedAt: string; graduated?: boolean; graduatedAt?: string; acknowledged?: boolean; acknowledgedAt?: string; }
 
 type LevelData = { attempts: number; avgScore: number; bestScore: number; passed: boolean; lastTimestamp: string };
 
@@ -232,20 +257,24 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
     };
     }
 
-    // ── Analytics ─────────────────────────────────────────────────────────────
+    // -- Analytics -------------------------------------------------------------
 
     export async function getAllAgentStats(targetPeriodId?: string): Promise<AgentStats[]> {
-    const modules = TRAINING_REGISTRY.quiz.required;
-    const [agents, quizDocs, evalDocsLegacy, evalDocsV2, progressDocs, humanEvals, scenariosSnap, periodsSnap] = await Promise.all([
+    const [agents, quizDocs, evalDocsLegacy, evalDocsV2, progressDocs, humanEvals, scenariosSnap, periodsSnap, quizzesSnap] = await Promise.all([
     gcsGetAll<Agent & { id: string }>('agents'),
     gcsGetAll<QuizRecord>('quiz_results'),
     gcsGetAll<EvalRecord>('ai_eval_logs'),
     gcsGetAll<EvalRecord>('ai_eval_logs_v2'),
     gcsGetAll<ProgressRecord>('agent_progress'),
     gcsGetAll<AgentEvaluation>('agent_evaluations'),
-    gcsGetAll<{ isActive: boolean }>('aiev_scenarios'),
+    gcsGetAll<AiEvalScenario & { id: string }>('aiev_scenarios'),
     gcsGetAll<TrainingPeriod>('training_periods'),
+    gcsGet<{ required: string[] }>('module_config', 'quizzes').catch(() => null),
     ]);
+
+    const requiredQuizIds = quizzesSnap?.required || TRAINING_REGISTRY.quiz.required;
+    const requiredScenarioIds = scenariosSnap.filter(s => s.isActive && s.required).map(s => s.id);
+    const config = { requiredQuizIds, requiredScenarioIds };
 
     const evalDocsRaw = [...evalDocsLegacy, ...evalDocsV2];
     const activeScenariosCount = scenariosSnap.filter(s => s.isActive).length;
@@ -321,7 +350,7 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
 
     // Quiz per module
     const quiz: AgentStats['quiz'] = {};
-    for (const mod of modules) {
+    for (const mod of requiredQuizIds) {
       const modResults = myQuizzes.filter(r => getCanonicalQuizKey(r.moduleId) === mod);
       if (modResults.length > 0) {
         quiz[mod] = {
@@ -371,8 +400,16 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
     if (progress?.updatedAt && (!lastActive || progress.updatedAt > lastActive)) lastActive = progress.updatedAt;
     if (agent.createdAt && (!lastActive || agent.createdAt.toString() > lastActive)) lastActive = agent.createdAt.toString();
 
+    const agentWithGraduation: Agent = {
+      ...agent,
+      graduated: progress?.graduated || false,
+      graduatedAt: progress?.graduatedAt,
+      acknowledged: progress?.acknowledged || false,
+      acknowledgedAt: progress?.acknowledgedAt
+    };
+
     const partial = { 
-      agent, 
+      agent: agentWithGraduation, 
       quiz, 
       aiEval, 
       lastActive, 
@@ -384,7 +421,7 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
       activePeriodId: agentPeriodId
     };
     
-    const overallScore = computeOverallScore(partial, weights);
+    const overallScore = computeOverallScore(partial, weights, config);
 
     results.push({ ...partial, overallScore, badge: computeBadge(overallScore) });
   }
@@ -393,14 +430,17 @@ function buildAiEval(evals: EvalRecord[]): AgentStats['aiEval'] {
 }
 
 export async function getModuleStats(): Promise<ModuleStat[]> {
-  const modules = TRAINING_REGISTRY.quiz.required;
-  const [agents, quizDocs, evalDocs, progressDocs, scenariosSnap] = await Promise.all([
+  const [agents, quizDocs, evalDocs, progressDocs, scenariosSnap, quizzesSnap] = await Promise.all([
     gcsGetAll<Agent & { id: string }>('agents'),
     gcsGetAll<QuizRecord>('quiz_results'),
-    gcsGetAll<EvalRecord>('ai_eval_logs'),
+    gcsGetAll<EvalRecord>('ai_eval_logs_v2'),
     gcsGetAll<ProgressRecord>('agent_progress'),
-    gcsGetAll<{ isActive: boolean }>('aiev_scenarios'),
+    gcsGetAll<AiEvalScenario & { id: string }>('aiev_scenarios'),
+    gcsGet<{ required: string[] }>('module_config', 'quizzes').catch(() => null),
   ]);
+
+  const requiredQuizIds = quizzesSnap?.required || TRAINING_REGISTRY.quiz.required;
+  const requiredScenarioIds = scenariosSnap.filter(s => s.isActive && s.required).map(s => s.id);
 
   const active = agents.filter((a: Agent & { id: string }) => a.active);
   const total  = active.length;
@@ -430,14 +470,18 @@ export async function getModuleStats(): Promise<ModuleStat[]> {
   // Learn — at least 1 module required to unlock quiz
   const learnCount = active.filter(a => (progressMap[a.id]?.learnedModules?.length ?? 0) >= TRAINING_REGISTRY.learn.minToUnlockNext).length;
 
-  // Quiz — passed all 4 modules
+  // Quiz — passed all required modules
   const quizCount = active.filter(a => {
     const passed = quizPassedMap[a.id];
-    return passed && modules.every(m => passed.has(m));
+    return passed && requiredQuizIds.every(m => passed.has(m));
   }).length;
 
-  // AI Eval — completed Level 4
+  // AI Eval — passed all required scenarios
   const evalCount = active.filter(a => {
+    if (requiredScenarioIds.length > 0) {
+      const passed = progressMap[a.id]?.evalPassedScenarios ?? [];
+      return requiredScenarioIds.every(id => passed.includes(id));
+    }
     const levels = progressMap[a.id]?.evalCompletedLevels ?? [];
     return levels.length > 0 && Math.max(...levels) >= TRAINING_REGISTRY.eval.requiredLevel;
   }).length;

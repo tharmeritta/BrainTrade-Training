@@ -1,10 +1,10 @@
-import { getAdminDb } from '@/lib/firebase-admin';
+import { getAdminDb } from '@/lib/server/firebase-admin';
 
 export type AuditAction = 
   | 'create_agent' | 'update_agent' | 'delete_agent' 
   | 'override_create' | 'override_delete'
   | 'eval_submit' | 'eval_update'
-  | 'agent_graduation' | 'batch_archive'
+  | 'agent_graduation' | 'graduation_acknowledged' | 'batch_archive'
   | 'config_change' | 'system_repair'
   | 'staff_login' | 'password_change';
 

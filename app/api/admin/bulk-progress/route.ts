@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fsGet, fsSet } from '@/lib/firestore-db';
+import { fsGet, fsSet } from '@/lib/server/db';
 
 interface ProgressRecord {
   agentId: string;

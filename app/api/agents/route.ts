@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { fsQuery } from '@/lib/firestore-db';
+import { fsQuery } from '@/lib/server/db';
 import type { Agent } from '@/types';
 
 /**

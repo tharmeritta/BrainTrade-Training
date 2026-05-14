@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/firebase-admin';
+import { getAdminDb } from '@/lib/server/firebase-admin';
 import { TRAINING_REGISTRY, getCanonicalQuizKey } from '@/lib/registry';
 
 // Agents need to fetch quiz definitions without admin privileges.

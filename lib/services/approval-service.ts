@@ -1,4 +1,4 @@
-import { fsAdd, fsUpdate, fsDelete, fsGet, fsSet } from '@/lib/firestore-db';
+import { fsAdd, fsUpdate, fsDelete, fsGet, fsSet } from '@/lib/server/db';
 import type { ApprovalRequest, ApprovalActionType } from '@/types';
 import { updateGlobalAgentCounts } from './stats-service';
 

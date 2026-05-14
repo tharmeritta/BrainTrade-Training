@@ -12,7 +12,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { MODULE_QUIZ_MAP, type Language, type QuizDefinition } from '@/lib/quiz-data';
-import { getAgentSession } from '@/lib/agent-session';
+import { getAgentSession } from '@/lib/session/agent';
 import { TRAINING_REGISTRY, getCanonicalQuizKey } from '@/lib/registry';
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -32,7 +32,7 @@ const C = {
   mutedFg: 'rgba(0,0,0,0.4)',
 };
 
-// ─── SectionHeader ────────────────────────────────────────────────────────────
+// --- SectionHeader ------------------------------------------------------------
 
 function SectionHeader({ icon: Icon, label, description }: { icon: LucideIcon; label: string; description: string }) {
   return (
@@ -48,7 +48,7 @@ function SectionHeader({ icon: Icon, label, description }: { icon: LucideIcon; l
   );
 }
 
-// ─── PrereqConnector ──────────────────────────────────────────────────────────
+// --- PrereqConnector ----------------------------------------------------------
 
 function PrereqConnector({ prereqTitle, unlocked }: { prereqTitle: string; unlocked: boolean }) {
   const t = useTranslations('quizSelection');
@@ -76,7 +76,7 @@ function PrereqConnector({ prereqTitle, unlocked }: { prereqTitle: string; unloc
   );
 }
 
-// ─── ModuleCard ───────────────────────────────────────────────────────────────
+// --- ModuleCard ---------------------------------------------------------------
 
 function ModuleCard({
   mKey, quiz, locked, passed, lang, locale, index, prereqTitle,
@@ -182,7 +182,7 @@ function ModuleCard({
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// --- Page ---------------------------------------------------------------------
 
 export default function QuizIndexPage() {
   const t = useTranslations('quizSelection');
@@ -231,10 +231,20 @@ export default function QuizIndexPage() {
   }, [locale, router]);
 
   const allQuizzes = useMemo(() => {
+    // Priority 1: DB Order/Definitions
+    const dbOrder = (quizConfigs as any)._order || Object.keys(quizConfigs).filter(k => k !== '_order');
+    const dbQuizzes = (dbOrder as string[]).map(key => ({
+      ...quizConfigs[key],
+      mKey: key
+    })).filter(q => q.id);
+
+    if (dbQuizzes.length > 0) return dbQuizzes;
+
+    // Fallback: Registry
     return TRAINING_REGISTRY.quiz.required.map(key => ({
       ...quizConfigs[key],
       mKey: key
-    })).filter(q => !!q.id);
+    })).filter(q => q.id);
   }, [quizConfigs]);
 
   const sections = useMemo(() => {

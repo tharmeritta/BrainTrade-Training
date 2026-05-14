@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, apiError } from '@/lib/api-utils';
-import { fsAdd } from '@/lib/firestore-db';
+import { fsAdd } from '@/lib/server/db';
 import { createApprovalRequest } from '@/lib/services/approval-service';
 import { getAllAgentStats } from '@/lib/agents';
 

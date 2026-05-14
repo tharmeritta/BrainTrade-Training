@@ -1,4 +1,4 @@
-import { getServerUser } from '@/lib/session';
+import { getServerUser } from '@/lib/session/server';
 import { redirect } from 'next/navigation';
 import EvaluatorDashboard from '@/components/features/EvaluatorDashboard';
 import { setRequestLocale } from 'next-intl/server';

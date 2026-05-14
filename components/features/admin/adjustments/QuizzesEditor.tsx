@@ -23,6 +23,7 @@ interface QuizDefinition {
   title: { en: string; th: string };
   passThreshold: number;
   questions: QuizQuestion[];
+  required?: boolean;
 }
 
 interface QuizzesConfig {
@@ -111,17 +112,17 @@ export default function QuizzesEditor({ data, onSave, onChange, saving, readOnly
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         {order.map((id, idx) => {
-          const isSystem = ['foundation', 'product', 'process'].includes(id.toLowerCase());
+          const isRequired = definitions[id]?.required;
           return (
             <div key={id} className={`group relative p-4 rounded-xl border transition-all ${selectedQuiz === id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-secondary/10 hover:border-primary/30'}`}>
               <button onClick={() => { setSelectedQuiz(id); setSelectedQuestions([]); setSearchQuery(''); }} className="w-full text-left font-bold text-sm truncate pr-12">
-                <div className="flex items-center gap-1.5">{definitions[id]?.title?.en || id} {isSystem && <ShieldCheck size={12} className="text-primary" />}</div>
+                <div className="flex items-center gap-1.5">{definitions[id]?.title?.en || id} {isRequired && <ShieldCheck size={12} className="text-primary" />}</div>
                 <span className="block text-[10px] opacity-50">{id} · {(definitions[id]?.questions || []).length} Qs</span>
               </button>
               <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                  <button onClick={() => { const n = [...order]; [n[idx], n[idx-1]] = [n[idx-1], n[idx]]; setOrder(n); onChange(); }} disabled={idx===0} className="p-1 disabled:opacity-20"><ArrowUp size={14} /></button>
                  <button onClick={() => { const n = [...order]; [n[idx], n[idx+1]] = [n[idx+1], n[idx]]; setOrder(n); onChange(); }} disabled={idx===order.length-1} className="p-1 disabled:opacity-20"><ArrowDown size={14} /></button>
-                 {!isSystem && <button onClick={() => { if (window.confirm('Delete?')) { const d = {...definitions}; delete d[id]; setDefinitions(d); if(selectedQuiz===id)setSelectedQuiz(null); onChange(); }}} className="p-1 text-red-500"><Trash2 size={14} /></button>}
+                 {!isRequired && <button onClick={() => { if (window.confirm('Delete?')) { const d = {...definitions}; delete d[id]; setDefinitions(d); if(selectedQuiz===id)setSelectedQuiz(null); onChange(); }}} className="p-1 text-red-500"><Trash2 size={14} /></button>}
               </div>
             </div>
           );
@@ -132,7 +133,18 @@ export default function QuizzesEditor({ data, onSave, onChange, saving, readOnly
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-6 rounded-2xl border border-primary/20 bg-card space-y-6 shadow-sm">
           <div className="flex justify-between border-b border-border pb-4">
             <h4 className="font-black text-sm uppercase text-primary flex items-center gap-2"><Edit3 size={16} /> Editing: {selectedQuiz}</h4>
-            <button onClick={() => setSelectedQuiz(null)} className="text-xs font-bold text-muted-foreground">Close</button>
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <div className="text-[10px] font-black uppercase opacity-50">Required for Graduation</div>
+                <input 
+                  type="checkbox" 
+                  checked={!!definitions[selectedQuiz].required} 
+                  onChange={e => handleUpdate(selectedQuiz, 'required', e.target.checked)}
+                  className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
+                />
+              </label>
+              <button onClick={() => setSelectedQuiz(null)} className="text-xs font-bold text-muted-foreground">Close</button>
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <FormField id="q-id" label="Internal ID"><input id="q-id" defaultValue={selectedQuiz} onBlur={e => handleUpdate(selectedQuiz, 'id', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm font-mono outline-none" /></FormField>

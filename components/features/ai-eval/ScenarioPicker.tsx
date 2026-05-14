@@ -225,13 +225,20 @@ export const ScenarioPicker = memo(({
 
                       <div className="space-y-4">
                         <div className="flex items-start justify-between">
-                          <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                            s.difficulty === 'beginner'     ? 'bg-emerald-500/10 text-emerald-600' :
-                            s.difficulty === 'intermediate' ? 'bg-amber-500/10 text-amber-600'     :
-                            s.difficulty === 'advanced'     ? 'bg-rose-500/10 text-rose-600'       :
-                                                              'bg-purple-500/10 text-purple-600'
-                          }`}>
-                            {t(`difficultyLabel.${s.difficulty}`)}
+                          <div className="flex flex-wrap gap-2">
+                            <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                              s.difficulty === 'beginner'     ? 'bg-emerald-500/10 text-emerald-600' :
+                              s.difficulty === 'intermediate' ? 'bg-amber-500/10 text-amber-600'     :
+                              s.difficulty === 'advanced'     ? 'bg-rose-500/10 text-rose-600'       :
+                                                                'bg-purple-500/10 text-purple-600'
+                            }`}>
+                              {t(`difficultyLabel.${s.difficulty}`)}
+                            </div>
+                            {s.required && (
+                              <div className="px-3 py-1 bg-primary text-primary-foreground rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm">
+                                Required
+                              </div>
+                            )}
                           </div>
                           <div className="text-[10px] font-black text-muted-foreground bg-secondary/50 px-2 py-1 rounded-md">
                             {t('minThreshold', { score: s.passThreshold })}

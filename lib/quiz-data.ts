@@ -44,7 +44,7 @@ export interface QuizDefinition {
   prerequisiteId?: string | null;
 }
 
-// ─── Certification Quiz: Part 1 — Ecosystem & Journey ────────────────────────
+// --- Certification Quiz: Part 1 — Ecosystem & Journey ------------------------
 const CERT_PART1: QuestionData[] = [
   {
     phase: 0,
@@ -273,7 +273,7 @@ const CERT_PART1: QuestionData[] = [
   },
 ];
 
-// ─── Certification Quiz: Part 2 — Features & Pricing ────────────────────────
+// --- Certification Quiz: Part 2 — Features & Pricing ------------------------
 const CERT_PART2: QuestionData[] = [
   {
     phase: 1,
@@ -527,7 +527,7 @@ const CERT_PART2: QuestionData[] = [
   },
 ];
 
-// ─── Certification Quiz: Part 3 — Sales Process & Handling ──────────────────
+// --- Certification Quiz: Part 3 — Sales Process & Handling ------------------
 const CERT_PART3: QuestionData[] = [
   {
     phase: 2,
@@ -756,7 +756,7 @@ const CERT_PART3: QuestionData[] = [
   },
 ];
 
-// ─── Certification Quiz: Part 4 — Social Proof & FAQ ────────────────────────
+// --- Certification Quiz: Part 4 — Social Proof & FAQ ------------------------
 const CERT_PART4: QuestionData[] = [
   {
     phase: 3,
@@ -860,7 +860,7 @@ const CERT_PART4: QuestionData[] = [
   },
 ];
 
-// ─── Certification Quiz: Part 5 — Demo & Ethics ─────────────────────────────
+// --- Certification Quiz: Part 5 — Demo & Ethics -----------------------------
 const CERT_PART5: QuestionData[] = [
   {
     phase: 4,
@@ -980,7 +980,7 @@ const CERT_PART5: QuestionData[] = [
 ];
 
 
-// ─── KYC Sales Training: Section 1 — KYC Fundamentals ─────────────────────────
+// --- KYC Sales Training: Section 1 — KYC Fundamentals -------------------------
 const KYC_PART1: QuestionData[] = [
   {
     phase: 0,
@@ -1089,7 +1089,7 @@ const KYC_PART1: QuestionData[] = [
   },
 ];
 
-// ─── KYC Sales Training: Section 2 — Customer Segmentation ───────────────────
+// --- KYC Sales Training: Section 2 — Customer Segmentation -------------------
 const KYC_PART2: QuestionData[] = [
   {
     phase: 1,
@@ -1208,7 +1208,7 @@ const KYC_PART2: QuestionData[] = [
   },
 ];
 
-// ─── KYC Sales Training: Section 3 — Deep KYC: 5 Dimensions ───────────────────
+// --- KYC Sales Training: Section 3 — Deep KYC: 5 Dimensions -------------------
 const KYC_PART3: QuestionData[] = [
   {
     phase: 2,
@@ -1362,7 +1362,7 @@ const KYC_PART3: QuestionData[] = [
   },
 ];
 
-// ─── KYC Sales Training: Section 4 — Pain Point Discovery ─────────────────────
+// --- KYC Sales Training: Section 4 — Pain Point Discovery ---------------------
 const KYC_PART4: QuestionData[] = [
   {
     phase: 3,
@@ -1506,7 +1506,7 @@ const KYC_PART4: QuestionData[] = [
   },
 ];
 
-// ─── KYC Sales Training: Section 5 — Sales Psychology ─────────────────────────
+// --- KYC Sales Training: Section 5 — Sales Psychology -------------------------
 const KYC_PART5: QuestionData[] = [
   {
     phase: 4,
@@ -1600,7 +1600,7 @@ const KYC_PART5: QuestionData[] = [
   },
 ];
 
-// ─── KYC Sales Training: Section 6 — Scripts, Do\'s & Don\'ts ──────────────────
+// --- KYC Sales Training: Section 6 — Scripts, Do\'s & Don\'ts ------------------
 const KYC_PART6: QuestionData[] = [
   {
     phase: 5,
@@ -1694,7 +1694,7 @@ const KYC_PART6: QuestionData[] = [
   },
 ];
 
-// ─── Foundation: Part 1 — หุ้นและตลาดการเงิน ─────────────────────────────────
+// --- Foundation: Part 1 — หุ้นและตลาดการเงิน ---------------------------------
 const FOUND_PART1: QuestionData[] = [
   {
     phase: 0,
@@ -1778,7 +1778,7 @@ const FOUND_PART1: QuestionData[] = [
   },
 ];
 
-// ─── Foundation: Part 2 — การเทรดและสไตล์การลงทุน ────────────────────────────
+// --- Foundation: Part 2 — การเทรดและสไตล์การลงทุน ----------------------------
 const FOUND_PART2: QuestionData[] = [
   {
     phase: 1,
@@ -1932,7 +1932,7 @@ const FOUND_PART2: QuestionData[] = [
   },
 ];
 
-// ─── Foundation: Part 3 — โบรกเกอร์ Pip Spread และ Swap ──────────────────────
+// --- Foundation: Part 3 — โบรกเกอร์ Pip Spread และ Swap ----------------------
 const FOUND_PART3: QuestionData[] = [
   {
     phase: 2,
@@ -2076,7 +2076,7 @@ const FOUND_PART3: QuestionData[] = [
   },
 ];
 
-// ─── Foundation: Part 4 — Forex Crypto และ CFD ───────────────────────────────
+// --- Foundation: Part 4 — Forex Crypto และ CFD -------------------------------
 const FOUND_PART4: QuestionData[] = [
   {
     phase: 3,
@@ -2220,7 +2220,7 @@ const FOUND_PART4: QuestionData[] = [
   },
 ];
 
-// ─── Foundation: Part 5 — Sales Skill และการเริ่มต้น ──────────────────────────
+// --- Foundation: Part 5 — Sales Skill และการเริ่มต้น --------------------------
 const FOUND_PART5: QuestionData[] = [
   {
     phase: 4,
@@ -2414,7 +2414,7 @@ const FOUND_PART5: QuestionData[] = [
   },
 ];
 
-// ─── Module → Quiz mapping ───────────────────────────────────────────────────
+// --- Module → Quiz mapping ---------------------------------------------------
 export const MODULE_QUIZ_MAP: Record<string, QuizDefinition> = {
   foundation: {
     id: 'foundation-knowledge',

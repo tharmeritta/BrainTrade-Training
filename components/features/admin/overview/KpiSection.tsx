@@ -1,7 +1,7 @@
 'use client';
 
 import { Users, Target, Award, Activity } from 'lucide-react';
-import { KpiCard } from '../AdminComponents';
+import { KpiCard } from '../ui/Metrics';
 import type { AdminOverviewData } from '@/types';
 
 interface KpiSectionProps {

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { fsQuery, fsGetWhere, fsGetAll } from '@/lib/firestore-db';
+import { fsQuery, fsGetWhere, fsGetAll } from '@/lib/server/db';
 import type { Agent } from '@/types';
 
 /**
@@ -19,31 +19,34 @@ export async function POST(req: Request) {
     const cleanName = normalizeName(name).toLowerCase();
 
     // Optimized: Query directly by normalizedName
+    // Allow login if active OR graduated
     const agents = await fsQuery<Agent>('agents', {
       where: [
-        { field: 'normalizedName', op: '==', value: cleanName },
-        { field: 'active', op: '==', value: true }
+        { field: 'normalizedName', op: '==', value: cleanName }
       ],
       limit: 1
     });
 
     const match = agents[0];
 
-    if (!match) {
+    // Check if the agent is allowed to log in (active or graduated)
+    const isAllowed = match && (match.active || match.graduated);
+
+    if (!match || !isAllowed) {
       // Fallback 1: Query by exact name match (case-sensitive in Firestore)
       const fallbackMatches = await fsGetWhere<Agent>('agents', 'name', name.trim());
       let legacyMatch = fallbackMatches.find(
-        a => a.active && normalizeName(a.name).toLowerCase() === cleanName
+        a => (a.active || a.graduated) && normalizeName(a.name).toLowerCase() === cleanName
       );
 
       if (!legacyMatch) {
-        // Fallback 2: Ultimate fallback for manual entries (fetch all active)
+        // Fallback 2: Ultimate fallback for manual entries (fetch all)
         try {
           console.log(`[Login] Performing ultimate fallback for: ${cleanName}`);
           const allAgents = await fsGetAll<Agent>('agents');
           console.log(`[Login] Fetched ${allAgents.length} agents for fallback search`);
           legacyMatch = allAgents.find(
-            a => a.active && normalizeName(a.name || '').toLowerCase() === cleanName
+            a => (a.active || a.graduated) && normalizeName(a.name || '').toLowerCase() === cleanName
           );
         } catch (fallbackErr: any) {
           console.error('[Login] Ultimate fallback failed:', fallbackErr.message);
@@ -58,14 +61,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ 
         id: legacyMatch.id, 
         name: legacyMatch.name, 
-        stageName: legacyMatch.stageName || '' 
+        stageName: legacyMatch.stageName || '',
+        graduated: legacyMatch.graduated || false
       });
     }
 
     return NextResponse.json({ 
       id: match.id, 
       name: match.name, 
-      stageName: match.stageName || '' 
+      stageName: match.stageName || '',
+      graduated: match.graduated || false
     });
   } catch (err: any) {
     console.error('[API Agent Login] error:', err.message);

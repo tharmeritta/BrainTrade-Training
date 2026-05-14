@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { ClipboardList, Archive, Loader2, ChevronDown, Star, MonitorOff, ClipboardCheck } from 'lucide-react';
-import { KpiCard } from './AdminComponents';
+import { KpiCard } from './ui/Metrics';
 import { useEvaluationsData } from './evaluations/useEvaluationsData';
 import ActiveBatchHeader from './evaluations/ActiveBatchHeader';
 import ArchiveSelectionGrid from './evaluations/ArchiveSelectionGrid';

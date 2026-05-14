@@ -190,7 +190,7 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
 
   return (
     <div className="space-y-5">
-      {/* ── Header ── */}
+      {/* -- Header -- */}
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-foreground tracking-tight flex items-center gap-2">
@@ -235,7 +235,7 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
         )}
       </div>
 
-      {/* ── Stats bar ── */}
+      {/* -- Stats bar -- */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {DIFF_ORDER.map(d => {
           const diff = DIFF[d];
@@ -257,7 +257,7 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
         })}
       </div>
 
-      {/* ── Unlock mode ── */}
+      {/* -- Unlock mode -- */}
       {!readOnly && (
         <div className="flex items-center justify-between gap-4 bg-card border border-border/50 rounded-xl px-4 py-3">
           <div className="flex items-center gap-3">
@@ -288,13 +288,13 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
         </div>
       )}
 
-      {/* ── Modals ── */}
+      {/* -- Modals -- */}
       <AnimatePresence>
         {showImport && <AiScenarioImportModal onClose={() => setShowImport(false)} onSuccess={() => fetchScenarios()} />}
         {showSandbox && <SandboxManagerModal onClose={() => setShowSandbox(false)} onSuccess={() => fetchScenarios()} />}
       </AnimatePresence>
 
-      {/* ── Create / Edit form ── */}
+      {/* -- Create / Edit form -- */}
       <AnimatePresence>
         {(isCreating || editingId) && (
           <ScenarioForm
@@ -307,7 +307,7 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
         )}
       </AnimatePresence>
 
-      {/* ── Scenario groups ── */}
+      {/* -- Scenario groups -- */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
           <Loader2 className="animate-spin text-primary" size={28} />
@@ -344,7 +344,7 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
         </div>
       )}
 
-      {/* ── Bulk action bar ── */}
+      {/* -- Bulk action bar -- */}
       <AnimatePresence>
         {selectedIds.size > 0 && (
           <motion.div

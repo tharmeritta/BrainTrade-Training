@@ -15,7 +15,7 @@ export type SessionMode =
   | { type: 'practice-all' }
   | { type: 'retry'; questions: QuestionData[] };
 
-// ── Screen-level component props ──────────────────────────────────────────────
+// -- Screen-level component props ----------------------------------------------
 
 export interface QuizBriefingProps {
   quiz: QuizDefinition;

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerUser } from '@/lib/session';
+import { getServerUser } from '@/lib/session/server';
 import type { UserRole } from '@/types';
 
 type ApiHandler = (req: NextRequest, context: any, user: NonNullable<Awaited<ReturnType<typeof getServerUser>>>) => Promise<NextResponse>;

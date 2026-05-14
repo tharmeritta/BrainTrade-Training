@@ -11,25 +11,46 @@ export interface CompletionInfo {
   quizComplete: boolean;
   /** true if all required learning modules viewed */
   learnComplete: boolean;
-  /** true if at least one AI eval session done */
+  /** true if all required AI scenarios passed */
   aiEvalDone: boolean;
   /** latest human eval score, or null */
   latestEvalScore: number | null;
 }
 
-export function getCompletionStatus(stats: AgentStats, activeScenariosCount?: number): CompletionInfo {
+export interface CompletionConfig {
+  requiredQuizIds?: readonly string[];
+  requiredScenarioIds?: readonly string[];
+}
+
+/**
+ * Calculates the training completion status for an agent.
+ * Now supports dynamic requirements for quizzes and AI scenarios.
+ */
+export function getCompletionStatus(
+  stats: AgentStats, 
+  config?: CompletionConfig
+): CompletionInfo {
   const { learn, quiz, eval: evaluation } = TRAINING_REGISTRY;
 
-  // Quiz completion: Check if every required quiz is passed
-  const quizComplete = quiz.required.every(id => !!stats.quiz[id]?.passed);
+  // 1. Quiz completion: Check if every required quiz is passed
+  // Fallback to registry if no dynamic list provided
+  const requiredQuizzes = config?.requiredQuizIds || quiz.required;
+  const quizComplete = requiredQuizzes.every(id => !!stats.quiz[id]?.passed);
 
-  // Learn completion: Business rule says they need at least N modules (minToUnlockNext)
+  // 2. Learn completion: Business rule says they need at least N modules (minToUnlockNext)
   const learnComplete = (stats.learnedModules?.length ?? 0) >= learn.minToUnlockNext;
   
-  // AI Eval completion: Check if they reached the required level
-  const completedLevels = stats.evalCompletedLevels ?? [];
-  const maxLevelReached = completedLevels.length > 0 ? Math.max(...completedLevels) : 0;
-  const aiEvalDone = maxLevelReached >= evaluation.requiredLevel;
+  // 3. AI Eval completion: Check passed scenarios or fallback to legacy level check
+  let aiEvalDone = false;
+  if (config?.requiredScenarioIds && config.requiredScenarioIds.length > 0) {
+    // Dynamic check: must pass all scenarios marked as required in the DB
+    aiEvalDone = config.requiredScenarioIds.every(id => stats.evalPassedScenarios?.includes(id));
+  } else {
+    // Legacy/Fallback check: reached the required level
+    const completedLevels = stats.evalCompletedLevels ?? [];
+    const maxLevelReached = completedLevels.length > 0 ? Math.max(...completedLevels) : 0;
+    aiEvalDone = maxLevelReached >= evaluation.requiredLevel;
+  }
 
   const trainingComplete = quizComplete && learnComplete && aiEvalDone;
   const humanEvals = stats.humanEvaluations ?? [];
@@ -42,5 +63,13 @@ export function getCompletionStatus(stats: AgentStats, activeScenariosCount?: nu
     !!stats.lastActive            ? 'in-progress' :
                                     'not-started';
 
-  return { trainingComplete, evaluated, status, quizComplete, learnComplete, aiEvalDone, latestEvalScore };
+  return { 
+    trainingComplete, 
+    evaluated, 
+    status, 
+    quizComplete, 
+    learnComplete, 
+    aiEvalDone, 
+    latestEvalScore 
+  };
 }

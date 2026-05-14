@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-  /* ── Light mode ── */
+  /* -- Light mode -- */
   :root {
     --background: 210 40% 98%;
     --foreground: 222 47% 11%;
@@ -26,7 +26,7 @@
     --ring: 221 83% 53%;
     --radius: 0.75rem;
 
-    /* ── Agent Training Hub tokens (light) ── */
+    /* -- Agent Training Hub tokens (light) -- */
     --hub-bg: #EEF2F7;
     --hub-panel: rgba(255,255,255,0.96);
     --hub-card: #FFFFFF;
@@ -46,7 +46,7 @@
     --entry-tag-border: rgba(0,0,0,0.08);
   }
 
-  /* ── Dark mode ── */
+  /* -- Dark mode -- */
   .dark {
     --background: 222 47% 6%;
     --foreground: 210 40% 96%;
@@ -68,7 +68,7 @@
     --input: 217 33% 14%;
     --ring: 199 100% 51%;
 
-    /* ── Agent Training Hub tokens (dark) ── */
+    /* -- Agent Training Hub tokens (dark) -- */
     --hub-bg: #05090F;
     --hub-panel: rgba(8,14,28,0.8);
     --hub-card: #0B1524;

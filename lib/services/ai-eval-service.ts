@@ -1,6 +1,6 @@
 import { updateGlobalAiEvalStats, updateAgentOverallScore } from './stats-service';
 import { getOpenAI } from '@/lib/openai';
-import { fsGet, fsSet, fsDelete, fsAdd } from '@/lib/firestore-db';
+import { fsGet, fsSet, fsDelete, fsAdd } from '@/lib/server/db';
 import crypto from 'crypto';
 import {
   AiEvalScenario,
@@ -8,9 +8,9 @@ import {
   AiEvalTurnResponse,
   } from '@/types/ai-eval';
   import { PitchMessage } from '@/types';
-  import { getActiveTrainingPeriod } from '@/lib/training-server';
+  import { getActiveTrainingPeriod } from '@/lib/server/training';
 
-/* ─── Service Implementation ────────────────────────────────────────────────── */
+/* --- Service Implementation -------------------------------------------------- */
 
 export class AiEvalService {
 
@@ -242,13 +242,19 @@ export class AiEvalService {
    */
   private static buildFallbackSystemPrompt(scenario: AiEvalScenario): string {
     const maxTurns = scenario.maxTurns || 12;
-    return `เล่นบทเป็นลูกค้าคนไทย: ${scenario.customerPersona || 'ลูกค้าทั่วไป'}
-อารมณ์เริ่มต้น: ${scenario.initialMood || 'ปกติ'}
-เป้าหมายของลูกค้า: ${scenario.objective || 'ต้องการข้อมูลเพิ่มเติม'}
+    const persona = scenario.customerPersona || scenario.description || 'ลูกค้าทั่วไป';
+    const mood = scenario.initialMood || 'ปกติ';
+    const objective = scenario.objective || 'ต้องการข้อมูลเพิ่มเติม';
+    const win = scenario.winCondition || 'พนักงานตอบคำถาม สร้างความเชื่อมั่น และปิดการขายได้';
+    const fail = scenario.failCondition || 'พนักงานพูดแบบหุ่นยนต์ ไม่รับฟัง หรือสนทนาครบ 12 ครั้งแล้ว';
+
+    return `เล่นบทเป็นลูกค้าคนไทย: ${persona}
+อารมณ์เริ่มต้น: ${mood}
+เป้าหมายของลูกค้า: ${objective}
 สินค้า: คอร์สเทรด BrainTrade Thailand — Coach 1:1 / AI วิเคราะห์ตลาด / BrainTrade Campus
 
-✅ PASS เมื่อ: ${scenario.winCondition || 'พนักงานตอบคำถาม สร้างความเชื่อมั่น และปิดการขายได้'}
-❌ FAIL เมื่อ: ${scenario.failCondition || 'พนักงานพูดแบบหุ่นยนต์ ไม่รับฟัง หรือหมดโอกาสแล้ว'}
+✅ PASS เมื่อ: ${win}
+❌ FAIL เมื่อ: ${fail}
 
 กติกา:
 - ตอบสั้นๆ เป็นธรรมชาติ ใช้ภาษาพูดคนไทย ห้ามหลุดบทบาท
@@ -261,13 +267,14 @@ export class AiEvalService {
 ห้ามบอก verdict แก่พนักงานใน dialogue เด็ดขาด`;
   }
 
-  /* ─── Seed Data ──────────────────────────────────────────────────────────── */
+  /* --- Seed Data ------------------------------------------------------------ */
 
   static async seedAllScenarios() {
     const scenarios: AiEvalScenario[] = [
       {
         id: 'level_1',
         level: 1,
+        required: true,
         name: 'Level 1: ลูกค้าปฏิเสธทั่วไป',
         description: 'เน้นการรับมือคำปฏิเสธเบื้องต้น',
         difficulty: 'beginner',
@@ -301,6 +308,7 @@ export class AiEvalService {
       {
         id: 'level_2',
         level: 2,
+        required: true,
         name: 'Level 2: ลูกค้าสงสัยสินค้า',
         description: 'เน้นการตอบคำถามเรื่องความคุ้มค่าและความเชื่อมั่น',
         difficulty: 'intermediate',
@@ -334,6 +342,7 @@ export class AiEvalService {
       {
         id: 'level_3',
         level: 3,
+        required: true,
         name: 'Level 3: ลูกค้าต่อรองและเปรียบเทียบ',
         description: 'เน้นการรักษา Value และการเปรียบเทียบกับคู่แข่ง',
         difficulty: 'advanced',
@@ -367,6 +376,7 @@ export class AiEvalService {
       {
         id: 'level_4',
         level: 4,
+        required: true,
         name: 'Level 4: Boss Level (Hard)',
         description: 'เน้นความอดทนและการตอบคำถามเชิงเทคนิคขั้นสูง',
         difficulty: 'expert',
@@ -404,7 +414,7 @@ export class AiEvalService {
     }
   }
 
-  /* ─── Helpers ────────────────────────────────────────────────────────────── */
+  /* --- Helpers -------------------------------------------------------------- */
 
   private static cleanJson(raw: string): string {
     return raw.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -451,6 +461,7 @@ export class AiEvalService {
       description: 'ลูกค้าคนไทยที่สนใจการลงทุนแต่ยังลังเลเรื่องความปลอดภัยและความคุ้มค่า',
       difficulty: 'beginner',
       level: 1,
+      required: false,
       customerPersona: 'ชื่อ สมชาย อายุ 45 ทำธุรกิจส่วนตัว มีเงินเย็นแต่กลัวโดนหลอก เคยเล่นหุ้นไทยนิดหน่อย ไม่รู้จัก BrainTrade',
       initialMood: 'สงสัยและระมัดระวัง',
       objective: 'ต้องการความมั่นใจว่า BrainTrade มีคนสอนจริงๆ ไม่ใช่แค่ส่งวิดีโอมาให้ดู',

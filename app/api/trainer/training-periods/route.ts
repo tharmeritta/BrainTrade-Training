@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerUser, requireAdminManagerOrTrainer } from '@/lib/session';
-import { fsAdd, fsGetAll } from '@/lib/firestore-db';
+import { getServerUser, requireAdminManagerOrTrainer } from '@/lib/session/server';
+import { fsAdd, fsGetAll } from '@/lib/server/db';
 import { createApprovalRequest } from '@/lib/services/approval-service';
 import type { TrainingPeriod } from '@/types';
 

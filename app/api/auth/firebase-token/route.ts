@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getServerUser } from '@/lib/session';
-import { getAdminAuth } from '@/lib/firebase-admin';
+import { getServerUser } from '@/lib/session/server';
+import { getAdminAuth } from '@/lib/server/firebase-admin';
 
 export async function GET() {
   const user = await getServerUser();

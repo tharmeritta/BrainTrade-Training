@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getServerUser } from '@/lib/session';
-import { fsUpdate, fsGet } from '@/lib/firestore-db';
+import { getServerUser } from '@/lib/session/server';
+import { fsUpdate, fsGet } from '@/lib/server/db';
 import { BatchService } from '@/lib/services/batch-service';
 import { updateAgentOverallScore } from '@/lib/services/stats-service';
 import type { AgentEvaluation } from '@/types';

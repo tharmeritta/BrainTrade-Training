@@ -6,7 +6,7 @@ import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { CoachingData } from './types';
 
-/* ─── Score Style Helper ────────────────────────────────────────────────────── */
+/* --- Score Style Helper ------------------------------------------------------ */
 
 export const SCORE_STYLE = (score: number, max: number = 10) => {
   const pct = (score / max) * 100;
@@ -17,7 +17,7 @@ export const SCORE_STYLE = (score: number, max: number = 10) => {
   return { badge: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800', dot: 'bg-rose-500', label: 'Needs Help' };
 };
 
-/* ─── CoachingCard ──────────────────────────────────────────────────────────── */
+/* --- CoachingCard ------------------------------------------------------------ */
 
 export const CoachingCard = memo(({ coaching, autoExpand, onUseScript, criteriaKeys }: {
   coaching: CoachingData;
@@ -148,7 +148,7 @@ export const CoachingCard = memo(({ coaching, autoExpand, onUseScript, criteriaK
 
 CoachingCard.displayName = 'CoachingCard';
 
-/* ─── ScoreTrend ────────────────────────────────────────────────────────────── */
+/* --- ScoreTrend -------------------------------------------------------------- */
 
 export const ScoreTrend = memo(({ coaching }: { coaching: Map<number, CoachingData> }) => {
   const scores = useMemo(() => 

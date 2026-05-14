@@ -11,7 +11,7 @@
  * ADMIN_USERNAME, ADMIN_PASSWORD, and BOOTSTRAP_SECRET from Cloud Run.
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { fsGetAll, fsAdd } from '@/lib/firestore-db';
+import { fsGetAll, fsAdd } from '@/lib/server/db';
 import type { StaffAccount } from '@/types';
 
 export async function POST(req: NextRequest) {

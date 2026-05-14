@@ -10,7 +10,11 @@ export const DIFF = {
 export const DIFF_ORDER: (keyof typeof DIFF)[] = ['beginner', 'intermediate', 'advanced', 'expert'];
 
 export const EMPTY_FORM: Partial<AiEvalScenario> = {
-  difficulty: 'beginner', isActive: true, maxTurns: 12, passThreshold: 7
+  difficulty: 'beginner', 
+  isActive: true, 
+  required: false,
+  maxTurns: 12, 
+  passThreshold: 70
 };
 
 export const inputCls = "w-full bg-secondary/40 border border-border/40 rounded-xl px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all placeholder:text-muted-foreground/40";

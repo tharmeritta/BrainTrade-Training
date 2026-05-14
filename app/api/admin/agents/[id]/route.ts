@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, apiError } from '@/lib/api-utils';
-import { fsUpdate, fsDelete, fsGet } from '@/lib/firestore-db';
+import { fsUpdate, fsDelete, fsGet } from '@/lib/server/db';
 import { createApprovalRequest } from '@/lib/services/approval-service';
 
 export const PATCH = withApiAuth(async (req, { params }, user) => {

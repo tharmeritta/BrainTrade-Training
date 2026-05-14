@@ -8,12 +8,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { type CourseLang, type CourseModule } from '@/lib/courses';
 import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM, TRANSITION, stagger } from '@/lib/animations';
-import { getAgentSession } from '@/lib/agent-session';
+import { getAgentSession } from '@/lib/session/agent';
 import { ActiveAgentUI } from '@/components/ui/ActiveAgentUI';
 import { fetchWithCache, invalidateCache } from '@/lib/fetcher';
 import type { AgentStats } from '@/types';
 
-// ─── Interfaces ─────────────────────────────────────────────────────────────
+// --- Interfaces -------------------------------------------------------------
 
 interface LanguagePickerProps {
   lang: CourseLang;
@@ -40,7 +40,7 @@ interface PlaceholderCardProps {
   index: number;
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// --- Sub-components -----------------------------------------------------------
 
 /**
  * Language selection toggle
@@ -311,7 +311,7 @@ const PlaceholderCard = memo(({ lang, index }: PlaceholderCardProps) => {
 
 PlaceholderCard.displayName = 'PlaceholderCard';
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// --- Main Component -----------------------------------------------------------
 
 export default function CourseHub({ initialModules }: { initialModules: CourseModule[] }) {
   const t = useTranslations('courseHub');

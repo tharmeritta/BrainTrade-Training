@@ -197,6 +197,11 @@
       "aiscenarios": "AI Scenarios",
       "profile": "User Profile"
     },
+    "groups": {
+      "operations": "Operations",
+      "analytics": "Analytics",
+      "management": "Management"
+    },
     "aiScenarios": {
       "title": "AI Training Scenarios",
       "desc": "Manage customer personas and evaluation criteria for AI Eval.",

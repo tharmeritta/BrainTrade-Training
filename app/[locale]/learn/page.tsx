@@ -1,5 +1,5 @@
 import CourseHub from '@/components/features/CourseHub';
-import { getCourseModules } from '@/lib/courses-server';
+import { getCourseModules } from '@/lib/server/courses';
 
 export default async function LearnIndexPage() {
   const modules = await getCourseModules();

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import type { AdminOverviewData, AgentStats } from '@/types';
-import { LivePulse } from './AdminComponents';
+import { LivePulse } from './ui/LivePulse';
 import AgentDetailModal from './AgentDetailModal';
 
 // Modular Components

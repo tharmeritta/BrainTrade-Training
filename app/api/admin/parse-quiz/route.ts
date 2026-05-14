@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminOrIT } from '@/lib/session';
+import { requireAdminOrIT } from '@/lib/session/server';
 import { getOpenAI } from '@/lib/openai';
 import { getGeminiModel } from '@/lib/gemini';
 

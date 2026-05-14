@@ -8,7 +8,7 @@ import {
 import { AiEvalScenario } from '@/types/ai-eval';
 import { DIFF } from './constants';
 
-/* ─── Scenario Card ─────────────────────────────────────────────────────────── */
+/* --- Scenario Card ----------------------------------------------------------- */
 
 export function ScenarioCard({
   s,
@@ -114,7 +114,7 @@ export function ScenarioCard({
   );
 }
 
-/* ─── Difficulty Section ────────────────────────────────────────────────────── */
+/* --- Difficulty Section ------------------------------------------------------ */
 
 export function DifficultySection({
   difficulty,

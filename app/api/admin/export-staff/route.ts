@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminOrManager } from '@/lib/session';
-import { fsGetAll } from '@/lib/firestore-db';
+import { requireAdminOrManager } from '@/lib/session/server';
+import { fsGetAll } from '@/lib/server/db';
 import type { StaffAccount } from '@/types';
 import * as XLSX from 'xlsx';
 

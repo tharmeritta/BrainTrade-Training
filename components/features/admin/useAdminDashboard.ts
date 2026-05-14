@@ -22,7 +22,19 @@ export function useAdminDashboard({ role, uid, name, interactiveAccessUntil }: U
   const tab = (searchParams.get('tab') as Tab) || getDefaultTab(role);
   
   const [isPwModalOpen, setIsPwModalOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+
+  // Persistence for sidebar state
+  useEffect(() => {
+    const saved = localStorage.getItem('admin_sidebar_collapsed');
+    if (saved !== null) setSidebarCollapsed(saved === 'true');
+  }, []);
+
+  const toggleSidebar = (v: boolean) => {
+    setSidebarCollapsed(v);
+    localStorage.setItem('admin_sidebar_collapsed', v.toString());
+  };
+
   const [profileOpen, setProfileOpen] = useState(false);
   const [requestingAccess, setRequestingAccess] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -43,8 +55,9 @@ export function useAdminDashboard({ role, uid, name, interactiveAccessUntil }: U
 
   const visibleTabs = useMemo(() => getVisibleTabs(role, isReadOnlyRole), [role, isReadOnlyRole]);
 
-  const mainTabs  = useMemo(() => visibleTabs.filter(t => t.group === 'main'), [visibleTabs]);
-  const adminTabs = useMemo(() => visibleTabs.filter(t => t.group === 'admin'), [visibleTabs]);
+  const operationsTabs = useMemo(() => visibleTabs.filter(t => t.group === 'operations'), [visibleTabs]);
+  const analyticsTabs  = useMemo(() => visibleTabs.filter(t => t.group === 'analytics'), [visibleTabs]);
+  const managementTabs = useMemo(() => visibleTabs.filter(t => t.group === 'management'), [visibleTabs]);
 
   const activeTab = useMemo(() => visibleTabs.find(t => t.id === tab) || visibleTabs[0], [visibleTabs, tab]);
 
@@ -96,14 +109,15 @@ export function useAdminDashboard({ role, uid, name, interactiveAccessUntil }: U
     actions: {
       setTab,
       setIsPwModalOpen,
-      setSidebarCollapsed,
+      setSidebarCollapsed: toggleSidebar,
       setProfileOpen,
       requestInteractiveAccess,
       logout,
     },
     navigation: {
-      mainTabs,
-      adminTabs,
+      operationsTabs,
+      analyticsTabs,
+      managementTabs,
       activeTab,
       visibleTabs,
     },

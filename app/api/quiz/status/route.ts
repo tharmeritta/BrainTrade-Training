@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fsQuery } from '@/lib/firestore-db';
+import { fsQuery } from '@/lib/server/db';
 import { getCanonicalQuizKey } from '@/lib/registry';
 
 interface QuizResult {

@@ -1,5 +1,5 @@
-import { fsGet, fsUpdate, fsQuery, fsGetAll, fsUpdateMany } from '@/lib/firestore-db';
-import { getAdminDb } from '@/lib/firebase-admin';
+import { fsGet, fsUpdate, fsQuery, fsGetAll, fsUpdateMany } from '@/lib/server/db';
+import { getAdminDb } from '@/lib/server/firebase-admin';
 import { HistoryService } from './history-service';
 import type { TrainingPeriod, AgentEvaluation, Agent } from '@/types';
 
@@ -81,8 +81,19 @@ export const BatchService = {
     
     const evaluatedAgentIds = new Set(evaluationSnap.docs.map(doc => doc.data().agentId));
 
-    // A batch is complete if EVERY agent has at least one evaluation record in this period
-    const isComplete = agentIds.every(id => evaluatedAgentIds.has(id));
+    // Check how many agents have acknowledged (from agent_progress)
+    const progressSnap = await db.collection('agent_progress')
+      .where('acknowledged', '==', true)
+      .get();
+    
+    const acknowledgedAgentIds = new Set(progressSnap.docs.map(doc => doc.id));
+
+    // A batch is complete if EVERY agent has:
+    // 1. At least one evaluation record in this period
+    // 2. Acknowledged their graduation
+    const isComplete = agentIds.every(id => 
+      evaluatedAgentIds.has(id) && acknowledgedAgentIds.has(id)
+    );
 
     if (isComplete) {
       console.log(`[BatchService] Finalizing training period: ${period.name} (${periodId})`);

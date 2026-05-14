@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { requireAdminManagerOrTrainer } from '@/lib/session';
-import { fsQuery } from '@/lib/firestore-db';
+import { requireAdminManagerOrTrainer } from '@/lib/session/server';
+import { fsQuery } from '@/lib/server/db';
 
 interface FeedItem {
   id: string;

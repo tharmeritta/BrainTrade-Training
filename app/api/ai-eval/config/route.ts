@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/firebase-admin';
+import { getAdminDb } from '@/lib/server/firebase-admin';
 
 const FALLBACK_AGENT_GUIDELINE = `สวัสดีครับ/ค่ะ! ยินดีต้อนรับสู่ AI Evaluation
 

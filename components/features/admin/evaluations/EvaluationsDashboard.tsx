@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { ClipboardCheck, Users, Star, ShieldCheck, X } from 'lucide-react';
-import { KpiCard } from '../AdminComponents';
+import { KpiCard } from '../ui/Metrics';
 import { scoreColor, timeAgo } from '../AdminHelpers';
 import EvalRow from './EvalRow';
 import type { AdminEval } from './useEvaluationsData';

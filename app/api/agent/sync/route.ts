@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/firebase-admin';
+import { getAdminDb } from '@/lib/server/firebase-admin';
 import { getCanonicalQuizKey, TRAINING_REGISTRY } from '@/lib/registry';
 
 export async function POST(req: NextRequest) {

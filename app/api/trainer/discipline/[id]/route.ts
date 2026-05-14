@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireTrainer } from '@/lib/session';
-import { fsUpdate, fsDelete } from '@/lib/firestore-db';
+import { requireTrainer } from '@/lib/session/server';
+import { fsUpdate, fsDelete } from '@/lib/server/db';
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try { await requireTrainer(); } catch { return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); }

@@ -5,6 +5,8 @@ import {
 
 export type Tab = 'overview' | 'hranalytics' | 'reports' | 'staff' | 'evaluations' | 'training' | 'adjustments' | 'approvals' | 'aiscenarios' | 'history';
 
+export type TabGroup = 'operations' | 'analytics' | 'management';
+
 export interface TabItem {
   id: Tab;
   labelKey: string;
@@ -12,22 +14,27 @@ export interface TabItem {
   adminOnly?: boolean;
   hideForTrainer?: boolean;
   hideForIT?: boolean;
-  group?: string;
+  group: TabGroup;
 }
 
 export type UserRole = 'admin' | 'manager' | 'it' | 'trainer' | 'hr';
 
 export const ALL_TABS: TabItem[] = [
-  { id: 'overview',    labelKey: 'overview',       icon: LayoutDashboard,  group: 'main' },
-  { id: 'hranalytics', labelKey: 'hranalytics',    icon: Users,            group: 'main' },
-  { id: 'training',    labelKey: 'training',       icon: GraduationCap,    group: 'main' },
-  { id: 'history',     labelKey: 'history',        icon: History,          group: 'main' },
-  { id: 'evaluations', labelKey: 'evaluations',    icon: ClipboardCheck,   hideForTrainer: true, group: 'main' },
-  { id: 'reports',     labelKey: 'reports',        icon: FileSpreadsheet,  hideForTrainer: true, group: 'main' },
-  { id: 'approvals',   labelKey: 'approvals',      icon: Clock, adminOnly: true, group: 'admin' },
-  { id: 'staff',       labelKey: 'accounts',       icon: ShieldCheck,      adminOnly: true, group: 'admin' },
-  { id: 'aiscenarios', labelKey: 'aiscenarios',    icon: Zap,              adminOnly: true, hideForIT: true, group: 'admin' },
-  { id: 'adjustments', labelKey: 'adjustments',    icon: Edit3,            adminOnly: true, hideForIT: true, group: 'admin' },
+  // Operations
+  { id: 'overview',    labelKey: 'overview',       icon: LayoutDashboard,  group: 'operations' },
+  { id: 'training',    labelKey: 'training',       icon: GraduationCap,    group: 'operations' },
+  { id: 'evaluations', labelKey: 'evaluations',    icon: ClipboardCheck,   hideForTrainer: true, group: 'operations' },
+  { id: 'approvals',   labelKey: 'approvals',      icon: Clock,            adminOnly: true, group: 'operations' },
+
+  // Analytics
+  { id: 'hranalytics', labelKey: 'hranalytics',    icon: Users,            group: 'analytics' },
+  { id: 'reports',     labelKey: 'reports',        icon: FileSpreadsheet,  hideForTrainer: true, group: 'analytics' },
+  { id: 'history',     labelKey: 'history',        icon: History,          group: 'analytics' },
+
+  // Management
+  { id: 'staff',       labelKey: 'accounts',       icon: ShieldCheck,      adminOnly: true, group: 'management' },
+  { id: 'aiscenarios', labelKey: 'aiscenarios',    icon: Zap,              adminOnly: true, hideForIT: true, group: 'management' },
+  { id: 'adjustments', labelKey: 'adjustments',    icon: Edit3,            adminOnly: true, hideForIT: true, group: 'management' },
 ];
 
 export function getVisibleTabs(role: UserRole, isReadOnlyRole: boolean): TabItem[] {

@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 import PresentationViewer from '@/components/features/PresentationViewer';
-import { getCourseModule } from '@/lib/courses-server';
+import { getCourseModule } from '@/lib/server/courses';
 import type { CourseLang } from '@/lib/courses';
-import { getServerUser } from '@/lib/session';
+import { getServerUser } from '@/lib/session/server';
 import { setRequestLocale } from 'next-intl/server';
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';

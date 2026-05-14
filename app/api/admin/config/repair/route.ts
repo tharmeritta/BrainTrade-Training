@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerUser } from '@/lib/session';
+import { getServerUser } from '@/lib/session/server';
 import { recalculateGlobalStats, updateAgentOverallScore } from '@/lib/services/stats-service';
 import { AuditService } from '@/lib/services/audit-service';
 import { BatchService } from '@/lib/services/batch-service';
-import { fsGetAll } from '@/lib/firestore-db';
+import { fsGetAll } from '@/lib/server/db';
 import { Agent, TrainingPeriod } from '@/types';
 
 /**

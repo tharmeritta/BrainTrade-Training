@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerUser } from '@/lib/session';
+import { getServerUser } from '@/lib/session/server';
 import { SemanticAuditService } from '@/lib/services/semantic-audit-service';
 
 export async function POST(req: NextRequest) {

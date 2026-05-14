@@ -1,10 +1,10 @@
-import { fsUpdate, fsGet, fsSet, fsIncrement, fsGetAll } from '@/lib/firestore-db';
+import { fsUpdate, fsGet, fsSet, fsIncrement, fsGetAll } from '@/lib/server/db';
 import { getAgentStats, getAllAgentStats } from '@/lib/agents';
 import { TRAINING_REGISTRY } from '@/lib/registry';
 import { getCompletionStatus } from '@/lib/completion';
 import { AuditService } from './audit-service';
 import { AgentStats } from '@/types';
-import { getAdminDb } from '@/lib/firebase-admin';
+import { getAdminDb } from '@/lib/server/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 
 const GLOBAL_STATS_DOC = 'stats/global';
@@ -99,13 +99,27 @@ export async function updateAgentOverallScore(
 ) {
   const db = getAdminDb();
 
+  // Fetch required components for dynamic graduation check
+  const [quizzesSnap, scenariosSnap] = await Promise.all([
+    db.collection('module_config').doc('quizzes').get(),
+    db.collection('aiev_scenarios').where('isActive', '==', true).get()
+  ]);
+
+  const requiredQuizIds = quizzesSnap.exists ? quizzesSnap.data()?.required || [] : [];
+  const requiredScenarioIds = scenariosSnap.docs
+    .map(d => ({ id: d.id, ...d.data() } as any))
+    .filter(s => s.required)
+    .map(s => s.id);
+
+  const config = { requiredQuizIds, requiredScenarioIds };
+
   // 0. Get current state to detect transition
   const oldProj = await db.collection('agents').doc(agentId).collection('projections').doc('stats').get();
   const oldStats = oldProj.exists ? oldProj.data() as AgentStats : null;
-  const oldStatus = oldStats ? getCompletionStatus(oldStats).status : 'not-started';
+  const oldStatus = oldStats ? getCompletionStatus(oldStats, config).status : 'not-started';
 
   const stats = await getAgentStats(agentId, agentName);
-  const newStatus = getCompletionStatus(stats).status;
+  const newStatus = getCompletionStatus(stats, config).status;
 
   // 1. Update main doc with essential sortable/filterable fields
   const agentUpdate: any = {

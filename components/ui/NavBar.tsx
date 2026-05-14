@@ -15,12 +15,12 @@ import {
 import { useState, useEffect } from 'react';
 import LangToggle from '@/components/ui/LangToggle';
 import ThemeToggle from '@/components/ui/ThemeToggle';
-import { getAgentSession, clearAgentSession } from '@/lib/agent-session';
-import { hasStaffSession } from '@/lib/session-client';
+import { getAgentSession, clearAgentSession } from '@/lib/session/agent';
+import { hasStaffSession } from '@/lib/session/client';
 
 import { useTranslations } from 'next-intl';
 
-/* ─── Nav Definition ─────────────────────────────────────── */
+/* --- Nav Definition --------------------------------------- */
 
 const NAV_ITEMS = [
   {
@@ -45,7 +45,7 @@ const NAV_ITEMS = [
   },
 ] as const;
 
-/* ─── Component ──────────────────────────────────────────── */
+/* --- Component -------------------------------------------- */
 
 export default function NavBar() {
   const t = useTranslations('nav');
@@ -101,7 +101,7 @@ export default function NavBar() {
   return (
     <header className="relative flex items-center justify-between px-4 h-14 shrink-0 border-b border-border/60 bg-background/80 backdrop-blur-md z-50">
 
-      {/* ── Logo ─────────────────────────────────────────── */}
+      {/* -- Logo ------------------------------------------- */}
       <div className="flex items-center gap-3">
         <Link href={`/${locale}/dashboard`} className="flex items-center gap-2.5 group">
           <motion.div
@@ -135,7 +135,7 @@ export default function NavBar() {
         )}
       </div>
 
-      {/* ── Nav Pills ────────────────────────────────────── */}
+      {/* -- Nav Pills -------------------------------------- */}
       <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-0.5 bg-muted/50 border border-border/50 rounded-full p-1">
         {NAV_ITEMS.map((item) => {
           const active = isActive(item.href);
@@ -202,7 +202,7 @@ export default function NavBar() {
         })}
       </nav>
 
-      {/* ── Controls ─────────────────────────────────────── */}
+      {/* -- Controls --------------------------------------- */}
       <div className="flex items-center gap-0.5 bg-muted/50 border border-border/50 rounded-full p-1">
         <LangToggle />
         <ThemeToggle />

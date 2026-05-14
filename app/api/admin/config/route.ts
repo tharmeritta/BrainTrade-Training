@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminOrManager } from '@/lib/session';
-import { getAdminDb } from '@/lib/firebase-admin';
+import { requireAdminOrManager } from '@/lib/session/server';
+import { getAdminDb } from '@/lib/server/firebase-admin';
 import { createApprovalRequest } from '@/lib/services/approval-service';
 
 export async function GET() {

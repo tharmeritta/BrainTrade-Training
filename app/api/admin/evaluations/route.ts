@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { requireAdminOrManager } from '@/lib/session';
-import { getAdminDb } from '@/lib/firebase-admin';
-import { fsGetAll } from '@/lib/firestore-db';
+import { requireAdminOrManager } from '@/lib/session/server';
+import { getAdminDb } from '@/lib/server/firebase-admin';
+import { fsGetAll } from '@/lib/server/db';
 import type { AgentEvaluation } from '@/types';
 
 export async function GET(req: Request) {

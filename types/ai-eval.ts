@@ -11,6 +11,7 @@ export const AiEvalScenarioSchema = z.object({
   description: z.string(),
   difficulty: z.enum(['beginner', 'intermediate', 'advanced', 'expert']),
   level: z.number().optional(), // 1, 2, 3, 4
+  required: z.boolean().default(false), // If true, must pass for graduation
 
   // NEW: Single ChatGPT instruction prompt (replaces two-phase persona+evaluator)
   systemPrompt: z.string().optional(),
@@ -19,29 +20,27 @@ export const AiEvalScenarioSchema = z.object({
   externalPrompt: z.string().optional(),
   auditInstructions: z.string().optional(),
 
-  // Legacy Personas & Prompts (kept for backward compat & fallback)
+  // Core Persona Data (used for auto-prompt generation)
   customerPersona: z.string().optional(),
-  evaluatorInstructions: z.string().optional(),
-
-  // Parameters
-  initialMood: z.string().optional(),
   objective: z.string().optional(),
-
-  // Pass/Fail Logic (legacy — verdict now comes directly from ChatGPT)
-  passThreshold: z.number().default(35),
-  requiredCriteria: z.array(z.string()).default(['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness']),
-
-  // State Machine
-  maxTurns: z.number().default(12),
-  maxTurnsPerRound: z.number().default(6),
-  maxRounds: z.number().default(2),
-  minTurnsToWin: z.number().default(3),
+  initialMood: z.string().optional(),
   winCondition: z.string().optional(),
   failCondition: z.string().optional(),
-  bypassPrompt: z.string().optional(), // Prompt for external AI practice
+
+  // Parameters
+  passThreshold: z.number().default(35),
+
+  // Legacy / Deprecated Fields
+  evaluatorInstructions: z.string().optional(), // DEPRECATED: Use auditInstructions
+  maxTurns: z.number().default(12),
+  maxTurnsPerRound: z.number().default(6), // DEPRECATED
+  maxRounds: z.number().default(2), // DEPRECATED
+  minTurnsToWin: z.number().default(3), // DEPRECATED
+  requiredCriteria: z.array(z.string()).default(['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness']),
+  bypassPrompt: z.string().optional(), // DEPRECATED
 
   isActive: z.boolean().default(true),
-  isMaster: z.boolean().default(false), // If true, this scenario acts as the "All-in-One" Sandbox
+  isMaster: z.boolean().default(false), // DEPRECATED: Use 'required' to drive importance
   createdAt: z.string(),
   updatedAt: z.string(),
 });

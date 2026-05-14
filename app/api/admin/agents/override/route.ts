@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/firebase-admin';
-import { getServerUser } from '@/lib/session';
+import { getAdminDb } from '@/lib/server/firebase-admin';
+import { getServerUser } from '@/lib/session/server';
 import { getCanonicalQuizKey, TRAINING_REGISTRY } from '@/lib/registry';
 import { updateAgentOverallScore, updateGlobalAiEvalStats, updateGlobalQuizStats } from '@/lib/services/stats-service';
 import { AuditService } from '@/lib/services/audit-service';

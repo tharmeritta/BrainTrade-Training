@@ -69,7 +69,7 @@ export default function PresentationViewer({
       className={`flex flex-col overflow-hidden text-foreground ${embedded ? 'bg-transparent' : 'bg-muted/20 dark:bg-black/20'}`}
       style={{ height: embedded ? '100%' : 'calc(100dvh - 72px)' }}
     >
-      {/* ── Main content area ── */}
+      {/* -- Main content area -- */}
       <main
         className={`relative flex flex-1 min-h-0 items-center gap-2 sm:gap-3 ${embedded ? 'p-0' : 'px-3 pb-3 pt-3 sm:px-4 sm:pb-4'}`}
         onTouchStart={handleTouchStart}
@@ -83,7 +83,7 @@ export default function PresentationViewer({
           />
         )}
 
-        {/* ── Left Navigation ── */}
+        {/* -- Left Navigation -- */}
         <button
           disabled={!hasContent || slide === 1 || isControlledByOthers}
           onClick={() => goToSlide(slide - 1)}
@@ -93,7 +93,7 @@ export default function PresentationViewer({
           <ChevronLeft size={22} />
         </button>
 
-        {/* ── Trainer Controls ── */}
+        {/* -- Trainer Controls -- */}
         {isTrainer && (
           <TrainerToolbar 
             isLive={isLive} activeTool={activeTool} setActiveTool={setActiveTool}
@@ -102,7 +102,7 @@ export default function PresentationViewer({
           />
         )}
 
-        {/* ── Center: slide + overlays ── */}
+        {/* -- Center: slide + overlays -- */}
         <div className="flex-1 min-w-0 min-h-0 flex items-center justify-center sm:self-stretch">
           <motion.div
             ref={frameRef}
@@ -199,7 +199,7 @@ export default function PresentationViewer({
           </motion.div>
         </div>
 
-        {/* ── Right Navigation ── */}
+        {/* -- Right Navigation -- */}
         <button
           disabled={!hasContent || slide === total || isControlledByOthers}
           onClick={() => goToSlide(slide + 1)}
@@ -210,7 +210,7 @@ export default function PresentationViewer({
         </button>
       </main>
 
-      {/* ── Bottom Strip ── */}
+      {/* -- Bottom Strip -- */}
       <PresentationControls 
         t={t} progress={progress} slide={slide} total={total} hasContent={hasContent}
         isTrainer={isTrainer} viewedCount={viewedSlides.size} isModuleComplete={isModuleComplete}

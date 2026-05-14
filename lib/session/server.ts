@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import type { UserRole, StaffAccount } from '@/types';
-import { fsGet } from '@/lib/firestore-db';
+import { fsGet } from '@/lib/server/db';
 
 // Session cookie format: `${SECRET}|${role}|${uid}|${encodeURIComponent(name)}`
 // Legacy format (admin only): just `${SECRET}`

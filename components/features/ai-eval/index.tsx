@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Loader2, Trophy, XCircle, RotateCcw, ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { getAgentSession } from '@/lib/agent-session';
+import { getAgentSession } from '@/lib/session/agent';
 import { TRANSITION } from '@/lib/animations';
 import { IntroView } from './IntroView';
 import { ScenarioPicker } from './ScenarioPicker';
@@ -16,10 +16,10 @@ const DEFAULT_CRITERIA = ['rapport', 'objectionHandling', 'credibility', 'closin
 
 export default function AiEvaluation() {
   const t = useTranslations('aiEval');
-  // ── Step / navigation ──
+  // -- Step / navigation --
   const [step, setStep] = useState<EvalStep>('intro');
 
-  // ── Config (loaded from API) ──
+  // -- Config (loaded from API) --
   const [guideline,       setGuideline]       = useState<string | null>(null);
   const [criteriaKeys,    setCriteriaKeys]    = useState<string[]>(DEFAULT_CRITERIA);
   const [scenarios,       setScenarios]       = useState<EvalScenario[]>([]);
@@ -27,11 +27,11 @@ export default function AiEvaluation() {
   const [passedScenarios, setPassedScenarios] = useState<string[]>([]);
   const [unlockMode,      setUnlockMode]      = useState<'sequential' | 'flexible'>('sequential');
 
-  // ── Agent identity ──
+  // -- Agent identity --
   const [agentId,            setAgentId]            = useState<string | null>(null);
   const [agentName,          setAgentName]          = useState<string | null>(null);
 
-  // ── Audit session ──
+  // -- Audit session --
   const [selectedScenario, setSelectedScenario] = useState<EvalScenario | null>(null);
   const [auditResult,      setAuditResult]      = useState<CoachingData | null>(null);
   const [loading,          setLoading]          = useState(false);
@@ -42,7 +42,7 @@ export default function AiEvaluation() {
 
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Helpers ──
+  // -- Helpers --
 
   useEffect(() => {
     return () => {
@@ -76,7 +76,7 @@ export default function AiEvaluation() {
     }
   }, []);
 
-  // ── Handlers ──
+  // -- Handlers --
 
   const selectScenario = useCallback((scenarioId: string) => {
     const scenario = scenarios.find(s => s.id === scenarioId);
@@ -137,7 +137,7 @@ export default function AiEvaluation() {
     setFailed(false);
   }, []);
 
-  // ── Init ──
+  // -- Init --
 
   useEffect(() => {
     const session = getAgentSession();
@@ -150,7 +150,7 @@ export default function AiEvaluation() {
     }
   }, [fetchConfig]);
 
-  // ── Render ──
+  // -- Render --
 
   return (
     <AnimatePresence mode="wait">

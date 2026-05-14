@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fsGet, fsDelete } from '@/lib/firestore-db';
+import { fsGet, fsDelete } from '@/lib/server/db';
 import { AiEvalSession } from '@/types/ai-eval';
 
 // GET /api/ai-eval/active?agentId=xxx

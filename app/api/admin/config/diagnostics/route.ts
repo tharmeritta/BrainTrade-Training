@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerUser } from '@/lib/session';
-import { getAdminDb } from '@/lib/firebase-admin';
-import { fsGetAll } from '@/lib/firestore-db';
+import { getServerUser } from '@/lib/session/server';
+import { getAdminDb } from '@/lib/server/firebase-admin';
+import { fsGetAll } from '@/lib/server/db';
 import { Agent, TrainingPeriod, AgentEvaluation } from '@/types';
 
 export async function GET(req: NextRequest) {

@@ -1,7 +1,7 @@
 'use client';
 
 import NavBar from '@/components/ui/NavBar';
-import { getAgentSession } from '@/lib/agent-session';
+import { getAgentSession } from '@/lib/session/agent';
 import { useEffect, useState } from 'react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

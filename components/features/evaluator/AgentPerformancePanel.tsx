@@ -112,7 +112,7 @@ export const AgentPerformancePanel = ({
       <AnimatePresence mode="wait">
         <motion.div key={activeTab} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="space-y-2">
 
-          {/* ── Overview ── */}
+          {/* -- Overview -- */}
           {activeTab === 'overview' && (
             <>
               <div className="bg-card border border-border rounded-2xl overflow-hidden">
@@ -190,7 +190,7 @@ export const AgentPerformancePanel = ({
             </>
           )}
 
-          {/* ── Quiz Detail ── */}
+          {/* -- Quiz Detail -- */}
           {activeTab === 'quiz' && (
             <div className="space-y-2">
               {quizTopics.map(m => {
@@ -236,7 +236,7 @@ export const AgentPerformancePanel = ({
             </div>
           )}
 
-          {/* ── AI Eval Detail — unified history ── */}
+          {/* -- AI Eval Detail — unified history -- */}
           {activeTab === 'ai' && (
             <div className="space-y-2">
               {aiHistory.length === 0 ? (
@@ -274,7 +274,7 @@ export const AgentPerformancePanel = ({
             </div>
           )}
 
-          {/* ── QA / Human Eval Detail ── */}
+          {/* -- QA / Human Eval Detail -- */}
           {activeTab === 'qa' && (
             <div className="space-y-2">
               {qaHistory.length === 0 ? (

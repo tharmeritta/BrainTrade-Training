@@ -88,8 +88,9 @@ interface AdminSidebarProps {
     logout: () => void;
   };
   navigation: {
-    mainTabs: TabItem[];
-    adminTabs: TabItem[];
+    operationsTabs: TabItem[];
+    analyticsTabs: TabItem[];
+    managementTabs: TabItem[];
   };
   t: any;
 }
@@ -198,22 +199,29 @@ export default function AdminSidebar({
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 py-2 scrollbar-hide">
         <NavGroup 
-          items={navigation.mainTabs} 
+          label={t('groups.operations')}
+          items={navigation.operationsTabs} 
           sidebarCollapsed={state.sidebarCollapsed} 
           activeTabId={state.tab} 
           onSelectTab={actions.setTab} 
           t={t}
         />
-        {navigation.adminTabs.length > 0 && (
-          <NavGroup 
-            label="Admin" 
-            items={navigation.adminTabs} 
-            sidebarCollapsed={state.sidebarCollapsed} 
-            activeTabId={state.tab} 
-            onSelectTab={actions.setTab} 
-            t={t}
-          />
-        )}
+        <NavGroup 
+          label={t('groups.analytics')}
+          items={navigation.analyticsTabs} 
+          sidebarCollapsed={state.sidebarCollapsed} 
+          activeTabId={state.tab} 
+          onSelectTab={actions.setTab} 
+          t={t}
+        />
+        <NavGroup 
+          label={t('groups.management')}
+          items={navigation.managementTabs} 
+          sidebarCollapsed={state.sidebarCollapsed} 
+          activeTabId={state.tab} 
+          onSelectTab={actions.setTab} 
+          t={t}
+        />
         
         {state.isReadOnlyRole && !state.sidebarCollapsed && (
           <div className="mt-6 px-3">

@@ -135,7 +135,7 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
 
       <div className="relative z-10 flex min-h-screen">
 
-        {/* ── Sidebar ──────────────────────────────────────────────────── */}
+        {/* -- Sidebar ---------------------------------------------------- */}
         <aside className={`flex flex-col shrink-0 bg-background/70 backdrop-blur-2xl border-r border-border/40 sticky top-0 h-screen transition-all duration-300 ${sidebarCollapsed ? 'w-[60px]' : 'w-[220px]'}`}>
 
           <div className={`flex items-center h-16 border-b border-border/40 px-4 ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
@@ -243,7 +243,7 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
           </div>
         </aside>
 
-        {/* ── Main area ──────────────────────────────────────────────── */}
+        {/* -- Main area ------------------------------------------------ */}
         <div className="flex flex-col flex-1 min-w-0">
 
           <header className="sticky top-0 z-40 flex items-center justify-between h-16 px-6 bg-background/60 backdrop-blur-2xl border-b border-border/40">

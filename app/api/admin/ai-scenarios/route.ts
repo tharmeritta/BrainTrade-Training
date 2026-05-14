@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerUser, requireAdminOrManager } from '@/lib/session';
-import { fsGet, fsSet, fsDelete, fsGetAll } from '@/lib/firestore-db';
+import { getServerUser, requireAdminOrManager } from '@/lib/session/server';
+import { fsGet, fsSet, fsDelete, fsGetAll } from '@/lib/server/db';
 import { AiEvalScenario } from '@/types/ai-eval';
 import { createApprovalRequest } from '@/lib/services/approval-service';
 

@@ -11,7 +11,7 @@ import {
   setAgentSession as saveAgentSession, 
   clearAgentSession as removeAgentSession,
   AgentSession 
-} from '@/lib/agent-session';
+} from '@/lib/session/agent';
 import { useTrackPresence } from '@/lib/presence';
 
 // --- Types ---

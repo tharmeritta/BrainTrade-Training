@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminOrManager } from '@/lib/session';
-import { fsUpdate, fsDelete, fsGetAll, fsGet } from '@/lib/firestore-db';
+import { requireAdminOrManager } from '@/lib/session/server';
+import { fsUpdate, fsDelete, fsGetAll, fsGet } from '@/lib/server/db';
 import { createApprovalRequest } from '@/lib/services/approval-service';
 import type { StaffAccount } from '@/types';
 

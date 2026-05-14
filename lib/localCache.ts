@@ -31,7 +31,7 @@ function remove(name: string): void {
   } catch { /* ignore */ }
 }
 
-// ── Agent progress ─────────────────────────────────────────────────────────
+// -- Agent progress ---------------------------------------------------------
 
 export interface LocalCache {
   agentId: string;
@@ -49,7 +49,7 @@ export function getProgress(agentId: string): LocalCache | null {
   return load<LocalCache>(`progress_${agentId}`);
 }
 
-// ── Active evaluation session ──────────────────────────────────────────────
+// -- Active evaluation session ----------------------------------------------
 
 export interface CachedEvalSession {
   agentId: string;

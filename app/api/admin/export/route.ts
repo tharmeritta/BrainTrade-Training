@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminOrManager } from '@/lib/session';
+import { requireAdminOrManager } from '@/lib/session/server';
 import { getAllAgentStats } from '@/lib/agents';
 import type { AgentStats } from '@/types';
 import * as XLSX from 'xlsx';

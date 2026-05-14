@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { makeSessionToken } from '@/lib/session';
-import { fsGetWhere } from '@/lib/firestore-db';
-import { getAdminAuth } from '@/lib/firebase-admin';
+import { makeSessionToken } from '@/lib/session/server';
+import { fsGetWhere } from '@/lib/server/db';
+import { getAdminAuth } from '@/lib/server/firebase-admin';
 import type { StaffAccount } from '@/types';
 
 const FIVE_DAYS = 60 * 60 * 24 * 5;

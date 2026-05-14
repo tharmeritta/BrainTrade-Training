@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminManagerOrTrainer, requireTrainer } from '@/lib/session';
-import { fsAdd, fsGetAll } from '@/lib/firestore-db';
+import { requireAdminManagerOrTrainer, requireTrainer } from '@/lib/session/server';
+import { fsAdd, fsGetAll } from '@/lib/server/db';
 import type { DisciplineRecord } from '@/types';
 
 export async function GET(req: NextRequest) {

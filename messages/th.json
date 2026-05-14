@@ -197,6 +197,11 @@
       "aiscenarios": "สถานการณ์ AI",
       "profile": "โปรไฟล์ผู้ใช้"
     },
+    "groups": {
+      "operations": "การดำเนินงาน",
+      "analytics": "การวิเคราะห์",
+      "management": "การจัดการ"
+    },
     "aiScenarios": {
       "title": "สถานการณ์การฝึกของ AI",
       "desc": "จัดการบุคลิกลูกค้าและเกณฑ์การประเมินผลสำหรับ AI Eval",

@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Award } from 'lucide-react';
 import type { AgentStats } from '@/types';
-import { BadgePill } from '../AdminComponents';
+import { BadgePill } from '../ui/BadgePill';
 import { scoreColor, scoreBg, timeAgo } from '../AdminHelpers';
 
 interface LeaderboardTableProps {

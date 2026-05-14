@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCourseModule } from '@/lib/courses-server';
+import { getCourseModule } from '@/lib/server/courses';
 
 export async function GET(
   req: NextRequest,

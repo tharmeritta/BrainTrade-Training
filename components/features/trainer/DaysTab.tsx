@@ -14,7 +14,7 @@ import { TrainerService } from '@/lib/services/trainer-service';
 import { LiveIndicator } from '@/components/ui/LiveIndicator';
 import { AgentPresenceStatus, PresenceMap } from '@/lib/presence';
 
-// ── Day Record Form (per agent, per day) ─────────────────────────────────────
+// -- Day Record Form (per agent, per day) -------------------------------------
 
 interface DayRecordFormProps {
   periodId: string;
@@ -207,7 +207,7 @@ const DayRecordForm = memo(function DayRecordForm({
   );
 });
 
-// ── Days Tab ─────────────────────────────────────────────────────────────
+// -- Days Tab -------------------------------------------------------------
 
 interface DaysTabProps {
   period: TrainingPeriod;

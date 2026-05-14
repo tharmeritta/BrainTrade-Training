@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminOrIT, requireAdmin } from '@/lib/session';
-import { fsGetAll } from '@/lib/firestore-db';
+import { requireAdminOrIT, requireAdmin } from '@/lib/session/server';
+import { fsGetAll } from '@/lib/server/db';
 import { resolveApprovalRequest } from '@/lib/services/approval-service';
 import type { ApprovalRequest } from '@/types';
 

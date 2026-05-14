@@ -4,7 +4,7 @@
     "hash": "ce99191b92e0c469fee14f7ab6d751bf"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\next-env.d.ts": {
-    "mtime": 1777709582.06729,
+    "mtime": 1778751551.8169994,
     "hash": "b698cdd97fe8e3bd16dcd74899ad7cef"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\next.config.ts": {
@@ -14,10 +14,6 @@
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\postcss.config.js": {
     "mtime": 1773384368.5792978,
     "hash": "8640f9b2e6475cc3f5b1ff4548925765"
-  },
-  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\proxy.ts": {
-    "mtime": 1776759944.393871,
-    "hash": "7cff10e97f3bcaf702b39d996656b4aa"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\tailwind.config.ts": {
     "mtime": 1773806650.5515378,
@@ -32,112 +28,116 @@
     "hash": "6d1ea3903301940cabce61f3ab0df0fe"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\agents\\route.ts": {
-    "mtime": 1776747613.8345187,
-    "hash": "8ad31f7b75b7ae7ed94bfb592d5058db"
+    "mtime": 1778750790.3251429,
+    "hash": "370369f4956d3b0b7e9e5024b40df805"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\agents\\override\\route.ts": {
-    "mtime": 1776912405.9745138,
-    "hash": "7d0717c23ab5e29a5cb4dc2c4b77bb8f"
+    "mtime": 1778750828.1857338,
+    "hash": "46ed8c4a19a7c656b99c3f5b722daa46"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\agents\\[id]\\route.ts": {
-    "mtime": 1776747621.1463728,
-    "hash": "33c459853a8449bb250a4911e934829c"
+    "mtime": 1778750790.3281493,
+    "hash": "2aae6c051fad03c055aa1c3ba3487753"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\ai-scenarios\\route.ts": {
-    "mtime": 1774589834.401124,
-    "hash": "2a8d5eff3f815f7f7f10de733578259f"
+    "mtime": 1778750828.1894042,
+    "hash": "9364eada6db42f8c324141b24af6d0e0"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\approvals\\route.ts": {
-    "mtime": 1774513337.915335,
-    "hash": "199c283694c3e5af427981ad1268d08c"
+    "mtime": 1778750828.19041,
+    "hash": "0c0b98662d377bbd26916cc2df9fb635"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\bulk-progress\\route.ts": {
-    "mtime": 1775021239.938876,
-    "hash": "cbc7085f2b590e514d033d19294dae8b"
+    "mtime": 1778750790.334142,
+    "hash": "5f7d52c0c1d6be2b94b18ee36d2df014"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\change-password\\route.ts": {
-    "mtime": 1774767025.00579,
-    "hash": "18b1d6460f4aa5dfe5850dd8b4798bef"
+    "mtime": 1778750828.1929324,
+    "hash": "bd89ecd3a11132f0fe1b273691540910"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\config\\route.ts": {
-    "mtime": 1774537759.9008737,
-    "hash": "bc9d233ade5815d0bf18197eaf2a58e5"
+    "mtime": 1778750828.193938,
+    "hash": "ac1107bcc3146ccf11c443dfcc33b676"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\config\\diagnostics\\route.ts": {
-    "mtime": 1776923379.1822026,
-    "hash": "59f64fd4aa9c80b108bd4e5ea7f8eead"
+    "mtime": 1778750828.1959367,
+    "hash": "c1931ca0ab288c75d529a57ede7ab440"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\config\\diagnostics\\ai-audit\\route.ts": {
-    "mtime": 1776918785.7939878,
-    "hash": "26fc8906205915759612abf390660a85"
+    "mtime": 1778750828.196939,
+    "hash": "35311df10af6df6f22d3555d76c77315"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\config\\repair\\route.ts": {
-    "mtime": 1776923385.039487,
-    "hash": "92b12f3b93aba5f3c6829fc4932483af"
+    "mtime": 1778750828.1999846,
+    "hash": "32d353411d25988c357bc4dd88be1e71"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\create-user\\route.ts": {
     "mtime": 1773638410.0331814,
     "hash": "46188fec22141995bbb20bcff7d5a099"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\evaluations\\route.ts": {
-    "mtime": 1776913332.3189368,
-    "hash": "81d979ca5c1a70e0cba18a004bc37885"
+    "mtime": 1778750828.2021222,
+    "hash": "0d5d0e28fc83a890c7e082f0ed537869"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\export\\route.ts": {
-    "mtime": 1776827466.1364796,
-    "hash": "fcd4a9a62b1ab2d34340a13dc19bf210"
+    "mtime": 1778750828.2046814,
+    "hash": "ce273241874009db0a42bdafed9f41b9"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\export-slides\\route.ts": {
-    "mtime": 1774537988.4232843,
-    "hash": "5b9866b9f5681607b7fe79690af7819e"
+    "mtime": 1778751364.8600621,
+    "hash": "8b0684840e57047c1e2095b9c65ad334"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\export-staff\\route.ts": {
-    "mtime": 1774538018.127171,
-    "hash": "e4e443d1d59ae890217fa3cefa5a537c"
+    "mtime": 1778750828.207704,
+    "hash": "21ed6185fbd86aba74aeba5e539c1d20"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\history\\route.ts": {
-    "mtime": 1776849220.3794107,
-    "hash": "cc50148713d2fde5994f23ea19904a3b"
+    "mtime": 1778750828.2107632,
+    "hash": "b590749f792927ac2eaf8a4906402fbb"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\live-feed\\route.ts": {
-    "mtime": 1776745195.7918096,
-    "hash": "d4ca5f7cbf665a6a8102694671680c87"
+    "mtime": 1778750828.2127783,
+    "hash": "b152feb5536f152208c7c001f427a8e5"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\overview\\route.ts": {
-    "mtime": 1776848854.398892,
-    "hash": "5bbdc862792d73f4b412fd814b3ebb47"
+    "mtime": 1778750828.2153108,
+    "hash": "d7753267781122ec56c8bcedb55d6dd2"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\parse-quiz\\route.ts": {
-    "mtime": 1775119079.3897083,
-    "hash": "f7343ae3cd64875d3dc30a39025d686c"
+    "mtime": 1778750828.2178292,
+    "hash": "7a2d4292a0cfb930fd7fa623e7bee0be"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\seed\\route.ts": {
-    "mtime": 1773819621.1528997,
-    "hash": "b8ae9267bd33fa7331bc6d42d6866d87"
+    "mtime": 1778750790.3589942,
+    "hash": "03ffaf1c99998af0252cffb9a478a4e1"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\staff\\route.ts": {
-    "mtime": 1776748028.6821864,
-    "hash": "503e13059e897b852f8a65990a56d8a5"
+    "mtime": 1778750790.3613625,
+    "hash": "455fca442b8cfb2fbed22e99ab2edb74"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\staff\\[id]\\route.ts": {
-    "mtime": 1774538449.4672012,
-    "hash": "5b64f71791b9a2897acca96c111de637"
+    "mtime": 1778750828.2207625,
+    "hash": "cde4c9db34eda5feab67b6f7a947501a"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\admin\\training\\finalize\\route.ts": {
-    "mtime": 1776849286.8218741,
-    "hash": "49b6b67ea558a1917bb5d379f8b82b19"
+    "mtime": 1778753153.8031955,
+    "hash": "77719cd4292ed83d93e51003fddb683a"
+  },
+  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\agent\\acknowledge\\route.ts": {
+    "mtime": 1778753067.0301154,
+    "hash": "a9e2051156f25df08631e5bd109d3022"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\agent\\progress\\route.ts": {
-    "mtime": 1776849164.0782206,
-    "hash": "5dc1a820b77a9ab560ac441746045bc5"
+    "mtime": 1778750828.2268379,
+    "hash": "524c4f89d11347f1a7fe32111464ed6e"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\agent\\sync\\route.ts": {
-    "mtime": 1776835154.306323,
-    "hash": "6c8712eaddb2245c249d692e50bb633d"
+    "mtime": 1778750790.3720608,
+    "hash": "c48760764474814e294f9d3cbfb9abc3"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\agents\\route.ts": {
-    "mtime": 1776747225.207657,
-    "hash": "cfd84f600907d2a75708bf68f1791e66"
+    "mtime": 1778750790.3735924,
+    "hash": "b1e4e16f2420b1a5683753bf0d85bba9"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\ai-audit\\route.ts": {
     "mtime": 1775456570.777885,
@@ -148,92 +148,92 @@
     "hash": "20b348256ff55242a3334ddc43f22130"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\ai-eval\\active\\route.ts": {
-    "mtime": 1774521773.2921321,
-    "hash": "e361477e581a451d91dc63563d426a3e"
+    "mtime": 1778750790.3761327,
+    "hash": "3c6028c5c233193b10f5efb48ccb2d3f"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\ai-eval\\config\\route.ts": {
-    "mtime": 1776757020.1507607,
-    "hash": "39ba72b2a7c5bf7a5b76affd3e6e63ac"
+    "mtime": 1778750790.378134,
+    "hash": "3e5b4ef94fcaabe927afef977c06396d"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\ai-eval\\start\\route.ts": {
     "mtime": 1774599637.9921064,
     "hash": "fc63396d3487f38c5a100f5d25c077aa"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\auth\\agent-login\\route.ts": {
-    "mtime": 1776761031.0236905,
-    "hash": "ff59a7429c9602eba725139f07f8f8ee"
+    "mtime": 1778753480.4079542,
+    "hash": "00871109e3bd8b2bb057578c62deeba2"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\auth\\firebase-token\\route.ts": {
-    "mtime": 1774239418.011657,
-    "hash": "3fea031d8a8c9f9d74618dc8aa7777c6"
+    "mtime": 1778750828.2350132,
+    "hash": "4edd1fd4dcbbbb5cb696a4cf43d6b73b"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\auth\\session\\route.ts": {
-    "mtime": 1776748025.911915,
-    "hash": "3291670dab6d30dc0164e813536b3349"
+    "mtime": 1778750828.2385595,
+    "hash": "ad7fae36345ef6687474d2a22101bd97"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\config\\public\\route.ts": {
-    "mtime": 1774505335.114396,
-    "hash": "a3ad6e83e27250ba92a6385d9ef5cd54"
+    "mtime": 1778750790.3876715,
+    "hash": "3add90433565b17caeeaaf73cd19e758"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\courses\\route.ts": {
-    "mtime": 1774491972.6963558,
-    "hash": "a7514e5942caa07678c68aee0c4d53bf"
+    "mtime": 1778750790.3896844,
+    "hash": "232974fdc2ec11e06d61bc9b94eeb835"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\courses\\[id]\\route.ts": {
-    "mtime": 1774490320.7970843,
-    "hash": "79bd953b052fa182c8af0f6f18ac0930"
+    "mtime": 1778750790.3916864,
+    "hash": "dfa6357f5129887f173f6c3b71913826"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\evaluator\\agent-stats\\route.ts": {
-    "mtime": 1774767004.6573524,
-    "hash": "807f36c8587a713c2d2001e1f9740766"
+    "mtime": 1778750828.243083,
+    "hash": "2fe96208124e53d90069df6be7d3efea"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\evaluator\\all-agent-stats\\route.ts": {
-    "mtime": 1774767007.9536376,
-    "hash": "cf86e68dc03e8fd539bf57b781dcd0b3"
+    "mtime": 1778750828.2456164,
+    "hash": "df264c79b655b3a3f28010b5c713407e"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\evaluator\\evaluations\\route.ts": {
-    "mtime": 1776843599.7498078,
-    "hash": "e8779d5e38322189cf306b4196b51cd5"
+    "mtime": 1778750828.246614,
+    "hash": "917627265ed4c3f893554daf0dac9fed"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\evaluator\\evaluations\\[id]\\route.ts": {
-    "mtime": 1776843596.2619057,
-    "hash": "f2127a9a0ee8da107e218f31af53d5e1"
+    "mtime": 1778750828.2486188,
+    "hash": "be440f934bcc88109cf774110111a115"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\quiz\\config\\route.ts": {
-    "mtime": 1775040674.9511228,
-    "hash": "a63051372705e33558dab0f65a0b2902"
+    "mtime": 1778750790.407955,
+    "hash": "bba74cce097f369db54950382c83365b"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\quiz\\status\\route.ts": {
-    "mtime": 1776747515.617644,
-    "hash": "a3942f074ed2451780c8e3bdb2392e46"
+    "mtime": 1778750790.4170365,
+    "hash": "f66bc9bf5a3d0ce9103900b07ecf5c1e"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\quiz\\submit\\route.ts": {
-    "mtime": 1776849148.4568512,
-    "hash": "2341ce006d6663b1ac9cfb46186b0683"
+    "mtime": 1778750828.2528596,
+    "hash": "94d3a4956d15fb4bbda8bacb8fc3d9e3"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\slide\\route.ts": {
     "mtime": 1774189409.348056,
     "hash": "f631317c0a16b429db4ff882e1041e72"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\trainer\\discipline\\route.ts": {
-    "mtime": 1774839137.9022372,
-    "hash": "a8263e49239a45e36a4f4747d9ab2105"
+    "mtime": 1778750828.255713,
+    "hash": "fe56a0965be89881265092dbf17f9832"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\trainer\\discipline\\[id]\\route.ts": {
-    "mtime": 1774839145.5176885,
-    "hash": "faae9645830a411f7e4aea8fa44c9d19"
+    "mtime": 1778750828.2609608,
+    "hash": "2832bfdc3a923307c5f2333d36aadb7d"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\trainer\\training-periods\\route.ts": {
-    "mtime": 1774538511.4313035,
-    "hash": "549a48269933764718a11c1a58dcb734"
+    "mtime": 1778750828.2633164,
+    "hash": "c2101588cdcaef06c379e4308774bb0b"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\trainer\\training-periods\\[id]\\route.ts": {
-    "mtime": 1774839111.925409,
-    "hash": "118d9d6192aa971a662e9ba8a0ddcb63"
+    "mtime": 1778750828.2662175,
+    "hash": "6696b0d0ce9bae5348d75e1c1520a6b5"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\api\\trainer\\training-periods\\[id]\\days\\route.ts": {
-    "mtime": 1774839159.4909346,
-    "hash": "64ffe1dbe0bb4657e17460b00e4232f0"
+    "mtime": 1778750828.2691655,
+    "hash": "74697d7e40700b47011cb948a6c898e2"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\[locale]\\error.tsx": {
     "mtime": 1776754219.012833,
@@ -252,12 +252,12 @@
     "hash": "7b7b46b43d62dc773328ac0ee5c45383"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\[locale]\\admin\\page.tsx": {
-    "mtime": 1776758329.7402215,
-    "hash": "cc746925ed6819ac323082fc20832bd6"
+    "mtime": 1778750828.2730534,
+    "hash": "723f2c0d6725284a05669ccab6cbe9aa"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\[locale]\\ai-eval\\layout.tsx": {
-    "mtime": 1774180353.130716,
-    "hash": "17dc09feea732361a2043dff9e148009"
+    "mtime": 1778750828.276053,
+    "hash": "744af27d78bee7bc1840d8f9f44b9042"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\[locale]\\ai-eval\\loading.tsx": {
     "mtime": 1773713767.6664894,
@@ -268,8 +268,8 @@
     "hash": "d7fc754f8bc3bffcaf923a8b61efe779"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\[locale]\\dashboard\\layout.tsx": {
-    "mtime": 1774423033.9234047,
-    "hash": "7a47438b702dfd76d5871eb3f9fcebab"
+    "mtime": 1778750828.2785914,
+    "hash": "db421871bdcb3d0a5d74141b602cdc82"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\[locale]\\dashboard\\page.tsx": {
     "mtime": 1776749942.2829983,
@@ -280,20 +280,20 @@
     "hash": "996fb5cb6889cf8c5d9b5b9d1fb7e3c9"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\[locale]\\evaluator\\page.tsx": {
-    "mtime": 1776757410.1357238,
-    "hash": "acc8d60ff47e8bc54ffa4e93863197c0"
+    "mtime": 1778750828.2831295,
+    "hash": "0550e515418cd60d5926984790814839"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\[locale]\\learn\\layout.tsx": {
-    "mtime": 1774180339.1443734,
-    "hash": "03e33f283ccd1a9185e7fe1be04341eb"
+    "mtime": 1778750828.2871306,
+    "hash": "d1c92203a9d188ee489200efd7d856d4"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\[locale]\\learn\\page.tsx": {
-    "mtime": 1774490036.5691977,
-    "hash": "e2a1a271b66ebd539d4048ed30bcb9c0"
+    "mtime": 1778750790.475183,
+    "hash": "ad96442b4779bc0aaca0340bc336fb8b"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\[locale]\\learn\\[module]\\page.tsx": {
-    "mtime": 1776757422.6627786,
-    "hash": "291053647596d5fcaea9a6d31f784b2d"
+    "mtime": 1778750828.2896633,
+    "hash": "303b273da13de53e9f2a31a26b7d74b7"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\[locale]\\login\\page.tsx": {
     "mtime": 1776754206.919239,
@@ -304,16 +304,16 @@
     "hash": "df151c4a1be5247dbe0b7cf326a0522e"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\[locale]\\quiz\\layout.tsx": {
-    "mtime": 1774180351.1125693,
-    "hash": "bc328597cd8007a2246f3210d43fbbf9"
+    "mtime": 1778750828.2921805,
+    "hash": "c519254870c5379d48078b0ae395f00b"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\[locale]\\quiz\\loading.tsx": {
     "mtime": 1773713759.7979066,
     "hash": "a9439b9a55ef4bd41111b801cc5702ce"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\[locale]\\quiz\\page.tsx": {
-    "mtime": 1775040627.1777706,
-    "hash": "f7d3d8d9b0d00eef2dc3fcb13a839647"
+    "mtime": 1778755005.417673,
+    "hash": "d01fa559ce388753e58879f7ce5c1939"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\app\\[locale]\\quiz\\[module]\\page.tsx": {
     "mtime": 1776757429.1916454,
@@ -324,8 +324,8 @@
     "hash": "09c4cca0ebb2820db519455ff73d7fb2"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\AgentAuthGuard.tsx": {
-    "mtime": 1776748961.7025082,
-    "hash": "649cb1ad4409dbd7fb05dedd78c13516"
+    "mtime": 1778751485.6677692,
+    "hash": "e62c0e8770d927a92348375d2e254ef9"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\AgentEntry.tsx": {
     "mtime": 1776850400.7721167,
@@ -340,32 +340,32 @@
     "hash": "a89be479394b9bcd03a957fadbed0ca7"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\CourseHub.tsx": {
-    "mtime": 1774274642.721285,
-    "hash": "031de9e2c5508b75fb3bd9b1c623196d"
+    "mtime": 1778751364.8916938,
+    "hash": "0c509a0d6bcadf0b657f5a8cd2f9b995"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\Dashboard.tsx": {
-    "mtime": 1776850374.9573658,
-    "hash": "5a279233f10162ce61890226bee9af9d"
+    "mtime": 1778750828.306371,
+    "hash": "4da382b153f498852b173566d0bb149a"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\DrawingCanvas.tsx": {
     "mtime": 1776759532.847972,
     "hash": "04cc94dce5509735ccfb15d16e43f01c"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\EvaluatorDashboard.tsx": {
-    "mtime": 1776828448.525209,
-    "hash": "aed2b7f34e2faa79d04fe38ae4bc22af"
+    "mtime": 1778751364.894326,
+    "hash": "0da8c423caf8f4ea77909b176ff792ee"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\PresentationViewer.tsx": {
-    "mtime": 1776828874.070098,
-    "hash": "20b3d67ab9ce54b0ab476145dffe4f0e"
+    "mtime": 1778751364.895319,
+    "hash": "8b9ca55ec6059a0ecd7d5072b184b3be"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\QuizSystem.tsx": {
     "mtime": 1774163879.6990378,
     "hash": "5987edfa540f2ce67182a4ade3c4dd77"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\SessionProvider.tsx": {
-    "mtime": 1776749927.5502844,
-    "hash": "7a69023a7ec9d09291bcedf5aa5cf754"
+    "mtime": 1778750828.3104534,
+    "hash": "4bad76074172e2fc371ae6ba8635065f"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\TrainerPanel.tsx": {
     "mtime": 1777718902.5571728,
@@ -376,8 +376,8 @@
     "hash": "f5124b3f8e3ee9be2041a02081b4b159"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\AdminComponents.tsx": {
-    "mtime": 1774845420.9607513,
-    "hash": "30d0045388f92aa8f79ad6a1164cbdcd"
+    "mtime": 1778752532.350858,
+    "hash": "6f1212d49d0877817e61b1a02df7ed05"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\AdminHeader.tsx": {
     "mtime": 1776831471.3840253,
@@ -388,24 +388,24 @@
     "hash": "ee20332a5881014f8fcc286d86d30c69"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\AdminSidebar.tsx": {
-    "mtime": 1776831467.872215,
-    "hash": "0eb1c8e961c943ebb1c71b6774434499"
+    "mtime": 1778752641.03225,
+    "hash": "df0a6539c9e7ba55743204a3da19434d"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\AdminTabContent.tsx": {
-    "mtime": 1776848940.3470817,
-    "hash": "503027f4012c5d98f92a9bf92b3257ea"
+    "mtime": 1778752560.2776134,
+    "hash": "2894b98c7903636105909c26d59f579f"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\AgentDetailModal.tsx": {
     "mtime": 1776852937.4094086,
     "hash": "89230a3433ee083ae781e8324deea078"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\AiScenarioImportModal.tsx": {
-    "mtime": 1776759444.582771,
-    "hash": "9acd95687507bbaff6192fb9b527383e"
+    "mtime": 1778750893.6476326,
+    "hash": "1212dadd7d1731f3d21c74db4fb62c0c"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\AiScenariosTab.tsx": {
-    "mtime": 1776852212.7278786,
-    "hash": "5fdc1a69b60719e3f6be04edb2a4c9d9"
+    "mtime": 1778751364.9010067,
+    "hash": "78db8ab9efe5bc92dc8e9664b1519f35"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\ApprovalsTab.tsx": {
     "mtime": 1774515415.9097302,
@@ -420,20 +420,20 @@
     "hash": "24a3648adad0b961b49a8676da33451a"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\dashboard-policy.ts": {
-    "mtime": 1776848921.5423074,
-    "hash": "e5144abbf85685f749b2e31d45f269e1"
+    "mtime": 1778752428.8294144,
+    "hash": "597aed3fea0b5ffb1b2db4d3342573eb"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\DetailedEvaluation.tsx": {
     "mtime": 1776827487.0095744,
     "hash": "eab9dba1acd54605bc37e66897bfa352"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\EvaluationsTab.tsx": {
-    "mtime": 1776917861.1087682,
-    "hash": "22044a143c81ffd80ada7f3ba2a85e1a"
+    "mtime": 1778752545.2423105,
+    "hash": "d4aaac4289e0b87720f81f1f947c3323"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\HistoryTab.tsx": {
-    "mtime": 1776853466.2497327,
-    "hash": "d0052278750ef2051cc4bf464a514993"
+    "mtime": 1778752545.2423105,
+    "hash": "08f3afb5141e73b774a2aae97c3f3ff3"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\HRAnalyticsTab.tsx": {
     "mtime": 1774865060.11406,
@@ -444,8 +444,8 @@
     "hash": "6215519ad2208e3a40455ead528fc083"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\OverviewTab.tsx": {
-    "mtime": 1776852514.4957473,
-    "hash": "5a917129cbca3885dd098c885641054a"
+    "mtime": 1778752545.2423105,
+    "hash": "5ba5bb4476da21364d9001827571177e"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\ReportsTab.tsx": {
     "mtime": 1774865161.0847983,
@@ -460,8 +460,8 @@
     "hash": "071443dd29d2a2c6dc4276354f6dcb79"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\useAdminDashboard.ts": {
-    "mtime": 1776831445.768664,
-    "hash": "e55715983acc6206ab0bd0b2cc453b88"
+    "mtime": 1778752577.299583,
+    "hash": "a770d389e69d361aa9089763ce3aff7c"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\adjustments\\AiEvalEditor.tsx": {
     "mtime": 1776838519.814395,
@@ -484,8 +484,8 @@
     "hash": "d1f8996e1d2cef1b0a94a0b6ade89f5a"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\adjustments\\QuizzesEditor.tsx": {
-    "mtime": 1776839082.1959474,
-    "hash": "ec16591c71d29947852425ee972f8ee5"
+    "mtime": 1778755054.8736973,
+    "hash": "f8dfa4bbdc532d7c8207031b7b549dcf"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\adjustments\\SharedUI.tsx": {
     "mtime": 1776838499.3914115,
@@ -504,20 +504,20 @@
     "hash": "f504aca25d96fc8991de4cecc2271679"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\agent-detail\\ProfileHeader.tsx": {
-    "mtime": 1776852925.2780032,
-    "hash": "082fa7db2bd252c5a4ce498e04d809c0"
+    "mtime": 1778752545.2433228,
+    "hash": "59081a703a133972c32965c66e136e19"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\ai-scenarios\\constants.ts": {
     "mtime": 1776852156.8919282,
     "hash": "d47edcab6bed16714962934d5852f613"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\ai-scenarios\\ScenarioForm.tsx": {
-    "mtime": 1776852177.929456,
-    "hash": "c4158c791b89e3623030be8a819c27e2"
+    "mtime": 1778751364.9099517,
+    "hash": "9856c431c02486e4b7aa5fc78d003481"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\ai-scenarios\\ScenarioList.tsx": {
-    "mtime": 1776852191.2189987,
-    "hash": "f4a24047bd0fa45780496b2e95361af7"
+    "mtime": 1778751364.9120283,
+    "hash": "e57b94e070d746280777dad5c83c413b"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\evaluations\\ActiveBatchHeader.tsx": {
     "mtime": 1776917406.912269,
@@ -532,8 +532,8 @@
     "hash": "efcbf367a96d036e679eadb35f446dc3"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\evaluations\\EvaluationsDashboard.tsx": {
-    "mtime": 1776917401.5851803,
-    "hash": "51bf5da62f5cb94cbb43709816643bcd"
+    "mtime": 1778752545.2433228,
+    "hash": "cf117f1395a9332dc6a4cea16d9901aa"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\evaluations\\useEvaluationsData.ts": {
     "mtime": 1776917841.5882747,
@@ -544,16 +544,16 @@
     "hash": "d5270dbcf5a54c0308d9a6d1df7ae3ba"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\overview\\GraduationRoster.tsx": {
-    "mtime": 1776852479.1217134,
-    "hash": "2066a5357a8991280e5775c67aeb3788"
+    "mtime": 1778752545.2433228,
+    "hash": "28863788985cabae07f807d817b330d2"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\overview\\KpiSection.tsx": {
-    "mtime": 1776852462.2252052,
-    "hash": "224a54633e2433a1482a28431eea7bd4"
+    "mtime": 1778752545.2433228,
+    "hash": "7c28a4fc2984930079408b0773623c74"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\overview\\LeaderboardTable.tsx": {
-    "mtime": 1776852502.3352823,
-    "hash": "2eb1b2f77d9a072f527a0c1f7858f9f1"
+    "mtime": 1778752545.2423105,
+    "hash": "60eb6f31500088e9ec0340d03c0177fb"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\overview\\TrainingWavesSection.tsx": {
     "mtime": 1776852468.4139974,
@@ -570,6 +570,22 @@
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\staff\\StaffSection.tsx": {
     "mtime": 1776852670.362893,
     "hash": "accba3fcb56ccf16dbdc3c833cd7b0d9"
+  },
+  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\ui\\BadgePill.tsx": {
+    "mtime": 1778752507.581222,
+    "hash": "74301ec3b4a8acab93bea4c9ebca1859"
+  },
+  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\ui\\LivePulse.tsx": {
+    "mtime": 1778752501.7681642,
+    "hash": "f7b9f1f9d3cfcbaa7bd5e06ab6d922a4"
+  },
+  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\ui\\Metrics.tsx": {
+    "mtime": 1778752492.3060653,
+    "hash": "d5f59ce80be57c8c04dbb7be8c53c3b5"
+  },
+  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\admin\\ui\\Pipeline.tsx": {
+    "mtime": 1778752517.1832263,
+    "hash": "4c8ee8eaadf5f6307183c55250b0aaea"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\agent-entry\\BrandingPanel.tsx": {
     "mtime": 1776850604.1761425,
@@ -596,16 +612,16 @@
     "hash": "87a2d0a3fd16d7a2c970d00269b30f9f"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\agent-entry\\useAgentEntry.ts": {
-    "mtime": 1776829945.6701963,
-    "hash": "48a13d3e2a9924d8adc7f8c463fe4f8d"
+    "mtime": 1778750828.3427134,
+    "hash": "20a646461fb71f7ffe379515dfb6a530"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\agent-training\\BackgroundEffects.tsx": {
     "mtime": 1776753411.6072276,
     "hash": "4b5529c143d629e7b6efed069b874a66"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\agent-training\\index.tsx": {
-    "mtime": 1775096390.6698248,
-    "hash": "e718d095ba28901260e3379b63c97e70"
+    "mtime": 1778753542.7743177,
+    "hash": "07323943bb7fdeead5a0b186f03ca905"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\agent-training\\ModuleCard.tsx": {
     "mtime": 1774927068.4805055,
@@ -616,8 +632,8 @@
     "hash": "c990d5c151d09cc422f36acfc26a62ea"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\agent-training\\ProfileSidebar.tsx": {
-    "mtime": 1776827860.056631,
-    "hash": "19b556148ac476db7075a8f1a094a955"
+    "mtime": 1778753536.1543028,
+    "hash": "056053e530c551c605c16f5e25799259"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\agent-training\\StepTimeline.tsx": {
     "mtime": 1774698953.5408034,
@@ -628,8 +644,8 @@
     "hash": "e75e31fdbc3eb25c3823c1e3d5273c06"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\agent-training\\celebration\\CongratulationsCard.tsx": {
-    "mtime": 1774693461.0777135,
-    "hash": "e59ad022a2f53ce06bab0b7f9c3ed2ec"
+    "mtime": 1778753119.1122866,
+    "hash": "c5b4bd8a844f55352a3d217fcb51d077"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\agent-training\\celebration\\TrophyHero.tsx": {
     "mtime": 1774693461.0777135,
@@ -644,12 +660,12 @@
     "hash": "d215233ebf6468ebef25523fc8111093"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\ai-eval\\CoachingCard.tsx": {
-    "mtime": 1775107922.5228813,
-    "hash": "97a2ef4dd945f6d9bf171f2cd719b50d"
+    "mtime": 1778751364.9524553,
+    "hash": "96eac8605502d8cb80cbffe51d33a40a"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\ai-eval\\index.tsx": {
-    "mtime": 1775456734.3626401,
-    "hash": "6bb1204c9f034fbbb3c1e919beb08df7"
+    "mtime": 1778751364.9684749,
+    "hash": "d8265bd01ccfb5e0e06ee567744a7f54"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\ai-eval\\IntroView.tsx": {
     "mtime": 1774600354.902484,
@@ -672,8 +688,8 @@
     "hash": "af81d6d1e9ec25bbf2b1f5579310bd9b"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\evaluator\\AgentPerformancePanel.tsx": {
-    "mtime": 1776828360.5064805,
-    "hash": "cef9b9e0dbc596201b6049540e329dd5"
+    "mtime": 1778751364.9754806,
+    "hash": "d1762e05a43dc1f3736e536b185a4617"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\evaluator\\EvalForm.tsx": {
     "mtime": 1776828220.889531,
@@ -684,16 +700,16 @@
     "hash": "7ef24e9e1d09af2879940df53021cb47"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\evaluator\\OverviewPanel.tsx": {
-    "mtime": 1776828367.4963489,
-    "hash": "3f85641358bcd1153a3c05820ea9a73d"
+    "mtime": 1778752545.2423105,
+    "hash": "1177fdf44b0f496b546eca868d137c81"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\evaluator\\useEvaluatorDashboard.ts": {
     "mtime": 1776828273.827169,
     "hash": "d0d3f059312491128bfe89e3f39fe666"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\presentation\\PresentationControls.tsx": {
-    "mtime": 1776828850.2963603,
-    "hash": "e7867561253f3a26a1daf0302b1905b6"
+    "mtime": 1778134375.992647,
+    "hash": "77f846eb9652fa355dc644ae0d5e383c"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\presentation\\PresentationHeader.tsx": {
     "mtime": 1776828840.648179,
@@ -704,36 +720,36 @@
     "hash": "56d91b7b6dd795914799b7291adf67ec"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\presentation\\usePresentation.ts": {
-    "mtime": 1776829221.6026223,
-    "hash": "083de84fd9ca57f72ecf5d41d27b5a5d"
+    "mtime": 1778750828.3575873,
+    "hash": "5fa012a08a0e1232061d6d5bf3ddfba3"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\quiz\\index.tsx": {
-    "mtime": 1775040658.8710115,
-    "hash": "e6c8ecc255e54fe72f9359f3386df135"
+    "mtime": 1778751365.0318105,
+    "hash": "3002e9468c4e1ea3cda4ebc1cf79460c"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\quiz\\QuizBriefing.tsx": {
-    "mtime": 1774273598.6598742,
-    "hash": "aba9c6be2d6eb2a517dd8de4d972556d"
+    "mtime": 1778751365.052553,
+    "hash": "4d11923625eaa02472f6ba515308d57f"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\quiz\\QuizResult.tsx": {
-    "mtime": 1774273608.0022745,
-    "hash": "ae74549a8ae66ee88b165052c4f1ee96"
+    "mtime": 1778751365.116733,
+    "hash": "46ea85d5a0be7fd3ba1361892f44b71b"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\quiz\\QuizSession.tsx": {
-    "mtime": 1774163746.236518,
-    "hash": "5e3ed19f0700c07f2a7a318a14b5fcf7"
+    "mtime": 1778751365.1474483,
+    "hash": "630f65a73a3bd3d53f6e264da02b56cf"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\quiz\\shared.ts": {
-    "mtime": 1774163602.152872,
-    "hash": "5b2310462d52387a197bf7d8f205e9d9"
+    "mtime": 1778751365.1836572,
+    "hash": "839a08dbb89484c03a13ce236ca45893"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\quiz\\types.ts": {
-    "mtime": 1774163615.5296612,
-    "hash": "9ff63ad6c18ba6bf96ce174799db6db0"
+    "mtime": 1778751365.2023256,
+    "hash": "a82959cc3b2ac97673d8b5d37bb604ad"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\trainer\\DaysTab.tsx": {
-    "mtime": 1777718909.83624,
-    "hash": "1ec7d8f4e2b66aa49e8c2d379a23fb90"
+    "mtime": 1778751365.2053232,
+    "hash": "8cc167f2edf1e29ffcd9da693c29fbb9"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\features\\trainer\\DisciplineTab.tsx": {
     "mtime": 1777718890.5692813,
@@ -776,8 +792,8 @@
     "hash": "55830bd10ef6f9dfe8e5ad2716f47686"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\ui\\NavBar.tsx": {
-    "mtime": 1775013831.7962089,
-    "hash": "2c5eaa6ae87bbbf090f8dc800926fcb2"
+    "mtime": 1778751490.063916,
+    "hash": "b30e601a318477f8f888bbbbb63e2329"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\components\\ui\\NavigationProgress.tsx": {
     "mtime": 1776757109.9435844,
@@ -811,25 +827,21 @@
     "mtime": 1776754201.644658,
     "hash": "e5a41e29321dc5794d1adf78bbfbd745"
   },
-  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\agent-session.ts": {
-    "mtime": 1774504635.2341814,
-    "hash": "8fa3bbfef9cb830e0b65d39877aa78c9"
-  },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\agents.ts": {
-    "mtime": 1776848840.992355,
-    "hash": "5b7905012fc9ef063e86bd3aa4f9226d"
+    "mtime": 1778753488.1232004,
+    "hash": "0989c80f04d1bdb8d8340e0b0d1ff619"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\animations.ts": {
     "mtime": 1773897328.6055655,
     "hash": "925207eaa121e09828bc8c89d4253869"
   },
+  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\api-utils.ts": {
+    "mtime": 1778750828.3873987,
+    "hash": "8217081d74282a148d9c114e228fe347"
+  },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\completion.ts": {
     "mtime": 1775461491.3499186,
     "hash": "71f2d5f53023b19adbdda5f032830417"
-  },
-  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\courses-server.ts": {
-    "mtime": 1776757529.0441003,
-    "hash": "88b4f3f5f1d3931504575ce24064adc6"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\courses.ts": {
     "mtime": 1774489993.4193206,
@@ -843,17 +855,9 @@
     "mtime": 1774693011.723558,
     "hash": "0a7922b555b376088d2e764a309ed708"
   },
-  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\firebase-admin.ts": {
-    "mtime": 1776912870.1451957,
-    "hash": "f6aceee4fb972b835f24213141358373"
-  },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\firebase.ts": {
     "mtime": 1776754253.7811358,
     "hash": "987650a3e038bdc5c569a511abb89279"
-  },
-  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\firestore-db.ts": {
-    "mtime": 1776745423.4250934,
-    "hash": "59d9316c2c27bf97c1f84c64855e44d0"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\gemini.ts": {
     "mtime": 1775454652.7864184,
@@ -864,8 +868,8 @@
     "hash": "3ee3356f7038e55009e0f1131961c083"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\localCache.ts": {
-    "mtime": 1774501560.1953917,
-    "hash": "d4d94d82b78058b26ff51fe67e1bea24"
+    "mtime": 1778751365.2254367,
+    "hash": "21454b57e536f7c27421f4c94b3b5db6"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\openai.ts": {
     "mtime": 1774514239.734505,
@@ -876,24 +880,12 @@
     "hash": "8922176b204e3d6cbce507d7189148a2"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\quiz-data.ts": {
-    "mtime": 1775037394.1231036,
-    "hash": "1258df6d86b484c88e0fe89af033fa6b"
+    "mtime": 1778751365.251822,
+    "hash": "cc0bee2846fa635c5fe567c50a693231"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\registry.ts": {
-    "mtime": 1775040482.863079,
-    "hash": "2d32e2f9736cb911756b8a5dfabe81be"
-  },
-  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\session-client.ts": {
-    "mtime": 1774767001.0159123,
-    "hash": "e427c8f7bd8a1d882b174c3fce2bed79"
-  },
-  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\session.ts": {
-    "mtime": 1774839000.5115843,
-    "hash": "03fd743a3235b734bff7077922ec5eb0"
-  },
-  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\training-server.ts": {
-    "mtime": 1776849136.181157,
-    "hash": "7da136f1b40b6d907683b158fcdf49d3"
+    "mtime": 1778754939.1414206,
+    "hash": "91317c1ca1c59464fc2ee243d6bb0918"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\training.ts": {
     "mtime": 1776849141.40597,
@@ -903,37 +895,73 @@
     "mtime": 1776838491.287329,
     "hash": "201d9ddee215e3ac4ddc2fb06ae7d323"
   },
+  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\server\\courses.ts": {
+    "mtime": 1778751477.019042,
+    "hash": "07fac848749fa067d29e049fba8dadb5"
+  },
+  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\server\\db.ts": {
+    "mtime": 1778751365.2848697,
+    "hash": "b1afff25e2b7c439fe0b3df2534cf7f0"
+  },
+  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\server\\firebase-admin.ts": {
+    "mtime": 1776912870.1451957,
+    "hash": "f6aceee4fb972b835f24213141358373"
+  },
+  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\server\\training.ts": {
+    "mtime": 1778750790.5662754,
+    "hash": "93372269ee1d338161b0c448ddff7e8d"
+  },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\services\\ai-audit-service.ts": {
-    "mtime": 1776835185.7375467,
-    "hash": "2ab0f8bbad1dc88788cfbd22d97e7f64"
+    "mtime": 1778750790.5693142,
+    "hash": "4c1639c980d82d19350a715ea5363e4d"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\services\\ai-eval-service.ts": {
-    "mtime": 1776849463.9708686,
-    "hash": "a4116b2e492b232d23e79b1eebd80b5e"
+    "mtime": 1778751365.2889209,
+    "hash": "e757f28136a2bf4cae789f964695784a"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\services\\approval-service.ts": {
-    "mtime": 1776745383.011009,
-    "hash": "5b6b46c3761771bf16cecf52923b6bf7"
+    "mtime": 1778750790.5749185,
+    "hash": "813624a6eebb938bab24dfab320649e4"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\services\\audit-service.ts": {
-    "mtime": 1776849283.641991,
-    "hash": "0316224c5bbf4c22bfcd685ca8edf330"
+    "mtime": 1778753213.0837605,
+    "hash": "c87b17ad6630904e9c9a0c66c5c4fc3d"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\services\\batch-service.ts": {
-    "mtime": 1776923372.700882,
-    "hash": "82b63b964b106e3d6ef2c80a163a5470"
+    "mtime": 1778753073.5776384,
+    "hash": "160653e8d20e16f51dea9bdb1fc7fca1"
+  },
+  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\services\\history-service.ts": {
+    "mtime": 1778750790.5809379,
+    "hash": "a672ec35ce2fb6d0a909e80eabe24615"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\services\\semantic-audit-service.ts": {
-    "mtime": 1776918781.4938717,
-    "hash": "7f750d335e9b7384243759b85004a559"
+    "mtime": 1778750790.5839343,
+    "hash": "8575047e155109383d57534d3d8f4246"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\services\\stats-service.ts": {
-    "mtime": 1776916740.109612,
-    "hash": "e7a0c939fecc7d8bd1be8fc4e26f6532"
+    "mtime": 1778750790.586484,
+    "hash": "9b510f0aa9fe595103079b1ad6053c98"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\services\\trainer-service.ts": {
     "mtime": 1774843652.728124,
     "hash": "9339f2618efa907cf302b1cb9787a7aa"
+  },
+  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\services\\ai-scenarios\\utils.ts": {
+    "mtime": 1778750865.208745,
+    "hash": "a4f3d5d36ba8634124d589e1c12c60cc"
+  },
+  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\session\\agent.ts": {
+    "mtime": 1774504635.2341814,
+    "hash": "8fa3bbfef9cb830e0b65d39877aa78c9"
+  },
+  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\session\\client.ts": {
+    "mtime": 1774767001.0159123,
+    "hash": "e427c8f7bd8a1d882b174c3fce2bed79"
+  },
+  "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\lib\\session\\server.ts": {
+    "mtime": 1778750790.5584824,
+    "hash": "6bcec62224b3905619cb6acfd9120419"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\scripts\\debug-firebase.mjs": {
     "mtime": 1774346379.8498924,
@@ -944,8 +972,8 @@
     "hash": "2249ab0e690f4ce985d74cecfe74fbea"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\scripts\\seed-admin.mjs": {
-    "mtime": 1773495934.2847714,
-    "hash": "d2b275f4431100f23d2e4938706cc5b4"
+    "mtime": 1778751365.2978494,
+    "hash": "8e0432ad7fb74f2c511a57bbeb6eecc1"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\scripts\\seed-final.mjs": {
     "mtime": 1774405054.778922,
@@ -964,8 +992,8 @@
     "hash": "3529952a1b9a70104ce85a0791e3b5dc"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\types\\index.ts": {
-    "mtime": 1776848701.9594457,
-    "hash": "acfd8a87a94ace532d38b40607fa64aa"
+    "mtime": 1778753037.7135403,
+    "hash": "96248c5ceabf8a0761ebc566ef4ce5f6"
   },
   "C:\\Users\\Admin\\OneDrive - Tiebreak Solutions\\Documents\\Antigravity Workspace\\Antigravity Github Repo\\BrainTrade Training\\apphosting.prod.yaml": {
     "mtime": 1774516889.4988873,

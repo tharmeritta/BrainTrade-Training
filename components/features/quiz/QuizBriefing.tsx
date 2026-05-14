@@ -10,7 +10,7 @@ import { ActiveAgentUI } from '@/components/ui/ActiveAgentUI';
 import { C } from './shared';
 import type { QuizBriefingProps } from './types';
 
-// ─── QuizBriefing ─────────────────────────────────────────────────────────────
+// --- QuizBriefing -------------------------------------------------------------
 //
 // Pre-quiz screen: shows quiz metadata and lets the user choose a session mode
 // (full assessment, practice by phase, or practice-all).
@@ -126,7 +126,7 @@ export const QuizBriefing = memo(({
           {t('selectMode')}
         </motion.p>
 
-        {/* ── Full Assessment card ── */}
+        {/* -- Full Assessment card -- */}
         <motion.button
           custom={4} variants={reveal}
           onClick={() => onStart({ type: 'full' })}
@@ -201,7 +201,7 @@ export const QuizBriefing = memo(({
           </div>
         </motion.button>
 
-        {/* ── "or practice" divider ── */}
+        {/* -- "or practice" divider -- */}
         <motion.div
           custom={5} variants={reveal}
           className="flex items-center gap-3 my-5"
@@ -216,7 +216,7 @@ export const QuizBriefing = memo(({
           <div className="flex-1 h-px" style={{ background: C.border }} />
         </motion.div>
 
-        {/* ── Practice section ── */}
+        {/* -- Practice section -- */}
         {hasMultiPhase ? (
           <div className="space-y-2">
             {phases.map((ph, idx) => {

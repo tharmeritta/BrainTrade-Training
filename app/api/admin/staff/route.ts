@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { withApiAuth, apiError } from '@/lib/api-utils';
-import { fsGetAll, fsAdd, fsUpdateMany } from '@/lib/firestore-db';
+import { fsGetAll, fsAdd, fsUpdateMany } from '@/lib/server/db';
 import { createApprovalRequest } from '@/lib/services/approval-service';
 import type { StaffAccount } from '@/types';
 

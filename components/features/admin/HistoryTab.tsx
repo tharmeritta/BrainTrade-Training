@@ -8,7 +8,8 @@ import {
   Search, Loader2, Users, Award, Target, Zap, Clock
 } from 'lucide-react';
 import type { TrainingPeriod, AgentStats } from '@/types';
-import { KpiCard, BadgePill } from './AdminComponents';
+import { KpiCard } from './ui/Metrics';
+import { BadgePill } from './ui/BadgePill';
 import { scoreColor, scoreBg } from './AdminHelpers';
 import AgentDetailModal from './AgentDetailModal';
 

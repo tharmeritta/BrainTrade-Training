@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { fsGet } from '@/lib/firestore-db';
+import { fsGet } from '@/lib/server/db';
 
 export async function GET() {
   try {

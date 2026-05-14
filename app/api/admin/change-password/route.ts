@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerUser, makeSessionToken } from '@/lib/session';
-import { fsUpdate, fsGet, fsSet } from '@/lib/firestore-db';
+import { getServerUser, makeSessionToken } from '@/lib/session/server';
+import { fsUpdate, fsGet, fsSet } from '@/lib/server/db';
 import type { StaffAccount } from '@/types';
 
 export async function POST(req: NextRequest) {

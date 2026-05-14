@@ -10,7 +10,10 @@ export const TRAINING_REGISTRY = {
     minToUnlockNext: 1,
   },
   quiz: {
-    /** The 4 canonical keys used for logic/filtering */
+    /** 
+     * @deprecated Hardcoded list is being phased out. 
+     * The system now prioritizes 'required: true' flag in module_config/quizzes.
+     */
     required: ['foundation', 'product', 'process', 'payment'] as const,
     
     /** 

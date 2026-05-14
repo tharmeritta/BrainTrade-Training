@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { X, Clock, GraduationCap, ShieldCheck, Loader2 } from 'lucide-react';
 import type { AgentStats } from '@/types';
-import { BadgePill } from '../AdminComponents';
+import { BadgePill } from '../ui/BadgePill';
 import { scoreColor, timeAgo } from '../AdminHelpers';
 
 interface ProfileHeaderProps {

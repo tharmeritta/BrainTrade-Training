@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { requireAdminManagerOrTrainer } from '@/lib/session';
-import { fsCount, fsQuery, fsGetAll } from '@/lib/firestore-db';
+import { requireAdminManagerOrTrainer } from '@/lib/session/server';
+import { fsCount, fsQuery, fsGetAll } from '@/lib/server/db';
 import { getGlobalStats } from '@/lib/services/stats-service';
 import { getAllAgentStats } from '@/lib/agents';
 import type { AdminOverviewData, AgentStats, TrainingPeriod } from '@/types';

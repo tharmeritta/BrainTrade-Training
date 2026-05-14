@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { CourseModule, CourseLang } from '@/lib/courses';
 import type { UserRole } from '@/types';
-import { getAgentSession } from '@/lib/agent-session';
+import { getAgentSession } from '@/lib/session/agent';
 import { useLivePresentation } from '@/lib/live-presentation';
 
 const LOAD_TIMEOUT_MS = 12_000;

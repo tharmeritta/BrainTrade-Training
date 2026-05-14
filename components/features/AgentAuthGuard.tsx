@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { getAgentSession } from '@/lib/agent-session';
-import { hasStaffSession } from '@/lib/session-client';
+import { getAgentSession } from '@/lib/session/agent';
+import { hasStaffSession } from '@/lib/session/client';
 
 /**
  * Client-side guard that redirects unauthenticated agents back to the

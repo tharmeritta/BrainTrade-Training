@@ -12,7 +12,7 @@ import type { Language, QuestionData } from '@/lib/quiz-data';
 import { C, LABELS, isAnswerCorrect } from './shared';
 import type { QuizSessionProps } from './types';
 
-// ─── QuestionMap ──────────────────────────────────────────────────────────────
+// --- QuestionMap --------------------------------------------------------------
 //
 // Dot grid showing every question's status:
 //   • Hollow ring  = current question
@@ -95,7 +95,7 @@ const QuestionMap = memo(({
 });
 QuestionMap.displayName = 'QuestionMap';
 
-// ─── QuestionCard ─────────────────────────────────────────────────────────────
+// --- QuestionCard -------------------------------------------------------------
 
 interface QuestionCardProps {
   question: QuestionData;
@@ -210,7 +210,7 @@ const QuestionCard = memo(({
         </p>
       </div>
 
-      {/* ── True / False ── */}
+      {/* -- True / False -- */}
       {qType === 'tf' && (
         <div className="grid grid-cols-2 gap-3 mb-4">
           {[t('trueTxt'), t('falseTxt')].map((label, i) => (
@@ -229,7 +229,7 @@ const QuestionCard = memo(({
         </div>
       )}
 
-      {/* ── Multiple Choice ── */}
+      {/* -- Multiple Choice -- */}
       {qType === 'mcq' && (
         <div className="space-y-2 mb-4">
           {opts.map((opt, i) => (
@@ -254,7 +254,7 @@ const QuestionCard = memo(({
         </div>
       )}
 
-      {/* ── Fill in the Blank ── */}
+      {/* -- Fill in the Blank -- */}
       {qType === 'fill' && (
         <div className="mb-4">
           {!locked ? (
@@ -338,7 +338,7 @@ const QuestionCard = memo(({
 });
 QuestionCard.displayName = 'QuestionCard';
 
-// ─── StickyNav ────────────────────────────────────────────────────────────────
+// --- StickyNav ----------------------------------------------------------------
 //
 // Fixed to bottom of viewport so Prev/Next are always reachable, even after
 // scrolling through a long question or explanation.
@@ -410,7 +410,7 @@ const StickyNav = memo(({
 });
 StickyNav.displayName = 'StickyNav';
 
-// ─── QuizSession ──────────────────────────────────────────────────────────────
+// --- QuizSession --------------------------------------------------------------
 //
 // Active quiz screen: question map, question card, sticky nav, saving indicator.
 // Edit this file to add features like a timer, keyboard navigation, or a

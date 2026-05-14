@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fsGet, fsSet, fsDelete } from '@/lib/firestore-db';
+import { fsGet, fsSet, fsDelete } from '@/lib/server/db';
 import { getAgentStats } from '@/lib/agents';
-import { MOCKUP_AGENT_ID } from '@/lib/agent-session';
+import { MOCKUP_AGENT_ID } from '@/lib/session/agent';
 import { updateGlobalLearningStats } from '@/lib/services/stats-service';
-import { getActiveTrainingPeriod } from '@/lib/training-server';
+import { getActiveTrainingPeriod } from '@/lib/server/training';
 
 export interface ProgressRecord {
   agentId: string;

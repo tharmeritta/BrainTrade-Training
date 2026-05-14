@@ -16,6 +16,8 @@ interface ProfileSidebarProps {
   ringColor: string;
   initials: string;
   allDone: boolean;
+  graduated?: boolean;
+  acknowledged?: boolean;
   currentStep?: typeof STEPS[number];
   badgeCfg: typeof BADGE[BadgeType];
   pct: number;
@@ -46,6 +48,8 @@ export const ProfileSidebar = memo(({
   ringColor,
   initials,
   allDone,
+  graduated,
+  acknowledged,
   currentStep,
   badgeCfg,
   pct,
@@ -64,6 +68,8 @@ export const ProfileSidebar = memo(({
     await onSync();
     setSyncing(false);
   };
+
+  const statusColor = acknowledged ? '#10B981' : allDone ? '#FBBF24' : currentStep ? currentStep.color : 'var(--hub-dim)';
 
   return (
     <motion.div
@@ -101,12 +107,15 @@ export const ProfileSidebar = memo(({
 
         <div className="mb-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full border"
           style={{
-            background: allDone ? 'rgba(251,191,36,0.08)' : currentStep ? `${currentStep.color}10` : 'var(--hub-locked-bg)',
-            borderColor: allDone ? 'rgba(251,191,36,0.25)' : currentStep ? currentStep.color + '30' : 'var(--hub-dim-border)',
+            background: acknowledged ? 'rgba(16,185,129,0.08)' : allDone ? 'rgba(251,191,36,0.08)' : currentStep ? `${currentStep.color}10` : 'var(--hub-locked-bg)',
+            borderColor: acknowledged ? 'rgba(16,185,129,0.25)' : allDone ? 'rgba(251,191,36,0.25)' : currentStep ? currentStep.color + '30' : 'var(--hub-dim-border)',
           }}>
-          {allDone ? (
+          {acknowledged ? (
+            <><CheckCircle2 size={10} style={{ color: '#10B981' }} />
+              <span className="text-[10px] font-black uppercase tracking-tight" style={{ color: '#10B981' }}>Certified</span></>
+          ) : allDone ? (
             <><CheckCircle2 size={10} style={{ color: '#FBBF24' }} />
-              <span className="text-[10px] font-black uppercase tracking-tight" style={{ color: '#FBBF24' }}>{t('pendingFinalEval')}</span></>
+              <span className="text-[10px] font-black uppercase tracking-tight" style={{ color: '#FBBF24' }}>{graduated ? 'Graduated' : t('pendingFinalEval')}</span></>
           ) : currentStep ? (
             <><currentStep.Icon size={10} style={{ color: currentStep.color }} />
               <span className="text-[10px] font-medium text-[color:var(--hub-dim)]">{t('training')}</span>

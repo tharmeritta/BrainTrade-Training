@@ -10,7 +10,7 @@ import {
   MODULE_QUIZ_MAP, PASS_THRESHOLD,
   type Language, type QuizDefinition, type QuestionData,
 } from '@/lib/quiz-data';
-import { getAgentSession, type AgentSession } from '@/lib/agent-session';
+import { getAgentSession, type AgentSession } from '@/lib/session/agent';
 import { TRAINING_REGISTRY } from '@/lib/registry';
 import { C, isAnswerCorrect } from './shared';
 import type { Screen, SessionMode } from './types';
@@ -18,7 +18,7 @@ import { QuizBriefing } from './QuizBriefing';
 import { QuizSession } from './QuizSession';
 import { QuizResult } from './QuizResult';
 
-// ─── Loading Skeleton ─────────────────────────────────────────────────────────
+// --- Loading Skeleton ---------------------------------------------------------
 
 function QuizSkeleton() {
   return (
@@ -36,7 +36,7 @@ function QuizSkeleton() {
   );
 }
 
-// ─── QuizSystem ───────────────────────────────────────────────────────────────
+// --- QuizSystem ---------------------------------------------------------------
 //
 // State machine and screen router. Owns all session state and handlers.
 // Does not contain any UI — edit the three screen files instead:
@@ -51,13 +51,13 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
   const lang     = (locale === 'en' ? 'en' : 'th') as Language;
   const t        = useTranslations('quiz');
 
-  // ── Config & agent ──
+  // -- Config & agent --
   const [quiz,             setQuiz]            = useState<QuizDefinition | null>(null);
   const [loadingConfig,    setLoadingConfig]    = useState(true);
   const [agent,            setAgent]           = useState<AgentSession | null>(null);
   const [showLockedModal,  setShowLockedModal]  = useState(false);
 
-  // ── Session state ──
+  // -- Session state --
   const [screen,      setScreen]      = useState<Screen>('briefing');
   const [sessionMode, setSessionMode] = useState<SessionMode>({ type: 'full' });
   const [current,     setCurrent]     = useState(0);
@@ -130,7 +130,7 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
     });
   }, [screen, isPractice, agent, quiz, answered, moduleId]);
 
-  // ── Handlers ──
+  // -- Handlers --
 
   const handleStart = useCallback((mode: SessionMode) => {
     setSessionMode(mode);
@@ -175,7 +175,7 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
 
   const handleJump = useCallback((index: number) => setCurrent(index), []);
 
-  // ── Render ──
+  // -- Render --
 
   if (loadingConfig) return <QuizSkeleton />;
 
@@ -244,7 +244,7 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
 
     </AnimatePresence>
 
-    {/* ── Learn-first prompt modal ─────────────────────────────────────────── */}
+    {/* -- Learn-first prompt modal ------------------------------------------- */}
     <AnimatePresence>
       {showLockedModal && (
         <motion.div

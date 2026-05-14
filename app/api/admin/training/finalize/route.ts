@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminDb } from '@/lib/firebase-admin';
-import { getServerUser } from '@/lib/session';
+import { getAdminDb } from '@/lib/server/firebase-admin';
+import { getServerUser } from '@/lib/session/server';
 import { AuditService } from '@/lib/services/audit-service';
 import { recalculateGlobalStats } from '@/lib/services/stats-service';
+import { HistoryService } from '@/lib/services/history-service';
 
 /**
  * POST: Finalize and archive a training batch
@@ -36,6 +37,9 @@ export async function POST(req: NextRequest) {
 
     const batch = db.batch();
 
+    // 0. Create the history snapshot FIRST (while agents are still linked)
+    await HistoryService.archiveBatch(periodId);
+
     // 1. Mark the training period as completed/inactive
     batch.update(periodRef, {
       active: false,
@@ -58,6 +62,8 @@ export async function POST(req: NextRequest) {
       batch.set(progressRef, {
         graduated: true,
         graduatedAt: timestamp,
+        acknowledged: true,
+        acknowledgedAt: timestamp,
         updatedAt: timestamp
       }, { merge: true });
     }

@@ -1,6 +1,6 @@
 import { getOpenAI } from '@/lib/openai';
 import { getGeminiModel } from '@/lib/gemini';
-import { fsGet, fsSet, fsAdd } from '@/lib/firestore-db';
+import { fsGet, fsSet, fsAdd } from '@/lib/server/db';
 import { updateGlobalAiEvalStats, updateAgentOverallScore } from './stats-service';
 import {
   AiEvalScenario,
@@ -128,6 +128,12 @@ export class AiAuditService {
     const scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, scenarioId);
     if (!scenario) throw new Error('Scenario not found');
 
+    const winCondition = scenario.winCondition || 'พนักงานตอบคำถามและปิดการขายได้';
+    const auditInstructions = scenario.auditInstructions || `ตรวจสอบว่าพนักงานสามารถ:
+1. ${winCondition}
+2. รับมือข้อโต้แย้งได้อย่างเป็นธรรมชาติ
+3. มีความเป็นมืออาชีพและให้ข้อมูลที่ถูกต้อง`;
+
     const auditorPrompt = `You are a Senior Sales Auditor at BrainTrade Thailand.
 Your task is to audit a sales practice transcript between an Agent and a Customer (AI).
 
@@ -135,11 +141,11 @@ SCENARIO CONTEXT:
 Name: ${scenario.name}
 Description: ${scenario.description}
 Customer Persona: ${scenario.customerPersona || scenario.systemPrompt}
-Objective: ${scenario.objective}
-Win Condition: ${scenario.winCondition}
+Objective: ${scenario.objective || 'Not specified'}
+Win Condition: ${winCondition}
 
 AUDIT INSTRUCTIONS:
-${scenario.auditInstructions || 'Audit the agent based on standard sales quality criteria.'}
+${auditInstructions}
 
 CRITERIA:
 1. Rapport: Did the agent build trust and connection?

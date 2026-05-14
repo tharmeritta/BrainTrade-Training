@@ -1,6 +1,6 @@
 import { getGeminiModel } from '@/lib/gemini';
-import { getAdminDb } from '@/lib/firebase-admin';
-import { fsGetAll } from '@/lib/firestore-db';
+import { getAdminDb } from '@/lib/server/firebase-admin';
+import { fsGetAll } from '@/lib/server/db';
 import { Agent, AgentEvaluation, TrainingPeriod } from '@/types';
 
 export interface SemanticAuditResult {

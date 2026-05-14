@@ -1,4 +1,4 @@
-import { fsGetAll } from '@/lib/firestore-db';
+import { fsGetAll } from '@/lib/server/db';
 import type { TrainingPeriod } from '@/types';
 
 /**

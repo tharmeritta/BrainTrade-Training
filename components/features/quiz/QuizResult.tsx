@@ -13,7 +13,7 @@ import type { Language, QuizDefinition, QuestionData, QuizPhase } from '@/lib/qu
 import { C, isAnswerCorrect } from './shared';
 import type { QuizResultProps, SessionMode } from './types';
 
-// ─── PhaseBreakdown ───────────────────────────────────────────────────────────
+// --- PhaseBreakdown -----------------------------------------------------------
 
 interface PhaseBreakdownProps {
   questions: QuestionData[];
@@ -74,7 +74,7 @@ const PhaseBreakdown = memo(({ questions, answered, phases, lang }: PhaseBreakdo
 });
 PhaseBreakdown.displayName = 'PhaseBreakdown';
 
-// ─── ResultView ───────────────────────────────────────────────────────────────
+// --- ResultView ---------------------------------------------------------------
 
 interface ResultViewProps {
   questions: QuestionData[];
@@ -150,7 +150,7 @@ const ResultView = memo(({
   return (
     <motion.div className="w-full" variants={FADE_IN} initial="initial" animate="animate">
 
-      {/* ── Score card ── */}
+      {/* -- Score card -- */}
       <div
         className="rounded-3xl text-center mb-6 shadow-xl overflow-hidden"
         style={{ background: C.surface, border: `1px solid ${C.border}` }}
@@ -252,7 +252,7 @@ const ResultView = memo(({
         </div>
       </div>
 
-      {/* ── Phase breakdown (full quiz, multi-phase only) ── */}
+      {/* -- Phase breakdown (full quiz, multi-phase only) -- */}
       {phases.length > 1 && !isPractice && (
         <PhaseBreakdown
           questions={questions}
@@ -262,7 +262,7 @@ const ResultView = memo(({
         />
       )}
 
-      {/* ── Answer Key (accordion, grouped by phase) ── */}
+      {/* -- Answer Key (accordion, grouped by phase) -- */}
       <div
         className="rounded-3xl overflow-hidden shadow-lg"
         style={{ background: C.surface, border: `1px solid ${C.border}` }}
@@ -367,7 +367,7 @@ const ResultView = memo(({
 });
 ResultView.displayName = 'ResultView';
 
-// ─── QuizResult ───────────────────────────────────────────────────────────────
+// --- QuizResult ---------------------------------------------------------------
 //
 // Post-quiz screen: score card, phase breakdown, and accordion answer key.
 // Edit this file to add score animations, leaderboard entries, or a certificate

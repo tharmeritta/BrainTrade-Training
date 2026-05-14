@@ -2,7 +2,7 @@
 
 import { ShieldCheck } from 'lucide-react';
 import type { AgentStats } from '@/types';
-import { StatusPipeline } from '../AdminComponents';
+import { StatusPipeline } from '../ui/Pipeline';
 import { scoreColor } from '../AdminHelpers';
 import { getCompletionStatus, type CompletionStatus } from '@/lib/completion';
 

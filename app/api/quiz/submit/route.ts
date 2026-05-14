@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fsAdd } from '@/lib/firestore-db';
-import { MOCKUP_AGENT_ID } from '@/lib/agent-session';
+import { fsAdd } from '@/lib/server/db';
+import { MOCKUP_AGENT_ID } from '@/lib/session/agent';
 import { getCanonicalQuizKey } from '@/lib/registry';
 import { updateGlobalQuizStats, updateAgentOverallScore } from '@/lib/services/stats-service';
-import { getActiveTrainingPeriod } from '@/lib/training-server';
+import { getActiveTrainingPeriod } from '@/lib/server/training';
 
 export async function POST(req: NextRequest) {
   try {

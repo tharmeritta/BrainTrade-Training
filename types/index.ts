@@ -13,7 +13,7 @@ export interface StaffAccount {
   interactiveAccessUntil?: string; // ISO timestamp
 }
 
-// ── AI Evaluation ──────────────────────────────────────────────────────────
+// -- AI Evaluation ----------------------------------------------------------
 
 export interface PitchMessage {
   role: 'user' | 'assistant' | 'system';
@@ -21,7 +21,7 @@ export interface PitchMessage {
   timestamp?: Date | string;
 }
 
-// ── Agent tracking ─────────────────────────────────────────────────────────
+// -- Agent tracking ---------------------------------------------------------
 
 export interface Agent {
   id: string;
@@ -36,6 +36,8 @@ export interface Agent {
   lastActive?: string | null;
   graduated?: boolean;
   graduatedAt?: string;
+  acknowledged?: boolean;
+  acknowledgedAt?: string;
 }
 
 export interface ModuleQuizStat {
@@ -120,7 +122,7 @@ export interface AgentStats {
   activePeriodId?: string;
 }
 
-// ── Admin API response shapes ───────────────────────────────────────────────
+// -- Admin API response shapes -----------------------------------------------
 
 export interface ModuleStat {
   moduleId: string;          // 'learn' | 'quiz' | 'ai-eval'
@@ -142,7 +144,7 @@ export interface AdminOverviewData {
   trainingWaves?: TrainingPeriod[];
 }
 
-// ── Evaluator ──────────────────────────────────────────────────────────────
+// -- Evaluator --------------------------------------------------------------
 
 export interface Evaluator {
   id: string;
@@ -151,7 +153,7 @@ export interface Evaluator {
   createdAt: Date;
 }
 
-// ── Sales call evaluation schema ────────────────────────────────────────────
+// -- Sales call evaluation schema --------------------------------------------
 
 export interface SalesCallPerformanceItem {
   agentInvolve: boolean | null;   // null = not evaluated, true = yes, false = no
@@ -206,7 +208,7 @@ export interface AgentEvaluation {
   updatedAt?: string;
 }
 
-// ── Training Module ────────────────────────────────────────────────────────
+// -- Training Module --------------------------------------------------------
 
 export type ModuleStatus = 'locked' | 'available' | 'completed';
 
@@ -223,14 +225,14 @@ export interface TrainingModule {
   requiresModuleId?: string;
 }
 
-// ── Agent Progress (for /api/agent/progress endpoint) ─────────────────────
+// -- Agent Progress (for /api/agent/progress endpoint) ---------------------
 
 export interface AgentProgress {
   agent: Pick<Agent, 'id' | 'name'>;
   stats: AgentStats;
 }
 
-// ── Trainer ────────────────────────────────────────────────────────────────
+// -- Trainer ----------------------------------------------------------------
 
 export interface TrainingPeriod {
   id: string;
@@ -301,7 +303,7 @@ export interface LiveSessionRecord {
   createdAt: string;
 }
 
-// ── Approval Requests ──────────────────────────────────────────────────────
+// -- Approval Requests ------------------------------------------------------
 
 export type ApprovalActionType = 
   | 'create_staff' | 'edit_staff' | 'delete_staff' | 'toggle_staff'

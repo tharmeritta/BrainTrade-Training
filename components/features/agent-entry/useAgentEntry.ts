@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { getAgentSession, MOCKUP_AGENT_ID } from '@/lib/agent-session';
+import { getAgentSession, MOCKUP_AGENT_ID } from '@/lib/session/agent';
 import { useSession } from '@/components/features/SessionProvider';
 
 /**

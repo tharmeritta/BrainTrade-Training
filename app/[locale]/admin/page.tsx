@@ -1,6 +1,6 @@
-import { requireAdminManagerOrTrainer } from '@/lib/session';
+import { requireAdminManagerOrTrainer } from '@/lib/session/server';
 import { redirect } from 'next/navigation';
-import { fsGet } from '@/lib/firestore-db';
+import { fsGet } from '@/lib/server/db';
 import type { StaffAccount } from '@/types';
 import AdminDashboard from '@/components/features/AdminDashboard';
 import { setRequestLocale } from 'next-intl/server';

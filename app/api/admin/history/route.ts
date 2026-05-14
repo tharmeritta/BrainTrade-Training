@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdminManagerOrTrainer } from '@/lib/session';
+import { requireAdminManagerOrTrainer } from '@/lib/session/server';
 import { getAllAgentStats } from '@/lib/agents';
 import { HistoryService } from '@/lib/services/history-service';
 

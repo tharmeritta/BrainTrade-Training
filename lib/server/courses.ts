@@ -1,5 +1,5 @@
 import { getAdminDb } from './firebase-admin';
-import { COURSE_MODULES, type CourseModule } from './courses';
+import { COURSE_MODULES, type CourseModule } from '@/lib/courses';
 
 export async function getCourseModules(): Promise<Record<string, CourseModule>> {
   try {

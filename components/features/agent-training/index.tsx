@@ -54,6 +54,21 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
       console.error('Sync failed:', err);
     }
   };
+
+  const handleAcknowledge = async () => {
+    try {
+      const res = await fetch('/api/agent/acknowledge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId, agentName })
+      });
+      if (res.ok && refresh) {
+        refresh();
+      }
+    } catch (err) {
+      console.error('Acknowledgement failed:', err);
+    }
+  };
   
   const derived = useMemo(() => deriveSteps(stats), [stats]);
 
@@ -78,7 +93,7 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
   
   const allDone = useMemo(() => {
     if (!stats) return false;
-    const { trainingComplete } = getCompletionStatus(stats, stats.activeScenariosCount);
+    const { trainingComplete } = getCompletionStatus(stats);
     return trainingComplete;
   }, [stats]);
 
@@ -98,6 +113,8 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
         ringColor={ringColor}
         initials={initials}
         allDone={allDone}
+        graduated={stats?.agent?.graduated}
+        acknowledged={stats?.agent?.acknowledged}
         currentStep={currentStep}
         badgeCfg={badgeCfg}
         pct={pct}
@@ -113,7 +130,14 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
         <ModuleHeader doneCount={doneCount} stats={stats} t={t} />
 
         <div className="px-6 py-8 lg:px-10 lg:py-12">
-          {allDone && <CongratulationsCard t={t} />}
+          {allDone && (
+            <CongratulationsCard 
+              t={t} 
+              graduated={stats?.agent?.graduated}
+              acknowledged={stats?.agent?.acknowledged}
+              onAcknowledge={handleAcknowledge}
+            />
+          )}
 
           {/* Desktop Grid Layout */}
           <motion.div 

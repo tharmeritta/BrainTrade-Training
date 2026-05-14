@@ -6,13 +6,13 @@
  * Documents keyed by auto-generated UUID (fsAdd) or a caller-supplied key (fsSet / fsGet / fsDelete).
  */
 
-import { getAdminDb } from '@/lib/firebase-admin';
+import { getAdminDb } from '@/lib/server/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import crypto from 'crypto';
 
 export { FieldValue };
 
-// ── Add (auto-id) ──────────────────────────────────────────────────────────
+// -- Add (auto-id) ----------------------------------------------------------
 
 export async function fsAdd<T extends object>(
   collection: string,
@@ -26,7 +26,7 @@ export async function fsAdd<T extends object>(
   return record;
 }
 
-// ── Get all docs in a collection ───────────────────────────────────────────
+// -- Get all docs in a collection -------------------------------------------
 
 export async function fsGetAll<T>(collection: string): Promise<T[]> {
   const db      = getAdminDb();
@@ -39,7 +39,7 @@ export async function fsGetAll<T>(collection: string): Promise<T[]> {
   });
 }
 
-// ── Get a single doc by key ────────────────────────────────────────────────
+// -- Get a single doc by key ------------------------------------------------
 
 export async function fsGet<T>(collection: string, id: string): Promise<T | null> {
   const db   = getAdminDb();
@@ -47,7 +47,7 @@ export async function fsGet<T>(collection: string, id: string): Promise<T | null
   return snap.exists ? (snap.data() as T) : null;
 }
 
-// ── Get docs by field (query) ──────────────────────────────────────────────
+// -- Get docs by field (query) ----------------------------------------------
 
 export async function fsGetWhere<T>(collection: string, field: string, value: any): Promise<T[]> {
   const db   = getAdminDb();
@@ -55,7 +55,7 @@ export async function fsGetWhere<T>(collection: string, field: string, value: an
   return snap.docs.map(d => ({ id: d.id, ...d.data() } as T));
 }
 
-// ── Advanced Query (where, orderBy, limit) ──────────────────────────────────
+// -- Advanced Query (where, orderBy, limit) ----------------------------------
 
 export async function fsQuery<T>(
   collection: string,
@@ -86,7 +86,7 @@ export async function fsQuery<T>(
   return snap.docs.map(d => ({ id: d.id, ...d.data() } as T));
 }
 
-// ── Count documents in a collection (aggregation) ──────────────────────────
+// -- Count documents in a collection (aggregation) --------------------------
 
 export async function fsCount(
   collection: string, 
@@ -103,7 +103,7 @@ export async function fsCount(
   return snap.data().count;
 }
 
-// ── Increment a numeric field ──────────────────────────────────────────────
+// -- Increment a numeric field ----------------------------------------------
 
 export async function fsIncrement(
   collection: string,
@@ -118,7 +118,7 @@ export async function fsIncrement(
   });
 }
 
-// ── Partial update (patch) ─────────────────────────────────────────────────
+// -- Partial update (patch) -------------------------------------------------
 
 export async function fsUpdate<T extends object>(
   collection: string,
@@ -142,7 +142,7 @@ export async function fsUpdateMany<T extends object>(
   await batch.commit();
 }
 
-// ── Delete ─────────────────────────────────────────────────────────────────
+// -- Delete -----------------------------------------------------------------
 
 export async function fsDelete(collection: string, id: string): Promise<void> {
   try {
@@ -153,7 +153,7 @@ export async function fsDelete(collection: string, id: string): Promise<void> {
   }
 }
 
-// ── Upsert by deterministic key ────────────────────────────────────────────
+// -- Upsert by deterministic key --------------------------------------------
 
 export async function fsSet<T extends object>(
   collection: string,

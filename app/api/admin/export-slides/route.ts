@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { inflateRawSync } from 'zlib';
-import { requireAdminOrManager } from '@/lib/session';
-import { getAdminDb, getAdminStorage } from '@/lib/firebase-admin';
+import { requireAdminOrManager } from '@/lib/session/server';
+import { getAdminDb, getAdminStorage } from '@/lib/server/firebase-admin';
 import { COURSE_MODULES, type CourseLang } from '@/lib/courses';
 
 export const maxDuration = 120;
 
-// ── Minimal ZIP reader (no external deps) ────────────────────────────────────
+// -- Minimal ZIP reader (no external deps) ------------------------------------
 // Parses the ZIP central directory to reliably locate and decompress PNG entries.
 
 // Remove ZipEntry and extractPngsFromZip as we will fetch PNGs individually
 
-// ── Route handler ─────────────────────────────────────────────────────────────
+// -- Route handler -------------------------------------------------------------
 
 export async function POST(req: NextRequest) {
   try { await requireAdminOrManager(); } catch {

@@ -8,7 +8,7 @@ import { BrandedTitle } from '@/components/ui/BrandedTitle';
 import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
 
 import { useTranslations } from 'next-intl';
-import { getAgentSession } from '@/lib/agent-session';
+import { getAgentSession } from '@/lib/session/agent';
 import { ActiveAgentUI } from '@/components/ui/ActiveAgentUI';
 import { useEffect, useState } from 'react';
 

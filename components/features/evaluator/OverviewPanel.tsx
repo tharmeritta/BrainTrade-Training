@@ -12,7 +12,7 @@ import { ScoreRing } from '@/components/ui/ScoreRing';
 import { STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
 import { getCompletionStatus } from '@/lib/completion';
 import { BADGE_CONFIG } from '@/components/features/admin/AdminHelpers';
-import { StatusPipeline } from '@/components/features/admin/AdminComponents';
+import { StatusPipeline } from '@/components/features/admin/ui/Pipeline';
 import { 
   STATUS_CFG, STATUS_ORDER, timeAgo 
 } from '@/lib/evaluator-helpers';
