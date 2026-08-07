@@ -7,10 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "check": "tsc --noEmit && eslint ."
+    "check": "tsc --noEmit && eslint .",
+    "seed": "node scripts/seed.mjs"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.78.0",
     "@google-cloud/storage": "^7.0.0",
     "@google/generative-ai": "^0.21.0",
     "firebase": "^12.10.0",

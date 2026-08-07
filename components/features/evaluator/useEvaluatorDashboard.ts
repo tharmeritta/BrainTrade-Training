@@ -36,7 +36,7 @@ export function useEvaluatorDashboard(evaluatorId: string, evaluatorName: string
       const [agentsRes, evalsRes, statsRes] = await Promise.all([
         fetch('/api/agents'),
         fetch(`/api/evaluator/evaluations?evaluatorId=${evaluatorId}`),
-        fetch('/api/evaluator/all-agent-stats'),
+        fetch('/api/evaluator/agent-stats'),
       ]);
       if (agentsRes.ok)  { const d = await agentsRes.json();  setAgents(d.agents ?? []); }
       if (evalsRes.ok)   { const d = await evalsRes.json();   setMyEvals(d.evaluations ?? []); }

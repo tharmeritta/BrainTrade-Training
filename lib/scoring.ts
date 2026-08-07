@@ -1,4 +1,5 @@
 import type { AgentStats } from '@/types';
+import { SCORE_THRESHOLDS } from '@/lib/constants';
 
 export const BADGE_CONFIG = {
   'elite':        { label: 'Elite',       bg: 'bg-purple-500/15', text: 'text-purple-400', dot: 'bg-purple-400' },
@@ -14,17 +15,17 @@ export const MODULE_LABELS: Record<string, string> = {
   payment: 'Payment' 
 };
 
-export function scoreColor(score: number | undefined) {
+export function scoreColor(score: number | undefined, passThreshold = SCORE_THRESHOLDS.PASS) {
   if (score === undefined || score === null) return 'text-muted-foreground';
-  if (score >= 70) return 'text-blue-500';
-  if (score >= 50) return 'text-amber-500';
+  if (score >= passThreshold) return 'text-blue-500';
+  if (score >= SCORE_THRESHOLDS.DEVELOPING) return 'text-amber-500';
   return 'text-red-500';
 }
 
-export function scoreBg(score: number | undefined) {
+export function scoreBg(score: number | undefined, passThreshold = SCORE_THRESHOLDS.PASS) {
   if (score === undefined || score === null) return 'bg-secondary';
-  if (score >= 70) return 'bg-blue-500';
-  if (score >= 50) return 'bg-amber-400';
+  if (score >= passThreshold) return 'bg-blue-500';
+  if (score >= SCORE_THRESHOLDS.DEVELOPING) return 'bg-amber-400';
   return 'bg-red-400';
 }
 

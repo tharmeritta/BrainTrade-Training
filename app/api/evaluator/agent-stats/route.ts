@@ -10,9 +10,12 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const agentId = searchParams.get('agentId');
-  if (!agentId) return NextResponse.json({ stats: null });
-
   const allStats = await getAllAgentStats();
-  const stats = allStats.find(s => s.agent.id === agentId) ?? null;
-  return NextResponse.json({ stats });
+
+  if (agentId) {
+    const stats = allStats.find(s => s.agent.id === agentId) ?? null;
+    return NextResponse.json({ stats });
+  }
+
+  return NextResponse.json({ stats: allStats });
 }

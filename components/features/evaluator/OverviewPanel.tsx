@@ -13,6 +13,7 @@ import { STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
 import { getCompletionStatus } from '@/lib/completion';
 import { BADGE_CONFIG } from '@/lib/scoring';
 import { StatusPipeline } from '@/components/features/admin/ui/Pipeline';
+import CohortHeatmap from './CohortHeatmap';
 import { 
   STATUS_CFG, STATUS_ORDER, timeAgo 
 } from '@/lib/evaluator-helpers';
@@ -60,6 +61,11 @@ export const OverviewPanel = ({
           </motion.div>
         ))}
       </div>
+
+      {/* Cohort Heatmap & AI Coaching Briefs */}
+      <motion.div variants={STAGGER_ITEM}>
+        <CohortHeatmap />
+      </motion.div>
 
       {/* Priority Queue: Needs Evaluation */}
       {needsEvalStats.length > 0 && (

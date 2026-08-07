@@ -1,7 +1,10 @@
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, setRequestLocale } from 'next-intl/server';
+import { setRequestLocale, getMessages } from 'next-intl/server';
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/lib/constants';
 import { SessionProvider } from '@/components/providers/SessionProvider';
 import NavigationProgress from '@/components/ui/NavigationProgress';
+import CommandPalette from '@/components/ui/CommandPalette';
+import StaffAiCopilot from '@/components/ui/StaffAiCopilot';
 import { DM_Sans, DM_Mono } from 'next/font/google';
 import type { Metadata } from 'next';
 import ThemeScript from '@/components/ui/ThemeScript';
@@ -35,7 +38,9 @@ export default async function LocaleLayout(props: {
   params: Promise<{ locale: string }>;
 }) {
   const { children } = props;
-  const { locale } = await props.params;
+  const resolvedParams = await props.params;
+  const rawLocale = resolvedParams?.locale;
+  const locale = (rawLocale && (SUPPORTED_LOCALES as readonly string[]).includes(rawLocale) ? rawLocale : DEFAULT_LOCALE);
   
   // Enable static rendering for this locale
   setRequestLocale(locale);
@@ -57,6 +62,8 @@ export default async function LocaleLayout(props: {
         <NextIntlClientProvider messages={messages} locale={locale}>
           <SessionProvider locale={locale}>
             <NavigationProgress />
+            <CommandPalette />
+            <StaffAiCopilot />
             {children}
           </SessionProvider>
         </NextIntlClientProvider>

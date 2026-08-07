@@ -159,7 +159,7 @@ export default function LearnEditor({ initialModules, data, onSave, onChange, sa
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
               <FormField id="mod-id" label="Internal ID">
-                <input id="mod-id" type="text" value={modules[editingId].id} onBlur={e => handleUpdate(editingId, 'id', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm font-mono outline-none" />
+                <input id="mod-id" type="text" value={modules[editingId].id} onChange={e => handleUpdate(editingId, 'id', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm font-mono outline-none" />
               </FormField>
               <div className="grid grid-cols-2 gap-4">
                 <FormField id="title-en" label="Title EN"><input id="title-en" value={modules[editingId].title} onChange={e => handleUpdate(editingId, 'title', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm outline-none" /></FormField>

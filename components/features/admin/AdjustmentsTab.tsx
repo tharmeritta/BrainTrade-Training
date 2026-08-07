@@ -39,11 +39,10 @@ export default function AdjustmentsTab({ role, readOnly }: { role: string; readO
   } = useConfigEditor(role);
 
   const initialModules = useMemo(() => {
-    const baseline = { ...COURSE_MODULES } as any;
-    if (configs.learn?.modules) {
-      Object.keys(configs.learn.modules).forEach(id => { baseline[id] = configs.learn.modules[id]; });
+    if (configs.learn?.modules && Object.keys(configs.learn.modules).length > 0) {
+      return configs.learn.modules as any;
     }
-    return baseline;
+    return { ...COURSE_MODULES } as any;
   }, [configs.learn]);
 
   if (loading) return (

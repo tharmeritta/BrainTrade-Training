@@ -5,8 +5,13 @@ import { createApprovalRequest } from '@/lib/services/approval-service';
 import { getAllAgentStats } from '@/lib/agents';
 
 export const GET = withApiAuth(async () => {
-  const agents = await getAllAgentStats();
-  return NextResponse.json({ agents });
+  try {
+    const agents = await getAllAgentStats();
+    return NextResponse.json({ agents });
+  } catch (err) {
+    console.error('[API Error] GET /api/admin/agents:', err);
+    return NextResponse.json({ agents: [] });
+  }
 }, ['admin', 'manager', 'it', 'trainer', 'hr']);
 
 export const POST = withApiAuth(async (req, _, user) => {

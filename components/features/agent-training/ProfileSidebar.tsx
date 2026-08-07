@@ -105,6 +105,11 @@ export const ProfileSidebar = memo(({
           </p>
         )}
 
+        {/* Career Tier XP Badge */}
+        <div className="mb-2.5 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-wider bg-purple-500/10 border-purple-500/30 text-purple-400">
+          💎 Elite Telesales Trainee • {Math.round(score * 25 + pct * 5)} XP
+        </div>
+
         <div className="mb-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full border"
           style={{
             background: acknowledged ? 'rgba(16,185,129,0.08)' : allDone ? 'rgba(251,191,36,0.08)' : currentStep ? `${currentStep.color}10` : 'var(--hub-locked-bg)',

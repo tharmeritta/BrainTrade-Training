@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI, GenerativeModel, ModelParams } from '@google/generative-ai';
+import { DEFAULT_GEMINI_MODEL } from '@/lib/constants';
 
 export function getGeminiModel(params?: Partial<ModelParams>): GenerativeModel | null {
   if (!process.env.GEMINI_API_KEY) {
@@ -7,9 +8,8 @@ export function getGeminiModel(params?: Partial<ModelParams>): GenerativeModel |
   
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
   
-  // Using v1beta as requested for Gemini 1.5 Flash
   return genAI.getGenerativeModel({ 
-    model: 'gemini-1.5-flash', 
+    model: DEFAULT_GEMINI_MODEL, 
     ...params 
   }, { apiVersion: 'v1beta' });
 }

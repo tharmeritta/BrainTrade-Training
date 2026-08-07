@@ -147,7 +147,16 @@ function getAdminApp(): App {
 
     const databaseURL = cleanValue(process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL);
     
-    // --- Admin Emulator Logic ---
+    // --- Admin Emulator & Local Dev Fallback Logic ---
+    if (process.env.NODE_ENV === 'development' && (clientEmail === 'dummy@example.com' || privateKey.includes('dummy'))) {
+      console.warn('[Firebase Admin] Dev mode detected without valid RSA credentials. Initializing unauthenticated local project instance.');
+      process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST || 'localhost:8080';
+      return initializeApp({
+        projectId,
+        databaseURL,
+      });
+    }
+
     if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === 'true') {
       console.log('[Firebase Admin] Setting emulator environment variables...');
       process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8080';
