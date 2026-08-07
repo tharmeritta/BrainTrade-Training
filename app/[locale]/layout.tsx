@@ -1,6 +1,6 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
-import { SessionProvider } from '@/components/features/SessionProvider';
+import { SessionProvider } from '@/components/providers/SessionProvider';
 import NavigationProgress from '@/components/ui/NavigationProgress';
 import { DM_Sans, DM_Mono } from 'next/font/google';
 import type { Metadata } from 'next';

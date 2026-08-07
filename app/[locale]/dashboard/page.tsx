@@ -8,12 +8,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import AgentTrainingHub from '@/components/features/AgentTrainingHub';
-import AgentAuthGuard from '@/components/features/AgentAuthGuard';
+import AgentTrainingHub from '@/components/features/agent-training';
+import AgentAuthGuard from '@/components/providers/AgentAuthGuard';
 import type { AgentStats } from '@/types';
 import { saveProgress, getProgress } from '@/lib/localCache';
 import { useRouter, useParams } from 'next/navigation';
-import { useSession } from '@/components/features/SessionProvider';
+import { useSession } from '@/components/providers/SessionProvider';
 
 export default function DashboardPage() {
   const { agent, logoutAgent } = useSession();

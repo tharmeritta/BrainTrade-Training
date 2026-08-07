@@ -17,7 +17,7 @@ export default function LandingPage() {
   const tCommon = useTranslations('common');
   const t = useTranslations('landing');
   const params = useParams();
-  const locale = params.locale as string;
+  const locale = (params?.locale as string) || 'th';
 
   return (
     <div className="relative w-full min-h-screen overflow-x-hidden flex flex-col" style={{ background: 'var(--hub-bg)', fontFamily: "'DM Sans', system-ui, sans-serif" }}>

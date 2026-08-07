@@ -1,6 +1,6 @@
 import { getServerUser } from '@/lib/session/server';
 import { redirect } from 'next/navigation';
-import EvaluatorDashboard from '@/components/features/EvaluatorDashboard';
+import EvaluatorDashboard from '@/components/features/evaluator/EvaluatorDashboard';
 import { setRequestLocale } from 'next-intl/server';
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';

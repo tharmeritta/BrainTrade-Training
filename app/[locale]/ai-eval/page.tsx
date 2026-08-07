@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import AiEvaluation from '@/components/features/AiEvaluation';
+import AiEvaluation from '@/components/features/ai-eval';
 import { Loader2 } from 'lucide-react';
 
 function Loading() {

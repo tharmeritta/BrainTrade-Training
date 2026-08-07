@@ -15,7 +15,7 @@ const TabLoader = () => (
 const TAB_REGISTRY: Record<Tab, any> = {
   overview:    dynamic(() => import('./OverviewTab'), { loading: TabLoader }),
   hranalytics: dynamic(() => import('./HRAnalyticsTab'), { loading: TabLoader }),
-  training:    dynamic(() => import('@/components/features/TrainerPanel'), { loading: TabLoader }),
+  training:    dynamic(() => import('@/components/features/trainer/TrainerPanel'), { loading: TabLoader }),
   evaluations: dynamic(() => import('./EvaluationsTab'), { loading: TabLoader }),
   reports:     dynamic(() => import('./ReportsTab'), { loading: TabLoader }),
   approvals:   dynamic(() => import('./ApprovalsTab'), { loading: TabLoader }),

@@ -1,5 +1,5 @@
 import NavBar from '@/components/ui/NavBar';
-import AgentAuthGuard from '@/components/features/AgentAuthGuard';
+import AgentAuthGuard from '@/components/providers/AgentAuthGuard';
 import { getServerUser } from '@/lib/session/server';
 
 export default async function QuizLayout({ children }: { children: React.ReactNode }) {

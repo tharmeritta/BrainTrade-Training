@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import PresentationViewer from '@/components/features/PresentationViewer';
+import PresentationViewer from '@/components/features/presentation/PresentationViewer';
 import { getCourseModule } from '@/lib/server/courses';
 import type { CourseLang } from '@/lib/courses';
 import { getServerUser } from '@/lib/session/server';

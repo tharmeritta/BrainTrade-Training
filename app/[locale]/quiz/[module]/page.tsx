@@ -1,4 +1,4 @@
-import QuizSystem from '@/components/features/QuizSystem';
+import QuizSystem from '@/components/features/quiz';
 import { setRequestLocale } from 'next-intl/server';
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';

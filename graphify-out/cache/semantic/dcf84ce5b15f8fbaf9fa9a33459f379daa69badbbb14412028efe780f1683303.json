@@ -1,0 +1,1 @@
+{"nodes": [{"id": "doc:GEMINI.md", "label": "GEMINI.md", "type": "document", "source_file": "GEMINI.md"}, {"id": "rule:graphify", "label": "graphify rule", "type": "rule", "source_file": "GEMINI.md"}], "edges": [{"source": "doc:GEMINI.md", "target": "rule:graphify", "relation": "defines", "source_file": "GEMINI.md"}], "hyperedges": []}

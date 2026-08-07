@@ -10,7 +10,7 @@ import {
 
 import { ScoreRing, scoreHex } from '@/components/ui/ScoreRing';
 import { FADE_IN } from '@/lib/animations';
-import { BADGE_CONFIG } from '@/components/features/admin/AdminHelpers';
+import { BADGE_CONFIG } from '@/lib/scoring';
 import { timeAgo } from '@/lib/evaluator-helpers';
 import type { AgentStats, SalesCallCriteria } from '@/types';
 

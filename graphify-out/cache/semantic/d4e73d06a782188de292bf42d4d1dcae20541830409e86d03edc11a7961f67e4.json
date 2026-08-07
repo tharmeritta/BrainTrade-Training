@@ -1,0 +1,1 @@
+{"nodes": [{"id": "doc:env.yaml", "label": "env.yaml", "type": "document", "source_file": "env.yaml"}, {"id": "config:env", "label": "Environment Variables", "type": "config", "source_file": "env.yaml"}], "edges": [{"source": "doc:env.yaml", "target": "config:env", "relation": "configures", "source_file": "env.yaml"}], "hyperedges": []}
