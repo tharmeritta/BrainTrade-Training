@@ -7,11 +7,11 @@ export default async function AiEvalLayout({ children }: { children: React.React
   const isStaff = user && ['admin', 'manager', 'trainer', 'evaluator', 'hr', 'it'].includes(user.role);
 
   return (
-    <>
+    <div className="flex flex-col min-h-dvh bg-background">
       <NavBar />
-      <main>
+      <main className="flex-1 min-h-0">
         <AgentAuthGuard allowStaff={!!isStaff}>{children}</AgentAuthGuard>
       </main>
-    </>
+    </div>
   );
 }

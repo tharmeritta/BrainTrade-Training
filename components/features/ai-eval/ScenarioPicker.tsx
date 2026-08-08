@@ -41,11 +41,20 @@ export const ScenarioPicker = memo(({
   const lang = (locale === 'en' ? 'en' : 'th') as 'th' | 'en';
 
   const levels = useMemo(() => {
+    const safeT = (key: string, fallback: string) => {
+      try {
+        const val = t(key as any);
+        return val && typeof val === 'string' && !val.includes('aiEval.') ? val : fallback;
+      } catch {
+        return fallback;
+      }
+    };
+
     const groups: Record<number, { name: string; description: string; scenarios: EvalScenario[] }> = {
-      1: { name: t('level_1_title'), description: t('level_1_desc'), scenarios: [] },
-      2: { name: t('level_2_title'), description: t('level_2_desc'), scenarios: [] },
-      3: { name: t('level_3_title'), description: t('level_3_desc'), scenarios: [] },
-      4: { name: t('level_4_title'), description: t('level_4_desc'), scenarios: [] },
+      1: { name: safeT('level_1_title', 'Level 1: Foundation & Price Objection Handling'), description: safeT('level_1_desc', 'Master price objection reframing and gatekeeper bypass.'), scenarios: [] },
+      2: { name: safeT('level_2_title', 'Level 2: Value Pitch & Need Discovery'), description: safeT('level_2_desc', 'Elevator pitches for busy executives and outcome selling.'), scenarios: [] },
+      3: { name: safeT('level_3_title', 'Level 3: Advanced Trust & Friction Removal'), description: safeT('level_3_desc', 'Data compliance, security assurance, and payment terms.'), scenarios: [] },
+      4: { name: safeT('level_4_title', 'Level 4: Master Class Close & Graduation'), description: safeT('level_4_desc', 'Multi-stakeholder board decisions and final trial closes.'), scenarios: [] },
     };
     scenarios.forEach(s => {
       const lv = s.level || DIFFICULTY_MAP[s.difficulty] || 1;
