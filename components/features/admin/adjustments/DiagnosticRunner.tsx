@@ -220,7 +220,7 @@ export default function DiagnosticRunner() {
                       </span>
                     </h5>
                     <p className="text-sm font-medium text-foreground mt-1">{r.finding}</p>
-                    <div className="flex items-start gap-2 mt-3 p-3 bg-white/50 rounded-xl border border-indigo-500/10">
+                    <div className="flex items-start gap-2 mt-3 p-3 bg-secondary/40 rounded-xl border border-indigo-500/20">
                        <Zap size={14} className="text-indigo-500 shrink-0 mt-0.5" />
                        <div>
                           <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Recommended Action</p>

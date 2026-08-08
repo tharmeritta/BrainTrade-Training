@@ -51,7 +51,7 @@ export const TrophyHero = memo(() => (
     >
       <Trophy size={56} className="text-white drop-shadow-lg" />
       <motion.div 
-        className="absolute -top-2 -right-2 bg-white text-amber-600 rounded-full p-2 shadow-lg border-2 border-amber-100"
+        className="absolute -top-2 -right-2 bg-card text-amber-500 rounded-full p-2 shadow-lg border-2 border-amber-500/20"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 1, type: "spring" }}

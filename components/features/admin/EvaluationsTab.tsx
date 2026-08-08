@@ -113,7 +113,7 @@ export default function EvaluationsTab({ readOnly }: { readOnly?: boolean }) {
               {/* Archive Header with Back Button */}
               <div className="flex items-center justify-between bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl">
                  <div className="flex items-center gap-3">
-                    <button onClick={() => setSelectedPeriodId('')} className="p-2 rounded-lg bg-white/50 hover:bg-white transition-colors">
+                    <button onClick={() => setSelectedPeriodId('')} className="p-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 transition-colors">
                        <ChevronDown size={16} className="rotate-90 text-amber-600" />
                     </button>
                     <div>
