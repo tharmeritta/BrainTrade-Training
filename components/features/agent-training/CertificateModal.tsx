@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Award, Download, Mail, CheckCircle2, X, Sparkles, ShieldCheck, Loader2 
 } from 'lucide-react';
+import { CertificateConfig, DEFAULT_CERT_CONFIG } from '@/app/api/admin/certificate-config/route';
 
 interface CertificateModalProps {
   isOpen: boolean;
@@ -31,7 +32,19 @@ export function CertificateModal({
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailStatus, setEmailStatus] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const [config, setConfig] = useState<CertificateConfig>(DEFAULT_CERT_CONFIG);
   const certCardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetch('/api/admin/certificate-config')
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.academyName) setConfig(data);
+        })
+        .catch(err => console.error('Failed to load cert config:', err));
+    }
+  }, [isOpen]);
 
   const formattedDate = completedAt
     ? new Date(completedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -62,7 +75,7 @@ export function CertificateModal({
       ctx.fillRect(0, 0, element.offsetWidth, element.offsetHeight);
 
       // Draw border
-      ctx.strokeStyle = '#818cf8';
+      ctx.strokeStyle = config.accentColor || '#818cf8';
       ctx.lineWidth = 4;
       ctx.strokeRect(12, 12, element.offsetWidth - 24, element.offsetHeight - 24);
 
@@ -70,15 +83,15 @@ export function CertificateModal({
       ctx.fillStyle = '#ffffff';
       ctx.font = '900 22px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('BRAINTRADE TRAINING ACADEMY', element.offsetWidth / 2, 50);
+      ctx.fillText(config.academyName.toUpperCase(), element.offsetWidth / 2, 50);
 
-      ctx.fillStyle = '#818cf8';
+      ctx.fillStyle = config.accentColor || '#818cf8';
       ctx.font = 'bold 12px sans-serif';
-      ctx.fillText('OFFICIAL CERTIFICATE OF COMPLETION', element.offsetWidth / 2, 75);
+      ctx.fillText(config.certificateTitle.toUpperCase(), element.offsetWidth / 2, 75);
 
       ctx.fillStyle = '#94a3b8';
       ctx.font = '12px sans-serif';
-      ctx.fillText('This certifies that', element.offsetWidth / 2, 110);
+      ctx.fillText(config.subtitle, element.offsetWidth / 2, 110);
 
       ctx.fillStyle = '#38bdf8';
       ctx.font = '900 24px sans-serif';
@@ -86,7 +99,7 @@ export function CertificateModal({
 
       ctx.fillStyle = '#cbd5e1';
       ctx.font = '12px sans-serif';
-      ctx.fillText(`has successfully graduated from the Intelligent Sales Training Curriculum`, element.offsetWidth / 2, 175);
+      ctx.fillText(config.customNotes, element.offsetWidth / 2, 175);
 
       ctx.fillStyle = '#34d399';
       ctx.font = 'bold 16px sans-serif';
@@ -166,7 +179,7 @@ export function CertificateModal({
               </div>
               <div>
                 <h3 className="text-lg font-black text-foreground tracking-tight">Official Training Certificate</h3>
-                <p className="text-xs text-muted-foreground">BrainTrade Sales Excellence Academy</p>
+                <p className="text-xs text-muted-foreground">{config.academyName}</p>
               </div>
             </div>
 
@@ -179,35 +192,37 @@ export function CertificateModal({
           {/* Printable Certificate Card Component */}
           <div 
             ref={certCardRef}
-            className="relative rounded-2xl p-8 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 border-2 border-indigo-500/40 text-white shadow-2xl overflow-hidden space-y-6 text-center"
+            className="relative rounded-2xl p-8 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 border-2 text-white shadow-2xl overflow-hidden space-y-6 text-center"
+            style={{ borderColor: `${config.accentColor}60` }}
           >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl pointer-events-none opacity-20"
+                 style={{ backgroundColor: config.accentColor }} />
 
             {/* Emblem Seal */}
             <div className="flex items-center justify-center gap-2">
               <div className="p-2.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
-                <Sparkles size={20} className="text-amber-400" />
+                <Sparkles size={20} style={{ color: config.accentColor }} />
               </div>
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-amber-300">
-                BrainTrade Academy
+              <span className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: config.accentColor }}>
+                {config.academyName}
               </span>
             </div>
 
             {/* Title */}
             <div>
-              <h2 className="text-2xl font-black uppercase tracking-tight text-white">Certificate of Completion</h2>
-              <p className="text-xs text-indigo-200 mt-1">This document verifies that</p>
+              <h2 className="text-2xl font-black uppercase tracking-tight text-white">{config.certificateTitle}</h2>
+              <p className="text-xs text-indigo-200 mt-1">{config.subtitle}</p>
             </div>
 
             {/* Recipient */}
             <div className="py-2 border-y border-white/10">
-              <h1 className="text-3xl font-black text-cyan-400 tracking-tight">{agentName}</h1>
+              <h1 className="text-3xl font-black tracking-tight" style={{ color: config.accentColor }}>{agentName}</h1>
               <p className="text-xs text-slate-300 mt-1 font-semibold">{stageName}</p>
             </div>
 
             {/* Description */}
             <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
-              Has successfully fulfilled all graduation criteria, course modules, sales quizzes, and AI audit evaluations with distinction.
+              {config.customNotes}
             </p>
 
             {/* Score & Serial Footer */}
@@ -217,7 +232,8 @@ export function CertificateModal({
                 <span className="font-extrabold text-white">{formattedDate}</span>
               </div>
 
-              <div className="px-4 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-black text-sm">
+              <div className="px-4 py-1.5 rounded-xl text-white font-black text-sm shadow-md"
+                   style={{ backgroundColor: `${config.accentColor}30`, borderColor: `${config.accentColor}60` }}>
                 Mastery Score: {score}%
               </div>
 
