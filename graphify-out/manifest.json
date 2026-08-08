@@ -1175,8 +1175,8 @@
     "semantic_hash": "79f369ce2d68f93c98d76f7d06287c1c"
   },
   "package.json": {
-    "mtime": 1786178318.0171149,
-    "ast_hash": "b766bdd396246f7c1aa6397572bcb886",
+    "mtime": 1786178712.2732444,
+    "ast_hash": "d22b3a42a95c665b7dfc655d93aefcca",
     "semantic_hash": ""
   },
   "postcss.config.js": {
@@ -1395,8 +1395,8 @@
     "semantic_hash": ""
   },
   "scripts/agy-start.sh": {
-    "mtime": 1786169977.3949516,
-    "ast_hash": "56662277c951d5bc34696c39712faee9",
+    "mtime": 1786178716.6416886,
+    "ast_hash": "ac0dceda4b3917ac64dcb846e00c312c",
     "semantic_hash": ""
   },
   "scripts/git-auto-commit.sh": {
@@ -1477,6 +1477,11 @@
   "components/features/admin/CertificateTab.tsx": {
     "mtime": 1786178458.1859655,
     "ast_hash": "7e56f3b00b9e981cde4ffbce7fb4213e",
+    "semantic_hash": ""
+  },
+  "scripts/ensure-dev-server.js": {
+    "mtime": 1786178699.6966655,
+    "ast_hash": "db77dd32e19a00569e213b8a4b4a1af3",
     "semantic_hash": ""
   }
 }

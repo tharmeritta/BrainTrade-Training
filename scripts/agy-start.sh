@@ -43,6 +43,11 @@ echo -e "\n${BLUE}4. Verifying Next.js Build (npm run build)...${NC}"
 npm run build
 echo -e "  ${GREEN}✓ Next.js build verification succeeded!${NC}"
 
+# 5. Ensure Localhost Dev Server is Active
+echo -e "\n${BLUE}5. Verifying Localhost Dev Server (http://localhost:3000)...${NC}"
+node scripts/ensure-dev-server.js
+echo -e "  ${GREEN}✓ Localhost dev server verified!${NC}"
+
 echo -e "\n${GREEN}====================================================${NC}"
 echo -e "${GREEN}✨ Workspace is 100% healthy and ready for AGY session!${NC}"
 echo -e "${GREEN}====================================================${NC}"
