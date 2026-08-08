@@ -1,16 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, MessageSquare, Send, X, Bot, ArrowRight } from 'lucide-react';
+import { hasStaffSession } from '@/lib/session/client';
 
 export default function StaffAiCopilot() {
+  const [isStaff, setIsStaff] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [messages, setMessages] = useState<Array<{ sender: 'user' | 'ai'; text: string }>>([
     { sender: 'ai', text: 'Hello Coach! Ask me anything about team performance, objection gaps, or 1-on-1 coaching recommendations.' }
   ]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setIsStaff(hasStaffSession());
+    const checkStaff = () => setIsStaff(hasStaffSession());
+    window.addEventListener('agent-session-changed', checkStaff);
+    return () => window.removeEventListener('agent-session-changed', checkStaff);
+  }, []);
+
+  if (!isStaff) return null;
 
   const handleSend = () => {
     if (!query.trim() || loading) return;

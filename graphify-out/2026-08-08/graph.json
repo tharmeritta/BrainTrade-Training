@@ -11449,8 +11449,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "package_devdependencies_eslint_plugin_jsx_a11y",
-      "community": 73,
-      "community_name": "eslint-plugin-jsx-a11y",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "eslint-plugin-jsx-a11y"
     },
     {
@@ -11460,8 +11460,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "eslint_plugin_jsx_a11y",
-      "community": 73,
-      "community_name": "eslint-plugin-jsx-a11y",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "eslint-plugin-jsx-a11y"
     },
     {
@@ -11471,8 +11471,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "package_devdependencies_eslint_plugin_react_hooks",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 73,
+      "community_name": "eslint-plugin-react-hooks",
       "norm_label": "eslint-plugin-react-hooks"
     },
     {
@@ -11482,8 +11482,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "eslint_plugin_react_hooks",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 73,
+      "community_name": "eslint-plugin-react-hooks",
       "norm_label": "eslint-plugin-react-hooks"
     },
     {
@@ -11855,21 +11855,21 @@
       "norm_label": "initadmin()"
     },
     {
-      "label": "READY_TO_USE_SCENARIOS",
+      "label": "FULL_CURRICULUM_SCENARIOS",
       "file_type": "code",
       "source_file": "scripts/seed-scenarios.mjs",
       "source_location": "L42",
       "_origin": "ast",
-      "id": "scripts_seed_scenarios_ready_to_use_scenarios",
+      "id": "scripts_seed_scenarios_full_curriculum_scenarios",
       "community": 33,
       "community_name": "seed-scenarios.mjs",
-      "norm_label": "ready_to_use_scenarios"
+      "norm_label": "full_curriculum_scenarios"
     },
     {
       "label": "seed()",
       "file_type": "code",
       "source_file": "scripts/seed-scenarios.mjs",
-      "source_location": "L211",
+      "source_location": "L568",
       "_callable": true,
       "_origin": "ast",
       "id": "scripts_seed_scenarios_seed",
@@ -44158,6 +44158,17 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/seed-scenarios.mjs",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "scripts_seed_scenarios",
+      "target": "scripts_seed_scenarios_full_curriculum_scenarios",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/seed-scenarios.mjs",
       "source_location": "L27",
       "weight": 1.0,
       "_origin": "ast",
@@ -44169,18 +44180,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/seed-scenarios.mjs",
-      "source_location": "L42",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "scripts_seed_scenarios",
-      "target": "scripts_seed_scenarios_ready_to_use_scenarios",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/seed-scenarios.mjs",
-      "source_location": "L211",
+      "source_location": "L568",
       "weight": 1.0,
       "_origin": "ast",
       "source": "scripts_seed_scenarios",
@@ -44192,7 +44192,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts/seed-scenarios.mjs",
-      "source_location": "L213",
+      "source_location": "L570",
       "weight": 1.0,
       "_origin": "ast",
       "source": "scripts_seed_scenarios_seed",

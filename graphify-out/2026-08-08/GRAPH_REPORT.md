@@ -1,7 +1,7 @@
 # Graph Report - BrainTrade-Training  (2026-08-08)
 
 ## Corpus Check
-- 275 files · ~137,220 words
+- 275 files · ~139,674 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -64,7 +64,7 @@
 - tailwind.config.ts
 - AgentEvaluation
 - eslint-config-next
-- eslint-plugin-jsx-a11y
+- eslint-plugin-react-hooks
 - postcss
 - agy-start.sh
 - tailwindcss
@@ -182,7 +182,7 @@ Nodes (20): GET(), maxDuration, POST(), POST(), GET(), GET(), GET(), GET() (+12 
 
 ### Community 20 - "devDependencies"
 Cohesion: 0.10
-Nodes (21): autoprefixer, babel-plugin-react-compiler, eslint, @eslint/eslintrc, @eslint/js, eslint-plugin-react-hooks, devDependencies, autoprefixer (+13 more)
+Nodes (21): autoprefixer, babel-plugin-react-compiler, eslint, @eslint/eslintrc, @eslint/js, eslint-plugin-jsx-a11y, devDependencies, autoprefixer (+13 more)
 
 ### Community 21 - "export/route.ts"
 Cohesion: 0.08
@@ -222,7 +222,7 @@ Nodes (7): __dirname, envPath, initAdmin(), main(), seedAdmin(), seedQuizzes(), 
 
 ### Community 33 - "seed-scenarios.mjs"
 Cohesion: 0.40
-Nodes (5): __dirname, envPath, initAdmin(), READY_TO_USE_SCENARIOS, seed()
+Nodes (5): __dirname, envPath, FULL_CURRICULUM_SCENARIOS, initAdmin(), seed()
 
 ### Community 50 - "FADE_IN"
 Cohesion: 0.19
