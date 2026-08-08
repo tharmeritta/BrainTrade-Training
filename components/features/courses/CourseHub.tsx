@@ -251,24 +251,6 @@ const CourseCard = memo(({ module, lang, index, onStart, isCompleted, onMarkComp
               className="group-hover/btn:translate-x-1 transition-transform"
             />
           </button>
-
-          {!isCompleted && (
-            <button
-              onClick={handleMarkComplete}
-              disabled={isMarking}
-              className="flex items-center justify-center gap-2 w-full py-2.5 px-4
-                         rounded-[18px] bg-emerald-500/10 border border-emerald-500/20
-                         text-emerald-600 dark:text-emerald-400 text-[11px] font-black uppercase tracking-wider
-                         hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all duration-300"
-            >
-              {isMarking ? (
-                <Loader2 size={12} className="animate-spin" />
-              ) : (
-                <CheckCircle2 size={12} />
-              )}
-              {t('markComplete') || 'Mark as Completed'}
-            </button>
-          )}
         </div>
       </div>
     </motion.div>

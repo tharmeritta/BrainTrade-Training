@@ -13,6 +13,8 @@ import {
   CheckCircle2,
   AlertCircle,
   RefreshCw,
+  Trophy,
+  Sparkles,
 } from 'lucide-react';
 
 import type { CourseModule, CourseLang } from '@/lib/courses';
@@ -43,6 +45,8 @@ export default function PresentationViewer({
   const t = useTranslations('presentation');
   const router = useRouter();
   const frameRef = useRef<HTMLDivElement>(null);
+  const [showCompletionModal, setShowCompletionModal] = React.useState(false);
+  const promptedRef = useRef(false);
 
   const {
     lang, handleLangChange,
@@ -62,6 +66,14 @@ export default function PresentationViewer({
   } = usePresentation(module, user, initialLang, locale);
 
   const title = lang === 'th' ? module.titleTh : module.title;
+
+  // Automatically trigger completion confirmation modal when reaching final slide & all slides viewed
+  React.useEffect(() => {
+    if (!isTrainer && hasContent && isLoaded && (slide === total || isModuleComplete) && !promptedRef.current) {
+      promptedRef.current = true;
+      setShowCompletionModal(true);
+    }
+  }, [slide, total, isModuleComplete, isTrainer, hasContent, isLoaded]);
 
   return (
     <div
@@ -215,8 +227,70 @@ export default function PresentationViewer({
         t={t} progress={progress} slide={slide} total={total} hasContent={hasContent}
         isTrainer={isTrainer} viewedCount={viewedSlides.size} isModuleComplete={isModuleComplete}
         toggleFullscreen={toggleFullscreen} isFullscreen={isFullscreen}
-        markAsComplete={markAsComplete} isSaving={isSaving}
+        markAsComplete={() => setShowCompletionModal(true)} isSaving={isSaving}
       />
+
+      {/* -- Completion Confirmation Pop-up Modal Prompt -- */}
+      <AnimatePresence>
+        {showCompletionModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.9, y: 20, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-md bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-center overflow-hidden relative"
+            >
+              <div className="absolute -top-16 -right-16 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+
+              <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center mx-auto shadow-inner relative">
+                <Trophy size={32} />
+                <Sparkles size={16} className="absolute -top-1 -right-1 text-amber-400 animate-pulse" />
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-xl font-black tracking-tight text-foreground">
+                  {lang === 'th' ? '🎉 สำเร็จการเรียนรู้โมดูลนี้แล้ว!' : '🎉 Course Completed!'}
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {lang === 'th' 
+                    ? `คุณอ่านสไลด์บทเรียนเรื่อง "${title}" ครบถ้วนแล้ว ต้องการบันทึกและยืนยันการเรียนจบหรือไม่?` 
+                    : `You have reviewed all slides for "${title}". Would you like to confirm and mark this module as COMPLETED in your progress record?`}
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await markAsComplete();
+                    setShowCompletionModal(false);
+                    router.push(`/${locale}/learn`);
+                  }}
+                  disabled={isSaving}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 px-5 rounded-2xl bg-emerald-500 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/25 hover:bg-emerald-600 active:scale-95 transition-all disabled:opacity-50"
+                >
+                  {isSaving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                  {lang === 'th' ? 'ยืนยันการเรียนจบโมดูล' : 'Confirm & Mark Completed'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowCompletionModal(false)}
+                  className="w-full sm:w-auto py-3.5 px-5 rounded-2xl bg-secondary text-foreground font-bold text-xs hover:bg-secondary/80 transition-all shrink-0"
+                >
+                  {lang === 'th' ? 'ทบทวนสไลด์ต่อ' : 'Keep Reviewing'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
