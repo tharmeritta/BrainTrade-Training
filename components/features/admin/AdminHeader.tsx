@@ -71,13 +71,13 @@ export default function AdminHeader({
 
         {isAdmin && (
           <Link
-            href="/learn"
+            href="/th/ai-eval"
             target="_blank"
             className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
-            title="Preview Live Agent Training Platform without logging out"
+            title="Preview Live Agent AI Scenarios & Quiz Platform without logging out"
           >
             <UserCheck size={14} />
-            <span>Agent Hub Preview</span>
+            <span>Preview Agent AI Scenarios & Quiz</span>
             <ExternalLink size={12} className="opacity-70" />
           </Link>
         )}

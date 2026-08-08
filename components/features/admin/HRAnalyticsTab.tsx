@@ -15,6 +15,7 @@ import { AgentStats, TrainingPeriod } from '@/types';
 import { deriveSteps, scoreColor } from '@/lib/training';
 import { STEPS } from '@/constants/training';
 import { FADE_IN, STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
+import { AiSkillGapReport } from '@/components/features/admin/ui/AiSkillGapReport';
 
 export default function HRAnalyticsTab({ readOnly }: { readOnly?: boolean }) {
   const t = useTranslations('admin');
@@ -38,8 +39,8 @@ export default function HRAnalyticsTab({ readOnly }: { readOnly?: boolean }) {
           setAgents(aData.agents || []);
           setPeriods(pData || []);
         }
-      } catch (err) {
-        console.error('Failed to fetch HR data:', err);
+      } catch (e) {
+        console.error('HR Analytics fetch error:', e);
       } finally {
         setLoading(false);
       }
@@ -47,24 +48,33 @@ export default function HRAnalyticsTab({ readOnly }: { readOnly?: boolean }) {
     fetchData();
   }, []);
 
+  const stats = useMemo(() => {
+    let filtered = agents;
+    if (selectedPeriod !== 'all') {
+      const p = periods.find(p => p.id === selectedPeriod);
+      if (p) filtered = agents.filter(a => p.agentIds.includes(a.agent.id));
+    }
+    
+    const active = filtered.filter(a => a.agent.active);
+    const avgScore = filtered.length ? filtered.reduce((acc, curr) => acc + curr.overallScore, 0) / filtered.length : 0;
+    const completed = filtered.filter(a => a.overallScore >= 70).length;
+    const atRisk = filtered.filter(a => a.overallScore < 50).length;
+
+    return { total: filtered.length, active: active.length, avgScore, completed, atRisk };
+  }, [agents, periods, selectedPeriod]);
+
   const filteredAgents = useMemo(() => {
     return agents.filter(a => {
-      const matchesSearch = a.agent.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          a.agent.stageName?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesPeriod = selectedPeriod === 'all' || a.agent.id === selectedPeriod; // Simplified for now
-      return matchesSearch;
+      const matchSearch = a.agent.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          (a.agent.stageName && a.agent.stageName.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      if (selectedPeriod !== 'all') {
+        const p = periods.find(p => p.id === selectedPeriod);
+        return matchSearch && (p ? p.agentIds.includes(a.agent.id) : false);
+      }
+      return matchSearch;
     });
-  }, [agents, searchTerm, selectedPeriod]);
-
-  // Aggregate stats
-  const stats = useMemo(() => {
-    const total = filteredAgents.length;
-    const completed = filteredAgents.filter(a => deriveSteps(a)['ai-eval'].passed).length;
-    const avgScore = total > 0 ? filteredAgents.reduce((acc, curr) => acc + curr.overallScore, 0) / total : 0;
-    const atRisk = filteredAgents.filter(a => a.overallScore < 50).length;
-
-    return { total, completed, avgScore, atRisk };
-  }, [filteredAgents]);
+  }, [agents, searchTerm, selectedPeriod, periods]);
 
   if (loading) {
     return (
@@ -115,6 +125,9 @@ export default function HRAnalyticsTab({ readOnly }: { readOnly?: boolean }) {
           trend={th('hrReview')}
         />
       </div>
+
+      {/* AI Skill Gap Report Card */}
+      <AiSkillGapReport title="AI Skill Gap Analysis (Cohort Breakdown)" />
 
       {/* Main Matrix Section */}
       <GlassCard className="p-0 border-border/40 overflow-hidden">

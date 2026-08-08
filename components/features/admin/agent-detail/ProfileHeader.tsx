@@ -1,8 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { X, Clock, GraduationCap, ShieldCheck, Loader2 } from 'lucide-react';
+import { X, Clock, GraduationCap, ShieldCheck, Loader2, Eye } from 'lucide-react';
 import type { AgentStats } from '@/types';
+import { setAgentSession } from '@/lib/session/agent';
 import { BadgePill } from '../ui/BadgePill';
 import { scoreColor, timeAgo } from '../AdminHelpers';
 
@@ -23,6 +24,15 @@ export default function ProfileHeader({
 }: ProfileHeaderProps) {
   const t = useTranslations('admin');
 
+  const handleInspectAsAgent = () => {
+    setAgentSession({
+      id: stats.agent.id,
+      name: stats.agent.name,
+      stageName: stats.agent.stageName || ''
+    });
+    window.open('/en/dashboard', '_blank');
+  };
+
   return (
     <div className="px-8 py-8 bg-gradient-to-br from-secondary/50 to-secondary/20 border-b border-border relative shrink-0">
       <button onClick={onClose} className="absolute top-6 right-6 p-2 rounded-full hover:bg-secondary transition-colors text-muted-foreground">
@@ -41,12 +51,22 @@ export default function ProfileHeader({
               {stats.agent.active ? t('agentDetail.active') : t('agentDetail.inactive')}
             </span>
             
+            {/* Inspect Portal as Agent Button */}
+            <button 
+              onClick={handleInspectAsAgent}
+              className="flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 ml-2"
+              title="Open Agent Portal as this agent in a new tab"
+            >
+              <Eye size={14} />
+              <span className="text-[11px] font-black uppercase tracking-tight">Inspect as Agent</span>
+            </button>
+
             {/* Master Override Button */}
             {!readOnly && (
               <button 
                 onClick={onMasterPass}
                 disabled={isBulkLoading}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-amber-500 text-white hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20 ml-2"
+                className="flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-amber-500 text-white hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20"
               >
                 {isBulkLoading ? <Loader2 size={14} className="animate-spin" /> : <ShieldCheck size={14} />}
                 <span className="text-[11px] font-black uppercase tracking-tight">{t('agentDetail.quickPass') || "Quick Pass"}</span>

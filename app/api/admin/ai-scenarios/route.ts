@@ -26,11 +26,15 @@ export async function POST(req: NextRequest) {
     
     // IT and Manager roles require approval
     if (user.role === 'it' || user.role === 'manager') {
+      const nameStr = Array.isArray(body) 
+        ? `Bulk Import (${body.length} scenarios)` 
+        : (typeof body.name === 'string' ? body.name : body.name?.en || body.name?.th || 'New Scenario');
+
       await createApprovalRequest(
         { uid: user.uid, name: user.name },
         'create_ai_scenario',
         Array.isArray(body) ? body : { ...body, id: crypto.randomUUID() },
-        { name: Array.isArray(body) ? `Bulk Import (${body.length} scenarios)` : body.name }
+        { name: nameStr }
       );
       return NextResponse.json({ message: 'Request submitted for approval' }, { status: 202 });
     }
@@ -90,11 +94,12 @@ export async function PATCH(req: NextRequest) {
 
     // IT and Manager roles require approval
     if (user.role === 'it' || user.role === 'manager') {
+      const scenarioName = typeof existing.name === 'string' ? existing.name : existing.name?.en || existing.name?.th || id;
       await createApprovalRequest(
         { uid: user.uid, name: user.name },
         'edit_ai_scenario',
         data,
-        { id, name: existing.name }
+        { id, name: scenarioName }
       );
       return NextResponse.json({ message: 'Request submitted for approval' }, { status: 202 });
     }
@@ -126,11 +131,12 @@ export async function DELETE(req: NextRequest) {
 
     // IT role requires approval
     if (user.role === 'it') {
+      const existingName = existing ? (typeof existing.name === 'string' ? existing.name : existing.name?.en || existing.name?.th || id) : id;
       await createApprovalRequest(
         { uid: user.uid, name: user.name },
         'delete_ai_scenario',
         null,
-        { id, name: existing?.name || id }
+        { id, name: existingName }
       );
       return NextResponse.json({ message: 'Request submitted for approval' }, { status: 202 });
     }

@@ -61,12 +61,12 @@ export class AiEvalService {
       round: 1,
       messages: [],
       coaching: {},
-      currentMood: scenario.initialMood || 'ปกติ',
+      currentMood: typeof scenario.initialMood === 'string' ? scenario.initialMood : scenario.initialMood?.th || scenario.initialMood?.en || 'ปกติ',
       customerProfile: {
         name: 'ลูกค้า',
-        occupation: scenario.description,
+        occupation: typeof scenario.description === 'string' ? scenario.description : typeof scenario.customerPersona === 'string' ? scenario.customerPersona : scenario.customerPersona?.th || scenario.customerPersona?.en || '',
         age: 35,
-        objective: scenario.objective || '',
+        objective: typeof scenario.objective === 'string' ? scenario.objective : scenario.objective?.th || scenario.objective?.en || '',
       },
       status: 'active',
       turnCount: 0,
@@ -145,7 +145,7 @@ export class AiEvalService {
     // e. Append assistant message to history
     session.messages.push({
       role: 'assistant',
-      content: turn.dialogue,
+      content: turn.dialogue || '',
       timestamp: new Date().toISOString(),
     });
     session.lastUpdate = new Date().toISOString();
@@ -243,7 +243,7 @@ export class AiEvalService {
     return prompt
       .replace(/{{agentName}}/g, session.agentName || 'พนักงาน')
       .replace(/{{customerName}}/g, session.customerProfile.name || 'ลูกค้า')
-      .replace(/{{scenarioName}}/g, scenario.name || '')
+      .replace(/{{scenarioName}}/g, typeof scenario.name === 'string' ? scenario.name : scenario.name?.th || scenario.name?.en || '')
       .replace(/{{difficulty}}/g, scenario.difficulty || '')
       .replace(/{{level}}/g, (scenario.level || 1).toString())
       .replace(/{{turnCount}}/g, session.turnCount.toString());

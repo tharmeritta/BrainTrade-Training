@@ -1,7 +1,8 @@
 'use client';
 
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, Eye } from 'lucide-react';
 import type { AgentStats } from '@/types';
+import { setAgentSession } from '@/lib/session/agent';
 import { StatusPipeline } from '../ui/Pipeline';
 import { scoreColor } from '../AdminHelpers';
 import { getCompletionStatus, type CompletionStatus } from '@/lib/completion';
@@ -19,6 +20,15 @@ export function GraduationRoster({ leaderboard, totalAgents, onViewAgent, t }: G
   const rosterAgents = leaderboard
     .map(a => ({ ...a, completion: getCompletionStatus(a) }))
     .sort((a, b) => STATUS_ORDER[a.completion.status] - STATUS_ORDER[b.completion.status]);
+
+  const handleInspect = (agent: AgentStats) => {
+    setAgentSession({
+      id: agent.agent.id,
+      name: agent.agent.name,
+      stageName: agent.agent.stageName || ''
+    });
+    window.open('/en/dashboard', '_blank');
+  };
 
   return (
     <div className="bg-card rounded-2xl border border-border p-6 shadow-sm space-y-5">

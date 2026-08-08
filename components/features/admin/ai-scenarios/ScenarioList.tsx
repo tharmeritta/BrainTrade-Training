@@ -60,7 +60,9 @@ export function ScenarioCard({
         {/* Main info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-black text-sm text-foreground tracking-tight truncate">{s.name}</span>
+            <span className="font-black text-sm text-foreground tracking-tight truncate">
+              {typeof s.name === 'string' ? s.name : s.name?.en || s.name?.th || ''}
+            </span>
             {s.isMaster && (
               <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded border border-primary/30 text-primary bg-primary/10 shrink-0 flex items-center gap-1">
                 <Zap size={8} fill="currentColor" /> Sandbox
@@ -70,7 +72,9 @@ export function ScenarioCard({
               <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded border border-muted-foreground/20 text-muted-foreground bg-muted-foreground/5 shrink-0">Inactive</span>
             )}
           </div>
-          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{s.description || s.customerPersona || '—'}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
+            {typeof s.customerPersona === 'string' ? s.customerPersona : s.customerPersona?.en || s.customerPersona?.th || '—'}
+          </p>
         </div>
 
         {/* Stats */}

@@ -10,6 +10,7 @@ import { IntroView } from './IntroView';
 import { ScenarioPicker } from './ScenarioPicker';
 import { AuditFlow } from './AuditFlow';
 import { CoachingCard } from './CoachingCard';
+import { MultipleChoiceView } from './MultipleChoiceView';
 import type { EvalStep, CoachingData, EvalScenario } from './types';
 
 const DEFAULT_CRITERIA = ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'];
@@ -186,12 +187,19 @@ export default function AiEvaluation() {
 
       {step === 'audit' && selectedScenario && (
         <motion.div key="audit" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={TRANSITION.base}>
-          <AuditFlow
-            scenario={selectedScenario}
-            onBack={() => setStep('scenarios')}
-            onSubmit={handleAuditSubmit}
-            loading={loading}
-            error={error}
+          <div className="mb-6 flex items-center justify-between">
+            <button
+              onClick={() => setStep('scenarios')}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary text-foreground text-xs font-bold hover:bg-secondary/80 transition-all"
+            >
+              <RotateCcw size={14} /> Back to Scenarios
+            </button>
+          </div>
+          <MultipleChoiceView
+            scenario={selectedScenario as any}
+            onComplete={(score, passed) => {
+              if (agentId) fetchConfig(agentId);
+            }}
           />
         </motion.div>
       )}

@@ -1,8 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Award } from 'lucide-react';
+import { Award, Eye } from 'lucide-react';
 import type { AgentStats } from '@/types';
+import { setAgentSession } from '@/lib/session/agent';
 import { BadgePill } from '../ui/BadgePill';
 import { scoreColor, scoreBg, timeAgo } from '../AdminHelpers';
 
@@ -13,6 +14,15 @@ interface LeaderboardTableProps {
 }
 
 export function LeaderboardTable({ leaderboard, onViewAgent, t }: LeaderboardTableProps) {
+  const handleInspect = (agent: AgentStats) => {
+    setAgentSession({
+      id: agent.agent.id,
+      name: agent.agent.name,
+      stageName: agent.agent.stageName || ''
+    });
+    window.open('/en/dashboard', '_blank');
+  };
+
   return (
     <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
       <div className="px-6 py-5 border-b border-border flex items-center justify-between">
@@ -41,7 +51,7 @@ export function LeaderboardTable({ leaderboard, onViewAgent, t }: LeaderboardTab
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => onViewAgent(agent)}
-                  className="font-semibold text-foreground truncate hover:text-primary transition-colors"
+                  className="font-semibold text-foreground truncate hover:text-primary transition-colors text-left"
                 >
                   {agent.agent.name}
                 </button>

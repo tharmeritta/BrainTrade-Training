@@ -11,6 +11,8 @@ import {
 import { useConfigEditor } from '@/lib/hooks/useConfigEditor';
 import { COURSE_MODULES } from '@/lib/courses';
 
+import { SkeletonTable } from '@/components/ui/Skeleton';
+
 // Extracted Editors
 import LearnEditor from './adjustments/LearnEditor';
 import QuizzesEditor from './adjustments/QuizzesEditor';
@@ -46,9 +48,8 @@ export default function AdjustmentsTab({ role, readOnly }: { role: string; readO
   }, [configs.learn]);
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center py-24 gap-4">
-      <Loader2 className="animate-spin text-primary" size={32} />
-      <p className="text-sm text-muted-foreground animate-pulse">Loading configurations...</p>
+    <div className="space-y-4 p-2">
+      <SkeletonTable rows={4} />
     </div>
   );
 

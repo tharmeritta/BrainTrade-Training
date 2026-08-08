@@ -6,7 +6,7 @@ import {
   ChevronLeft, Trophy, Target, Lock, CheckCircle2,
   Play, Smile, RotateCcw, ShieldCheck,
 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { ActiveAgentUI } from '@/components/ui/ActiveAgentUI';
 import { StepProgress } from './StepProgress';
 import type { EvalScenario } from './types';
@@ -37,6 +37,8 @@ export const ScenarioPicker = memo(({
   error, loading, configLoading, onClearError,
 }: ScenarioPickerProps) => {
   const t = useTranslations('aiEval');
+  const locale = useLocale();
+  const lang = (locale === 'en' ? 'en' : 'th') as 'th' | 'en';
 
   const levels = useMemo(() => {
     const groups: Record<number, { name: string; description: string; scenarios: EvalScenario[] }> = {
@@ -253,10 +255,10 @@ export const ScenarioPicker = memo(({
 
                         <div>
                           <h4 className="font-black text-lg text-foreground mb-1 group-hover:text-primary transition-colors leading-tight">
-                            {s.name}
+                            {typeof s.name === 'string' ? s.name : (lang === 'th' ? s.name?.th || s.name?.en : s.name?.en || s.name?.th) || ''}
                           </h4>
                           <p className="text-xs text-muted-foreground font-medium leading-relaxed line-clamp-2 min-h-[2.5rem]">
-                            {s.description}
+                            {typeof s.customerPersona === 'string' ? s.customerPersona : typeof s.description === 'string' ? s.description : (lang === 'th' ? (s.customerPersona as any)?.th || (s.description as any)?.th : (s.customerPersona as any)?.en || (s.description as any)?.en) || ''}
                           </p>
                         </div>
 
@@ -268,7 +270,7 @@ export const ScenarioPicker = memo(({
                           {s.initialMood && (
                             <div className="flex items-center gap-1 px-2.5 py-1 bg-secondary/60 rounded-lg text-[9px] font-bold text-foreground/80">
                               <Smile size={11} className="text-amber-400" />
-                              <span>{s.initialMood}</span>
+                              <span>{typeof s.initialMood === 'string' ? s.initialMood : (lang === 'th' ? s.initialMood?.th : s.initialMood?.en) || ''}</span>
                             </div>
                           )}
                         </div>

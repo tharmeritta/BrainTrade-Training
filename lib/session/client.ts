@@ -8,7 +8,8 @@ export function hasStaffSession(): boolean {
   const cookie = document.cookie.split('; ').find(row => row.startsWith('session='));
   if (!cookie) return false;
   
-  // Basic validation that it contains staff role (admin, manager, it, evaluator, trainer)
+  // Basic validation that it contains staff role (admin, manager, it, evaluator, trainer, hr)
   const val = decodeURIComponent(cookie.split('=')[1]);
-  return ['admin|', 'manager|', 'it|', 'evaluator|', 'trainer|'].some(r => val.includes(`|${r}`));
+  const staffRoles = ['admin', 'manager', 'it', 'evaluator', 'trainer', 'hr'];
+  return staffRoles.some(r => val.includes(`|${r}|`) || val.includes(`|${r}`));
 }

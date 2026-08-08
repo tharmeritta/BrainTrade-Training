@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "check": "tsc --noEmit && eslint .",
     "seed": "node scripts/seed.mjs",
+    "seed:agents": "node scripts/seed-mock-agents.mjs",
     "agy:start": "./scripts/agy-start.sh",
     "agy:check": "npm run check",
     "agy:commit": "./scripts/git-auto-commit.sh"

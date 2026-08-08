@@ -1,37 +1,31 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Plus, Trash2, Zap, Shield, FileUp, Settings, RotateCcw, TrendingUp, Loader2
+  Plus, Trash2, Zap, Search, FileUp, Sparkles, Loader2, CheckCircle2, AlertCircle, Edit2, ShieldAlert
 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import { AiEvalScenario } from '@/types/ai-eval';
-
-// Sub-components & Constants
-import AiScenarioImportModal from './AiScenarioImportModal';
-import SandboxManagerModal from './SandboxManagerModal';
-import { DIFF, DIFF_ORDER, EMPTY_FORM } from './ai-scenarios/constants';
 import ScenarioForm from './ai-scenarios/ScenarioForm';
-import { DifficultySection } from './ai-scenarios/ScenarioList';
+import AiScenarioImportModal from './AiScenarioImportModal';
+import { PRESET_TEMPLATES } from './ai-scenarios/templates';
+
+const DIFF_STYLES: Record<string, { label: string; bg: string; text: string; border: string }> = {
+  beginner:     { label: 'Beginner', bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/30' },
+  intermediate: { label: 'Intermediate', bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/30' },
+  advanced:     { label: 'Advanced', bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/30' },
+};
 
 export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
   const [scenarios, setScenarios] = useState<AiEvalScenario[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<Partial<AiEvalScenario>>({});
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [search, setSearch] = useState('');
+  const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
+  
+  // Editor state
   const [isCreating, setIsCreating] = useState(false);
-  const [showImport, setShowImport] = useState(false);
-  const [showSandbox, setShowSandbox] = useState(false);
-  const [savingConfig, setSavingConfig] = useState(false);
-  const [globalConfig, setGlobalConfig] = useState<{ unlockMode: 'sequential' | 'flexible', sandboxModeEnabled?: boolean }>({ 
-    unlockMode: 'sequential', 
-    sandboxModeEnabled: false 
-  });
-
-  const t = useTranslations('admin');
+  const [editingScenario, setEditingScenario] = useState<Partial<AiEvalScenario> | null>(null);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const fetchScenarios = useCallback(async () => {
     setLoading(true);
@@ -42,332 +36,332 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
         setScenarios(data.scenarios || []);
       }
     } catch (err) {
-      console.error('Failed to fetch scenarios', err);
+      console.error('Failed to fetch AI scenarios:', err);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const fetchGlobalConfig = useCallback(async () => {
-    try {
-      const res = await fetch('/api/admin/config');
-      if (res.ok) {
-        const data = await res.json();
-        const aiEvalConfig = data.configs?.ai_eval || {};
-        setGlobalConfig({ 
-          unlockMode: aiEvalConfig.unlockMode || 'sequential',
-          sandboxModeEnabled: aiEvalConfig.sandboxModeEnabled || false
-        });
-      }
-    } catch (err) {
-      console.error('Failed to fetch global config', err);
-    }
-  }, []);
-
   useEffect(() => {
     fetchScenarios();
-    fetchGlobalConfig();
-  }, [fetchScenarios, fetchGlobalConfig]);
+  }, [fetchScenarios]);
 
-  const updateGlobalConfig = async (newConfig: typeof globalConfig) => {
-    setSavingConfig(true);
+  const handleSaveScenario = async () => {
+    if (!editingScenario || !editingScenario.name) return;
+
     try {
-      const res = await fetch('/api/admin/config', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: 'ai_eval', data: newConfig }),
-      });
-      if (res.ok) setGlobalConfig(newConfig);
+      if (isCreating) {
+        const res = await fetch('/api/admin/ai-scenarios', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(editingScenario),
+        });
+        if (res.ok) {
+          setIsCreating(false);
+          setEditingScenario(null);
+          fetchScenarios();
+        }
+      } else {
+        const res = await fetch('/api/admin/ai-scenarios', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: editingScenario.id, data: editingScenario }),
+        });
+        if (res.ok) {
+          setEditingScenario(null);
+          fetchScenarios();
+        }
+      }
     } catch (err) {
-      console.error('Failed to update global config', err);
-    } finally {
-      setSavingConfig(false);
+      console.error('Failed to save scenario:', err);
     }
   };
 
-  const handleSave = async () => {
-    if (!editForm.id) return;
-    try {
-      const res = await fetch('/api/admin/ai-scenarios', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: editForm.id, data: editForm }),
-      });
-      if (res.ok) { setEditingId(null); fetchScenarios(); }
-    } catch (err) {
-      console.error('Save failed', err);
-    }
-  };
-
-  const handleCreate = async () => {
-    try {
-      const res = await fetch('/api/admin/ai-scenarios', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editForm),
-      });
-      if (res.ok) { setIsCreating(false); setEditForm(EMPTY_FORM); fetchScenarios(); }
-    } catch (err) {
-      console.error('Create failed', err);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this scenario?')) return;
+  const handleDeleteScenario = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this AI customer scenario?')) return;
     try {
       const res = await fetch(`/api/admin/ai-scenarios?id=${id}`, { method: 'DELETE' });
       if (res.ok) fetchScenarios();
-    } catch {
-      alert('Network error while deleting scenario');
+    } catch (err) {
+      console.error('Failed to delete scenario:', err);
     }
   };
 
   const handleToggleActive = async (s: AiEvalScenario) => {
-    const res = await fetch('/api/admin/ai-scenarios', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: s.id, data: { isActive: !s.isActive } }),
-    });
-    if (res.ok) fetchScenarios();
-  };
-
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
-
-  const selectAll = (ids: string[], select: boolean) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev);
-      ids.forEach(id => select ? next.add(id) : next.delete(id));
-      return next;
-    });
-  };
-
-  const clearSelection = () => setSelectedIds(new Set());
-
-  const handleBulkDelete = async () => {
-    const count = selectedIds.size;
-    if (!confirm(`Delete ${count} scenarios?`)) return;
-    setBulkDeleting(true);
     try {
-      await Promise.all(Array.from(selectedIds).map(id => fetch(`/api/admin/ai-scenarios?id=${id}`, { method: 'DELETE' })));
-      clearSelection();
-      fetchScenarios();
-    } catch {
-      alert('Some deletions failed.');
-    } finally {
-      setBulkDeleting(false);
+      const res = await fetch('/api/admin/ai-scenarios', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: s.id, data: { isActive: !s.isActive } }),
+      });
+      if (res.ok) fetchScenarios();
+    } catch (err) {
+      console.error('Failed to toggle active status:', err);
     }
   };
 
-  const handleEdit = (s: AiEvalScenario) => {
-    setIsCreating(false);
-    setEditingId(s.id);
-    const levelMap: Record<string, number> = { beginner: 1, intermediate: 2, advanced: 3, expert: 4 };
-    setEditForm({ ...s, level: s.level || levelMap[s.difficulty] || 1 });
+  const getLocText = (val: any): string => {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    return val.en || val.th || '';
   };
 
-  const handleFormChange = (newForm: Partial<AiEvalScenario>) => {
-    if (newForm.difficulty !== editForm.difficulty && newForm.difficulty) {
-      const levelMap: Record<string, number> = { beginner: 1, intermediate: 2, advanced: 3, expert: 4 };
-      newForm.level = levelMap[newForm.difficulty] || 1;
-    }
-    setEditForm(newForm);
+  const handleApplyPreset = (tmpl: any) => {
+    setEditingScenario({
+      name: tmpl.name,
+      difficulty: tmpl.difficulty,
+      passThreshold: tmpl.passThreshold,
+      customerPersona: tmpl.customerPersona,
+      initialMood: tmpl.initialMood,
+      objective: tmpl.objective,
+      situation: tmpl.situation,
+      choices: tmpl.choices,
+      required: tmpl.required,
+      isActive: true,
+    });
+    setIsCreating(true);
   };
 
-  const cancelForm = () => { setEditingId(null); setIsCreating(false); setEditForm(EMPTY_FORM); };
+  const filteredScenarios = useMemo(() => {
+    return scenarios.filter(s => {
+      const nameText = getLocText(s.name).toLowerCase();
+      const personaText = getLocText(s.customerPersona || s.description).toLowerCase();
+      const matchesSearch = nameText.includes(search.toLowerCase()) || personaText.includes(search.toLowerCase());
+      const matchesDiff = difficultyFilter === 'all' || s.difficulty === difficultyFilter;
+      return matchesSearch && matchesDiff;
+    });
+  }, [scenarios, search, difficultyFilter]);
 
-  const grouped = DIFF_ORDER.reduce((acc, d) => {
-    acc[d] = scenarios.filter(s => s.difficulty === d);
-    return acc;
-  }, {} as Record<keyof typeof DIFF, AiEvalScenario[]>);
-
-  const masterCount = scenarios.filter(s => s.isMaster && s.isActive).length;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 gap-4">
+        <Loader2 className="animate-spin text-primary" size={32} />
+        <p className="text-sm text-muted-foreground animate-pulse">Loading AI scenarios...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-5">
-      {/* -- Header -- */}
-      <div className="flex items-center justify-between gap-4">
+    <div className="space-y-6">
+      {/* Header Controls */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card border border-border rounded-3xl p-6 shadow-sm">
         <div>
-          <h2 className="text-xl font-black text-foreground tracking-tight flex items-center gap-2">
-            <Zap className="text-primary" size={19} />
-            AI Training Scenarios
+          <h2 className="text-xl font-black text-foreground flex items-center gap-2.5">
+            <Zap className="text-primary" size={22} />
+            AI Customer Personas & Roleplay Scenarios
           </h2>
-          <p className="text-xs text-muted-foreground font-medium mt-0.5">
-            Manage customer personas and evaluation criteria for AI Eval.
+          <p className="text-xs text-muted-foreground mt-1">
+            Manage customer personas and evaluation criteria for AI Audit roleplay sessions.
           </p>
         </div>
+
         {!readOnly && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
-              onClick={() => updateGlobalConfig({ ...globalConfig, sandboxModeEnabled: !globalConfig.sandboxModeEnabled })}
-              disabled={savingConfig || (masterCount === 0 && !globalConfig.sandboxModeEnabled)}
-              title={masterCount === 0 ? "Set at least one scenario as Master to enable" : ""}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border ${
-                globalConfig.sandboxModeEnabled 
-                  ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 hover:scale-105' 
-                  : 'bg-secondary/40 border-border/40 text-muted-foreground hover:border-primary/30'
-              } disabled:opacity-40 disabled:hover:scale-100`}
+              onClick={() => setShowImportModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-secondary text-foreground text-xs font-bold hover:bg-secondary/80 transition-all border border-border/60"
             >
-              <Zap size={14} fill={globalConfig.sandboxModeEnabled ? "currentColor" : "none"} />
-              Sandbox: {globalConfig.sandboxModeEnabled ? 'ON' : 'OFF'}
+              <FileUp size={15} /> Import File
             </button>
-            <button onClick={() => setShowSandbox(true)} className="flex items-center gap-1.5 bg-secondary text-foreground px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-secondary/80 transition-all border border-border/50">
-              <Zap size={14} />
-              Sandbox Setup
-            </button>
-            <button onClick={() => setShowImport(true)} className="flex items-center gap-1.5 bg-secondary text-foreground px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-secondary/80 transition-all border border-border/50">
-              <FileUp size={14} />
-              {t('aiScenarios.bulkImport')}
-            </button>
+            
             <button
-              onClick={() => { setIsCreating(true); setEditingId(null); setEditForm(EMPTY_FORM); }}
-              className="flex items-center gap-1.5 bg-primary text-primary-foreground px-3.5 py-2 rounded-xl text-xs font-bold shadow-md shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
+              onClick={() => {
+                setEditingScenario({
+                  difficulty: 'beginner',
+                  passThreshold: 70,
+                  required: true,
+                  isActive: true
+                });
+                setIsCreating(true);
+              }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-primary text-primary-foreground text-xs font-black shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
             >
-              <Plus size={14} />
-              {t('aiScenarios.create')}
+              <Plus size={16} /> New Persona
             </button>
           </div>
         )}
       </div>
 
-      {/* -- Stats bar -- */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        {DIFF_ORDER.map(d => {
-          const diff = DIFF[d];
-          const count = grouped[d].length;
-          const active = grouped[d].filter(s => s.isActive).length;
-          return (
-            <div key={d} className={`flex items-center gap-3 bg-card border border-border/50 rounded-xl px-3.5 py-2.5 border-l-4 ${diff.border}`}>
-              <div className={`p-1.5 rounded-lg ${diff.bg} shrink-0`}>
-                <TrendingUp size={13} className={diff.text} />
-              </div>
-              <div className="min-w-0">
-                <p className={`text-xs font-black ${diff.text}`}>{diff.label}</p>
-                <p className="text-[10px] text-muted-foreground font-medium">
-                  {count === 0 ? 'None' : `${active} active · ${count} total`}
-                </p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* Editor Form Drawer */}
+      <AnimatePresence>
+        {(isCreating || editingScenario) && (
+          <ScenarioForm
+            form={editingScenario || {}}
+            isCreating={isCreating}
+            onChange={setEditingScenario}
+            onSave={handleSaveScenario}
+            onCancel={() => {
+              setIsCreating(false);
+              setEditingScenario(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
 
-      {/* -- Unlock mode -- */}
-      {!readOnly && (
-        <div className="flex items-center justify-between gap-4 bg-card border border-border/50 rounded-xl px-4 py-3">
-          <div className="flex items-center gap-3">
-            <Settings size={15} className="text-muted-foreground shrink-0" />
-            <div>
-              <p className="text-xs font-black text-foreground">Level Unlock Mode</p>
-              <p className="text-[10px] text-muted-foreground">
-                {globalConfig.unlockMode === 'sequential'
-                  ? 'Agents must pass ALL scenarios in a level to unlock the next.'
-                  : 'Agents need ANY ONE pass in a level to unlock the next.'}
-              </p>
-            </div>
+      {/* Quick Start Presets (Shown if no editor active) */}
+      {!isCreating && !editingScenario && !readOnly && (
+        <div className="bg-gradient-to-br from-secondary/40 to-secondary/10 border border-border/60 rounded-3xl p-6 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <Sparkles size={14} className="text-primary" /> Instant Persona Templates:
+            </span>
           </div>
-          <div className="flex items-center bg-secondary/60 p-0.5 rounded-lg border border-border/50 shrink-0">
-            {(['sequential', 'flexible'] as const).map(mode => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            {PRESET_TEMPLATES.map((tmpl, idx) => (
               <button
-                key={mode}
-                onClick={() => updateGlobalConfig({ ...globalConfig, unlockMode: mode })}
-                disabled={savingConfig}
-                className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-wider transition-all capitalize ${
-                  globalConfig.unlockMode === mode ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                }`}
+                key={idx}
+                onClick={() => handleApplyPreset(tmpl)}
+                className="p-4 rounded-2xl bg-card border border-border/60 hover:border-primary/50 text-left transition-all hover:scale-[1.02] shadow-sm group"
               >
-                {mode === 'sequential' ? <><Shield size={10} className="inline mr-1" />Sequential</> : <><RotateCcw size={10} className="inline mr-1" />Flexible</>}
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">{getLocText(tmpl.name)}</p>
+                  <span className="text-[9px] font-black uppercase text-primary bg-primary/10 px-2 py-0.5 rounded-full">Preset</span>
+                </div>
+                <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">{getLocText(tmpl.customerPersona)}</p>
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* -- Modals -- */}
-      <AnimatePresence>
-        {showImport && <AiScenarioImportModal onClose={() => setShowImport(false)} onSuccess={() => fetchScenarios()} />}
-        {showSandbox && <SandboxManagerModal onClose={() => setShowSandbox(false)} onSuccess={() => fetchScenarios()} />}
-      </AnimatePresence>
-
-      {/* -- Create / Edit form -- */}
-      <AnimatePresence>
-        {(isCreating || editingId) && (
-          <ScenarioForm
-            form={editForm}
-            isCreating={isCreating}
-            onChange={handleFormChange}
-            onSave={isCreating ? handleCreate : handleSave}
-            onCancel={cancelForm}
+      {/* Search & Filter Bar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="relative flex-1 w-full max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+          <input
+            type="text"
+            placeholder="Search personas by name or keywords..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
           />
-        )}
-      </AnimatePresence>
+        </div>
 
-      {/* -- Scenario groups -- */}
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <Loader2 className="animate-spin text-primary" size={28} />
-          <p className="text-xs font-bold text-muted-foreground animate-pulse">Loading scenarios…</p>
+        <div className="flex items-center gap-2">
+          {['all', 'beginner', 'intermediate', 'advanced'].map(d => (
+            <button
+              key={d}
+              onClick={() => setDifficultyFilter(d)}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold capitalize transition-all ${
+                difficultyFilter === d
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'bg-card text-muted-foreground hover:text-foreground border border-border'
+              }`}
+            >
+              {d}
+            </button>
+          ))}
         </div>
-      ) : scenarios.length === 0 && !isCreating ? (
-        <div className="text-center py-16 bg-secondary/10 rounded-2xl border border-dashed border-border">
-          <div className="w-10 h-10 bg-secondary/50 rounded-xl flex items-center justify-center mx-auto mb-3">
-            <Shield className="text-muted-foreground" size={20} />
-          </div>
-          <p className="font-bold text-sm text-foreground">No scenarios yet</p>
-          <p className="text-xs text-muted-foreground mt-1">Create your first AI training scenario to get started.</p>
-        </div>
-      ) : (
-        <div className="space-y-5">
-          {DIFF_ORDER.map(d => {
-            const list = grouped[d].filter(s => s.id !== editingId);
-            if (list.length === 0) return null;
-            return (
-              <DifficultySection
-                key={d}
-                difficulty={d}
-                scenarios={list}
-                readOnly={readOnly}
-                selectedIds={selectedIds}
-                onToggleSelect={toggleSelect}
-                onSelectAll={selectAll}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onToggleActive={handleToggleActive}
-              />
-            );
-          })}
+      </div>
+
+      {/* Scenario Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredScenarios.map(s => {
+          const style = DIFF_STYLES[s.difficulty || 'beginner'] || DIFF_STYLES.beginner;
+          const nameStr = getLocText(s.name);
+          const personaStr = getLocText(s.customerPersona || s.description);
+          const moodStr = getLocText(s.initialMood);
+
+          return (
+            <motion.div
+              key={s.id}
+              layout
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              className={`bg-card border border-border/80 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4 group ${
+                !s.isActive ? 'opacity-60' : ''
+              }`}
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${style.bg} ${style.text} ${style.border}`}>
+                    {style.label}
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    {s.required && (
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-primary/10 text-primary border border-primary/20">
+                        Mandatory
+                      </span>
+                    )}
+
+                    {!readOnly && (
+                      <button
+                        onClick={() => handleToggleActive(s)}
+                        title={s.isActive ? 'Deactivate Persona' : 'Activate Persona'}
+                        className={`w-9 h-5 rounded-full relative transition-colors ${s.isActive ? 'bg-emerald-500' : 'bg-secondary'}`}
+                      >
+                        <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${s.isActive ? 'left-4.5' : 'left-0.5'}`} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-base font-black text-foreground group-hover:text-primary transition-colors tracking-tight">{nameStr}</h4>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
+                    {personaStr || 'No persona details defined.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-border/40 space-y-3">
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="bg-secondary/40 p-2 rounded-xl">
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase block">Target Pass</span>
+                    <span className="font-black text-foreground">{s.passThreshold || 70}% Score</span>
+                  </div>
+                  <div className="bg-secondary/40 p-2 rounded-xl">
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase block">Initial Mood</span>
+                    <span className="font-bold text-foreground truncate block">{moodStr || 'Normal'}</span>
+                  </div>
+                </div>
+
+                {!readOnly && (
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button
+                      onClick={() => {
+                        setEditingScenario(s);
+                        setIsCreating(false);
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-secondary text-foreground text-xs font-bold hover:bg-secondary/80 transition-all"
+                    >
+                      <Edit2 size={13} /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteScenario(s.id)}
+                      className="p-1.5 rounded-xl text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-all"
+                      title="Delete Scenario"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {filteredScenarios.length === 0 && (
+        <div className="bg-card border border-border rounded-3xl p-12 text-center text-muted-foreground space-y-2">
+          <Zap size={32} className="mx-auto text-muted-foreground/40 animate-pulse" />
+          <p className="text-sm font-bold text-foreground">No Customer Personas Found</p>
+          <p className="text-xs">Click "+ New Persona" or choose an instant template above to get started.</p>
         </div>
       )}
 
-      {/* -- Bulk action bar -- */}
-      <AnimatePresence>
-        {selectedIds.size > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 16 }}
-            transition={{ duration: 0.2 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-foreground text-background px-5 py-3 rounded-2xl shadow-2xl shadow-black/30"
-          >
-            <span className="text-sm font-black">{selectedIds.size} selected</span>
-            <div className="w-px h-4 bg-background/20" />
-            <button onClick={clearSelection} className="text-xs font-bold text-background/60 hover:text-background transition-colors">Clear</button>
-            <button
-              onClick={handleBulkDelete}
-              disabled={bulkDeleting}
-              className="flex items-center gap-1.5 bg-rose-500 text-white text-xs font-black px-3.5 py-1.5 rounded-xl hover:bg-rose-600 active:scale-95 transition-all disabled:opacity-50"
-            >
-              <Trash2 size={13} />
-              {bulkDeleting ? 'Deleting…' : `Delete ${selectedIds.size}`}
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* File Import Modal */}
+      {showImportModal && (
+        <AiScenarioImportModal
+          onClose={() => setShowImportModal(false)}
+          onSuccess={() => {
+            setShowImportModal(false);
+            fetchScenarios();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -17,7 +17,7 @@
     "dashboard": "Dashboard",
     "learn": "Learn",
     "quiz": "Quiz",
-    "aiEval": "AI Audit",
+    "aiEval": "AI Scenarios (Quiz & Audit)",
     "admin": "Admin",
     "signOut": "Sign Out",
     "productKnowledge": "Product Knowledge",
@@ -194,7 +194,7 @@
       "staff": "Staff Accounts",
       "accounts": "Staff & Agents",
       "adjustments": "Adjustments",
-      "aiscenarios": "AI Scenarios",
+      "aiscenarios": "AI Scenarios (Quiz & Audit)",
       "profile": "User Profile"
     },
     "groups": {
@@ -542,11 +542,12 @@
     "infrastructure": "BrainTrade Training Infrastructure",
     "proprietary": "Proprietary Material.",
     "loadingPreview": "Loading Preview...",
+    "trainingModule": "Training Module",
     "trainingModules": "Training Modules",
     "completed": "Completed",
     "reviewTraining": "Review Training",
     "markComplete": "Mark as Completed"
-    },
+  },
 
   "presentation": {
     "productKnowledge": "Product Knowledge",

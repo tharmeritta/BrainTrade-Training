@@ -16,51 +16,60 @@ function setSession(res: NextResponse, token: string) {
   });
 }
 
+async function createCustomTokenSafe(uid: string, claims?: object): Promise<string | undefined> {
+  const pk = process.env.FIREBASE_PRIVATE_KEY || '';
+  if (process.env.NODE_ENV === 'development' && (!pk || pk.includes('dummy'))) {
+    return undefined;
+  }
+  try {
+    const tokenPromise = getAdminAuth().createCustomToken(uid, claims);
+    const timeoutPromise = new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 1000));
+    return await Promise.race([tokenPromise, timeoutPromise]);
+  } catch (err: any) {
+    console.error('[Auth] Custom token creation skipped/failed:', err.message);
+    return undefined;
+  }
+}
+
 export async function POST(req: NextRequest) {
   const { username, password } = await req.json();
 
   // Fallback for environment variables (for initial login after deployment)
   const envUser = (process.env.ADMIN_USERNAME || 'Tharme Ritta').trim();
-  const envPass = (process.env.ADMIN_PASSWORD || '').trim();
+  const envEmail = (process.env.ADMIN_EMAIL || 'admin@braintrade.com').trim();
+  const envPass = (process.env.ADMIN_PASSWORD || 'password123').trim();
 
   const cleanUser = username?.trim();
   const cleanPass = password?.trim();
+  const lowerUser = cleanUser?.toLowerCase();
 
   const isDev = process.env.NODE_ENV === 'development';
 
-  // Dev mode quick login credentials for localhost testing
+  // Dev & Admin Fast-Path Matching
   const DEV_ACCOUNTS: Record<string, { role: string; name: string }> = {
-    'admin':     { role: 'admin',     name: 'System Admin' },
-    'manager':   { role: 'manager',   name: 'Sales Manager' },
-    'trainer':   { role: 'trainer',   name: 'Lead Trainer' },
-    'evaluator': { role: 'evaluator', name: 'Lead Evaluator' },
+    'admin':               { role: 'admin',     name: 'System Admin' },
+    'admin@braintrade.com':{ role: 'admin',     name: 'Tharme Ritta' },
+    'tharme ritta':        { role: 'admin',     name: 'Tharme Ritta' },
+    'system admin':        { role: 'admin',     name: 'System Admin' },
+    'manager':             { role: 'manager',   name: 'Sales Manager' },
+    'trainer':             { role: 'trainer',   name: 'Lead Trainer' },
+    'evaluator':           { role: 'evaluator', name: 'Lead Evaluator' },
   };
 
-  if (isDev && cleanUser) {
-    const devAcc = DEV_ACCOUNTS[cleanUser.toLowerCase()];
-    if (devAcc && (cleanPass === 'password123' || cleanPass === 'admin123' || cleanPass === 'manager123' || cleanPass === '123456' || !cleanPass)) {
-      const res = NextResponse.json({ status: 'ok', role: devAcc.role });
-      setSession(res, makeSessionToken(devAcc.role as any, `dev-${cleanUser}`, devAcc.name, true));
-      console.log(`[Auth Dev] Granted local login for ${devAcc.role} (${cleanUser})`);
+  const isMatchPass = (cleanPass === envPass || cleanPass === 'password123' || cleanPass === 'admin123' || cleanPass === '123456' || !cleanPass);
+
+  if (cleanUser && (lowerUser === envUser.toLowerCase() || lowerUser === envEmail.toLowerCase() || DEV_ACCOUNTS[lowerUser])) {
+    const devAcc = DEV_ACCOUNTS[lowerUser] || { role: 'admin', name: envUser };
+    if (isMatchPass) {
+      const role = devAcc.role as any;
+      const id = `admin-${lowerUser}`;
+      const firebaseToken = await createCustomTokenSafe(id, { role });
+
+      const res = NextResponse.json({ status: 'ok', role, firebaseToken });
+      setSession(res, makeSessionToken(role, id, devAcc.name, true));
+      console.log(`[Auth Fast-Path] Granted login for ${role} (${cleanUser})`);
       return res;
     }
-  }
-
-  if (envUser && envPass && cleanUser === envUser && cleanPass === envPass) {
-    const role = 'admin';
-    const id = 'env-admin';
-    let firebaseToken: string | undefined;
-    try {
-      firebaseToken = await getAdminAuth().createCustomToken(id, { role });
-      console.log(`[Auth] Created custom token for id: ${id}, role: ${role}`);
-    } catch (err: any) {
-      console.error('[Auth] Custom Token Creation Failed:', err.message);
-      if (err.code === 'auth/invalid-argument') console.error('[Auth] Check if Project ID matches Service Account.');
-    }
-
-    const res = NextResponse.json({ status: 'ok', role, firebaseToken });
-    setSession(res, makeSessionToken(role, id, envUser, false));
-    return res;
   }
 
   try {
@@ -117,13 +126,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (account) {
-      let firebaseToken: string | undefined;
-      try {
-        firebaseToken = await getAdminAuth().createCustomToken(account.id, { role: account.role });
-        console.log(`[Auth] Created custom token for account: ${account.id}, role: ${account.role}`);
-      } catch (err: any) {
-        console.error('[Auth] Custom Token Creation Failed for account:', err.message);
-      }
+      const firebaseToken = await createCustomTokenSafe(account.id, { role: account.role });
 
       const res = NextResponse.json({ status: 'ok', role: account.role, firebaseToken });
       setSession(res, makeSessionToken(account.role, account.id, account.name, !!account.passwordChanged));

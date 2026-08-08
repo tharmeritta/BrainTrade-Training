@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, AlertCircle, ArrowRight } from 'lucide-react';
 import { STAGGER_CONTAINER, STAGGER_ITEM } from '@/lib/animations';
 
+import { DevMockupSelector, DevMockAgent } from './DevMockupSelector';
+import { useSession } from '@/components/providers/SessionProvider';
+
 const CYAN = '#00B4D8';
 
 interface LoginFormProps {
@@ -26,6 +29,11 @@ export function LoginForm({
 }: LoginFormProps) {
   const floatLabel = inputFocused || !!name.trim();
   const canSubmit = !!name.trim() && !loading;
+  const { setAgent } = useSession();
+
+  const handleSelectDevAgent = (mock: DevMockAgent) => {
+    setAgent({ id: mock.id, name: mock.name, stageName: mock.stageName });
+  };
 
   return (
     <motion.form variants={STAGGER_CONTAINER} onSubmit={handleSubmit} className="space-y-4">
@@ -114,6 +122,9 @@ export function LoginForm({
           </>
         )}
       </motion.button>
+
+      {/* Developer Mockup Selector */}
+      <DevMockupSelector onSelectAgent={handleSelectDevAgent} />
     </motion.form>
   );
 }
