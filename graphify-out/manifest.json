@@ -1470,8 +1470,8 @@
     "semantic_hash": ""
   },
   "app/api/admin/certificate-config/route.ts": {
-    "mtime": 1786178412.4919472,
-    "ast_hash": "5b65b39df37f6b567bd23f085cd2a287",
+    "mtime": 1786178558.3736162,
+    "ast_hash": "7c3a19644283b983b9165919b7fb7c1d",
     "semantic_hash": ""
   },
   "components/features/admin/CertificateTab.tsx": {
