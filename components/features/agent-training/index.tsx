@@ -19,6 +19,8 @@ import { ModuleHeader } from './ModuleHeader';
 import { ModuleCard } from './ModuleCard';
 import { StepTimeline } from './StepTimeline';
 
+import { CertificateModal } from './CertificateModal';
+
 // Lazy-load celebration UI for performance
 const CongratulationsCard = dynamic(
   () => import('./celebration/CongratulationsCard').then(mod => mod.CongratulationsCard),
@@ -39,6 +41,7 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
   const navT      = useTranslations('nav');
   const pathname  = usePathname();
   const locale    = pathname.split('/')[1] ?? 'th';
+  const [showCertModal, setShowCertModal] = React.useState(false);
 
   const handleSync = async () => {
     try {
@@ -121,6 +124,7 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
         derived={derived}
         onLogout={onLogout}
         onSync={handleSync}
+        onOpenCertificate={() => setShowCertModal(true)}
         t={t}
         navT={navT}
         locale={locale}
@@ -136,6 +140,7 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
               graduated={stats?.agent?.graduated}
               acknowledged={stats?.agent?.acknowledged}
               onAcknowledge={handleAcknowledge}
+              onOpenCertificate={() => setShowCertModal(true)}
             />
           )}
 
@@ -170,6 +175,17 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
           </div>
         </div>
       </div>
+
+      <CertificateModal 
+        isOpen={showCertModal}
+        onClose={() => setShowCertModal(false)}
+        agentName={agentName}
+        stageName={agentStageName}
+        score={score}
+        completedAt={stats?.agent?.graduatedAt}
+        certificateId={stats?.agent?.certificateId || `BT-CERT-2026-${agentId.slice(-5).toUpperCase()}`}
+        agentEmail={stats?.agent?.email}
+      />
     </div>
   );
 }

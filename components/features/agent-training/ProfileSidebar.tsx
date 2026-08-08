@@ -24,6 +24,7 @@ interface ProfileSidebarProps {
   derived: Record<string, StepState>;
   onLogout: () => void;
   onSync?: () => Promise<void>;
+  onOpenCertificate?: () => void;
   t: (key: string, values?: any) => string;
   navT: (key: string) => string;
   locale: string;
@@ -56,6 +57,7 @@ export const ProfileSidebar = memo(({
   derived,
   onLogout,
   onSync,
+  onOpenCertificate,
   t,
   navT,
   locale
@@ -212,6 +214,16 @@ export const ProfileSidebar = memo(({
               <Trophy size={14} style={{ color: '#FBBF24' }} />
               <span className="text-[11px] font-black" style={{ color: '#FBBF24' }}>{t('allFinished')}</span>
             </motion.div>
+
+            {onOpenCertificate && (
+              <button
+                onClick={onOpenCertificate}
+                className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-95 transition-all w-full"
+              >
+                <Trophy size={14} />
+                <span>Download Certificate</span>
+              </button>
+            )}
           </div>
         )}
       </div>

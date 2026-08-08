@@ -26,6 +26,7 @@ export interface PitchMessage {
 export interface Agent {
   id: string;
   name: string;
+  email?: string;
   stageName?: string;
   normalizedName?: string; // name.trim().toLowerCase().replace(/\s+/g, ' ')
   active: boolean;
@@ -36,6 +37,7 @@ export interface Agent {
   lastActive?: string | null;
   graduated?: boolean;
   graduatedAt?: string;
+  certificateId?: string;
   acknowledged?: boolean;
   acknowledgedAt?: string;
 }

@@ -12,9 +12,10 @@ interface CongratulationsCardProps {
   graduated?: boolean;
   acknowledged?: boolean;
   onAcknowledge?: () => Promise<void>;
+  onOpenCertificate?: () => void;
 }
 
-export const CongratulationsCard = memo(({ t, graduated, acknowledged, onAcknowledge }: CongratulationsCardProps) => {
+export const CongratulationsCard = memo(({ t, graduated, acknowledged, onAcknowledge, onOpenCertificate }: CongratulationsCardProps) => {
   const [isSaving, setIsSaving] = React.useState(false);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -111,25 +112,46 @@ export const CongratulationsCard = memo(({ t, graduated, acknowledged, onAcknowl
                 </div>
               </div>
             ) : acknowledged ? (
-              <div className="flex items-center gap-4 px-8 py-4 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
-                <CheckCircle2 size={24} />
-                <span className="text-lg font-black uppercase tracking-widest">Certified & Cleared</span>
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <div className="flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
+                  <CheckCircle2 size={20} />
+                  <span className="text-sm font-black uppercase tracking-wider">Certified & Cleared</span>
+                </div>
+                {onOpenCertificate && (
+                  <button
+                    onClick={onOpenCertificate}
+                    className="flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/25 hover:scale-105 active:scale-95 transition-all"
+                  >
+                    <Award size={16} />
+                    <span>Download Certificate</span>
+                  </button>
+                )}
               </div>
             ) : (
-              <button
-                onClick={handleConfirm}
-                disabled={isSaving}
-                className="group relative px-12 py-5 bg-amber-500 hover:bg-amber-600 text-white rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-[0_20px_40px_-10px_rgba(245,158,11,0.5)] transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 overflow-hidden"
-              >
-                <div className="relative z-10 flex items-center gap-3">
-                  {isSaving ? <Loader2 className="animate-spin" size={20} /> : <Award size={20} />}
-                  <span>Confirm Graduation</span>
-                  {!isSaving && <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />}
-                </div>
-                
-                {/* Shine effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-              </button>
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <button
+                  onClick={handleConfirm}
+                  disabled={isSaving}
+                  className="group relative px-10 py-4 bg-amber-500 hover:bg-amber-600 text-white rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-[0_20px_40px_-10px_rgba(245,158,11,0.5)] transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 overflow-hidden"
+                >
+                  <div className="relative z-10 flex items-center gap-3">
+                    {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Award size={18} />}
+                    <span>Confirm Graduation</span>
+                    {!isSaving && <ArrowRight className="group-hover:translate-x-1 transition-transform" size={18} />}
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                </button>
+
+                {onOpenCertificate && (
+                  <button
+                    onClick={onOpenCertificate}
+                    className="flex items-center gap-2 px-7 py-4 rounded-[2rem] bg-card border border-border text-foreground font-black text-xs uppercase tracking-wider hover:bg-secondary transition-all shadow-md"
+                  >
+                    <Award size={16} />
+                    <span>View Certificate</span>
+                  </button>
+                )}
+              </div>
             )}
             
             <div className="flex items-center gap-2 text-xs font-bold text-[color:var(--hub-dim)] opacity-60">

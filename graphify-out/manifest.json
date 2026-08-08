@@ -715,9 +715,9 @@
     "semantic_hash": "d919b0483c0dc455bff2111c335c3fad"
   },
   "components/features/agent-training/ProfileSidebar.tsx": {
-    "mtime": 1786088124.414956,
-    "ast_hash": "b9f3329edda42b9786f8b2bc2cb277a7",
-    "semantic_hash": "b9f3329edda42b9786f8b2bc2cb277a7"
+    "mtime": 1786178349.1622443,
+    "ast_hash": "5a8509b59404b1fba3e1f08aa2441a8b",
+    "semantic_hash": ""
   },
   "components/features/agent-training/StepTimeline.tsx": {
     "mtime": 1786083165.6184661,
@@ -730,9 +730,9 @@
     "semantic_hash": "47a360222366dd85aa5e959d6ac6bc2f"
   },
   "components/features/agent-training/celebration/CongratulationsCard.tsx": {
-    "mtime": 1786083165.6187,
-    "ast_hash": "0512eb7bfe732ef2ed8deaa8ad3548c9",
-    "semantic_hash": "0512eb7bfe732ef2ed8deaa8ad3548c9"
+    "mtime": 1786178358.9504464,
+    "ast_hash": "5077cc37a6384a888a8798cf4745232d",
+    "semantic_hash": ""
   },
   "components/features/agent-training/celebration/TrophyHero.tsx": {
     "mtime": 1786175554.3940864,
@@ -740,9 +740,9 @@
     "semantic_hash": ""
   },
   "components/features/agent-training/index.tsx": {
-    "mtime": 1786083165.618859,
-    "ast_hash": "70261d98b61d2cf9147ee45279e9182e",
-    "semantic_hash": "70261d98b61d2cf9147ee45279e9182e"
+    "mtime": 1786178369.8411677,
+    "ast_hash": "ce53ae952e485523dc187e61ac7d497d",
+    "semantic_hash": ""
   },
   "components/features/ai-eval/AuditFlow.tsx": {
     "mtime": 1786083165.619123,
@@ -1135,8 +1135,8 @@
     "semantic_hash": "fc9d097beac7dac2cad202d2f83fb14b"
   },
   "lib/session/agent.ts": {
-    "mtime": 1786174796.8762589,
-    "ast_hash": "a1aa514dd979ee0f52ccecefbe9017c9",
+    "mtime": 1786178305.362477,
+    "ast_hash": "14b3d8a4f44f57f799c5f786f266f0a1",
     "semantic_hash": ""
   },
   "lib/session/client.ts": {
@@ -1175,8 +1175,8 @@
     "semantic_hash": "79f369ce2d68f93c98d76f7d06287c1c"
   },
   "package.json": {
-    "mtime": 1786173110.1159055,
-    "ast_hash": "76f5c3def3da3b2cadfcc1f7a6f9170f",
+    "mtime": 1786178318.0171149,
+    "ast_hash": "b766bdd396246f7c1aa6397572bcb886",
     "semantic_hash": ""
   },
   "postcss.config.js": {
@@ -1215,9 +1215,9 @@
     "semantic_hash": ""
   },
   "types/index.ts": {
-    "mtime": 1786083165.676481,
-    "ast_hash": "e842dc7a81e77379d1b321bdef8608e0",
-    "semantic_hash": "e842dc7a81e77379d1b321bdef8608e0"
+    "mtime": 1786178307.934408,
+    "ast_hash": "627d8552d7a890ca7bd90d67f22e58ac",
+    "semantic_hash": ""
   },
   "GEMINI.md": {
     "mtime": 1786099299.4687843,
@@ -1457,6 +1457,16 @@
   "scripts/sync-session-memory.js": {
     "mtime": 1786175814.8012044,
     "ast_hash": "816dc241cb17ba7cec4381b884a0d64d",
+    "semantic_hash": ""
+  },
+  "app/api/agent/certificate/email/route.ts": {
+    "mtime": 1786178323.3116474,
+    "ast_hash": "f18f61ead07412e580e92b5fd72e3cc8",
+    "semantic_hash": ""
+  },
+  "components/features/agent-training/CertificateModal.tsx": {
+    "mtime": 1786178328.7610464,
+    "ast_hash": "466deec068eece6b22fedbaebc6ae132",
     "semantic_hash": ""
   }
 }
