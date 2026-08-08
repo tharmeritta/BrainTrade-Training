@@ -1390,9 +1390,9 @@
     "semantic_hash": ""
   },
   "components/ui/StaffAiCopilot.tsx": {
-    "mtime": 1786088487.2355103,
-    "ast_hash": "67a429a2919b411a9c6729317464474c",
-    "semantic_hash": "67a429a2919b411a9c6729317464474c"
+    "mtime": 1786174665.719776,
+    "ast_hash": "0b0d7fce90db3fc532051dbe11e0a46c",
+    "semantic_hash": ""
   },
   "scripts/agy-start.sh": {
     "mtime": 1786169977.3949516,

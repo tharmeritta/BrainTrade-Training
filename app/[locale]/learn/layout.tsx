@@ -4,7 +4,7 @@ import { getServerUser } from '@/lib/session/server';
 
 export default async function LearnLayout({ children }: { children: React.ReactNode }) {
   const user = await getServerUser();
-  const isStaff = user && ['admin', 'manager', 'trainer'].includes(user.role);
+  const isStaff = user && ['admin', 'manager', 'trainer', 'evaluator', 'hr', 'it'].includes(user.role);
 
   return (
     <div className="flex flex-col min-h-dvh overflow-hidden">

@@ -29,8 +29,12 @@ export function isMockupAgent(id?: string): boolean {
   return localStorage.getItem(AGENT_ID_KEY) === MOCKUP_AGENT_ID;
 }
 
+import { hasStaffSession } from './client';
+
 /**
  * Retrieves the current agent session from localStorage.
+ * If no agent session exists but a staff session is active (Admin Preview),
+ * returns a virtual Admin Preview Session.
  */
 export function getAgentSession(): AgentSession | null {
   if (typeof window === 'undefined') return null;
@@ -39,7 +43,12 @@ export function getAgentSession(): AgentSession | null {
   const name      = localStorage.getItem(AGENT_NAME_KEY);
   const stageName = localStorage.getItem(AGENT_STAGE_NAME_KEY) || '';
 
-  if (!id || !name) return null;
+  if (!id || !name) {
+    if (hasStaffSession()) {
+      return { id: 'admin-preview-agent', name: 'Admin Preview Agent', stageName: 'Admin Sandbox' };
+    }
+    return null;
+  }
 
   return { id, name, stageName };
 }

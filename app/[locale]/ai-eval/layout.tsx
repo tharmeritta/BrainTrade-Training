@@ -4,7 +4,7 @@ import { getServerUser } from '@/lib/session/server';
 
 export default async function AiEvalLayout({ children }: { children: React.ReactNode }) {
   const user = await getServerUser();
-  const isStaff = user && ['admin', 'manager', 'trainer'].includes(user.role);
+  const isStaff = user && ['admin', 'manager', 'trainer', 'evaluator', 'hr', 'it'].includes(user.role);
 
   return (
     <>
