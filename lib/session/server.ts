@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { cache } from 'react';
 import type { UserRole, StaffAccount } from '@/types';
 import { fsGet } from '@/lib/server/db';
 
@@ -9,7 +10,7 @@ const DEFAULT_SECRET = 'fallback-secret-for-dev-only';
 
 export const VALID_ROLES: UserRole[] = ['admin', 'manager', 'it', 'evaluator', 'agent', 'trainer', 'hr'];
 
-export async function getServerUser(): Promise<{ uid: string; name: string; role: UserRole; passwordChanged: boolean; interactiveAccessUntil?: string } | null> {
+export const getServerUser = cache(async function getServerUser(): Promise<{ uid: string; name: string; role: UserRole; passwordChanged: boolean; interactiveAccessUntil?: string } | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get('session')?.value;
   if (!token) return null;
@@ -50,7 +51,7 @@ export async function getServerUser(): Promise<{ uid: string; name: string; role
   }
 
   return null;
-}
+});
 
 export function hasRole(user: { role: UserRole } | null, allowedRoles: UserRole[]): boolean {
   if (!user) return false;

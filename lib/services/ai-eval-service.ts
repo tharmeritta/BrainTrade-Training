@@ -18,6 +18,28 @@ export class AiEvalService {
   private static readonly COLLECTION_SESSIONS  = 'aiev_sessions_v2';
   private static readonly COLLECTION_LOGS      = 'ai_eval_logs_v2';
 
+  private static scenarioCache = new Map<string, { scenario: AiEvalScenario; timestamp: number }>();
+  private static CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+  /**
+   * Helper to retrieve scenario with 5-minute memory cache.
+   */
+  private static async getScenario(scenarioId: string): Promise<AiEvalScenario> {
+    const cached = this.scenarioCache.get(scenarioId);
+    if (cached && (Date.now() - cached.timestamp < this.CACHE_TTL)) {
+      return cached.scenario;
+    }
+
+    let scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, scenarioId);
+    if (!scenario) {
+      await this.seedAllScenarios();
+      scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, scenarioId) || await this.seedDefaultScenario();
+    }
+
+    this.scenarioCache.set(scenarioId, { scenario, timestamp: Date.now() });
+    return scenario;
+  }
+
   /**
    * 1. Start a new session.
    */
@@ -27,12 +49,7 @@ export class AiEvalService {
     scenarioId: string = 'level_1'
   ): Promise<AiEvalSession> {
 
-    let scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, scenarioId);
-    if (!scenario) {
-      await this.seedAllScenarios();
-      scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, scenarioId) || await this.seedDefaultScenario();
-    }
-
+    const scenario = await this.getScenario(scenarioId);
     const activePeriod = await getActiveTrainingPeriod(agentId);
 
     const session: AiEvalSession = {
@@ -91,11 +108,7 @@ export class AiEvalService {
       ? scenarioId
       : (session?.scenarioId || 'level_1');
 
-    let scenario: AiEvalScenario | null = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, actualScenarioId);
-    if (!scenario) {
-      await this.seedAllScenarios();
-      scenario = await fsGet<AiEvalScenario>(this.COLLECTION_SCENARIOS, actualScenarioId) || await this.seedDefaultScenario();
-    }
+    const scenario = await this.getScenario(actualScenarioId);
 
     if (!session) {
       session = await this.startSession(agentId, agentName || 'Agent', actualScenarioId);

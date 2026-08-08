@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Users, Sparkles, Settings, ArrowRight, ShieldCheck, X, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -8,7 +8,15 @@ import { useRouter } from 'next/navigation';
 export default function CommandPalette() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  // Focus input when opened
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }, [isOpen]);
 
   // Listen for ⌘K or Ctrl+K
   useEffect(() => {
@@ -63,12 +71,12 @@ export default function CommandPalette() {
             <div className="flex items-center px-4 py-3.5 border-b border-white/10 bg-slate-900/60">
               <Search className="text-slate-400 mr-3 shrink-0" size={18} />
               <input
+                ref={inputRef}
                 type="text"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder="Search agents, scenarios, reports, or type a command... (⌘K)"
                 className="w-full bg-transparent text-slate-100 text-sm font-medium outline-none placeholder:text-slate-500"
-                autoFocus
               />
               <button onClick={() => setIsOpen(false)} className="text-xs font-mono font-bold text-slate-500 bg-slate-800 px-2 py-1 rounded-md border border-white/10 hover:text-slate-300">
                 ESC

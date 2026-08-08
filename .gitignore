@@ -32,3 +32,5 @@ tsconfig.tsbuildinfo
 antigravity/
 .context/
 .gemini-session/
+graphify-out/cache/
+

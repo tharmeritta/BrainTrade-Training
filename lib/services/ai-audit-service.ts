@@ -2,6 +2,7 @@ import { getOpenAI } from '@/lib/openai';
 import { getGeminiModel } from '@/lib/gemini';
 import { fsGet, fsSet, fsAdd } from '@/lib/server/db';
 import { updateGlobalAiEvalStats, updateAgentOverallScore } from './stats-service';
+import { getActiveTrainingPeriod } from '@/lib/server/training';
 import {
   AiEvalScenario,
   AiEvalTurnResponse,
@@ -247,8 +248,10 @@ private static async logAuditCompletion(
   ) {
     const passed = result.verdict === 'passed';
     const score = result.score || 0;
+    const activePeriod = await getActiveTrainingPeriod(agentId);
+    const timestamp = new Date().toISOString();
 
-    // 1. Log the audit result
+    // 1. Log the audit result with cohort/trainingPeriodId tracking
     await fsAdd(this.COLLECTION_LOGS, {
       agentId,
       agentName,
@@ -258,10 +261,11 @@ private static async logAuditCompletion(
       passed,
       score,
       isAudit: true,
-      timestamp: new Date().toISOString(),
+      timestamp,
+      trainingPeriodId: activePeriod?.id,
     });
 
-    // 2. Update agent_progress (aggregate record)
+    // 2. Update agent_progress (aggregate record) with updatedAt timestamp
     if (passed) {
       const existing = await fsGet<any>('agent_progress', agentId)
         || { agentId, evalCompletedLevels: [], evalPassedScenarios: [] };
@@ -273,7 +277,8 @@ private static async logAuditCompletion(
       await fsSet('agent_progress', agentId, { 
         ...existing, 
         evalCompletedLevels: levels, 
-        evalPassedScenarios: scenarios 
+        evalPassedScenarios: scenarios,
+        updatedAt: timestamp
       });
     }
 

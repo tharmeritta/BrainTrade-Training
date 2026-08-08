@@ -204,44 +204,50 @@ export const ScenarioPicker = memo(({
                   return (
                     <motion.div
                       key={s.id}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
+                      initial={{ opacity: 0, y: 16 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      whileHover={isLocked ? {} : { y: -6, scale: 1.02 }}
                       viewport={{ once: true }}
-                      transition={{ delay: idx * 0.1 }}
+                      transition={{ delay: idx * 0.08, duration: 0.4 }}
                       onClick={() => !isLocked && !loading && onSelect(s.id)}
-                      className={`group relative bg-card border-2 rounded-[2rem] p-6 transition-all duration-500 ${
+                      className={`group relative bg-card border-2 rounded-[2.25rem] p-6 transition-all duration-500 overflow-hidden shadow-lg ${
                         isLocked
-                          ? 'opacity-60 grayscale cursor-not-allowed border-transparent bg-secondary/30'
+                          ? 'opacity-50 grayscale cursor-not-allowed border-white/5 bg-secondary/20'
                           : isCompleted
-                          ? 'cursor-pointer border-emerald-500/20 hover:border-emerald-500/40 bg-emerald-500/[0.02]'
-                          : 'cursor-pointer border-black/5 dark:border-white/10 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5'
+                          ? 'cursor-pointer border-emerald-500/30 hover:border-emerald-500/60 bg-emerald-500/[0.03] shadow-emerald-500/10'
+                          : 'cursor-pointer border-black/5 dark:border-white/10 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10'
                       } ${loading ? 'cursor-wait' : ''}`}
                     >
+                      {/* Ambient Glow */}
+                      <div className={`absolute -top-16 -right-16 w-32 h-32 rounded-full blur-[60px] opacity-10 group-hover:opacity-30 transition-opacity duration-500 pointer-events-none ${
+                        isCompleted ? 'bg-emerald-500' : 'bg-primary'
+                      }`} />
+
                       {isCompleted && (
                         <div className="absolute top-4 right-4 bg-emerald-500 text-white p-1.5 rounded-full shadow-lg shadow-emerald-500/30 z-20">
                           <CheckCircle2 size={14} />
                         </div>
                       )}
 
-                      <div className="space-y-4">
+                      <div className="space-y-4 relative z-10">
                         <div className="flex items-start justify-between">
                           <div className="flex flex-wrap gap-2">
                             <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                              s.difficulty === 'beginner'     ? 'bg-emerald-500/10 text-emerald-600' :
-                              s.difficulty === 'intermediate' ? 'bg-amber-500/10 text-amber-600'     :
-                              s.difficulty === 'advanced'     ? 'bg-rose-500/10 text-rose-600'       :
-                                                                'bg-purple-500/10 text-purple-600'
+                              s.difficulty === 'beginner'     ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                              s.difficulty === 'intermediate' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'     :
+                              s.difficulty === 'advanced'     ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'       :
+                                                                'bg-purple-500/10 text-purple-400 border border-purple-500/20'
                             }`}>
                               {t(`difficultyLabel.${s.difficulty}`)}
                             </div>
                             {s.required && (
-                              <div className="px-3 py-1 bg-primary text-primary-foreground rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm">
+                              <div className="px-3 py-1 bg-primary text-white rounded-full text-[9px] font-black uppercase tracking-widest shadow-md shadow-primary/20">
                                 Required
                               </div>
                             )}
                           </div>
-                          <div className="text-[10px] font-black text-muted-foreground bg-secondary/50 px-2 py-1 rounded-md">
-                            {t('minThreshold', { score: s.passThreshold })}
+                          <div className="text-[10px] font-black text-muted-foreground bg-secondary/60 px-2.5 py-1 rounded-lg border border-black/5 dark:border-white/5">
+                            Pass: {s.passThreshold || 35}%
                           </div>
                         </div>
 
@@ -254,15 +260,15 @@ export const ScenarioPicker = memo(({
                           </p>
                         </div>
 
-                        <div className="flex flex-wrap gap-2 pt-2">
-                          <div className="flex items-center gap-1.5 px-2 py-1 bg-primary/5 rounded-lg text-[9px] font-bold text-primary/70">
-                            <ShieldCheck size={10} className="opacity-60" />
-                            AI Audit
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 rounded-lg text-[9px] font-black uppercase tracking-wider text-primary">
+                            <ShieldCheck size={11} />
+                            Telesales Sim
                           </div>
-                          {s.objective && (
-                            <div className="flex items-center gap-1.5 px-2 py-1 bg-secondary/50 rounded-lg text-[9px] font-bold text-foreground/70 max-w-full">
-                              <Target size={10} className="opacity-60 shrink-0" />
-                              <span className="truncate">{s.objective}</span>
+                          {s.initialMood && (
+                            <div className="flex items-center gap-1 px-2.5 py-1 bg-secondary/60 rounded-lg text-[9px] font-bold text-foreground/80">
+                              <Smile size={11} className="text-amber-400" />
+                              <span>{s.initialMood}</span>
                             </div>
                           )}
                         </div>
@@ -275,19 +281,19 @@ export const ScenarioPicker = memo(({
                             <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-300 ${
                               isCompleted
                                 ? 'bg-emerald-500 text-white shadow-emerald-500/20'
-                                : 'bg-primary text-white shadow-primary/20 group-hover:scale-110'
+                                : 'bg-primary text-white shadow-primary/30 group-hover:scale-110'
                             }`}>
-                              <ShieldCheck size={16} className={isCompleted ? '' : ''} />
+                              <Play size={15} className="fill-current ml-0.5" />
                             </div>
                           </div>
                         )}
                       </div>
 
                       {isLocked && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/20 backdrop-blur-[1px] rounded-[2rem] z-10">
-                          <div className="bg-white/90 dark:bg-card/90 p-3 rounded-2xl shadow-xl border border-black/5 flex items-center gap-3">
-                            <Lock size={16} className="text-muted-foreground" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('locked')}</span>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/40 backdrop-blur-[2px] rounded-[2.25rem] z-10">
+                          <div className="bg-slate-900/90 text-white px-4 py-2.5 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-2.5">
+                            <Lock size={15} className="text-slate-400" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">{t('locked')}</span>
                           </div>
                         </div>
                       )}

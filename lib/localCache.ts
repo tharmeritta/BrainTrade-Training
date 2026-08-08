@@ -49,6 +49,10 @@ export function getProgress(agentId: string): LocalCache | null {
   return load<LocalCache>(`progress_${agentId}`);
 }
 
+export function clearProgress(agentId: string): void {
+  remove(`progress_${agentId}`);
+}
+
 // -- Active evaluation session ----------------------------------------------
 
 export interface CachedEvalSession {

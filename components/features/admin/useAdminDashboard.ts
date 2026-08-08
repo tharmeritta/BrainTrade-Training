@@ -19,7 +19,10 @@ export function useAdminDashboard({ role, uid, name, interactiveAccessUntil }: U
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  const tab = (searchParams.get('tab') as Tab) || getDefaultTab(role);
+  const [activeRoleView, setActiveRoleView] = useState<UserRole>(role);
+  const effectiveRole = role === 'admin' ? activeRoleView : role;
+
+  const tab = (searchParams.get('tab') as Tab) || getDefaultTab(effectiveRole);
   
   const [isPwModalOpen, setIsPwModalOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
@@ -44,16 +47,21 @@ export function useAdminDashboard({ role, uid, name, interactiveAccessUntil }: U
   }, []);
 
   const isReadOnlyRole = useMemo(() => 
-    role === 'it' || role === 'manager' || role === 'hr'
-  , [role]);
+    effectiveRole === 'it' || effectiveRole === 'manager' || effectiveRole === 'hr'
+  , [effectiveRole]);
 
   const isInteractive = useMemo(() => 
-    !!(role === 'admin' || role === 'trainer' || (
+    !!(role === 'admin' || effectiveRole === 'admin' || effectiveRole === 'trainer' || (
       isReadOnlyRole && interactiveAccessUntil && new Date(interactiveAccessUntil) > new Date()
     ))
-  , [role, isReadOnlyRole, interactiveAccessUntil]);
+  , [role, effectiveRole, isReadOnlyRole, interactiveAccessUntil]);
 
-  const visibleTabs = useMemo(() => getVisibleTabs(role, isReadOnlyRole), [role, isReadOnlyRole]);
+  const visibleTabs = useMemo(() => {
+    // If admin is active, show all tabs, otherwise show role-specific tabs
+    return role === 'admin' && activeRoleView === 'admin'
+      ? getVisibleTabs('admin', false)
+      : getVisibleTabs(effectiveRole, isReadOnlyRole);
+  }, [role, activeRoleView, effectiveRole, isReadOnlyRole]);
 
   const operationsTabs = useMemo(() => visibleTabs.filter(t => t.group === 'operations'), [visibleTabs]);
   const analyticsTabs  = useMemo(() => visibleTabs.filter(t => t.group === 'analytics'), [visibleTabs]);
@@ -105,6 +113,7 @@ export function useAdminDashboard({ role, uid, name, interactiveAccessUntil }: U
       mounted,
       isReadOnlyRole,
       isInteractive,
+      activeRoleView,
     },
     actions: {
       setTab,
@@ -113,6 +122,7 @@ export function useAdminDashboard({ role, uid, name, interactiveAccessUntil }: U
       setProfileOpen,
       requestInteractiveAccess,
       logout,
+      setActiveRoleView,
     },
     navigation: {
       operationsTabs,

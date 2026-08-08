@@ -11,6 +11,7 @@ import { TRANSITION } from '@/lib/animations';
 import { CoachingCard, ScoreTrend } from './CoachingCard';
 import { MessageBubble } from './MessageBubble';
 import { StepProgress } from './StepProgress';
+import CallSimulatorHud from './CallSimulatorHud';
 import type { ChatViewProps } from './types';
 
 export const ChatView = memo(({
@@ -77,40 +78,22 @@ export const ChatView = memo(({
           </div>
         </div>
 
-        {/* Customer profile bar */}
+        {/* Live Telesales Call Simulator HUD */}
         {customerProfile && (
-          <div className="px-5 py-3 bg-white dark:bg-card/50 border-b border-black/5 dark:border-white/5 flex flex-wrap items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-secondary/50 flex items-center justify-center">
-                {customerProfile.mood?.includes('หงุดหงิด') || failed
-                  ? <Frown size={14} className="text-rose-500" />
-                  : <Smile size={14} className="text-emerald-500" />}
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight leading-none mb-0.5">{t('customerLabel')}</p>
-                <div className="flex items-center gap-1.5">
-                  <p className="text-sm font-black text-foreground">{customerProfile.name || t('unknown')}</p>
-                  {customerProfile.mood && (
-                    <span className="text-[10px] bg-secondary/80 text-foreground px-1.5 py-0.5 rounded-md font-bold">
-                      {customerProfile.mood}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="h-6 w-px bg-black/5 dark:bg-white/5 hidden sm:block" />
-            <div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight leading-none mb-0.5">{t('occupationAgeLabel')}</p>
-              <p className="text-xs font-bold text-foreground">
-                {customerProfile.occupation || t('general')}
-                {customerProfile.age ? ` (${customerProfile.age} ${t('yearsOld')})` : ''}
-              </p>
-            </div>
-            <div className="h-6 w-px bg-black/5 dark:bg-white/5 hidden sm:block" />
-            <div className="flex-1 min-w-[200px]">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight leading-none mb-0.5">{t('objectiveLabel')}</p>
-              <p className="text-xs font-bold text-primary italic truncate">&ldquo;{customerProfile.objective || t('general')}&rdquo;</p>
-            </div>
+          <div className="p-3 bg-slate-950/90 border-b border-white/10 animate-in fade-in slide-in-from-top-2 duration-500">
+            <CallSimulatorHud
+              customerName={customerProfile.name || 'ลูกค้า'}
+              scenarioTitle={customerProfile.occupation || 'Telesales Call Simulation'}
+              mood={customerProfile.mood || 'ปกติ'}
+              turnCount={messages.filter(m => m.role === 'user').length}
+              maxTurns={12}
+              talkRatio={(() => {
+                const uLen = messages.filter(m => m.role === 'user').reduce((acc, m) => acc + (m.content?.length || 0), 0);
+                const aLen = messages.filter(m => m.role === 'assistant').reduce((acc, m) => acc + (m.content?.length || 0), 0);
+                const total = uLen + aLen;
+                return total > 0 ? Math.round((uLen / total) * 100) : 45;
+              })()}
+            />
           </div>
         )}
 

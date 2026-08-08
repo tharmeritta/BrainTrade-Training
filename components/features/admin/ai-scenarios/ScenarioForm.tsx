@@ -271,7 +271,7 @@ export default function ScenarioForm({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Practice Prompt (ChatGPT)</label>
+                      <label htmlFor="practice-prompt-input" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Practice Prompt (ChatGPT)</label>
                       <button 
                         onClick={() => onChange({ ...form, externalPrompt: undefined })}
                         className="text-[9px] font-bold text-primary hover:underline"
@@ -281,6 +281,7 @@ export default function ScenarioForm({
                       </button>
                     </div>
                     <textarea 
+                      id="practice-prompt-input"
                       className={`${textareaCls} h-48 font-mono text-[10px] leading-normal opacity-80`} 
                       value={practicePrompt} 
                       onChange={e => onChange({ ...form, externalPrompt: e.target.value })}
@@ -289,7 +290,7 @@ export default function ScenarioForm({
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Audit Instructions (Gemini)</label>
+                      <label htmlFor="audit-instructions-input" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Audit Instructions (Gemini)</label>
                       <button 
                         onClick={() => onChange({ ...form, auditInstructions: undefined })}
                         className="text-[9px] font-bold text-primary hover:underline"
@@ -298,6 +299,7 @@ export default function ScenarioForm({
                       </button>
                     </div>
                     <textarea 
+                      id="audit-instructions-input"
                       className={`${textareaCls} h-48 font-mono text-[10px] leading-normal opacity-80`} 
                       value={auditInstructions} 
                       onChange={e => onChange({ ...form, auditInstructions: e.target.value })}

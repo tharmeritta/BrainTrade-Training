@@ -79,15 +79,14 @@ export async function POST(req: NextRequest) {
       (s.active === true || (s.active as any) === 'true' || s.active === undefined)
     );
 
-    // Fallback: Case-insensitive search across all staff_accounts
+    // Fallback: Query active staff_accounts
     if (!account && cleanUser) {
-      const allStaff = await fsGetAll<StaffAccount>('staff_accounts');
-      account = allStaff.find(s => {
+      const activeStaff = await fsGetWhere<StaffAccount>('staff_accounts', 'active', true);
+      account = activeStaff.find(s => {
         const uMatch = s.username?.trim().toLowerCase() === cleanUser.toLowerCase();
         const eMatch = (s as any).email?.trim().toLowerCase() === cleanUser.toLowerCase();
         const pMatch = s.password === cleanPass || s.password === undefined;
-        const aMatch = s.active === true || (s.active as any) === 'true' || s.active === undefined;
-        return (uMatch || eMatch) && pMatch && aMatch;
+        return (uMatch || eMatch) && pMatch;
       });
     }
 

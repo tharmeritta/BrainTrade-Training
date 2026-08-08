@@ -40,17 +40,17 @@ export async function POST(req: Request) {
       );
 
       if (!legacyMatch) {
-        // Fallback 2: Ultimate fallback for manual entries (fetch all)
+        // Fallback 2: Targeted query for active/graduated agents
         try {
-          console.log(`[Login] Performing ultimate fallback for: ${cleanName}`);
-          const allAgents = await fsGetAll<Agent>('agents');
-          console.log(`[Login] Fetched ${allAgents.length} agents for fallback search`);
-          legacyMatch = allAgents.find(
-            a => (a.active || a.graduated) && normalizeName(a.name || '').toLowerCase() === cleanName
+          console.log(`[Login] Performing fallback query for: ${cleanName}`);
+          const activeAgents = await fsQuery<Agent>('agents', {
+            where: [{ field: 'active', op: '==', value: true }]
+          });
+          legacyMatch = activeAgents.find(
+            a => normalizeName(a.name || '').toLowerCase() === cleanName
           );
         } catch (fallbackErr: any) {
-          console.error('[Login] Ultimate fallback failed:', fallbackErr.message);
-          // Don't throw, just continue to 404 if this failed
+          console.error('[Login] Fallback query failed:', fallbackErr.message);
         }
       }
 

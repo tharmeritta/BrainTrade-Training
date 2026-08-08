@@ -38,11 +38,14 @@ export const ALL_TABS: TabItem[] = [
 ];
 
 export function getVisibleTabs(role: UserRole, isReadOnlyRole: boolean): TabItem[] {
+  // Admin always sees all tabs across all staff groups
+  if (role === 'admin') return ALL_TABS;
+
   return ALL_TABS.filter(t => {
     if (t.hideForIT && role === 'it') return false;
     if (role === 'hr' && t.id !== 'hranalytics' && t.id !== 'overview' && t.id !== 'reports') return false;
     if (isReadOnlyRole) return true;
-    if (t.adminOnly && role !== 'admin') return false;
+    if (t.adminOnly) return false;
     if (t.hideForTrainer && role === 'trainer') return false;
     return true;
   }).map(t => {

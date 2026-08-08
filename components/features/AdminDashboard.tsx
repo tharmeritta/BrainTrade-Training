@@ -49,6 +49,9 @@ export default function AdminDashboard(props: AdminDashboardProps) {
           <AdminHeader 
             activeTab={navigation.activeTab} 
             mounted={state.mounted}
+            role={props.role}
+            activeRoleView={state.activeRoleView}
+            onRoleViewChange={actions.setActiveRoleView}
             t={t}
           />
 

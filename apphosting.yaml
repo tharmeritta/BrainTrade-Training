@@ -1,6 +1,13 @@
 # Firebase App Hosting configuration
 # Documentation: https://firebase.google.com/docs/app-hosting/configure
 
+runConfig:
+  minInstances: 0
+  maxInstances: 10
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 1024
+
 env:
   # Admin Fallback Credentials
   - variable: ADMIN_USERNAME

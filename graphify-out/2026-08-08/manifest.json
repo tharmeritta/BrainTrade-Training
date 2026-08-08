@@ -1175,8 +1175,8 @@
     "semantic_hash": "79f369ce2d68f93c98d76f7d06287c1c"
   },
   "package.json": {
-    "mtime": 1786170687.3023837,
-    "ast_hash": "866271af339a8455867dfd998e61f7b8",
+    "mtime": 1786169982.595857,
+    "ast_hash": "a26e89015c7e7588e381cec40f6a1775",
     "semantic_hash": ""
   },
   "postcss.config.js": {
@@ -1397,16 +1397,6 @@
   "scripts/agy-start.sh": {
     "mtime": 1786169977.3949516,
     "ast_hash": "56662277c951d5bc34696c39712faee9",
-    "semantic_hash": ""
-  },
-  "scripts/git-auto-commit.sh": {
-    "mtime": 1786170682.4049315,
-    "ast_hash": "b132e838a95368c23a515be7db6462f1",
-    "semantic_hash": ""
-  },
-  ".github/workflows/ci.yml": {
-    "mtime": 1786170680.9129922,
-    "ast_hash": "6348ccc9f20998e7bf8f210018650b56",
     "semantic_hash": ""
   }
 }

@@ -143,7 +143,7 @@ export default function LoginPage() {
               className="absolute top-0 left-0 right-0 h-[2px]"
               animate={{ opacity: [0.6, 1, 0.6] }}
               style={{ 
-                background: `linear-gradient(90deg, ${cfg.accent}, ${PURPLE}, ${cfg.accent})`,
+                backgroundImage: `linear-gradient(90deg, ${cfg.accent}, ${PURPLE}, ${cfg.accent})`,
                 backgroundSize: '200% 100%',
                 willChange: 'opacity'
               }}

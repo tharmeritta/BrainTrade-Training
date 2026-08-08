@@ -106,7 +106,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                 className="absolute top-0 left-0 right-0 h-[3px] z-20"
                 animate={{ opacity: [0.7, 1, 0.7] }}
                 style={{ 
-                  background: `linear-gradient(90deg, ${CYAN}, ${PURPLE}, ${CYAN})`,
+                  backgroundImage: `linear-gradient(90deg, ${CYAN}, ${PURPLE}, ${CYAN})`,
                   backgroundSize: '200% 100%',
                   willChange: 'opacity'
                 }}
