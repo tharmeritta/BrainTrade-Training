@@ -7,10 +7,10 @@ export default function ThemeScript() {
     (function() {
       try {
         var stored = localStorage.getItem('brainstrade_theme');
-        var theme = stored === 'light' ? 'light' : 'dark';
+        var theme = stored === 'dark' ? 'dark' : 'light';
         document.documentElement.classList.toggle('dark', theme === 'dark');
       } catch(e) {
-        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('dark');
       }
     })();
   `;

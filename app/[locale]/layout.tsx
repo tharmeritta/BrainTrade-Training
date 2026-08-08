@@ -54,7 +54,7 @@ export default async function LocaleLayout(props: {
   }
 
   return (
-    <html lang={locale} className={`dark ${dmSans.variable} ${dmMono.variable}`} suppressHydrationWarning>
+    <html lang={locale} className={`${dmSans.variable} ${dmMono.variable}`} suppressHydrationWarning>
       <head>
         <ThemeScript />
       </head>

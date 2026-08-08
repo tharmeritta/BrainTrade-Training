@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 
 export default function ThemeToggle() {
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('brainstrade_theme');
-    setIsDark(stored !== 'light');
+    setIsDark(stored === 'dark');
   }, []);
 
   function toggle() {
