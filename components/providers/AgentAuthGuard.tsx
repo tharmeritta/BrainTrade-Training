@@ -12,7 +12,7 @@ import { hasStaffSession } from '@/lib/session/client';
  */
 export default function AgentAuthGuard({ 
   children,
-  allowStaff = false
+  allowStaff = true
 }: { 
   children: React.ReactNode,
   allowStaff?: boolean

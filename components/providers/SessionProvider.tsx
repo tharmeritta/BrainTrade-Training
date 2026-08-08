@@ -12,6 +12,7 @@ import {
   clearAgentSession as removeAgentSession,
   AgentSession 
 } from '@/lib/session/agent';
+import { hasStaffSession } from '@/lib/session/client';
 import { useTrackPresence } from '@/lib/presence';
 
 // --- Types ---
@@ -97,7 +98,11 @@ export const SessionProvider: React.FC<{ children: React.ReactNode; locale: stri
   const logoutAgent = useCallback(() => {
     removeAgentSession();
     setAgentState(null);
-    router.push(`/${locale}/login/agent`);
+    if (hasStaffSession()) {
+      router.push(`/${locale}/admin`);
+    } else {
+      router.push(`/${locale}/login/agent`);
+    }
   }, [locale, router]);
 
   // 5. Summon Actions

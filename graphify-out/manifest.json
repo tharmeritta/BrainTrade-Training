@@ -1320,14 +1320,14 @@
     "semantic_hash": "dd83e63bcab3710b77156f56b7aa14dd"
   },
   "components/providers/AgentAuthGuard.tsx": {
-    "mtime": 1786083165.608939,
-    "ast_hash": "612282e1aaa23ed35caa00e7f44c5293",
-    "semantic_hash": "612282e1aaa23ed35caa00e7f44c5293"
+    "mtime": 1786174921.9312475,
+    "ast_hash": "c18a9df09f06904ee0919b48408901de",
+    "semantic_hash": ""
   },
   "components/providers/SessionProvider.tsx": {
-    "mtime": 1786083165.610125,
-    "ast_hash": "11931f3c6b938b91473e01586b940e9f",
-    "semantic_hash": "11931f3c6b938b91473e01586b940e9f"
+    "mtime": 1786174930.5057974,
+    "ast_hash": "f17171e5caa9f2849e376a60b16e0781",
+    "semantic_hash": ""
   },
   "lib/scoring.ts": {
     "mtime": 1786086761.0079584,
