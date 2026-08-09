@@ -33,4 +33,6 @@ antigravity/
 .context/
 .gemini-session/
 graphify-out/cache/
+graphify-out/202*/
+
 

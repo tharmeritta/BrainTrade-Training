@@ -75,7 +75,9 @@ export default function NavBar() {
 
   function guardedNavigate(e: React.MouseEvent, href: string) {
     if (href === '/dashboard') return; // always allow
-    if (!hasSession && !isStaff) {
+    const activeSession = getAgentSession();
+    const activeStaff = hasStaffSession();
+    if (!activeSession && !activeStaff) {
       e.preventDefault();
       router.push(`/${locale}/dashboard?loginRequired=1`);
     }

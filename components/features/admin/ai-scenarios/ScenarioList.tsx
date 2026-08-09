@@ -6,6 +6,7 @@ import {
   Edit2, Trash2, Zap, Target, ChevronDown, CheckSquare, Square
 } from 'lucide-react';
 import { AiEvalScenario } from '@/types/ai-eval';
+import { getPassThresholdPct } from '@/lib/scoring';
 import { DIFF } from './constants';
 
 /* --- Scenario Card ----------------------------------------------------------- */
@@ -80,7 +81,7 @@ export function ScenarioCard({
         {/* Stats */}
         <div className="hidden md:flex items-center gap-4 shrink-0">
           <div className="text-center">
-            <p className="text-xs font-black text-foreground">{s.passThreshold}<span className="text-muted-foreground font-medium">/10</span></p>
+            <p className="text-xs font-black text-foreground">{getPassThresholdPct(s.passThreshold, 70)}%</p>
             <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-bold">Threshold</p>
           </div>
           <div className="w-px h-6 bg-border/60" />

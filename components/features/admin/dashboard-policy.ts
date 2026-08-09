@@ -1,9 +1,9 @@
 import { 
   LayoutDashboard, Users, FileSpreadsheet,
-  ShieldCheck, ClipboardCheck, GraduationCap, Zap, Edit3, Clock, History, Award
+  ShieldCheck, ClipboardCheck, GraduationCap, Zap, Edit3, Clock, History, Award, Presentation
 } from 'lucide-react';
 
-export type Tab = 'overview' | 'hranalytics' | 'reports' | 'staff' | 'evaluations' | 'training' | 'adjustments' | 'approvals' | 'aiscenarios' | 'history' | 'certification';
+export type Tab = 'overview' | 'hranalytics' | 'reports' | 'staff' | 'evaluations' | 'training' | 'adjustments' | 'approvals' | 'aiscenarios' | 'history' | 'certification' | 'showcase';
 
 export type TabGroup = 'operations' | 'analytics' | 'management';
 
@@ -32,6 +32,7 @@ export const ALL_TABS: TabItem[] = [
   { id: 'history',       labelKey: 'history',        icon: History,          group: 'analytics' },
 
   // Management
+  { id: 'showcase',      labelKey: 'showcase',       icon: Presentation,     adminOnly: true, group: 'management' },
   { id: 'staff',         labelKey: 'accounts',       icon: ShieldCheck,      adminOnly: true, group: 'management' },
   { id: 'aiscenarios',   labelKey: 'aiscenarios',    icon: Zap,              adminOnly: true, hideForIT: true, group: 'management' },
   { id: 'certification', labelKey: 'certification',  icon: Award,            adminOnly: true, hideForIT: true, group: 'management' },

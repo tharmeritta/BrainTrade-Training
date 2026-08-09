@@ -45,22 +45,22 @@ const FULL_CURRICULUM_SCENARIOS = [
     id: 'telesales-objection-handling-th',
     level: 1,
     name: {
-      th: '1. การรับมือข้อโต้แย้งเรื่องราคาและการสร้างความคุ้มค่า (ROI)',
-      en: '1. Price Objection Handling & ROI Value Pitch'
+      th: '1. การสร้างความเป็นกันเองและการรับมือข้อโต้แย้งสำหรับมือใหม่',
+      en: '1. Friendly Rapport Building & Beginner Objection Handling'
     },
     difficulty: 'beginner',
     passThreshold: 70,
     required: true,
     isActive: true,
     customerPersona: {
-      th: 'คุณสมชาย เจ้าของธุรกิจ SME ที่ลังเลเรื่องงบประมาณและต้องการเปรียบเทียบกับคู่แข่ง',
-      en: 'Khun Somchai, SME business owner hesitant about budget and wanting to compare with competitors.'
+      th: 'คุณพลอย/คุณสมชาย พนักงานออฟฟิศที่เป็นกันเอง สุภาพ สนใจอยากเรียนเทรดแต่กังวลเรื่องงบและเวลา',
+      en: 'Khun Ploy / Khun Somchai, friendly office worker interested in trading but hesitant about cost and time.'
     },
-    initialMood: { th: 'ลังเลและระมัดระวังเรื่องงบประมาณ', en: 'Hesitant and price-sensitive' },
-    objective: { th: 'อธิบายความคุ้มค่า ROI ขจัดความกังวลเรื่องราคา และเสนอนัดหมายสาธิตระบบ 1:1', en: 'Address price concerns, explain ROI value, and book a 1:1 demo call.' },
+    initialMood: { th: 'เป็นกันเอง สุภาพ มีความสนใจ แต่ยังลังเลเรื่องงบและเวลา', en: 'Friendly, polite, interested but hesitant on cost and time.' },
+    objective: { th: 'สร้างความเป็นกันเอง อธิบายความคุ้มค่าของการเรียนกับโค้ช 1:1 และเสนอขอนัดทดลองสาธิตระบบ 15 นาที', en: 'Build warm rapport, explain 1:1 coaching value, and naturally book a 15-min demo.' },
     situation: {
-      th: '"บริการของคุณราคาแพงกว่าคู่แข่งตั้ง 30% ทำไมผมต้องจ่ายแพงกว่าด้วยล่ะ?"',
-      en: '"Your service is 30% more expensive than competitors! Why should I pay more?"'
+      th: '"สวัสดีค่ะ/ครับ สนใจเรื่องเรียนเทรดอยู่เหมือนกันนะ แต่กังวลว่าคอร์สจะแพงไปไหม แล้วคนทำงานประจำอย่างผมจะมีเวลาเรียนเหรอครับ?"',
+      en: '"Hello! I am interested in learning to trade, but I am worried if the course is too expensive and if I will have enough time alongside my full-time job."'
     },
     choices: [
       {

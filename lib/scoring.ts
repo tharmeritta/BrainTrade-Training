@@ -41,3 +41,9 @@ export function timeAgo(iso: string | null | undefined, t?: (key: string, params
   if (d === 1) return t ? t('time.yesterday') : 'Yesterday';
   return t ? t('time.d', { d }) : `${d}d ago`;
 }
+
+export function getPassThresholdPct(threshold?: number, defaultPct = 70): number {
+  if (threshold === undefined || threshold === null || isNaN(threshold) || threshold <= 0) return defaultPct;
+  if (threshold <= 10) return Math.round(threshold * 10);
+  return threshold;
+}

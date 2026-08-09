@@ -178,6 +178,7 @@
   },
   "admin": {
     "title": "BrainTrade Training Platform",
+    "subtitle": "Comprehensive management dashboard for staff, courses, quizzes, and AI evaluations.",
     "controlPanel": "{role} Control Panel",
     "changePw": "Change Password",
     "signOut": "Sign out",
@@ -196,6 +197,7 @@
       "adjustments": "Adjustments",
       "aiscenarios": "AI Scenarios (Quiz & Audit)",
       "certification": "Certificates",
+      "showcase": "Client Showcase Suite",
       "profile": "User Profile"
     },
     "groups": {
@@ -934,6 +936,10 @@
       "sales": {
         "label": "Section 2 — Sales Training",
         "desc": "Packages, registration flow, and payment process"
+      },
+      "other": {
+        "label": "Additional Assessments",
+        "desc": "Custom and specialized training evaluations"
       }
     }
   }

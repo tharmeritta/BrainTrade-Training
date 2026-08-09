@@ -261,8 +261,9 @@ export default function ScenarioForm({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-foreground">Difficulty Level</label>
+                    <label htmlFor="scenario-difficulty" className="block text-xs font-bold text-foreground">Difficulty Level</label>
                     <select
+                      id="scenario-difficulty"
                       className={inputCls}
                       value={form.difficulty || 'beginner'}
                       onChange={e => onChange({ ...form, difficulty: e.target.value as any })}

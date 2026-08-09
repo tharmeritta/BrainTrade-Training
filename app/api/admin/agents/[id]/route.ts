@@ -39,21 +39,38 @@ export const PATCH = withApiAuth(async (req, { params }, user) => {
   return NextResponse.json({ ok: true });
 }, ['admin', 'manager', 'it', 'trainer', 'hr']);
 
-export const DELETE = withApiAuth(async (_req, { params }, user) => {
+export const DELETE = withApiAuth(async (req, { params }, user) => {
   const { id } = await params;
 
   const target = await fsGet<any>('agents', id);
   const targetName = target?.name || id;
+  const isGraduated = target?.completedAll === true || target?.status === 'graduated';
+  const force = req.nextUrl?.searchParams?.get('force') === 'true';
 
   // IT and Manager roles require approval
   if (user.role === 'it' || user.role === 'manager') {
     await createApprovalRequest(
       { uid: user.uid, name: user.name },
       'delete_agent',
-      null,
+      { force, isGraduated },
       { id, name: targetName }
     );
     return NextResponse.json({ message: 'Request submitted for approval' }, { status: 202 });
+  }
+
+  // Soft-archive graduated agents by default to protect certificate & audit trail
+  if (isGraduated && !force) {
+    await fsUpdate('agents', id, {
+      active: false,
+      status: 'archived',
+      archivedAt: new Date().toISOString(),
+      archivedBy: user.name || user.uid,
+    });
+    return NextResponse.json({ 
+      ok: true, 
+      archived: true, 
+      message: 'Graduated agent moved to Alumni Archive. Certificate verification remains intact.' 
+    });
   }
 
   await fsDelete('agents', id);

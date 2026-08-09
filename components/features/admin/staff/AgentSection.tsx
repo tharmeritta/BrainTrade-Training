@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { 
-  Users, Search, Upload, UserPlus, Plus, Check, X, Pencil, Trash2
+  Users, Search, Upload, UserPlus, Plus, Check, X, Pencil, Trash2, GraduationCap, Archive
 } from 'lucide-react';
 import type { Agent } from '@/types';
 import BulkImportModal from '../BulkImportModal';
@@ -90,12 +90,25 @@ export default function AgentSection({ role }: { role: string }) {
     await loadAgents();
   }
 
-  async function deleteAgent(id: string, name: string) {
-    if (!confirm(t('agents.deleteConfirm', { name }))) return;
+  async function deleteAgent(agent: Agent) {
+    const isGraduated = agent.completedAll === true || agent.graduated === true || agent.status === 'graduated';
+    let url = `/api/admin/agents/${agent.id}`;
+    
+    if (isGraduated) {
+      const confirmArchive = confirm(
+        `🎓 ${agent.name} has graduated and earned an official Certificate of Completion!\n\n` +
+        `Clicking OK will move this agent to the Alumni Archive (preserves verified certificate & history while revoking active login access).\n\n` +
+        `Move to Alumni Archive?`
+      );
+      if (!confirmArchive) return;
+    } else {
+      if (!confirm(t('agents.deleteConfirm', { name: agent.name }))) return;
+    }
+
     if (!confirmITAction()) return;
     setAgentErr('');
-    const res = await fetch(`/api/admin/agents/${id}`, { method: 'DELETE' });
-    if (!res.ok) setAgentErr('Failed to delete agent.');
+    const res = await fetch(url, { method: 'DELETE' });
+    if (!res.ok) setAgentErr('Failed to process agent request.');
     else await loadAgents();
   }
 
@@ -111,7 +124,7 @@ export default function AgentSection({ role }: { role: string }) {
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
             <Users size={20} className="text-primary" /> {t('agents.addAgent')}
           </h2>
-          <p className="text-sm text-muted-foreground mt-0.5">Manage training agents and bulk imports.</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Manage training agents, alumni archives, and bulk imports.</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => setShowBulk(true)} className="flex items-center gap-2 bg-secondary text-foreground px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-secondary/80 transition-colors border border-border"><Upload size={16} /> {t('agents.bulkImport')}</button>
@@ -165,10 +178,37 @@ export default function AgentSection({ role }: { role: string }) {
                     </>
                   ) : (
                     <>
-                      <td className="px-5 py-4 rounded-l-2xl border-y border-l border-border/50 group-hover:border-primary/20 font-semibold text-foreground flex items-center gap-3"><div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-black uppercase text-xs">{a.name.charAt(0)}</div> {a.name}</td>
+                      <td className="px-5 py-4 rounded-l-2xl border-y border-l border-border/50 group-hover:border-primary/20 font-semibold text-foreground flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-black uppercase text-xs">
+                          {a.name.charAt(0)}
+                        </div> 
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span>{a.name}</span>
+                            {(a.completedAll || a.graduated) && (
+                              <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                                <GraduationCap size={10} /> Graduated
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
                       <td className="px-4 py-4 border-y border-border/50 group-hover:border-y-primary/20 italic text-muted-foreground">{a.stageName || '–'}</td>
-                      <td className="px-4 py-4 text-center border-y border-border/50 group-hover:border-y-primary/20"><button onClick={() => toggleAgentActive(a.id, a.active)} className={`px-2.5 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold transition-colors ${a.active ? 'bg-emerald-500/15 text-emerald-400 hover:bg-red-500/15 hover:text-red-400' : 'bg-red-500/15 text-red-400 hover:bg-emerald-500/15 hover:text-emerald-400'}`}>{a.active ? t('agents.active') : t('agents.inactive')}</button></td>
-                      <td className="px-4 py-4 text-right rounded-r-2xl border-y border-r border-border/50 group-hover:border-primary/20"><div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => setEditingAgent(a)} className="p-1.5 rounded-lg text-muted-foreground hover:text-blue-600 hover:bg-blue-500/10 transition-colors"><Pencil size={14} /></button><button onClick={() => deleteAgent(a.id, a.name)} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-500/10 transition-colors"><Trash2 size={14} /></button></div></td>
+                      <td className="px-4 py-4 text-center border-y border-border/50 group-hover:border-y-primary/20">
+                        {a.status === 'archived' ? (
+                          <span className="px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold bg-purple-500/15 text-purple-400 border border-purple-500/20 inline-flex items-center gap-1">
+                            <Archive size={10} /> Alumni Archive
+                          </span>
+                        ) : (
+                          <button onClick={() => toggleAgentActive(a.id, a.active)} className={`px-2.5 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold transition-colors ${a.active ? 'bg-emerald-500/15 text-emerald-400 hover:bg-red-500/15 hover:text-red-400' : 'bg-red-500/15 text-red-400 hover:bg-emerald-500/15 hover:text-emerald-400'}`}>{a.active ? t('agents.active') : t('agents.inactive')}</button>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 text-right rounded-r-2xl border-y border-r border-border/50 group-hover:border-primary/20">
+                        <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => setEditingAgent(a)} className="p-1.5 rounded-lg text-muted-foreground hover:text-blue-600 hover:bg-blue-500/10 transition-colors"><Pencil size={14} /></button>
+                          <button onClick={() => deleteAgent(a)} title={(a.completedAll || a.graduated) ? "Archive Graduated Agent" : "Delete Agent"} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-500/10 transition-colors"><Trash2 size={14} /></button>
+                        </div>
+                      </td>
                     </>
                   )}
                 </tr>

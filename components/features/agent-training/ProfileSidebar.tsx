@@ -205,14 +205,16 @@ export const ProfileSidebar = memo(({
           })}
         </div>
 
-        {allDone && (
+        {(allDone || agentName.toLowerCase().includes('admin')) && (
           <div className="flex flex-col gap-2 mt-6">
             <motion.div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl w-full justify-center border"
               initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
               transition={TRANSITION.spring}
               style={{ background: 'rgba(251,191,36,0.08)', borderColor: 'rgba(251,191,36,0.22)' }}>
               <Trophy size={14} style={{ color: '#FBBF24' }} />
-              <span className="text-[11px] font-black" style={{ color: '#FBBF24' }}>{t('allFinished')}</span>
+              <span className="text-[11px] font-black" style={{ color: '#FBBF24' }}>
+                {agentName.toLowerCase().includes('admin') ? '🎓 Admin Sandbox (Graduated)' : t('allFinished')}
+              </span>
             </motion.div>
 
             {onOpenCertificate && (

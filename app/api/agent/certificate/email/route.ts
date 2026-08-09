@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
-import { fsGet } from '@/lib/server/db';
+import { fsGet, fsAdd } from '@/lib/server/db';
 import type { Agent } from '@/types';
 
 export async function POST(req: NextRequest) {
@@ -40,6 +40,8 @@ export async function POST(req: NextRequest) {
       month: 'long',
       day: 'numeric'
     });
+
+    const subject = `🎓 Congratulations ${targetName}! Your BrainTrade Training Certificate`;
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -88,6 +90,28 @@ export async function POST(req: NextRequest) {
       </html>
     `;
 
+    // 1. Queue to Firebase Firestore 'mail' collection for Firebase Trigger Email Extension (firestore-send-email)
+    let firebaseMailId = '';
+    try {
+      const mailDoc = await fsAdd('mail', {
+        to: [targetEmail],
+        message: {
+          subject,
+          html: htmlContent,
+        },
+        createdAt: new Date().toISOString(),
+        metadata: {
+          agentId: agentId || 'preview-agent',
+          certificateId,
+          score
+        }
+      });
+      firebaseMailId = mailDoc.id;
+    } catch (fsErr) {
+      console.warn('[Firebase Mail Queue] Could not add to mail collection:', fsErr);
+    }
+
+    // 2. Direct SMTP Dispatch via Nodemailer if credentials configured
     if (user && pass) {
       const transporter = nodemailer.createTransport({
         host,
@@ -99,19 +123,28 @@ export async function POST(req: NextRequest) {
       await transporter.sendMail({
         from: `"BrainTrade Training Academy" <${user}>`,
         to: targetEmail,
-        subject: `🎓 Congratulations ${targetName}! Your BrainTrade Training Certificate`,
+        subject,
         html: htmlContent,
       });
 
-      return NextResponse.json({ success: true, sentTo: targetEmail, simulated: false });
-    } else {
-      // Development mode / SMTP fallback
-      console.log(`[SMTP SIMULATION] Certificate Email dispatched to ${targetEmail} (${targetName}) - Serial: ${certificateId}`);
       return NextResponse.json({ 
         success: true, 
         sentTo: targetEmail, 
-        simulated: true, 
-        message: 'Certificate Email dispatched successfully (Development Mode)' 
+        simulated: false, 
+        method: 'smtp',
+        firebaseMailId 
+      });
+    } else {
+      // Firebase Trigger Email Extension fallback / Dev simulation
+      console.log(`[Firebase Trigger Email] Mail queued in Firestore ('mail' collection, docId: ${firebaseMailId}) to ${targetEmail} (${targetName})`);
+      return NextResponse.json({ 
+        success: true, 
+        sentTo: targetEmail, 
+        simulated: !firebaseMailId,
+        firebaseMailId,
+        message: firebaseMailId 
+          ? `Queued in Firebase Firestore 'mail' collection (Doc ID: ${firebaseMailId}). Will deliver automatically if Firebase Trigger Email Extension is active.` 
+          : 'Certificate Email dispatched successfully (Development Mode)' 
       });
     }
   } catch (err: any) {

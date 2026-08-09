@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { 
   Calendar, Users, BookOpen, Clock, TrendingUp, Plus, 
-  ToggleLeft, ToggleRight, AlertTriangle, Radio, Loader2, Trash2, CheckCircle
+  ToggleLeft, ToggleRight, AlertTriangle, Radio, Loader2, Trash2, CheckCircle, Lock
 } from 'lucide-react';
 import type { TrainingPeriod, TrainingDayRecord, DisciplineRecord } from '@/types';
 import { T, Spinner, fmtDate } from './TrainerConstants';
@@ -108,8 +108,10 @@ export function PeriodDetail({
     }
   };
 
-  const canEdit = (role === 'trainer' || role === 'admin' || role === 'it') && !readOnly;
-  const canManage = (role === 'trainer' || role === 'admin' || role === 'manager' || role === 'it') && !readOnly;
+  const isPeriodActive = period.active !== false;
+  const canEdit = (role === 'trainer' || role === 'admin' || role === 'it') && !readOnly && isPeriodActive;
+  const canManage = (role === 'trainer' || role === 'admin' || role === 'manager' || role === 'it') && !readOnly && isPeriodActive;
+  const canReopen = (role === 'admin' || role === 'trainer') && !readOnly;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -285,6 +287,27 @@ export function PeriodDetail({
             </span>
           ))}
         </div>
+
+        {!isPeriodActive && (
+          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-bold flex items-center justify-between gap-3 mb-4 shadow-sm">
+            <span className="flex items-center gap-2">
+              <Lock size={16} className="shrink-0" />
+              <span>
+                {t('management') === 'จัดการการฝึกอบรม' 
+                  ? '🔒 การฝึกอบรมชุดนี้จบลงแล้ว (Read-Only) ข้อมูลถูกล็อกเพื่อการตรวจสอบทางบัญชีและไม่อนุญาตให้แก้ไข'
+                  : '🔒 Completed Training Wave — Read-Only Historical Mode. Editing is locked to preserve audit logs.'}
+              </span>
+            </span>
+            {canReopen && (
+              <button
+                onClick={toggleActive}
+                className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-black text-[10px] uppercase tracking-wider transition-all shrink-0 active:scale-95"
+              >
+                {t('management') === 'จัดการการฝึกอบรม' ? 'เปิดให้แก้ไขชั่วคราว' : 'Reopen Wave'}
+              </button>
+            )}
+          </div>
+        )}
 
         {canManage && (
           <div className="flex items-center gap-4 flex-wrap p-4 rounded-3xl mb-8 shadow-sm bg-muted/20 border border-border/40">

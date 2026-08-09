@@ -32,54 +32,53 @@ async function createCustomTokenSafe(uid: string, claims?: object): Promise<stri
 }
 
 export async function POST(req: NextRequest) {
-  const { username, password } = await req.json();
-
-  // Fallback for environment variables (for initial login after deployment)
-  const envUser = (process.env.ADMIN_USERNAME || 'Tharme Ritta').trim();
-  const envEmail = (process.env.ADMIN_EMAIL || 'admin@braintrade.com').trim();
-  const envPass = (process.env.ADMIN_PASSWORD || 'password123').trim();
-
-  const cleanUser = username?.trim();
-  const cleanPass = password?.trim();
-  const lowerUser = cleanUser?.toLowerCase();
-
+  let cleanUser: string | undefined;
   const isDev = process.env.NODE_ENV === 'development';
 
-  // Dev & Admin Fast-Path Matching
-  const DEV_ACCOUNTS: Record<string, { role: string; name: string }> = {
-    'admin':               { role: 'admin',     name: 'System Admin' },
-    'admin@braintrade.com':{ role: 'admin',     name: 'Tharme Ritta' },
-    'tharme ritta':        { role: 'admin',     name: 'Tharme Ritta' },
-    'system admin':        { role: 'admin',     name: 'System Admin' },
-    'manager':             { role: 'manager',   name: 'Sales Manager' },
-    'trainer':             { role: 'trainer',   name: 'Lead Trainer' },
-    'evaluator':           { role: 'evaluator', name: 'Lead Evaluator' },
-  };
-
-  const isMatchPass = (cleanPass === envPass || cleanPass === 'password123' || cleanPass === 'admin123' || cleanPass === '123456' || !cleanPass);
-
-  if (cleanUser && (lowerUser === envUser.toLowerCase() || lowerUser === envEmail.toLowerCase() || DEV_ACCOUNTS[lowerUser])) {
-    const devAcc = DEV_ACCOUNTS[lowerUser] || { role: 'admin', name: envUser };
-    if (isMatchPass) {
-      const role = devAcc.role as any;
-      const id = `admin-${lowerUser}`;
-      const firebaseToken = await createCustomTokenSafe(id, { role });
-
-      const res = NextResponse.json({ status: 'ok', role, firebaseToken });
-      setSession(res, makeSessionToken(role, id, devAcc.name, true));
-      console.log(`[Auth Fast-Path] Granted login for ${role} (${cleanUser})`);
-      return res;
-    }
-  }
-
   try {
-    const cleanUser = username?.trim();
+    const body = await req.json().catch(() => ({}));
+    const { username, password } = body;
+
+    // Fallback for environment variables (for initial login after deployment)
+    const envUser = (process.env.ADMIN_USERNAME || 'Tharme Ritta').trim();
+    const envEmail = (process.env.ADMIN_EMAIL || 'admin@braintrade.com').trim();
+    const envPass = (process.env.ADMIN_PASSWORD || 'password123').trim();
+
+    cleanUser = username?.trim();
     const cleanPass = password?.trim();
+    const lowerUser = cleanUser?.toLowerCase();
+
+    // Dev & Admin Fast-Path Matching
+    const DEV_ACCOUNTS: Record<string, { role: string; name: string }> = {
+      'admin':               { role: 'admin',     name: 'System Admin' },
+      'admin@braintrade.com':{ role: 'admin',     name: 'Tharme Ritta' },
+      'tharme ritta':        { role: 'admin',     name: 'Tharme Ritta' },
+      'system admin':        { role: 'admin',     name: 'System Admin' },
+      'manager':             { role: 'manager',   name: 'Sales Manager' },
+      'trainer':             { role: 'trainer',   name: 'Lead Trainer' },
+      'evaluator':           { role: 'evaluator', name: 'Lead Evaluator' },
+    };
+
+    const isMatchPass = (cleanPass === envPass || cleanPass === 'password123' || cleanPass === 'admin123' || cleanPass === '123456' || !cleanPass);
+
+    if (cleanUser && lowerUser && (lowerUser === envUser.toLowerCase() || lowerUser === envEmail.toLowerCase() || DEV_ACCOUNTS[lowerUser])) {
+      const devAcc = DEV_ACCOUNTS[lowerUser] || { role: 'admin', name: envUser };
+      if (isMatchPass) {
+        const role = devAcc.role as any;
+        const id = `admin-${lowerUser}`;
+        const firebaseToken = await createCustomTokenSafe(id, { role });
+
+        const res = NextResponse.json({ status: 'ok', role, firebaseToken });
+        setSession(res, makeSessionToken(role, id, devAcc.name, true));
+        console.log(`[Auth Fast-Path] Granted login for ${role} (${cleanUser})`);
+        return res;
+      }
+    }
 
     // Query staff_accounts by both username and email
     const [staffByUsername, staffByEmail] = await Promise.all([
-      fsGetWhere<StaffAccount>('staff_accounts', 'username', cleanUser),
-      fsGetWhere<StaffAccount>('staff_accounts', 'email', cleanUser)
+      cleanUser ? fsGetWhere<StaffAccount>('staff_accounts', 'username', cleanUser) : [],
+      cleanUser ? fsGetWhere<StaffAccount>('staff_accounts', 'email', cleanUser) : []
     ]);
 
     const staffMatches = [...staffByUsername, ...staffByEmail];
@@ -90,10 +89,11 @@ export async function POST(req: NextRequest) {
 
     // Fallback: Query active staff_accounts
     if (!account && cleanUser) {
+      const targetUser = cleanUser.toLowerCase();
       const activeStaff = await fsGetWhere<StaffAccount>('staff_accounts', 'active', true);
       account = activeStaff.find(s => {
-        const uMatch = s.username?.trim().toLowerCase() === cleanUser.toLowerCase();
-        const eMatch = (s as any).email?.trim().toLowerCase() === cleanUser.toLowerCase();
+        const uMatch = s.username?.trim().toLowerCase() === targetUser;
+        const eMatch = (s as any).email?.trim().toLowerCase() === targetUser;
         const pMatch = s.password === cleanPass || s.password === undefined;
         return (uMatch || eMatch) && pMatch;
       });

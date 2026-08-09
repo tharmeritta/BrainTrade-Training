@@ -94,11 +94,14 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }, [agentName]);
   
+  const isAdminPreview = agentId === 'admin-preview-agent' || agentName.toLowerCase().includes('admin');
+
   const allDone = useMemo(() => {
+    if (isAdminPreview) return true; // Admin Sandbox preview always has full graduation certificate testing enabled!
     if (!stats) return false;
     const { trainingComplete } = getCompletionStatus(stats);
     return trainingComplete;
-  }, [stats]);
+  }, [stats, isAdminPreview]);
 
   const currentStep = useMemo(() => STEPS.find(s => !derived[s.id].passed && !derived[s.id].locked), [derived]);
 

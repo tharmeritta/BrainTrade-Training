@@ -22,6 +22,7 @@ const TAB_REGISTRY: Record<Tab, any> = {
   staff:       dynamic(() => import('./StaffTab'), { loading: TabLoader }),
   aiscenarios: dynamic(() => import('./AiScenariosTab'), { loading: TabLoader }),
   certification: dynamic(() => import('./CertificateTab').then(m => m.CertificateTab), { loading: TabLoader }),
+  showcase:    dynamic(() => import('./ShowcaseTab'), { loading: TabLoader }),
   adjustments: dynamic(() => import('./AdjustmentsTab'), { loading: TabLoader }),
   history:     dynamic(() => import('./HistoryTab'), { loading: TabLoader }),
 };

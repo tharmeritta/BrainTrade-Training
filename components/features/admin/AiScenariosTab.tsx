@@ -6,6 +6,7 @@ import {
   Plus, Trash2, Zap, Search, FileUp, Sparkles, Loader2, CheckCircle2, AlertCircle, Edit2, ShieldAlert
 } from 'lucide-react';
 import { AiEvalScenario } from '@/types/ai-eval';
+import { getPassThresholdPct } from '@/lib/scoring';
 import ScenarioForm from './ai-scenarios/ScenarioForm';
 import AiScenarioImportModal from './AiScenarioImportModal';
 import { PRESET_TEMPLATES } from './ai-scenarios/templates';
@@ -310,7 +311,7 @@ export default function AiScenariosTab({ readOnly }: { readOnly?: boolean }) {
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="bg-secondary/40 p-2 rounded-xl">
                     <span className="text-[10px] text-muted-foreground font-bold uppercase block">Target Pass</span>
-                    <span className="font-black text-foreground">{s.passThreshold || 70}% Score</span>
+                    <span className="font-black text-foreground">{getPassThresholdPct(s.passThreshold, 70)}% Score</span>
                   </div>
                   <div className="bg-secondary/40 p-2 rounded-xl">
                     <span className="text-[10px] text-muted-foreground font-bold uppercase block">Initial Mood</span>

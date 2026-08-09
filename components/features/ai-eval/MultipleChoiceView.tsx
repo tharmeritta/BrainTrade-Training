@@ -7,6 +7,7 @@ import {
   CheckCircle2, XCircle, HelpCircle, ArrowRight, RotateCcw, Sparkles, User, MessageSquare, Award
 } from 'lucide-react';
 import { AiEvalScenario } from '@/types/ai-eval';
+import { getPassThresholdPct } from '@/lib/scoring';
 
 export function MultipleChoiceView({
   scenario,
@@ -44,7 +45,7 @@ export function MultipleChoiceView({
     setSubmitting(true);
 
     const score = selectedChoice.score * 10; // Convert 0-10 to 0-100
-    const passThreshold = scenario.passThreshold || 70;
+    const passThreshold = getPassThresholdPct(scenario.passThreshold, 70);
     const passed = score >= passThreshold;
 
     try {
@@ -69,6 +70,8 @@ export function MultipleChoiceView({
     }
   };
 
+  const passThresholdPct = getPassThresholdPct(scenario.passThreshold, 70);
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header Card */}
@@ -79,7 +82,7 @@ export function MultipleChoiceView({
           </span>
 
           <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
-            <span>Target Pass: {scenario.passThreshold || 70}%</span>
+            <span>Target Pass: {passThresholdPct}%</span>
           </div>
         </div>
 
@@ -183,7 +186,7 @@ export function MultipleChoiceView({
           <div className="w-full p-6 rounded-3xl bg-card border border-border flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className={`p-3 rounded-2xl ${
-                (selectedChoice?.score || 0) * 10 >= (scenario.passThreshold || 70)
+                (selectedChoice?.score || 0) * 10 >= passThresholdPct
                   ? 'bg-emerald-500/10 text-emerald-400'
                   : 'bg-rose-500/10 text-rose-400'
               }`}>
@@ -191,10 +194,10 @@ export function MultipleChoiceView({
               </div>
               <div>
                 <p className="text-sm font-black text-foreground">
-                  Result: {(selectedChoice?.score || 0) * 10 >= (scenario.passThreshold || 70) ? 'PASSED 🎉' : 'FAILED'}
+                  Result: {(selectedChoice?.score || 0) * 10 >= passThresholdPct ? 'PASSED 🎉' : 'FAILED'}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Score: {(selectedChoice?.score || 0) * 10}% (Target: {scenario.passThreshold || 70}%)
+                  Score: {(selectedChoice?.score || 0) * 10}% (Target: {passThresholdPct}%)
                 </p>
               </div>
             </div>

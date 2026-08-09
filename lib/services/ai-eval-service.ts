@@ -288,25 +288,25 @@ export class AiEvalService {
         id: 'level_1',
         level: 1,
         required: true,
-        name: 'Level 1: ลูกค้าปฏิเสธทั่วไป',
-        description: 'เน้นการรับมือคำปฏิเสธเบื้องต้น',
+        name: 'Level 1: ลูกค้ามือใหม่ผู้สุภาพและสนใจเรียนรู้',
+        description: 'เน้นการสร้างความสนิทสนม รับมือข้อโต้แย้งเรื่องราคาและเวลาอย่างเป็นกันเอง',
         difficulty: 'beginner',
-        customerPersona: 'สุ่มบทบาท: 1.พนักงานออฟฟิศ ยุ่ง 2.แม่บ้าน ต้องถามสามี 3.ผู้สูงอายุ ไม่เก่งเทคโนโลยี',
-        initialMood: 'ไม่สนใจ',
-        objective: 'ต้องการจบการสนทนาเร็วที่สุด',
-        systemPrompt: `เล่นบทเป็นลูกค้าคนไทย สุ่มเลือก 1 บทบาท: พนักงานออฟฟิศที่ยุ่งมาก / แม่บ้านที่ต้องถามสามีก่อน / ผู้สูงอายุที่ไม่เก่งเทคโนโลยี
-สินค้า: คอร์สเทรด BrainTrade Thailand — Coach 1:1 / AI วิเคราะห์ตลาด / BrainTrade Campus
-อารมณ์เริ่มต้น: ไม่สนใจ อยากวางสายให้เร็วที่สุด ตอบสั้นๆ เป็นธรรมชาติ ห้ามหลุดบทบาท
+        customerPersona: 'คุณพลอย/คุณสมชาย: พนักงานออฟฟิศที่เป็นกันเอง สุภาพ สนใจอยากเรียนเทรดแต่กังวลเรื่องงบและเวลา',
+        initialMood: 'เป็นกันเอง แต่ลังเลเรื่องงบประมาณและเวลา',
+        objective: 'ต้องการคำแนะนำที่เป็นกันเอง เข้าใจง่าย และความคุ้มค่าของการเรียนรู้กับโค้ช 1:1',
+        systemPrompt: `เล่นบทเป็นลูกค้าคนไทยมือใหม่ที่เป็นกันเอง ชื่อคุณพลอยหรือคุณสมชาย
+สินค้า: คอร์สเทรด BrainTrade Thailand — โค้ชส่วนตัว 1:1 / AI ช่วยวิเคราะห์ตลาด / BrainTrade Campus
+อารมณ์เริ่มต้น: เป็นกันเอง สุภาพ มีความสนใจอยากพัฒนาทักษะการเทรด แต่ลังเลเรื่องค่าใช้จ่ายและเวลา ตอบสั้นๆ เป็นธรรมชาติ สไตล์คนไทยที่เป็นมิตร ห้ามหลุดบทบาท
 
-✅ PASS เมื่อ: พนักงานสร้างความสนใจเบื้องต้นได้ รับมือคำปฏิเสธอย่างเป็นธรรมชาติ ทำให้ลูกค้ายอมรับฟังข้อมูล
-❌ FAIL เมื่อ: พนักงานพูดแบบหุ่นยนต์ ไม่รับฟัง ยัดเยียดสินค้า หรือสนทนาครบ 12 ครั้งแล้ว
+✅ PASS เมื่อ: พนักงานสร้างความเป็นกันเอง (Rapport) ได้ดี รับฟัง อธิบายความคุ้มค่าของการเรียนกับโค้ช และชวนทดลองนัดหมาย 1:1 อย่างเป็นธรรมชาติ
+❌ FAIL เมื่อ: พนักงานพูดจาแข็งกระด้างแบบหุ่นยนต์ ไม่รับฟัง ยัดเยียดสินค้า หรือสนทนาครบ 12 ครั้งแล้ว
 
 ตอบกลับเป็น JSON เสมอ:
 {"dialogue":"...","verdict":"continue","reason":"","score":null,"strengths":null,"improvements":null,"coachingTip":null}
 
 เมื่อ verdict เป็น passed/failed: ใส่ score (0-100), strengths, improvements, coachingTip ด้วย
 ห้ามบอก verdict แก่พนักงานใน dialogue เด็ดขาด`,
-        passThreshold: 35,
+        passThreshold: 70,
         requiredCriteria: ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
         maxTurnsPerRound: 6,
         maxRounds: 2,
@@ -314,7 +314,7 @@ export class AiEvalService {
         minTurnsToWin: 3,
         isActive: true,
         isMaster: false,
-        bypassPrompt: 'Act as a skeptical Thai customer who is busy. If the agent handles your "too busy" objection naturally and makes you want to listen, say "PASSED".',
+        bypassPrompt: 'Act as a friendly, polite Thai beginner prospect who is interested in trading but slightly hesitant about cost and time. If the agent builds warm rapport, reframes the value of 1:1 coaching, and naturally invites you to a demo, say "PASSED".',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
@@ -340,7 +340,7 @@ export class AiEvalService {
 
 เมื่อ verdict เป็น passed/failed: ใส่ score (0-100), strengths, improvements, coachingTip ด้วย
 ห้ามบอก verdict แก่พนักงานใน dialogue เด็ดขาด`,
-        passThreshold: 35,
+        passThreshold: 75,
         requiredCriteria: ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
         maxTurnsPerRound: 6,
         maxRounds: 2,
@@ -374,7 +374,7 @@ export class AiEvalService {
 
 เมื่อ verdict เป็น passed/failed: ใส่ score (0-100), strengths, improvements, coachingTip ด้วย
 ห้ามบอก verdict แก่พนักงานใน dialogue เด็ดขาด`,
-        passThreshold: 35,
+        passThreshold: 80,
         requiredCriteria: ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
         maxTurnsPerRound: 6,
         maxRounds: 2,
@@ -408,7 +408,7 @@ export class AiEvalService {
 
 เมื่อ verdict เป็น passed/failed: ใส่ score (0-100), strengths, improvements, coachingTip ด้วย
 ห้ามบอก verdict แก่พนักงานใน dialogue เด็ดขาด`,
-        passThreshold: 40,
+        passThreshold: 85,
         requiredCriteria: ['rapport', 'objectionHandling', 'credibility', 'closing', 'naturalness'],
         maxTurnsPerRound: 6,
         maxRounds: 2,

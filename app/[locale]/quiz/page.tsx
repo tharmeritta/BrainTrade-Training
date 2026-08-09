@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { MODULE_QUIZ_MAP, type Language, type QuizDefinition } from '@/lib/quiz-data';
 import { getAgentSession } from '@/lib/session/agent';
+import { hasStaffSession } from '@/lib/session/client';
 import { TRAINING_REGISTRY, getCanonicalQuizKey } from '@/lib/registry';
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -213,11 +214,15 @@ export default function QuizIndexPage() {
     const session = getAgentSession();
     if (!session) return;
 
+    const isStaffPreview = hasStaffSession() || session.id === 'admin-preview-agent';
+
     fetch(`/api/agent/progress?agentId=${encodeURIComponent(session.id)}`)
       .then(r => r.json())
       .then(d => {
         const learnedCount = d.stats?.learnedModules?.length ?? 0;
-        if (learnedCount < TRAINING_REGISTRY.learn.minToUnlockNext) setShowLockedModal(true);
+        if (!isStaffPreview && learnedCount < TRAINING_REGISTRY.learn.minToUnlockNext) {
+          setShowLockedModal(true);
+        }
       })
       .catch(() => {});
 
@@ -304,8 +309,8 @@ export default function QuizIndexPage() {
           >
             <SectionHeader
               icon={sectionKey === 'foundation' ? GraduationCap : Briefcase}
-              label={t(`sections.${sectionKey}.label`)}
-              description={t(`sections.${sectionKey}.desc`)}
+              label={t.has(`sections.${sectionKey}.label`) ? t(`sections.${sectionKey}.label`) : (sectionKey === 'other' ? (lang === 'th' ? 'แบบทดสอบเพิ่มเติม' : 'Additional Assessments') : sectionKey)}
+              description={t.has(`sections.${sectionKey}.desc`) ? t(`sections.${sectionKey}.desc`) : (sectionKey === 'other' ? (lang === 'th' ? 'แบบประเมินการฝึกอบรมพิเศษและหัวข้ออื่นๆ' : 'Custom and specialized training evaluations') : '')}
             />
             <div className="space-y-3">
               {quizzes.map((quiz, qIdx) => {

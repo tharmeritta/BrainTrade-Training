@@ -37,6 +37,10 @@ export interface Agent {
   lastActive?: string | null;
   graduated?: boolean;
   graduatedAt?: string;
+  completedAll?: boolean;
+  status?: 'active' | 'graduated' | 'archived' | 'inactive';
+  archivedAt?: string;
+  archivedBy?: string;
   certificateId?: string;
   acknowledged?: boolean;
   acknowledgedAt?: string;

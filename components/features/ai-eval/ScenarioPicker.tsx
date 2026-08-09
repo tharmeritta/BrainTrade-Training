@@ -10,6 +10,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { ActiveAgentUI } from '@/components/ui/ActiveAgentUI';
 import { StepProgress } from './StepProgress';
 import type { EvalScenario } from './types';
+import { getPassThresholdPct } from '@/lib/scoring';
 
 const DIFFICULTY_MAP: Record<string, number> = {
   beginner: 1,
@@ -258,7 +259,7 @@ export const ScenarioPicker = memo(({
                             )}
                           </div>
                           <div className="text-[10px] font-black text-muted-foreground bg-secondary/60 px-2.5 py-1 rounded-lg border border-black/5 dark:border-white/5">
-                            Pass: {s.passThreshold || 35}%
+                            Pass: {getPassThresholdPct(s.passThreshold, 70)}%
                           </div>
                         </div>
 

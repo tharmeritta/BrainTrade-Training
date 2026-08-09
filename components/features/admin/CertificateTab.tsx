@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { 
   Award, Sparkles, Save, RotateCcw, ShieldCheck, CheckCircle2, Loader2, Eye, Palette 
 } from 'lucide-react';
-import { CertificateConfig, DEFAULT_CERT_CONFIG } from '@/app/api/admin/certificate-config/route';
+import { CertificateConfig, DEFAULT_CERT_CONFIG } from '@/lib/certificate-types';
 
 const COLOR_PRESETS = [
   { name: 'Midnight Indigo', color: '#818cf8' },
@@ -233,57 +233,55 @@ export function CertificateTab() {
             </span>
           </div>
 
-          {/* Certificate Card Preview */}
-          <div className="relative rounded-2xl p-8 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 border-2 text-white shadow-2xl overflow-hidden space-y-6 text-center"
-               style={{ borderColor: `${config.accentColor}60` }}>
-            
-            <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl pointer-events-none opacity-20"
-                 style={{ backgroundColor: config.accentColor }} />
+          {/* Certificate Card Preview (Global White Standard) */}
+          <div className="relative rounded-2xl p-8 bg-white border-4 border-double border-amber-600 text-slate-900 shadow-2xl overflow-hidden space-y-6 text-center">
+            {/* Inner Gold Frame Border */}
+            <div className="absolute inset-2 border border-slate-900 pointer-events-none rounded-xl" />
 
             {/* Header Emblem */}
-            <div className="flex items-center justify-center gap-2">
-              <div className="p-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/20">
-                <Sparkles size={18} style={{ color: config.accentColor }} />
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <div className="p-2 rounded-xl bg-amber-50 border border-amber-300 text-amber-600 shadow-sm">
+                <Sparkles size={18} />
               </div>
-              <span className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: config.accentColor }}>
+              <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-800">
                 {config.academyName}
               </span>
             </div>
 
             {/* Certificate Title */}
             <div>
-              <h2 className="text-2xl font-black uppercase tracking-tight text-white">{config.certificateTitle}</h2>
-              <p className="text-xs text-indigo-200 mt-1">{config.subtitle}</p>
+              <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900 font-serif">{config.certificateTitle}</h2>
+              <p className="text-xs text-slate-600 italic mt-1">{config.subtitle}</p>
             </div>
 
             {/* Recipient Mock Name */}
-            <div className="py-2 border-y border-white/10">
-              <h1 className="text-3xl font-black tracking-tight" style={{ color: config.accentColor }}>
+            <div className="py-3 border-y border-slate-200">
+              <h1 className="text-3xl font-black tracking-tight text-blue-900 font-serif">
                 Somsak Jaidee
               </h1>
-              <p className="text-xs text-slate-300 mt-1 font-semibold">Senior Telesales Specialist</p>
+              <div className="h-0.5 w-32 bg-amber-500 mx-auto my-2" />
+              <p className="text-xs text-slate-600 font-bold uppercase tracking-wider">Senior Telesales Specialist</p>
             </div>
 
             {/* Notes */}
-            <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
+            <p className="text-xs text-slate-700 max-w-md mx-auto leading-relaxed">
               {config.customNotes}
             </p>
 
             {/* Footer Signatory & Serial */}
-            <div className="flex items-center justify-between flex-wrap gap-4 pt-2 text-xs">
+            <div className="flex items-end justify-between flex-wrap gap-4 pt-4 border-t border-slate-100 text-xs">
               <div className="text-left">
                 <span className="text-[10px] uppercase font-bold text-slate-400 block">Signatory Authority</span>
-                <span className="font-extrabold text-white">{config.signatoryName}</span>
-                <span className="text-[9px] text-slate-400 block">{config.signatoryTitle}</span>
+                <span className="font-extrabold text-slate-900 text-sm block">{config.signatoryName}</span>
+                <span className="text-[9px] text-slate-500 block">{config.signatoryTitle}</span>
               </div>
 
-              <div className="px-4 py-1.5 rounded-xl font-black text-sm text-white shadow-md"
-                   style={{ backgroundColor: `${config.accentColor}30`, borderColor: `${config.accentColor}60` }}>
+              <div className="px-4 py-2 rounded-xl bg-amber-100/80 border border-amber-300 text-amber-900 font-black text-xs shadow-sm">
                 Mastery Score: 94%
               </div>
 
-              <div className="text-right font-mono text-[10px] text-slate-400">
-                <div>ID: BT-CERT-2026-PREVIEW</div>
+              <div className="text-right font-mono text-[10px] text-slate-500">
+                <div className="font-bold text-slate-800">ID: BT-CERT-2026-PREVIEW</div>
                 <div>{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
               </div>
             </div>
