@@ -56,6 +56,7 @@ export default async function LocaleLayout(props: {
   return (
     <html lang={locale} className={`${dmSans.variable} ${dmMono.variable}`} suppressHydrationWarning>
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
         <ThemeScript />
       </head>
       <body className="bg-background min-h-screen antialiased">

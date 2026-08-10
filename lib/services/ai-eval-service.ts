@@ -1,5 +1,6 @@
 import { updateGlobalAiEvalStats, updateAgentOverallScore } from './stats-service';
 import { getOpenAI } from '@/lib/openai';
+import { generateText } from '@/lib/ai';
 import { fsGet, fsSet, fsDelete, fsAdd } from '@/lib/server/db';
 import crypto from 'crypto';
 import {
@@ -172,48 +173,68 @@ export class AiEvalService {
     scenario: AiEvalScenario,
     isStart: boolean
   ): Promise<AiEvalTurnResponse> {
-
-    const openai = getOpenAI();
-    if (!openai) throw new Error('OpenAI API key not configured. Please set OPENAI_API_KEY.');
-
-    // Use scenario.systemPrompt if set, otherwise build from legacy fields
-    let rawSystemPrompt = scenario.systemPrompt || this.buildFallbackSystemPrompt(scenario);
-    
-    // Inject dynamic variables into the prompt
+    const rawSystemPrompt = scenario.systemPrompt || this.buildFallbackSystemPrompt(scenario);
     const systemPrompt = this.injectVariables(rawSystemPrompt, session, scenario);
 
-    // Build conversation history (last 12 messages)
     const history: { role: 'user' | 'assistant'; content: string }[] = session.messages
       .slice(-12)
       .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
-    // Seed the first turn
     if (isStart && history.length === 0) {
       history.push({ role: 'user', content: '[ลูกค้ารับสาย]' });
     }
 
-    // Level 4 uses gpt-4o for higher reasoning; other levels use gpt-4o-mini
-    // Master scenarios ALWAYS use gpt-4o for best reasoning
-    const isMaster = scenario.isMaster === true;
-    const model = (isMaster || (scenario.level || 1) >= 4) ? 'gpt-4o' : 'gpt-4o-mini';
+    const openai = getOpenAI();
+    let raw = '';
 
-    console.log(`[AiEvalService] Using model: ${model}, scenario level: ${scenario.level || 1}, isMaster: ${isMaster}`);
-
-    const res = await openai.chat.completions.create({
-      model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...history,
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.7,
-    });
-
-    const raw = res.choices[0].message.content || '{}';
-    const parsed = JSON.parse(this.cleanJson(raw));
+    try {
+      if (openai) {
+        try {
+          const isMaster = scenario.isMaster === true;
+          const model = (isMaster || (scenario.level || 1) >= 4) ? 'gpt-4o' : 'gpt-4o-mini';
+          const res = await openai.chat.completions.create({
+            model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              ...history,
+            ],
+            response_format: { type: 'json_object' },
+            temperature: 0.7,
+          });
+          raw = res.choices[0].message.content || '{}';
+        } catch (err: any) {
+          console.warn('[AiEvalService] OpenAI call failed, falling back to generateText (Gemini):', err.message);
+          const prompt = `${systemPrompt}\n\nChat History:\n${history.map(h => `${h.role}: ${h.content}`).join('\n')}\n\nRespond in JSON format: {"dialogue": "...", "verdict": "continue|passed|failed", "score": 80, "coachingTip": "..."}`;
+          raw = await generateText(prompt);
+        }
+      } else {
+        // Dual-Model Fallback: Use Gemini API if OpenAI API key is missing
+        const prompt = `${systemPrompt}\n\nChat History:\n${history.map(h => `${h.role}: ${h.content}`).join('\n')}\n\nRespond in JSON format: {"dialogue": "...", "verdict": "continue|passed|failed", "score": 80, "coachingTip": "..."}`;
+        raw = await generateText(prompt);
+      }
+    } catch (outerErr: any) {
+      console.warn('[AiEvalService] All AI Providers failed. Triggering Plan B Rule Engine:', outerErr.message);
+      const lastUserMsg = [...session.messages].reverse().find(m => m.role === 'user')?.content || '';
+      raw = JSON.stringify({
+        dialogue: lastUserMsg.includes('ราคา') || lastUserMsg.includes('แพง') 
+          ? 'เข้าใจครับ ราคานี้รวมระบบ Mentor สแกนสัญญาณ และสิทธิ์เรียนย้อนหลังตลอดชีพไหมครับ?'
+          : 'ครับ... ขออนุญาตสอบถามรายละเอียดรูปแบบการเรียนการสอนเพิ่มเติมนิดนึงครับ',
+        verdict: 'continue',
+        score: 75,
+        coachingTip: 'นำเสนอคุณค่าของคอร์สเรียนและความเป็นมืออาชีพของทีมโค้ช'
+      });
+    }
+    let parsed: any = {};
+    try {
+      const cleaned = this.cleanJson(raw);
+      parsed = JSON.parse(cleaned);
+    } catch (parseErr) {
+      console.warn('[AiEvalService] Failed to parse JSON response from LLM, using fallback text:', raw);
+      parsed = { dialogue: raw || 'ครับ... ขออนุญาตสอบถามเพิ่มเติมครับ' };
+    }
 
     // Robust mapping for common JSON keys used by AI models
-    const dialogue = parsed.dialogue || parsed.message || parsed.content || 'ครับ...';
+    const dialogue = parsed.dialogue || parsed.message || parsed.content || parsed.text || 'ครับ...';
     const rawVerdict = String(parsed.verdict || parsed.status || 'continue').toLowerCase();
     
     let verdict: 'continue' | 'passed' | 'failed' = 'continue';
@@ -261,16 +282,19 @@ export class AiEvalService {
     const win = scenario.winCondition || 'พนักงานตอบคำถาม สร้างความเชื่อมั่น และปิดการขายได้';
     const fail = scenario.failCondition || 'พนักงานพูดแบบหุ่นยนต์ ไม่รับฟัง หรือสนทนาครบ 12 ครั้งแล้ว';
 
-    return `เล่นบทเป็นลูกค้าคนไทย: ${persona}
+    return `🚨 คำเตือนสำคัญที่สุด: คุณคือ "ลูกค้าผู้สนใจซื้อ" เท่านั้น! ห้ามสวมบทบาทเป็นเซลส์ พนักงานขาย หรือโค้ชเด็ดขาด!
+หน้าที่ของคุณคือรับสายและตั้งคำถามหรือโต้แย้งในฐานะลูกค้าที่ถูกพนักงานขาย (User) โทรหา
+
+เล่นบทเป็นลูกค้าคนไทย: ${persona}
 อารมณ์เริ่มต้น: ${mood}
 เป้าหมายของลูกค้า: ${objective}
-สินค้า: คอร์สเทรด BrainTrade Thailand — Coach 1:1 / AI วิเคราะห์ตลาด / BrainTrade Campus
+สินค้าที่พนักงานจะเสนอขายให้คุณ: คอร์สเทรด BrainTrade Thailand — Coach 1:1 / AI วิเคราะห์ตลาด / BrainTrade Campus
 
 ✅ PASS เมื่อ: ${win}
 ❌ FAIL เมื่อ: ${fail}
 
 กติกา:
-- ตอบสั้นๆ เป็นธรรมชาติ ใช้ภาษาพูดคนไทย ห้ามหลุดบทบาท
+- ตอบสั้นๆ เป็นธรรมชาติ ในมุมมองของ "ลูกค้าคนไทย" ที่พนักงานกำลังขายของให้ ห้ามหลุดบทบาทไปขายของเอง
 - หากสนทนาครบ ${maxTurns} ครั้งแล้วยังไม่ตัดสิน ให้ตัดสิน failed
 
 ตอบกลับเป็น JSON เสมอ:

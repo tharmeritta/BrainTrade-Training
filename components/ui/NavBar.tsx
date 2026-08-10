@@ -191,7 +191,7 @@ export default function NavBar() {
                     />
                   </motion.span>
                   <span
-                    className={`relative z-10 transition-colors ${
+                    className={`relative z-10 transition-colors hidden sm:inline ${
                       active ? 'text-foreground font-medium' : 'text-muted-foreground'
                     }`}
                   >

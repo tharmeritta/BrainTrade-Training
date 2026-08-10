@@ -6,6 +6,7 @@ import {
   Send, Bot, ChevronLeft, Trophy, RotateCcw, ArrowRight,
   Zap, XCircle, Frown, Smile,
 } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { TRANSITION } from '@/lib/animations';
 import { CoachingCard, ScoreTrend } from './CoachingCard';
@@ -19,6 +20,12 @@ export const ChatView = memo(({
   onSend, onReset, onClearError, onUseScript, bottomRef, textareaRef, criteriaKeys,
 }: ChatViewProps) => {
   const t = useTranslations('aiEval');
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const locale = pathname.split('/')[1] || 'th';
+  const currentLevel = messages.length > 0 ? (messages[0] as any).level || 1 : 1;
+  const isLevel4 = currentLevel >= 4;
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -34,9 +41,82 @@ export const ChatView = memo(({
   const isEnded = passed || failed;
 
   return (
-    <div className="max-w-4xl mx-auto py-2 px-4">
+    <div className="max-w-[1400px] mx-auto py-2 px-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
+      {/* Left Column: Real-Time 12-Turn Call Roadmap */}
+      <div className="lg:col-span-3 order-2 lg:order-1 space-y-4">
+        <div className="bg-card border border-black/5 dark:border-white/10 rounded-3xl p-4 shadow-lg space-y-4 sticky top-6">
+          <div className="flex items-center justify-between border-b border-border pb-3">
+            <div>
+              <h3 className="font-bold text-xs text-foreground flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-primary animate-ping" />
+                {t('turnTracker.title')}
+              </h3>
+              <p className="text-[10px] text-muted-foreground">{t('turnTracker.subtitle')}</p>
+            </div>
+            <span className="text-[10px] font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+              Turn {messages.filter(m => m.role === 'user').length} / 12
+            </span>
+          </div>
+
+          {(() => {
+            const uTurns = messages.filter(m => m.role === 'user').length;
+            const phases = [
+              { id: 1, range: [1, 3], title: t('turnTracker.p1_title'), desc: t('turnTracker.p1_desc') },
+              { id: 2, range: [4, 6], title: t('turnTracker.p2_title'), desc: t('turnTracker.p2_desc') },
+              { id: 3, range: [7, 9], title: t('turnTracker.p3_title'), desc: t('turnTracker.p3_desc') },
+              { id: 4, range: [10, 12], title: t('turnTracker.p4_title'), desc: t('turnTracker.p4_desc') },
+            ];
+
+            return (
+              <div className="space-y-2.5">
+                {phases.map(p => {
+                  const isActive = uTurns >= p.range[0] && uTurns <= p.range[1];
+                  const isDone = uTurns > p.range[1];
+                  return (
+                    <div
+                      key={p.id}
+                      className={`p-3 rounded-2xl border transition-all duration-300 ${
+                        isActive
+                          ? 'bg-primary/10 border-primary shadow-sm scale-[1.01]'
+                          : isDone
+                          ? 'bg-muted/30 border-black/5 dark:border-white/5 opacity-60'
+                          : 'bg-card border-black/5 dark:border-white/5 opacity-40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={`font-bold text-[11px] ${isActive ? 'text-primary' : 'text-foreground'}`}>
+                          {p.title}
+                        </span>
+                        {isActive && (
+                          <span className="text-[9px] font-black uppercase tracking-wider bg-primary text-white px-1.5 py-0.2 rounded">
+                            CURRENT
+                          </span>
+                        )}
+                        {isDone && (
+                          <span className="text-[9px] font-bold text-emerald-500">✓ Done</span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground leading-snug">{p.desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+
+          {/* Quick Trainer Tip */}
+          <div className="p-3 rounded-2xl bg-slate-900 border border-white/10 text-[11px] text-slate-300 space-y-1">
+            <span className="font-bold text-amber-400 block">{t('guidelines.proTipTitle')}</span>
+            <p className="italic leading-relaxed text-[10px]">
+              {t('guidelines.proTipDesc')}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Center Column: Main Interactive Chat Box */}
       <div
-        className="bg-card rounded-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)] border border-black/5 dark:border-white/10 flex flex-col overflow-hidden"
+        className="lg:col-span-6 order-1 lg:order-2 bg-card rounded-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)] border border-black/5 dark:border-white/10 flex flex-col overflow-hidden"
         style={{
           height:    isEnded ? 'auto' : 'calc(100dvh - 96px)',
           maxHeight: isEnded ? 'none' : '920px',
@@ -178,15 +258,22 @@ export const ChatView = memo(({
                 </button>
                 {passed ? (
                   <button
-                    onClick={() => onReset(true)}
-                    className="flex-1 flex items-center justify-center gap-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-3.5 rounded-xl font-bold text-sm shadow-xl shadow-emerald-500/20"
+                    onClick={() => {
+                      if (isLevel4) {
+                        router.push(`/${locale}/dashboard?graduated=1`);
+                      } else {
+                        onReset(true);
+                      }
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-3.5 rounded-xl font-bold text-sm shadow-xl shadow-emerald-500/20 active:scale-95 transition-all duration-300"
                   >
-                    <ArrowRight size={15} />Next Level Selection
+                    <ArrowRight size={15} />
+                    {isLevel4 ? t('claimGraduationBtn') : t('nextLevelBtn')}
                   </button>
                 ) : (
                   <button
                     onClick={() => onReset(true)}
-                    className="flex-1 flex items-center justify-center gap-2.5 bg-foreground text-background px-6 py-3.5 rounded-xl font-bold text-sm shadow-xl"
+                    className="flex-1 flex items-center justify-center gap-2.5 bg-foreground text-background px-6 py-3.5 rounded-xl font-bold text-sm shadow-xl active:scale-95"
                   >
                     <ArrowRight size={15} />Start New Attempt
                   </button>
@@ -257,6 +344,60 @@ export const ChatView = memo(({
             </div>
           </div>
         )}
+      </div>
+
+      {/* Right Column: Scenario Passing Guidelines Panel */}
+      <div className="lg:col-span-3 order-3 lg:order-3 space-y-4">
+        <div className="bg-card border border-black/5 dark:border-white/10 rounded-3xl p-4 shadow-lg space-y-4 sticky top-6">
+          <div className="flex items-center gap-2 border-b border-border pb-3">
+            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+              <Zap size={18} />
+            </div>
+            <div>
+              <h3 className="font-bold text-xs text-foreground">{t('guidelines.title')}</h3>
+              <p className="text-[10px] text-muted-foreground">{t('guidelines.subtitle')}</p>
+            </div>
+          </div>
+
+          {/* Checklist Guidelines */}
+          <div className="space-y-2 text-xs">
+            <div className="p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-1">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400 block text-[11px]">
+                {t('guidelines.g1_title')}
+              </span>
+              <p className="text-muted-foreground leading-relaxed text-[10px]">
+                {t('guidelines.g1_desc')}
+              </p>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-indigo-500/5 border border-indigo-500/20 space-y-1">
+              <span className="font-bold text-indigo-600 dark:text-indigo-400 block text-[11px]">
+                {t('guidelines.g2_title')}
+              </span>
+              <p className="text-muted-foreground leading-relaxed text-[10px]">
+                {t('guidelines.g2_desc')}
+              </p>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-1">
+              <span className="font-bold text-amber-500 dark:text-amber-400 block text-[11px]">
+                {t('guidelines.g3_title')}
+              </span>
+              <p className="text-muted-foreground leading-relaxed text-[10px]">
+                {t('guidelines.g3_desc')}
+              </p>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-primary/5 border border-primary/20 space-y-1">
+              <span className="font-bold text-primary block text-[11px]">
+                {t('guidelines.g4_title')}
+              </span>
+              <p className="text-muted-foreground leading-relaxed text-[10px]">
+                {t('guidelines.g4_desc')}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
