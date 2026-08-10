@@ -2,7 +2,13 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Standard rule: allow all read/write for authenticated users
+    // Presentation slides: publicly readable by all agents and visitors
+    match /slides/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Default fallback rule for other storage paths
     match /{allPaths=**} {
       allow read, write: if request.auth != null;
     }
