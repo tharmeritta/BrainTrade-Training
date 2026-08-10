@@ -4,7 +4,7 @@ import React, { memo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send, Bot, ChevronLeft, Trophy, RotateCcw, ArrowRight,
-  Zap, XCircle, Frown, Smile,
+  Zap, XCircle, Frown, Smile, BookOpen, X,
 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -22,6 +22,7 @@ export const ChatView = memo(({
   const t = useTranslations('aiEval');
   const router = useRouter();
   const pathname = usePathname();
+  const [showMobileTips, setShowMobileTips] = React.useState(false);
 
   const locale = pathname.split('/')[1] || 'th';
   const currentLevel = messages.length > 0 ? (messages[0] as any).level || 1 : 1;
@@ -145,15 +146,25 @@ export const ChatView = memo(({
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <ScoreTrend coaching={coaching} />
-            <StepProgress current={3} />
+            <button
+              onClick={() => setShowMobileTips(true)}
+              className="lg:hidden flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-1 rounded-lg"
+            >
+              <Zap size={12} />
+              <span>Tips</span>
+            </button>
+            <div className="hidden sm:block">
+              <StepProgress current={3} />
+            </div>
             <button
               onClick={() => onReset(isEnded)}
-              className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground hover:text-rose-50 transition-all py-2 px-3 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10"
+              className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-muted-foreground hover:text-rose-50 transition-all py-1.5 px-2 sm:py-2 sm:px-3 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10"
             >
               <ChevronLeft size={14} />
-              {isEnded ? t('backToSelection') : t('endTraining')}
+              <span className="hidden sm:inline">{isEnded ? t('backToSelection') : t('endTraining')}</span>
+              <span className="sm:hidden">{t('backToSelection') ? 'Exit' : 'Exit'}</span>
             </button>
           </div>
         </div>
@@ -399,6 +410,109 @@ export const ChatView = memo(({
           </div>
         </div>
       </div>
+
+      {/* Mobile Drawer Modal for Tips & Roadmap */}
+      <AnimatePresence>
+        {showMobileTips && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end flex-col lg:hidden"
+            onClick={() => setShowMobileTips(false)}
+          >
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 250 }}
+              className="bg-card border-t border-black/10 dark:border-white/10 rounded-t-3xl p-5 max-h-[80vh] overflow-y-auto space-y-4"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between border-b border-border pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500">
+                    <Zap size={16} />
+                  </div>
+                  <h3 className="font-bold text-sm text-foreground">{t('guidelines.title')}</h3>
+                </div>
+                <button
+                  onClick={() => setShowMobileTips(false)}
+                  className="p-1 text-muted-foreground hover:text-foreground rounded-lg bg-muted/50"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Guidelines List */}
+              <div className="space-y-2 text-xs">
+                <div className="p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400 block text-[11px]">
+                    {t('guidelines.g1_title')}
+                  </span>
+                  <p className="text-muted-foreground text-[10px]">{t('guidelines.g1_desc')}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-indigo-500/5 border border-indigo-500/20">
+                  <span className="font-bold text-indigo-600 dark:text-indigo-400 block text-[11px]">
+                    {t('guidelines.g2_title')}
+                  </span>
+                  <p className="text-muted-foreground text-[10px]">{t('guidelines.g2_desc')}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                  <span className="font-bold text-amber-500 dark:text-amber-400 block text-[11px]">
+                    {t('guidelines.g3_title')}
+                  </span>
+                  <p className="text-muted-foreground text-[10px]">{t('guidelines.g3_desc')}</p>
+                </div>
+                <div className="p-2.5 rounded-xl bg-primary/5 border border-primary/20">
+                  <span className="font-bold text-primary block text-[11px]">
+                    {t('guidelines.g4_title')}
+                  </span>
+                  <p className="text-muted-foreground text-[10px]">{t('guidelines.g4_desc')}</p>
+                </div>
+              </div>
+
+              {/* Turn Roadmap */}
+              <div className="pt-2 border-t border-border space-y-2">
+                <h4 className="font-bold text-xs text-foreground flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-primary" />
+                  {t('turnTracker.title')}
+                </h4>
+                {(() => {
+                  const uTurns = messages.filter(m => m.role === 'user').length;
+                  const phases = [
+                    { id: 1, range: [1, 3], title: t('turnTracker.p1_title'), desc: t('turnTracker.p1_desc') },
+                    { id: 2, range: [4, 6], title: t('turnTracker.p2_title'), desc: t('turnTracker.p2_desc') },
+                    { id: 3, range: [7, 9], title: t('turnTracker.p3_title'), desc: t('turnTracker.p3_desc') },
+                    { id: 4, range: [10, 12], title: t('turnTracker.p4_title'), desc: t('turnTracker.p4_desc') },
+                  ];
+                  return (
+                    <div className="space-y-1.5">
+                      {phases.map(p => {
+                        const isActive = uTurns >= p.range[0] && uTurns <= p.range[1];
+                        const isDone = uTurns > p.range[1];
+                        return (
+                          <div
+                            key={p.id}
+                            className={`p-2 rounded-lg border text-xs ${
+                              isActive ? 'bg-primary/10 border-primary font-bold' : isDone ? 'opacity-50' : 'opacity-40'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px]">{p.title}</span>
+                              {isActive && <span className="text-[8px] bg-primary text-white px-1 rounded">ACTIVE</span>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 });

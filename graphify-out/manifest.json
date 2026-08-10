@@ -750,8 +750,8 @@
     "semantic_hash": "a4f270a22d65a6ff0206aa20e8eeec7d"
   },
   "components/features/ai-eval/ChatView.tsx": {
-    "mtime": 1786353041.6398506,
-    "ast_hash": "e9df37ff9229189c0acb3455a3f94cd7",
+    "mtime": 1786353964.6958807,
+    "ast_hash": "86eaf0e90043c8ae6bc210260a2a277b",
     "semantic_hash": ""
   },
   "components/features/ai-eval/CoachingCard.tsx": {
@@ -1370,8 +1370,8 @@
     "semantic_hash": "d677e804b8a4f5c4c409179fed1bc8da"
   },
   "components/features/ai-eval/CallSimulatorHud.tsx": {
-    "mtime": 1786348705.221341,
-    "ast_hash": "0e57c81a0112dcf8b84f925b6b889c31",
+    "mtime": 1786353945.1397285,
+    "ast_hash": "a2d4d4b978255aa365f0c0e1ebfb4e6a",
     "semantic_hash": ""
   },
   "components/features/evaluator/CohortHeatmap.tsx": {

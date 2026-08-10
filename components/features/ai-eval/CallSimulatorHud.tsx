@@ -46,26 +46,26 @@ export default function CallSimulatorHud({
   const moodConfig = getMoodConfig(mood);
 
   return (
-    <div className="w-full rounded-xl border border-white/10 bg-slate-950/90 backdrop-blur-xl px-4 py-2.5 shadow-md flex items-center justify-between gap-4">
+    <div className="w-full rounded-xl border border-white/10 bg-slate-950/90 backdrop-blur-xl px-3 py-2 sm:px-4 sm:py-2.5 shadow-md flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sm:gap-4">
       {/* Customer Avatar & Status */}
-      <div className="flex items-center gap-3">
-        <div className={`flex h-8 w-8 items-center justify-center rounded-xl border bg-gradient-to-br ${moodConfig.aura} shrink-0`}>
-          <User size={16} className="text-slate-200" />
+      <div className="flex items-center gap-2.5 min-w-0">
+        <div className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl border bg-gradient-to-br ${moodConfig.aura} shrink-0`}>
+          <User size={14} className="text-slate-200" />
         </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h4 className="font-bold text-slate-100 text-xs">{customerName}</h4>
-            <span className={`px-2 py-0.2 rounded-full text-[9px] font-black uppercase border ${moodConfig.badge}`}>
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <h4 className="font-bold text-slate-100 text-xs truncate max-w-[130px] sm:max-w-none">{customerName}</h4>
+            <span className={`px-1.5 py-0.2 rounded-full text-[8px] sm:text-[9px] font-black uppercase border ${moodConfig.badge} truncate`}>
               {moodConfig.label}
             </span>
           </div>
-          <p className="text-[10px] text-slate-400 truncate max-w-[200px] sm:max-w-[300px]">{scenarioTitle}</p>
+          <p className="text-[10px] text-slate-400 truncate max-w-[160px] sm:max-w-[280px]">{scenarioTitle}</p>
         </div>
       </div>
 
       {/* Right Stats & Audio Waveform */}
-      <div className="flex items-center gap-4 shrink-0">
-        <div className="hidden md:flex items-center gap-1 h-5 px-2 rounded-lg bg-slate-900 border border-white/5">
+      <div className="flex items-center gap-2 sm:gap-4 shrink-0 ml-auto">
+        <div className="hidden lg:flex items-center gap-1 h-5 px-2 rounded-lg bg-slate-900 border border-white/5">
           <Volume2 size={12} className="text-emerald-400 mr-1 animate-pulse" />
           {[40, 75, 30, 90, 50, 65, 35].map((height, i) => (
             <motion.div
@@ -78,10 +78,10 @@ export default function CallSimulatorHud({
         </div>
 
         <div className="flex flex-col items-end gap-1">
-          <div className="flex items-center gap-2 text-[10px] font-mono font-bold text-slate-300 bg-slate-900 border border-white/10 px-2.5 py-1 rounded-lg">
-            <Activity size={12} className={turnCount >= 10 ? "text-rose-400 animate-pulse" : "text-blue-400"} />
+          <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold text-slate-300 bg-slate-900 border border-white/10 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg">
+            <Activity size={11} className={turnCount >= 10 ? "text-rose-400 animate-pulse" : "text-blue-400"} />
             <span>Turn {turnCount}/{maxTurns}</span>
-            <span className={`text-[9px] px-1.5 py-0.5 rounded font-black ${
+            <span className={`text-[8px] sm:text-[9px] px-1 py-0.2 rounded font-black ${
               turnCount >= 10 ? 'bg-rose-500/20 text-rose-400' : 'bg-slate-800 text-slate-400'
             }`}>
               {maxTurns - turnCount} left
@@ -89,7 +89,7 @@ export default function CallSimulatorHud({
           </div>
 
           {/* Visual Turn Progress Bar */}
-          <div className="w-28 sm:w-36 h-1.5 bg-slate-900 rounded-full overflow-hidden border border-white/5">
+          <div className="w-24 sm:w-36 h-1.5 bg-slate-900 rounded-full overflow-hidden border border-white/5">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${Math.min((turnCount / maxTurns) * 100, 100)}%` }}
