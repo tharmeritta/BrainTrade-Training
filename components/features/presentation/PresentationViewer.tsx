@@ -79,11 +79,11 @@ export default function PresentationViewer({
     <div
       ref={containerRef}
       className={`flex flex-col overflow-hidden text-foreground ${embedded ? 'bg-transparent' : 'bg-muted/20 dark:bg-black/20'}`}
-      style={{ height: embedded ? '100%' : 'calc(100dvh - 72px)' }}
+      style={{ height: embedded ? '100%' : 'calc(100dvh - 56px)' }}
     >
       {/* -- Main content area -- */}
       <main
-        className={`relative flex flex-1 flex-col sm:flex-row items-center gap-2 sm:gap-3 ${embedded ? 'p-0' : 'px-3 pb-3 pt-3 sm:px-4 sm:pb-4'}`}
+        className={`relative flex flex-1 flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 ${embedded ? 'p-0' : 'px-2 pt-14 pb-2 sm:px-4 sm:pt-4 sm:pb-4'}`}
       >
         {!minimal && (
           <PresentationHeader 
@@ -113,10 +113,10 @@ export default function PresentationViewer({
         )}
 
         {/* -- Center: slide + overlays -- */}
-        <div className="flex-1 min-w-0 min-h-0 flex items-center justify-center sm:self-stretch">
+        <div className="flex-1 w-full h-full min-w-0 min-h-0 flex items-center justify-center">
           <motion.div
             ref={frameRef}
-            className="relative aspect-video w-full max-w-full overflow-hidden rounded-xl border border-border/40 bg-black shadow-2xl sm:w-auto sm:h-full sm:rounded-3xl"
+            className="relative aspect-video w-full max-w-full max-h-full overflow-hidden rounded-xl border border-border/40 bg-black shadow-2xl sm:rounded-3xl"
             initial={{ scale: 0.96, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             transition={TRANSITION.base}
