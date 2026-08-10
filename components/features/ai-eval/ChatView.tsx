@@ -124,69 +124,57 @@ export const ChatView = memo(({
           minHeight: '500px',
         }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-black/5 dark:border-white/10 bg-white/90 dark:bg-card/90 backdrop-blur-md z-10 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm ${
+        {/* Header with integrated customer profile & turn counter */}
+        <div className="flex items-center justify-between px-4 py-2.5 sm:px-5 sm:py-3 border-b border-black/5 dark:border-white/10 bg-white/90 dark:bg-card/90 backdrop-blur-md z-10 shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
               passed ? 'bg-emerald-500/10 text-emerald-600'
               : failed ? 'bg-rose-500/10 text-rose-600'
               : 'bg-primary/10 text-primary'
             }`}>
-              {passed ? <Trophy size={18} /> : failed ? <XCircle size={18} /> : <Zap size={18} />}
+              {passed ? <Trophy size={16} /> : failed ? <XCircle size={16} /> : <Zap size={16} />}
             </div>
-            <div>
-              <span className="font-bold text-foreground text-sm">{t('systemTitle')}</span>
-              <p className={`text-[10px] font-bold flex items-center gap-1.5 uppercase tracking-widest ${
-                passed ? 'text-emerald-500' : failed ? 'text-rose-500' : 'text-primary'
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${
-                  passed ? 'bg-emerald-500' : failed ? 'bg-rose-500' : 'bg-primary animate-pulse'
-                }`} />
-                {passed ? t('congrats', { level: '' }) : failed ? 'Simulation Ended' : `LIVE: Level ${messages.length > 0 ? (messages[0] as any).level || 1 : 1} | Round ${messages.length > 0 ? (messages[0] as any).round || 1 : 1}`}
-              </p>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-foreground text-xs sm:text-sm truncate">
+                  {customerProfile?.name ? `${customerProfile.name}` : t('systemTitle')}
+                </span>
+                {customerProfile?.mood && (
+                  <span className="hidden xs:inline px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-primary/10 text-primary border border-primary/20 shrink-0">
+                    {customerProfile.mood}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
+                <span className="truncate max-w-[140px] sm:max-w-[220px]">
+                  {customerProfile?.occupation || 'Call Simulation'}
+                </span>
+                <span className="text-primary font-mono font-bold shrink-0">
+                  Turn {messages.filter(m => m.role === 'user').length}/12
+                </span>
+              </div>
             </div>
           </div>
+
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <ScoreTrend coaching={coaching} />
             <button
               onClick={() => setShowMobileTips(true)}
-              className="lg:hidden flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-1 rounded-lg"
+              className="lg:hidden flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-1 rounded-lg active:scale-95"
             >
               <Zap size={12} />
               <span>Tips</span>
             </button>
-            <div className="hidden sm:block">
-              <StepProgress current={3} />
-            </div>
             <button
               onClick={() => onReset(isEnded)}
               className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-muted-foreground hover:text-rose-50 transition-all py-1.5 px-2 sm:py-2 sm:px-3 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10"
             >
               <ChevronLeft size={14} />
               <span className="hidden sm:inline">{isEnded ? t('backToSelection') : t('endTraining')}</span>
-              <span className="sm:hidden">{t('backToSelection') ? 'Exit' : 'Exit'}</span>
+              <span className="sm:hidden">Exit</span>
             </button>
           </div>
         </div>
-
-        {/* Live Telesales Call Simulator HUD */}
-        {customerProfile && (
-          <div className="p-3 bg-slate-950/90 border-b border-white/10 animate-in fade-in slide-in-from-top-2 duration-500">
-            <CallSimulatorHud
-              customerName={customerProfile.name || 'ลูกค้า'}
-              scenarioTitle={customerProfile.occupation || 'Telesales Call Simulation'}
-              mood={customerProfile.mood || 'ปกติ'}
-              turnCount={messages.filter(m => m.role === 'user').length}
-              maxTurns={12}
-              talkRatio={(() => {
-                const uLen = messages.filter(m => m.role === 'user').reduce((acc, m) => acc + (m.content?.length || 0), 0);
-                const aLen = messages.filter(m => m.role === 'assistant').reduce((acc, m) => acc + (m.content?.length || 0), 0);
-                const total = uLen + aLen;
-                return total > 0 ? Math.round((uLen / total) * 100) : 45;
-              })()}
-            />
-          </div>
-        )}
 
         {/* Messages */}
         <div className={`overflow-y-auto px-5 py-5 bg-slate-50/50 dark:bg-black/10 selection:bg-primary/10 ${isEnded ? '' : 'flex-1'}`}>
