@@ -1310,8 +1310,8 @@
     "semantic_hash": "cf80365cf078b88f701a77721c22e9d0"
   },
   "components/features/presentation/PresentationViewer.tsx": {
-    "mtime": 1786176896.480887,
-    "ast_hash": "faee2ce245a02148a645f8fbc623082f",
+    "mtime": 1786353767.9344501,
+    "ast_hash": "63642ba9cf1e093ef8ae1f063b888105",
     "semantic_hash": ""
   },
   "components/features/trainer/TrainerPanel.tsx": {

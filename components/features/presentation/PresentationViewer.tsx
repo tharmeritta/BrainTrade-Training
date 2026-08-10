@@ -83,9 +83,7 @@ export default function PresentationViewer({
     >
       {/* -- Main content area -- */}
       <main
-        className={`relative flex flex-1 min-h-0 items-center gap-2 sm:gap-3 ${embedded ? 'p-0' : 'px-3 pb-3 pt-3 sm:px-4 sm:pb-4'}`}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+        className={`relative flex flex-1 flex-col sm:flex-row items-center gap-2 sm:gap-3 ${embedded ? 'p-0' : 'px-3 pb-3 pt-3 sm:px-4 sm:pb-4'}`}
       >
         {!minimal && (
           <PresentationHeader 
