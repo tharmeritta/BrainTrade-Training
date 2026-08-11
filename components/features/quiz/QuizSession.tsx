@@ -204,10 +204,10 @@ const QuestionCard = memo(({
   const choiceStyle = useCallback((i: number): CSSProperties => {
     if (!locked) return { background: C.surface, borderColor: C.border, color: C.text };
     if (i === correct) return {
-      background: 'rgba(219, 234, 254, 0.85)',
-      borderColor: '#3B82F6',
-      color: '#1E40AF',
-      boxShadow: '0 0 20px rgba(59, 130, 246, 0.3)',
+      background: 'rgba(220, 252, 231, 0.95)',
+      borderColor: '#16A34A',
+      color: '#15803D',
+      boxShadow: '0 0 20px rgba(22, 163, 74, 0.3)',
     };
     if (i === answeredIdx) return {
       background: C.dangerBg,
@@ -219,7 +219,7 @@ const QuestionCard = memo(({
 
   const labelStyle = useCallback((i: number): CSSProperties => {
     if (!locked)           return { color: C.hint };
-    if (i === correct)     return { color: '#1E40AF' };
+    if (i === correct)     return { color: '#15803D' };
     if (i === answeredIdx) return { color: C.dangerText };
     return { color: C.hint };
   }, [locked, correct, answeredIdx]);
@@ -410,7 +410,7 @@ const QuestionCard = memo(({
                     initial={{ scale: 0, rotate: -20 }}
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                    className="shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg"
+                    className="shrink-0 w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg"
                   >
                     <Check size={16} strokeWidth={3} />
                   </motion.div>
