@@ -2491,7 +2491,7 @@ export const MODULE_QUIZ_MAP: Record<string, QuizDefinition> = {
   payment: {
     id: 'payment-training',
     order: 4,
-    section: 'sales',
+    section: 'other',
     icon: 'CreditCard',
     color: '#60A5FA',
     prerequisiteId: 'process',

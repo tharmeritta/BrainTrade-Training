@@ -1055,9 +1055,9 @@
     "semantic_hash": "21433eb3b7497799400f2e94ed640c5c"
   },
   "lib/quiz-data.ts": {
-    "mtime": 1786083165.6723542,
-    "ast_hash": "4f71dce3a79764fe2f931f450fe6a7d5",
-    "semantic_hash": "4f71dce3a79764fe2f931f450fe6a7d5"
+    "mtime": 1786448822.3060093,
+    "ast_hash": "987cb70b21e31f8eaca1f329d3587734",
+    "semantic_hash": ""
   },
   "lib/registry.ts": {
     "mtime": 1786083165.6724246,
