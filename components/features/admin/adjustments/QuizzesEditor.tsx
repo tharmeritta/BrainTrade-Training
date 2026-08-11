@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { 
   Target, Plus, Save, Loader2, FileJson, ArrowUp, ArrowDown, 
   Layers, Trash2, Edit3, Database, ShieldCheck, Search, 
-  Download, FileUp, AlertCircle, HelpCircle, GraduationCap 
+  Download, FileUp, AlertCircle, HelpCircle, GraduationCap, GripVertical
 } from 'lucide-react';
 import { EditorHeader, FormField, EmptyState } from './SharedUI';
 import { updateDeep } from '@/lib/hooks/useConfigEditor';
@@ -22,6 +22,8 @@ interface QuizQuestion {
 
 interface QuizDefinition {
   title: { en: string; th: string };
+  description?: { en: string; th: string };
+  section?: string;
   passThreshold: number;
   questions: QuizQuestion[];
   required?: boolean;
@@ -148,13 +150,33 @@ export default function QuizzesEditor({ data, onSave, onChange, saving, readOnly
           return s === sec.key || (sec.key === 'other' && s !== 'foundation' && s !== 'sales');
         });
 
+        const handleDropOnSection = (e: React.DragEvent) => {
+          e.preventDefault();
+          const draggedId = e.dataTransfer.getData('text/plain');
+          if (!draggedId || !definitions[draggedId]) return;
+
+          // Update section property on the dragged quiz definition
+          const updatedDef = {
+            ...definitions[draggedId],
+            section: sec.key
+          };
+          setDefinitions(prev => ({ ...prev, [draggedId]: updatedDef }));
+          onChange();
+        };
+
         return (
-          <div key={sec.key} className="space-y-3 pt-2">
+          <div 
+            key={sec.key} 
+            className="space-y-3 pt-2"
+            onDragOver={e => e.preventDefault()}
+            onDrop={handleDropOnSection}
+          >
             <div className={`flex items-center justify-between px-4 py-2.5 rounded-xl border ${sec.color}`}>
               <div className="flex items-center gap-2 font-black text-xs uppercase tracking-wide">
                 <sec.icon size={16} />
                 <span>{sec.title}</span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-background border border-border">({secQuizzes.length})</span>
+                <span className="text-[10px] text-muted-foreground font-normal ml-2 opacity-75 hidden sm:inline">(Drag & drop quizzes here to reassign)</span>
               </div>
               <button 
                 onClick={() => {
@@ -178,20 +200,58 @@ export default function QuizzesEditor({ data, onSave, onChange, saving, readOnly
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 min-h-[60px]">
               {secQuizzes.map(id => {
                 const idx = order.indexOf(id);
                 const isRequired = definitions[id]?.required;
-                const section = (definitions[id] as any)?.section || 'sales';
                 return (
-                  <div key={id} className={`group relative p-4 rounded-xl border transition-all ${selectedQuiz === id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-secondary/10 hover:border-primary/30'}`}>
-                    <button onClick={() => { setSelectedQuiz(id); setSelectedQuestions([]); setSearchQuery(''); }} className="w-full text-left font-bold text-sm truncate pr-12">
-                      <div className="flex items-center gap-1.5">{definitions[id]?.title?.en || id} {isRequired && <ShieldCheck size={12} className="text-primary" />}</div>
-                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">{id}</span>
-                        <span className="text-[10px] font-semibold text-muted-foreground">{(definitions[id]?.questions || []).length} Qs</span>
-                      </div>
-                    </button>
+                  <div 
+                    key={id} 
+                    draggable
+                    onDragStart={e => {
+                      e.dataTransfer.setData('text/plain', id);
+                      e.dataTransfer.effectAllowed = 'move';
+                    }}
+                    onDragOver={e => e.preventDefault()}
+                    onDrop={e => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const draggedId = e.dataTransfer.getData('text/plain');
+                      if (!draggedId || draggedId === id) return;
+
+                      // Move draggedId to target section and reorder before target card 'id'
+                      const draggedSec = (definitions[draggedId] as any)?.section;
+                      const targetSec = sec.key;
+
+                      let newDefs = definitions;
+                      if (draggedSec !== targetSec) {
+                        newDefs = {
+                          ...definitions,
+                          [draggedId]: { ...definitions[draggedId], section: targetSec }
+                        };
+                        setDefinitions(newDefs);
+                      }
+
+                      // Reorder within order array
+                      const newOrder = order.filter(x => x !== draggedId);
+                      const targetIdx = newOrder.indexOf(id);
+                      newOrder.splice(targetIdx, 0, draggedId);
+                      setOrder(newOrder);
+                      onChange();
+                    }}
+                    className={`group relative p-4 rounded-xl border transition-all cursor-grab active:cursor-grabbing ${selectedQuiz === id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-secondary/10 hover:border-primary/30'}`}
+                  >
+                    <div className="flex items-start gap-2">
+                      <GripVertical size={14} className="text-muted-foreground/40 group-hover:text-muted-foreground shrink-0 mt-0.5 cursor-grab" />
+                      <button onClick={() => { setSelectedQuiz(id); setSelectedQuestions([]); setSearchQuery(''); }} className="w-full text-left font-bold text-sm truncate pr-12">
+                        <div className="flex items-center gap-1.5">{definitions[id]?.title?.en || id} {isRequired && <ShieldCheck size={12} className="text-primary" />}</div>
+                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">{id}</span>
+                          <span className="text-[10px] font-semibold text-muted-foreground">{(definitions[id]?.questions || []).length} Qs</span>
+                        </div>
+                      </button>
+                    </div>
+
                     <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                        <button onClick={() => { const n = [...order]; [n[idx], n[idx-1]] = [n[idx-1], n[idx]]; setOrder(n); onChange(); }} disabled={idx===0} className="p-1 disabled:opacity-20"><ArrowUp size={14} /></button>
                        <button onClick={() => { const n = [...order]; [n[idx], n[idx+1]] = [n[idx+1], n[idx]]; setOrder(n); onChange(); }} disabled={idx===order.length-1} className="p-1 disabled:opacity-20"><ArrowDown size={14} /></button>
@@ -202,7 +262,7 @@ export default function QuizzesEditor({ data, onSave, onChange, saving, readOnly
               })}
               {secQuizzes.length === 0 && (
                 <div className="col-span-full p-4 rounded-xl border border-dashed border-border text-center text-xs text-muted-foreground">
-                  No quizzes assigned to this section yet. Click "+ Add to {sec.key === 'foundation' ? 'Part 1' : sec.key === 'sales' ? 'Part 2' : 'Part 3'}" to create one.
+                  No quizzes assigned to this section yet. Drag & drop a quiz card here or click "+ Add to {sec.key === 'foundation' ? 'Part 1' : sec.key === 'sales' ? 'Part 2' : 'Part 3'}" to create one.
                 </div>
               )}
             </div>

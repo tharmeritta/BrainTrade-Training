@@ -1,7 +1,7 @@
 # Graph Report - BrainTrade-Training  (2026-08-11)
 
 ## Corpus Check
-- 286 files · ~155,515 words
+- 286 files · ~155,855 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,14 +10,14 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `4f764c9c`
+- Built from commit: `e1ca65a7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - AgentStats
 - ai-eval.ts
-- fsAdd
+- db.ts
 - agent-training/index.tsx
 - fsSet
 - agent.ts
@@ -98,8 +98,8 @@
   app/[locale]/learn/layout.tsx → lib/session/server.ts
 - `QuizLayout()` --calls--> `getServerUser`  [EXTRACTED]
   app/[locale]/quiz/layout.tsx → lib/session/server.ts
-- `GET()` --calls--> `requireAdminOrIT()`  [EXTRACTED]
-  app/api/admin/approvals/route.ts → lib/session/server.ts
+- `POST()` --calls--> `fsAdd()`  [EXTRACTED]
+  app/api/admin/seed/route.ts → lib/server/db.ts
 
 ## Import Cycles
 - None detected.
@@ -114,9 +114,9 @@ Nodes (76): EvaluatorPageContent(), BypassModal(), BypassModalProps, DetailedAiE
 Cohesion: 0.13
 Nodes (18): DIFF, DIFF_ORDER, EMPTY_FORM, inputCls, textareaCls, AI_SUGGESTIONS, ScenarioForm(), ScenarioCard() (+10 more)
 
-### Community 2 - "fsAdd"
-Cohesion: 0.22
-Nodes (11): GET(), POST(), POST(), POST(), fsAdd(), executeApprovedAction(), resolveApprovalRequest(), updateGlobalAgentCounts() (+3 more)
+### Community 2 - "db.ts"
+Cohesion: 0.13
+Nodes (15): FeedItem, GET(), EMPTY, GET(), POST(), GET(), POST(), GET() (+7 more)
 
 ### Community 3 - "agent-training/index.tsx"
 Cohesion: 0.20
@@ -143,8 +143,8 @@ Cohesion: 0.18
 Nodes (12): EntryAvatar(), EntryAvatarProps, MobileHeader(), MobileHeaderProps, MobileModuleChips(), ModuleChip, MODULES, AgentEntry() (+4 more)
 
 ### Community 9 - "index.ts"
-Cohesion: 0.09
-Nodes (24): GET(), GET(), FeedItem, GET(), EMPTY, GET(), MOCKUP_AGENTS, normalizeName() (+16 more)
+Cohesion: 0.11
+Nodes (19): GET(), MOCKUP_AGENTS, POST(), normalizeName(), POST(), OverviewPanelProps, fsGetAll(), SemanticAuditResult (+11 more)
 
 ### Community 10 - "staff/route.ts"
 Cohesion: 0.17
@@ -183,8 +183,8 @@ Cohesion: 0.07
 Nodes (56): ConfettiBurst(), getNextRankProgress(), getRankForXp(), playGamifiedSound(), RankInfo, RANKS, SoundWaveIndicator(), triggerHaptic() (+48 more)
 
 ### Community 19 - "firebase-admin.ts"
-Cohesion: 0.15
-Nodes (15): POST(), GET(), GET(), createCustomTokenSafe(), POST(), setSession(), fsGetWhere(), cleanEmail() (+7 more)
+Cohesion: 0.17
+Nodes (14): POST(), GET(), GET(), createCustomTokenSafe(), POST(), setSession(), fsGetWhere(), cleanEmail() (+6 more)
 
 ### Community 20 - "devDependencies"
 Cohesion: 0.09
@@ -207,8 +207,8 @@ Cohesion: 0.21
 Nodes (7): BulkImportModal(), BulkImportModalProps, AccessNotes(), AgentSection(), EditState, ROLE_COLORS, StaffSection()
 
 ### Community 26 - "server.ts"
-Cohesion: 0.18
-Nodes (17): DELETE(), PATCH(), GET(), POST(), GET(), POST(), DELETE(), PATCH() (+9 more)
+Cohesion: 0.16
+Nodes (20): GET(), POST(), DELETE(), DELETE(), PATCH(), DELETE(), PATCH(), fsDelete() (+12 more)
 
 ### Community 27 - "ai-eval/index.tsx"
 Cohesion: 0.09
@@ -251,8 +251,8 @@ Cohesion: 0.22
 Nodes (8): Language, PASS_THRESHOLD, QuestionData, QuestionType, QuizDefinition, QuizPhase, QuizUIOverrides, UI_STRINGS
 
 ### Community 72 - "getServerUser"
-Cohesion: 0.20
-Nodes (15): DELETE(), GET(), PATCH(), POST(), GET(), PATCH(), DELETE(), PATCH() (+7 more)
+Cohesion: 0.22
+Nodes (14): DELETE(), GET(), PATCH(), POST(), GET(), PATCH(), GET(), DELETE() (+6 more)
 
 ### Community 73 - "[locale]/layout.tsx"
 Cohesion: 0.09
@@ -286,7 +286,7 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.070) - this node is a cross-community bridge._
 - **Why does `devDependencies` connect `devDependencies` to `package.json`, `@types/node`, `@types/nodemailer`, `@types/react`, `typescript`?**
   _High betweenness centrality (0.040) - this node is a cross-community bridge._
-- **Why does `AgentStats` connect `AgentStats` to `agent-training/index.tsx`, `agent.ts`, `TrainingPeriod`, `agents.ts`, `index.ts`, `getAdminDb`, `CourseHub.tsx`, `HRAnalyticsTab.tsx`?**
+- **Why does `AgentStats` connect `AgentStats` to `db.ts`, `agent-training/index.tsx`, `agent.ts`, `TrainingPeriod`, `agents.ts`, `index.ts`, `getAdminDb`, `CourseHub.tsx`, `HRAnalyticsTab.tsx`?**
   _High betweenness centrality (0.038) - this node is a cross-community bridge._
 - **What connects `dmSans`, `dmMono`, `Tab` to the rest of the system?**
   _270 weakly-connected nodes found - possible documentation gaps or missing edges._
@@ -294,5 +294,5 @@ _Questions this graph is uniquely positioned to answer:_
   _Cohesion score 0.05030274802049371 - nodes in this community are weakly interconnected._
 - **Should `ai-eval.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.13230769230769232 - nodes in this community are weakly interconnected._
-- **Should `agent.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.06939890710382514 - nodes in this community are weakly interconnected._
+- **Should `db.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.13227513227513227 - nodes in this community are weakly interconnected._

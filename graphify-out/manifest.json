@@ -525,8 +525,8 @@
     "semantic_hash": "71df82a7e12c977e4a3b184735429aa8"
   },
   "components/features/admin/adjustments/QuizzesEditor.tsx": {
-    "mtime": 1786448683.4462066,
-    "ast_hash": "254567428b50245acb909dddca65066d",
+    "mtime": 1786449762.6035156,
+    "ast_hash": "0a87fa14612f2f03495a7f9d6cf359e1",
     "semantic_hash": ""
   },
   "components/features/admin/adjustments/SharedUI.tsx": {
