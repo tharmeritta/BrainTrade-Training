@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { 
   Target, Plus, Save, Loader2, FileJson, ArrowUp, ArrowDown, 
   Layers, Trash2, Edit3, Database, ShieldCheck, Search, 
-  Download, FileUp, AlertCircle, HelpCircle 
+  Download, FileUp, AlertCircle, HelpCircle, GraduationCap 
 } from 'lucide-react';
 import { EditorHeader, FormField, EmptyState } from './SharedUI';
 import { updateDeep } from '@/lib/hooks/useConfigEditor';
@@ -137,37 +137,78 @@ export default function QuizzesEditor({ data, onSave, onChange, saving, readOnly
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-        {order.map((id, idx) => {
-          const isRequired = definitions[id]?.required;
-          const section = (definitions[id] as any)?.section || 'sales';
-          return (
-            <div key={id} className={`group relative p-4 rounded-xl border transition-all ${selectedQuiz === id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-secondary/10 hover:border-primary/30'}`}>
-              <button onClick={() => { setSelectedQuiz(id); setSelectedQuestions([]); setSearchQuery(''); }} className="w-full text-left font-bold text-sm truncate pr-12">
-                <div className="flex items-center gap-1.5">{definitions[id]?.title?.en || id} {isRequired && <ShieldCheck size={12} className="text-primary" />}</div>
-                <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">{id}</span>
-                  <span className="text-[10px] font-semibold text-muted-foreground">{(definitions[id]?.questions || []).length} Qs</span>
-                  <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
-                    section === 'foundation' 
-                      ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30' 
-                      : section === 'sales'
-                      ? 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border border-blue-500/30'
-                      : 'bg-purple-500/15 text-purple-700 dark:text-purple-400 border border-purple-500/30'
-                  }`}>
-                    {section === 'foundation' ? 'Part 1: Foundation' : section === 'sales' ? 'Part 2: Sales & Core' : 'Part 3: Custom'}
-                  </span>
-                </div>
-              </button>
-              <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                 <button onClick={() => { const n = [...order]; [n[idx], n[idx-1]] = [n[idx-1], n[idx]]; setOrder(n); onChange(); }} disabled={idx===0} className="p-1 disabled:opacity-20"><ArrowUp size={14} /></button>
-                 <button onClick={() => { const n = [...order]; [n[idx], n[idx+1]] = [n[idx+1], n[idx]]; setOrder(n); onChange(); }} disabled={idx===order.length-1} className="p-1 disabled:opacity-20"><ArrowDown size={14} /></button>
-                 {!isRequired && <button onClick={() => { if (window.confirm('Delete?')) { const d = {...definitions}; delete d[id]; setDefinitions(d); if(selectedQuiz===id)setSelectedQuiz(null); onChange(); }}} className="p-1 text-red-500"><Trash2 size={14} /></button>}
+      {/* Categorized Quiz Sections */}
+      {[
+        { key: 'foundation', title: 'Part 1: Foundation Knowledge (พื้นฐาน)', color: 'text-amber-600 dark:text-amber-400 border-amber-500/20 bg-amber-500/5', icon: GraduationCap },
+        { key: 'sales', title: 'Part 2: Sales & Core Competencies (ทักษะหลักและการขาย)', color: 'text-blue-600 dark:text-blue-400 border-blue-500/20 bg-blue-500/5', icon: Target },
+        { key: 'other', title: 'Part 3: Additional & Custom Assessments (แบบทดสอบเพิ่มเติม)', color: 'text-purple-600 dark:text-purple-400 border-purple-500/20 bg-purple-500/5', icon: Layers },
+      ].map(sec => {
+        const secQuizzes = order.filter(id => {
+          const s = (definitions[id] as any)?.section || 'sales';
+          return s === sec.key || (sec.key === 'other' && s !== 'foundation' && s !== 'sales');
+        });
+
+        return (
+          <div key={sec.key} className="space-y-3 pt-2">
+            <div className={`flex items-center justify-between px-4 py-2.5 rounded-xl border ${sec.color}`}>
+              <div className="flex items-center gap-2 font-black text-xs uppercase tracking-wide">
+                <sec.icon size={16} />
+                <span>{sec.title}</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-background border border-border">({secQuizzes.length})</span>
               </div>
+              <button 
+                onClick={() => {
+                  const id = `quiz_${sec.key}_${Date.now()}`;
+                  setDefinitions({ 
+                    ...definitions, 
+                    [id]: { 
+                      title: { en: `New ${sec.key} Quiz`, th: `ควิซใหม่ ${sec.key}` }, 
+                      description: { en: 'Custom quiz description', th: 'คำอธิบายควิซ' },
+                      section: sec.key,
+                      passThreshold: 0.7, 
+                      questions: [] 
+                    } as QuizDefinition
+                  });
+                  setSelectedQuiz(id); 
+                  onChange();
+                }} 
+                className="bg-background hover:bg-secondary px-2.5 py-1 rounded-lg text-[11px] font-bold border border-border flex items-center gap-1 transition-all"
+              >
+                <Plus size={12} /> Add to {sec.key === 'foundation' ? 'Part 1' : sec.key === 'sales' ? 'Part 2' : 'Part 3'}
+              </button>
             </div>
-          );
-        })}
-      </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              {secQuizzes.map(id => {
+                const idx = order.indexOf(id);
+                const isRequired = definitions[id]?.required;
+                const section = (definitions[id] as any)?.section || 'sales';
+                return (
+                  <div key={id} className={`group relative p-4 rounded-xl border transition-all ${selectedQuiz === id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-secondary/10 hover:border-primary/30'}`}>
+                    <button onClick={() => { setSelectedQuiz(id); setSelectedQuestions([]); setSearchQuery(''); }} className="w-full text-left font-bold text-sm truncate pr-12">
+                      <div className="flex items-center gap-1.5">{definitions[id]?.title?.en || id} {isRequired && <ShieldCheck size={12} className="text-primary" />}</div>
+                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">{id}</span>
+                        <span className="text-[10px] font-semibold text-muted-foreground">{(definitions[id]?.questions || []).length} Qs</span>
+                      </div>
+                    </button>
+                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                       <button onClick={() => { const n = [...order]; [n[idx], n[idx-1]] = [n[idx-1], n[idx]]; setOrder(n); onChange(); }} disabled={idx===0} className="p-1 disabled:opacity-20"><ArrowUp size={14} /></button>
+                       <button onClick={() => { const n = [...order]; [n[idx], n[idx+1]] = [n[idx+1], n[idx]]; setOrder(n); onChange(); }} disabled={idx===order.length-1} className="p-1 disabled:opacity-20"><ArrowDown size={14} /></button>
+                       {!isRequired && <button onClick={() => { if (window.confirm('Delete?')) { const d = {...definitions}; delete d[id]; setDefinitions(d); if(selectedQuiz===id)setSelectedQuiz(null); onChange(); }}} className="p-1 text-red-500"><Trash2 size={14} /></button>}
+                    </div>
+                  </div>
+                );
+              })}
+              {secQuizzes.length === 0 && (
+                <div className="col-span-full p-4 rounded-xl border border-dashed border-border text-center text-xs text-muted-foreground">
+                  No quizzes assigned to this section yet. Click "+ Add to {sec.key === 'foundation' ? 'Part 1' : sec.key === 'sales' ? 'Part 2' : 'Part 3'}" to create one.
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
 
       {selectedQuiz && definitions[selectedQuiz] && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-6 rounded-2xl border border-primary/20 bg-card space-y-6 shadow-sm">
