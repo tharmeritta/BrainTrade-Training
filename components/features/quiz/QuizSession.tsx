@@ -338,7 +338,7 @@ const QuestionCard = memo(({
         </div>
 
         <p className="px-6 pb-6 text-lg sm:text-xl font-bold tracking-tight text-foreground leading-relaxed">
-          {question[lang]}
+          {typeof question[lang] === 'string' ? question[lang] : (question.en || question.th || '')}
         </p>
       </div>
 
@@ -548,7 +548,7 @@ const QuestionCard = memo(({
                 <span className="font-extrabold text-[10px] uppercase tracking-wider block mb-1 opacity-75">
                   {t('explanation')}
                 </span>
-                {question.explain[lang]}
+                {typeof question.explain[lang] === 'string' ? question.explain[lang] : (question.explain.en || question.explain.th || '')}
               </div>
             )}
           </motion.div>

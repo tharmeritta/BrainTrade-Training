@@ -417,7 +417,7 @@ const ResultView = memo(({
                         return (
                           <div key={i} className="px-6 py-4 transition-colors hover:bg-slate-50/50">
                             <p className="text-sm font-bold leading-relaxed mb-2" style={{ color: C.text }}>
-                              Q{i + 1}: {q[lang]}
+                              Q{i + 1}: {typeof q[lang] === 'string' ? q[lang] : (q.en || q.th || '')}
                             </p>
                             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold">
                               <span style={{ color: C.successText, fontWeight: 800 }}>✓ {correctTxt}</span>

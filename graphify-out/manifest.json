@@ -110,8 +110,8 @@
     "semantic_hash": "a9439b9a55ef4bd41111b801cc5702ce"
   },
   "app/[locale]/quiz/page.tsx": {
-    "mtime": 1786425003.5247917,
-    "ast_hash": "c5150787b2409b038e9f4b42bf6374a2",
+    "mtime": 1786425069.3965154,
+    "ast_hash": "9892da3d43a2e4a9bc93bdfe7686487e",
     "semantic_hash": ""
   },
   "app/api/admin/agents/[id]/route.ts": {
@@ -525,8 +525,8 @@
     "semantic_hash": "71df82a7e12c977e4a3b184735429aa8"
   },
   "components/features/admin/adjustments/QuizzesEditor.tsx": {
-    "mtime": 1786425007.3375742,
-    "ast_hash": "64b129ebb5f0da985d37471dd054d2f3",
+    "mtime": 1786425074.3150077,
+    "ast_hash": "167063ebdfdde1ac44d322baaf9ade43",
     "semantic_hash": ""
   },
   "components/features/admin/adjustments/SharedUI.tsx": {
@@ -840,13 +840,13 @@
     "semantic_hash": ""
   },
   "components/features/quiz/QuizResult.tsx": {
-    "mtime": 1786421460.934476,
-    "ast_hash": "330921d46878019fb0b577b8c724b5d8",
+    "mtime": 1786425596.63417,
+    "ast_hash": "0d220ac611c5a0f6497f0adfddb8d2f6",
     "semantic_hash": ""
   },
   "components/features/quiz/QuizSession.tsx": {
-    "mtime": 1786421774.878105,
-    "ast_hash": "32ce0afa8d8f318c3168def686452020",
+    "mtime": 1786425594.4723866,
+    "ast_hash": "a8efb301d6b8a6539489435e28727649",
     "semantic_hash": ""
   },
   "components/features/quiz/index.tsx": {
