@@ -37,7 +37,7 @@ Before executing multi-module requests, run system architecture analysis:
 ## Subagent Automation & Delegation Rules
 
 On session startup or when performing multi-step tasks:
-1. **Turn-1 Automatic Background Subagent Spawning**: On the very first turn of any session launch, the primary agent MUST automatically define and spawn background subagents (`qa-build-and-graph-maintainer`, `ux-ui-layout-component-specialist`, `responsive-formfactor-specialist`, `api-route-security-and-contract-tester`) in standby mode. This ensures continuous QA checks (`npm run check`), knowledge graph updates (`graphify update .`), and subsystem readiness without requiring manual user commands.
+1. **Turn-1 Automatic Background Subagent Spawning**: On the very first turn of any session launch, the primary agent MUST automatically define and spawn background subagents (`qa-build-and-graph-maintainer`, `ux-ui-layout-component-specialist`, `responsive-formfactor-specialist`, `api-route-security-and-contract-tester`, `git-commit-and-github-sync-specialist`) in standby mode. This ensures continuous QA checks (`npm run check`), knowledge graph updates (`graphify update .`), automated Git commits, and subsystem readiness without requiring manual user commands.
 2. **AI & Prompt Evaluation**: Delegate auditing and testing of Gemini/OpenAI pipelines (`lib/services/semantic-audit-service.ts`, `lib/services/telesales-coaching.ts`) to dedicated subagents.
 3. **Instruction-Based Subagent Mapping**:
    - **UI & Theme tasks**: Delegate to `ui-theme-and-a11y-checker` (enforce Light Theme default, semantic CSS variables & accessibility).

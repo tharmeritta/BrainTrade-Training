@@ -192,10 +192,33 @@ export default function PresentationViewer({
 
             {/* Slide Content */}
             {hasContent && (
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="popLayout" initial={false}>
                 <motion.div
-                  key={slideImageUrl} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
-                  className="relative h-full w-full"
+                  key={slideImageUrl}
+                  drag={isControlledByOthers || (isTrainer && activeTool) ? false : "x"}
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.2}
+                  onDragEnd={(_e, info) => {
+                    const threshold = 100;
+                    const velocityThreshold = 300;
+                    const offset = info.offset.x;
+                    const velocity = info.velocity.x;
+
+                    if (offset < -threshold || velocity < -velocityThreshold) {
+                      if (slide < total) goToSlide(slide + 1);
+                    } else if (offset > threshold || velocity > velocityThreshold) {
+                      if (slide > 1) goToSlide(slide - 1);
+                    }
+                  }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={TRANSITION.base}
+                  className={`relative h-full w-full select-none ${
+                    isControlledByOthers || (isTrainer && activeTool)
+                      ? ''
+                      : 'cursor-grab active:cursor-grabbing'
+                  }`}
                 >
                   <DrawingCanvas 
                     isTrainer={!!isTrainer} isActive={isLive || isControlledByOthers}
@@ -203,9 +226,10 @@ export default function PresentationViewer({
                     onDrawEnd={addDrawingPath} onLaserMove={updateLaser}
                   />
                   <NextImage
-                    src={slideImageUrl} fill className="object-contain" alt={`Slide ${slide}`} priority
+                    src={slideImageUrl} fill className="object-contain pointer-events-none select-none" alt={`Slide ${slide}`} priority
                     onLoad={() => { setIsLoaded(true); setLoadError(false); }}
                     onError={() => setLoadError(true)}
+                    draggable={false}
                   />
                 </motion.div>
               </AnimatePresence>

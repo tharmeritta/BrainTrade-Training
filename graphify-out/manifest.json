@@ -1220,8 +1220,8 @@
     "semantic_hash": ""
   },
   "GEMINI.md": {
-    "mtime": 1786418958.687872,
-    "ast_hash": "25c5c8405d007a357f10a252637672ac",
+    "mtime": 1786419930.3522372,
+    "ast_hash": "8e46ecc36e086541cd40b08491a18560",
     "semantic_hash": ""
   },
   "apphosting.prod.yaml": {
@@ -1310,8 +1310,8 @@
     "semantic_hash": "cf80365cf078b88f701a77721c22e9d0"
   },
   "components/features/presentation/PresentationViewer.tsx": {
-    "mtime": 1786418831.3407338,
-    "ast_hash": "b4a7e468acc21b442f3119ed59f8c4c3",
+    "mtime": 1786419709.178847,
+    "ast_hash": "19049810a06c3fb27e0375c9b5fd0ec7",
     "semantic_hash": ""
   },
   "components/features/trainer/TrainerPanel.tsx": {
