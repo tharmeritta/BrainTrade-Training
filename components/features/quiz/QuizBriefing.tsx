@@ -93,10 +93,10 @@ export const QuizBriefing = memo(({
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight leading-tight mb-3">
-            {quiz.title[lang]}
+            {typeof quiz.title === 'string' ? quiz.title : (quiz.title?.[lang] || quiz.title?.en || quiz.title?.th || '')}
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-lg">
-            {quiz.description[lang]}
+            {typeof quiz.description === 'string' ? quiz.description : (quiz.description?.[lang] || quiz.description?.en || quiz.description?.th || '')}
           </p>
         </motion.div>
 
@@ -242,7 +242,7 @@ export const QuizBriefing = memo(({
 
                   <div className="flex-1 min-w-0">
                     <p style={{ fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 2 }}>
-                      {ph.name[lang]}
+                      {typeof ph.name === 'string' ? ph.name : (ph.name?.[lang] || ph.name?.en || ph.name?.th || '')}
                     </p>
                     <p style={{ fontSize: 12, color: C.hint }}>
                       {tSelection('questions', { count })}
