@@ -1,49 +1,49 @@
 # Graph Report - BrainTrade-Training  (2026-08-11)
 
 ## Corpus Check
-- 286 files · ~154,853 words
+- 286 files · ~155,106 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1168 nodes · 2887 edges · 83 communities (66 shown, 17 thin omitted)
+- 1168 nodes · 2889 edges · 89 communities (70 shown, 19 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 17 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `be890bee`
+- Built from commit: `1d589509`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - EvaluatorDashboard.tsx
-- fsSet
-- index.ts
+- ai-eval.ts
+- fsAdd
 - agent-training/index.tsx
 - timeAgo
 - agent.ts
 - TrainingPeriod
 - agents.ts
-- animations.ts
-- db.ts
+- AgentEntry.tsx
+- index.ts
 - staff/route.ts
 - dependencies
-- AiScenarioImportModal.tsx
+- xlsx
 - AdminDashboard.tsx
 - AdjustmentsTab.tsx
-- xlsx
-- AgentSection.tsx
+- fsSet
+- animations.ts
 - compilerOptions
 - quiz-data.ts
-- session/route.ts
+- firebase-admin.ts
 - devDependencies
-- firebase-admin
-- @google-cloud/storage
-- getServerUser
+- ai-audit-service.ts
+- scripts
+- getAdminDb
 - sync-session-memory.js
 - StaffTab.tsx
 - server.ts
 - ai-eval/index.tsx
-- next-intl
+- SemanticAuditService
 - seed.mjs
 - Pitch Prompt
 - deploy.sh
@@ -55,24 +55,30 @@
 - Cloud Build Pipeline
 - Environment Variables
 - GEMINI.md
-- Dashboard.tsx
-- getAdminDb
+- BrandingPanel.tsx
+- LoginForm.tsx
 - seed-mock-agents.mjs
 - next-env.d.ts
 - git-auto-commit.sh
 - CourseHub.tsx
-- AiSkillGapReport.tsx
+- HRAnalyticsTab.tsx
 - tailwind.config.ts
 - lib/quiz/types.ts
-- fsGet
+- getServerUser
 - [locale]/layout.tsx
+- bulk-progress/route.ts
 - agy-start.sh
 - HistorySections.tsx
 - CongratulationsCard.tsx
-- OverviewPanel.tsx
 - AgentStats
+- scoreColor
 - OverviewTab.tsx
+- package.json
+- @types/node
 - ensure-dev-server.js
+- @types/nodemailer
+- @types/react
+- typescript
 - ShowcaseTab.tsx
 - ReturningUserBanner.tsx
 
@@ -97,29 +103,29 @@
   app/[locale]/learn/layout.tsx → lib/session/server.ts
 - `QuizLayout()` --calls--> `getServerUser`  [EXTRACTED]
   app/[locale]/quiz/layout.tsx → lib/session/server.ts
-- `GET()` --calls--> `getAgentStats()`  [EXTRACTED]
-  app/api/agent/progress/route.ts → lib/agents.ts
+- `GET()` --calls--> `requireAdminOrIT()`  [EXTRACTED]
+  app/api/admin/approvals/route.ts → lib/session/server.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (83 total, 17 thin omitted)
+## Communities (89 total, 19 thin omitted)
 
 ### Community 0 - "EvaluatorDashboard.tsx"
-Cohesion: 0.15
-Nodes (24): EvaluatorPageContent(), AgentPerformancePanel(), AgentPerformancePanelProps, EvalForm(), EvalFormProps, EvalHistoryCard(), EvalHistoryCardProps, EvaluatorDashboard() (+16 more)
+Cohesion: 0.16
+Nodes (23): EvaluatorPageContent(), AgentPerformancePanel(), EvalForm(), EvalFormProps, EvalHistoryCard(), EvalHistoryCardProps, EvaluatorDashboard(), EvaluatorDashboardProps (+15 more)
 
-### Community 1 - "fsSet"
-Cohesion: 0.05
-Nodes (46): POST(), GET(), defaults(), POST(), ProgressRecord, POST(), maxDuration, POST() (+38 more)
+### Community 1 - "ai-eval.ts"
+Cohesion: 0.13
+Nodes (18): DIFF, DIFF_ORDER, EMPTY_FORM, inputCls, textareaCls, AI_SUGGESTIONS, ScenarioForm(), ScenarioCard() (+10 more)
 
-### Community 2 - "index.ts"
-Cohesion: 0.14
-Nodes (18): POST(), POST(), POST(), fsAdd(), executeApprovedAction(), resolveApprovalRequest(), updateGlobalAgentCounts(), requireAdmin() (+10 more)
+### Community 2 - "fsAdd"
+Cohesion: 0.22
+Nodes (11): GET(), POST(), POST(), POST(), fsAdd(), executeApprovedAction(), resolveApprovalRequest(), updateGlobalAgentCounts() (+3 more)
 
 ### Community 3 - "agent-training/index.tsx"
-Cohesion: 0.17
-Nodes (20): HRAnalyticsTab(), BackgroundEffects, AgentTrainingHub(), CongratulationsCard, ModuleCard, ModuleCardProps, ModuleHeader, ProfileSidebar (+12 more)
+Cohesion: 0.20
+Nodes (17): BackgroundEffects, CongratulationsCard, Props, ModuleCard, ModuleCardProps, ModuleHeader, ModuleHeaderProps, ProfileSidebar (+9 more)
 
 ### Community 4 - "timeAgo"
 Cohesion: 0.20
@@ -134,28 +140,28 @@ Cohesion: 0.07
 Nodes (41): Tab, ActiveBatchHeader(), ActiveBatchHeaderProps, ArchiveSelectionGrid(), ArchiveSelectionGridProps, LivePulse(), DayRecordForm, DayRecordFormProps (+33 more)
 
 ### Community 7 - "agents.ts"
+Cohesion: 0.08
+Nodes (36): AMBER, buildIndividualSheet(), buildOverviewSheet(), GET(), GREEN, RED, scoreFill(), GET() (+28 more)
+
+### Community 8 - "AgentEntry.tsx"
+Cohesion: 0.18
+Nodes (12): EntryAvatar(), EntryAvatarProps, MobileHeader(), MobileHeaderProps, MobileModuleChips(), ModuleChip, MODULES, AgentEntry() (+4 more)
+
+### Community 9 - "index.ts"
 Cohesion: 0.09
-Nodes (31): AMBER, buildIndividualSheet(), buildOverviewSheet(), GET(), GREEN, RED, scoreFill(), GET() (+23 more)
-
-### Community 8 - "animations.ts"
-Cohesion: 0.12
-Nodes (20): DEV_MOCK_AGENTS, DevMockAgent, DevMockupSelector(), EntryAvatar(), EntryAvatarProps, LoginForm(), LoginFormProps, MobileHeader() (+12 more)
-
-### Community 9 - "db.ts"
-Cohesion: 0.16
-Nodes (12): FeedItem, GET(), EMPTY, GET(), MOCKUP_AGENTS, normalizeName(), POST(), OverviewPanelProps (+4 more)
+Nodes (24): GET(), GET(), FeedItem, GET(), EMPTY, GET(), MOCKUP_AGENTS, normalizeName() (+16 more)
 
 ### Community 10 - "staff/route.ts"
 Cohesion: 0.17
 Nodes (12): DELETE, PATCH, GET, POST, GET, PATCH, POST, apiError() (+4 more)
 
 ### Community 11 - "dependencies"
-Cohesion: 0.11
-Nodes (19): firebase, framer-motion, @google/generative-ai, lucide-react, next, nodemailer, openai, dependencies (+11 more)
+Cohesion: 0.08
+Nodes (25): firebase, firebase-admin, framer-motion, @google-cloud/storage, @google/generative-ai, lucide-react, next, next-intl (+17 more)
 
-### Community 12 - "AiScenarioImportModal.tsx"
-Cohesion: 0.36
-Nodes (6): AiScenarioImportModal(), AiScenarioImportModalProps, AI_SCENARIO_TEMPLATE, DEFAULT_CRITERIA, downloadScenarioTemplate(), parseScenarioFile()
+### Community 12 - "xlsx"
+Cohesion: 0.19
+Nodes (11): GET(), AiScenarioImportModal(), AiScenarioImportModalProps, SandboxManagerModal(), SandboxManagerModalProps, AI_SCENARIO_TEMPLATE, DEFAULT_CRITERIA, downloadScenarioTemplate() (+3 more)
 
 ### Community 13 - "AdminDashboard.tsx"
 Cohesion: 0.08
@@ -165,13 +171,13 @@ Nodes (28): POST(), AdminHeader(), AdminHeaderProps, AdminSidebar(), AdminSideba
 Cohesion: 0.08
 Nodes (29): AiEvalConfig, AiEvalEditor(), DiagnosticResult, DiagnosticRunner(), HealthManager(), LearnConfig, LearnEditor(), LearnModule (+21 more)
 
-### Community 15 - "xlsx"
-Cohesion: 0.33
-Nodes (5): GET(), SandboxManagerModal(), SandboxManagerModalProps, xlsx, xlsx
+### Community 15 - "fsSet"
+Cohesion: 0.25
+Nodes (8): POST(), POST(), fsSet(), getActiveTrainingPeriod(), AiEvalService, AiEvalScenario, AiEvalSession, AiEvalTurnResponse
 
-### Community 16 - "AgentSection.tsx"
-Cohesion: 0.50
-Nodes (3): BulkImportModal(), BulkImportModalProps, AgentSection()
+### Community 16 - "animations.ts"
+Cohesion: 0.20
+Nodes (8): ModuleItem, MODULES, BackgroundEffects, BrandedTitle(), BrandedTitleProps, EASE, FADE_IN, STAGGER_CONTAINER
 
 ### Community 17 - "compilerOptions"
 Cohesion: 0.07
@@ -181,29 +187,37 @@ Nodes (27): dom, dom.iterable, esnext, .next/dev/types/**/*.ts, next-env.d.ts, .
 Cohesion: 0.07
 Nodes (56): ConfettiBurst(), getNextRankProgress(), getRankForXp(), playGamifiedSound(), RankInfo, RANKS, SoundWaveIndicator(), triggerHaptic() (+48 more)
 
-### Community 19 - "session/route.ts"
-Cohesion: 0.27
-Nodes (8): POST(), GET(), createCustomTokenSafe(), POST(), setSession(), fsGetWhere(), getAdminAuth(), makeSessionToken()
+### Community 19 - "firebase-admin.ts"
+Cohesion: 0.15
+Nodes (15): POST(), GET(), GET(), createCustomTokenSafe(), POST(), setSession(), fsGetWhere(), cleanEmail() (+7 more)
 
 ### Community 20 - "devDependencies"
-Cohesion: 0.04
-Nodes (46): autoprefixer, babel-plugin-react-compiler, eslint, eslint-config-next, @eslint/eslintrc, @eslint/js, eslint-plugin-jsx-a11y, eslint-plugin-react-hooks (+38 more)
+Cohesion: 0.09
+Nodes (23): autoprefixer, babel-plugin-react-compiler, eslint, eslint-config-next, @eslint/eslintrc, @eslint/js, eslint-plugin-jsx-a11y, eslint-plugin-react-hooks (+15 more)
 
-### Community 23 - "getServerUser"
-Cohesion: 0.20
-Nodes (20): DELETE(), GET(), POST(), POST(), POST(), POST(), PATCH(), GET() (+12 more)
+### Community 21 - "ai-audit-service.ts"
+Cohesion: 0.27
+Nodes (7): POST(), maxDuration, POST(), POST(), getGeminiModel(), getOpenAI(), AiAuditService
+
+### Community 22 - "scripts"
+Cohesion: 0.17
+Nodes (12): scripts, agy:check, agy:commit, agy:start, build, check, dev, dev:auto (+4 more)
+
+### Community 23 - "getAdminDb"
+Cohesion: 0.18
+Nodes (24): DELETE(), GET(), POST(), POST(), POST(), POST(), PATCH(), GET() (+16 more)
 
 ### Community 24 - "sync-session-memory.js"
 Cohesion: 0.38
 Nodes (6): { execSync }, fs, getRecentBranch(), getRecentGitCommits(), path, syncSessionMemory()
 
 ### Community 25 - "StaffTab.tsx"
-Cohesion: 0.32
-Nodes (4): AccessNotes(), EditState, ROLE_COLORS, StaffSection()
+Cohesion: 0.21
+Nodes (7): BulkImportModal(), BulkImportModalProps, AccessNotes(), AgentSection(), EditState, ROLE_COLORS, StaffSection()
 
 ### Community 26 - "server.ts"
-Cohesion: 0.15
-Nodes (20): DELETE(), DELETE(), PATCH(), GET(), POST(), GET(), POST(), DELETE() (+12 more)
+Cohesion: 0.18
+Nodes (17): DELETE(), PATCH(), GET(), POST(), GET(), POST(), DELETE(), PATCH() (+9 more)
 
 ### Community 27 - "ai-eval/index.tsx"
 Cohesion: 0.09
@@ -217,13 +231,13 @@ Nodes (7): __dirname, envPath, initAdmin(), main(), seedAdmin(), seedQuizzes(), 
 Cohesion: 0.40
 Nodes (5): __dirname, envPath, FULL_CURRICULUM_SCENARIOS, initAdmin(), seed()
 
-### Community 50 - "Dashboard.tsx"
-Cohesion: 0.15
-Nodes (10): BrandingPanel(), MODULES, STATS_CONFIG, FloatingDecoration(), ModuleItem, MODULES, BrandedTitle(), BrandedTitleProps (+2 more)
+### Community 50 - "BrandingPanel.tsx"
+Cohesion: 0.28
+Nodes (6): BrandingPanel(), MODULES, STATS_CONFIG, FloatingDecoration(), StatCounter(), StatCounterProps
 
-### Community 51 - "getAdminDb"
-Cohesion: 0.18
-Nodes (14): GET(), GET(), PATCH(), GET(), GET(), fsGetAll(), fsIncrement(), cleanEmail() (+6 more)
+### Community 51 - "LoginForm.tsx"
+Cohesion: 0.38
+Nodes (5): DEV_MOCK_AGENTS, DevMockAgent, DevMockupSelector(), LoginForm(), LoginFormProps
 
 ### Community 52 - "seed-mock-agents.mjs"
 Cohesion: 0.40
@@ -233,21 +247,25 @@ Nodes (5): __dirname, envPath, initAdmin(), MOCKUP_AGENTS, seed()
 Cohesion: 0.06
 Nodes (46): maxDuration, POST(), GET(), GET(), LearnPageContent(), LearnIndexPage(), CourseCard, CourseCardProps (+38 more)
 
-### Community 56 - "AiSkillGapReport.tsx"
-Cohesion: 0.50
-Nodes (3): AiSkillGapReport(), CRITERIA_MAP, SkillGapItem
+### Community 56 - "HRAnalyticsTab.tsx"
+Cohesion: 0.25
+Nodes (7): HRAnalyticsTab(), AiSkillGapReport(), CRITERIA_MAP, SkillGapItem, AgentTrainingHub(), deriveSteps(), scoreColor()
 
 ### Community 71 - "lib/quiz/types.ts"
 Cohesion: 0.22
 Nodes (8): Language, PASS_THRESHOLD, QuestionData, QuestionType, QuizDefinition, QuizPhase, QuizUIOverrides, UI_STRINGS
 
-### Community 72 - "fsGet"
-Cohesion: 0.22
-Nodes (11): DELETE(), GET(), PATCH(), POST(), DELETE(), PATCH(), GET(), POST() (+3 more)
+### Community 72 - "getServerUser"
+Cohesion: 0.20
+Nodes (15): DELETE(), GET(), PATCH(), POST(), GET(), PATCH(), DELETE(), PATCH() (+7 more)
 
 ### Community 73 - "[locale]/layout.tsx"
 Cohesion: 0.09
 Nodes (22): POST(), dmMono, dmSans, AgentSkillRow, CohortHeatmap(), CohortHeatmapProps, DEFAULT_ROWS, CommandPalette() (+14 more)
+
+### Community 74 - "bulk-progress/route.ts"
+Cohesion: 0.67
+Nodes (3): defaults(), POST(), ProgressRecord
 
 ### Community 76 - "HistorySections.tsx"
 Cohesion: 0.26
@@ -257,17 +275,21 @@ Nodes (8): BypassModal(), BypassModalProps, DetailedAiEvalHistory(), DetailedHum
 Cohesion: 0.38
 Nodes (4): Confetti, CongratulationsCard, CongratulationsCardProps, TrophyHero
 
-### Community 78 - "OverviewPanel.tsx"
-Cohesion: 0.35
-Nodes (8): GraduationRoster(), STATUS_ORDER, StatusPipeline(), OverviewPanel(), CompletionConfig, CompletionInfo, CompletionStatus, getCompletionStatus()
+### Community 78 - "AgentStats"
+Cohesion: 0.24
+Nodes (13): ProfileHeaderProps, GraduationRoster(), GraduationRosterProps, STATUS_ORDER, LeaderboardTableProps, StatusPipeline(), AgentPerformancePanelProps, OverviewPanel() (+5 more)
 
-### Community 79 - "AgentStats"
-Cohesion: 0.16
-Nodes (21): ProfileHeader(), ProfileHeaderProps, HistoryTab(), CompletionGrid(), GraduationRosterProps, LeaderboardTable(), LeaderboardTableProps, getCompletionStatus() (+13 more)
+### Community 79 - "scoreColor"
+Cohesion: 0.21
+Nodes (15): ProfileHeader(), HistoryTab(), CompletionGrid(), LeaderboardTable(), getCompletionStatus(), ReportsTab(), statusPill(), BadgePill() (+7 more)
 
 ### Community 80 - "OverviewTab.tsx"
 Cohesion: 0.33
 Nodes (6): CompletionGridProps, KpiSection(), KpiSectionProps, TrainingWavesSection(), TrainingWavesSectionProps, AdminOverviewData
+
+### Community 81 - "package.json"
+Cohesion: 0.50
+Nodes (3): name, private, version
 
 ### Community 83 - "ensure-dev-server.js"
 Cohesion: 0.32
@@ -280,22 +302,22 @@ Nodes (4): getInitials(), normalizeName(), ReturningUserBanner(), ReturningUserB
 ## Knowledge Gaps
 - **270 isolated node(s):** `dmSans`, `dmMono`, `Tab`, `ICON_MAP`, `C` (+265 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **17 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **19 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `dependencies` connect `dependencies` to `xlsx`, `devDependencies`, `firebase-admin`, `@google-cloud/storage`, `CourseHub.tsx`, `next-intl`?**
+- **Why does `dependencies` connect `dependencies` to `package.json`, `xlsx`, `CourseHub.tsx`?**
   _High betweenness centrality (0.070) - this node is a cross-community bridge._
-- **Why does `AgentStats` connect `AgentStats` to `EvaluatorDashboard.tsx`, `index.ts`, `agent-training/index.tsx`, `agent.ts`, `TrainingPeriod`, `agents.ts`, `db.ts`, `HistorySections.tsx`, `OverviewPanel.tsx`, `OverviewTab.tsx`, `getServerUser`, `CourseHub.tsx`?**
+- **Why does `devDependencies` connect `devDependencies` to `package.json`, `@types/node`, `@types/nodemailer`, `@types/react`, `typescript`?**
+  _High betweenness centrality (0.040) - this node is a cross-community bridge._
+- **Why does `AgentStats` connect `AgentStats` to `EvaluatorDashboard.tsx`, `agent-training/index.tsx`, `agent.ts`, `TrainingPeriod`, `agents.ts`, `index.ts`, `HistorySections.tsx`, `scoreColor`, `OverviewTab.tsx`, `getAdminDb`, `CourseHub.tsx`, `HRAnalyticsTab.tsx`?**
   _High betweenness centrality (0.039) - this node is a cross-community bridge._
 - **What connects `dmSans`, `dmMono`, `Tab` to the rest of the system?**
   _270 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `EvaluatorDashboard.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.14962121212121213 - nodes in this community are weakly interconnected._
-- **Should `fsSet` be split into smaller, more focused modules?**
-  _Cohesion score 0.05225718194254446 - nodes in this community are weakly interconnected._
-- **Should `index.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.1422924901185771 - nodes in this community are weakly interconnected._
+- **Should `ai-eval.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.13230769230769232 - nodes in this community are weakly interconnected._
 - **Should `agent.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.06939890710382514 - nodes in this community are weakly interconnected._
+- **Should `TrainingPeriod` be split into smaller, more focused modules?**
+  _Cohesion score 0.07288135593220339 - nodes in this community are weakly interconnected._

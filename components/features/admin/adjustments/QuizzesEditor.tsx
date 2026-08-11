@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { EditorHeader, FormField, EmptyState } from './SharedUI';
 import { updateDeep } from '@/lib/hooks/useConfigEditor';
+import { MODULE_QUIZ_MAP } from '@/lib/quiz-data';
 
 interface QuizQuestion {
   en: string;
@@ -32,8 +33,9 @@ interface QuizzesConfig {
 }
 
 export default function QuizzesEditor({ data, onSave, onChange, saving, readOnly }: { data: QuizzesConfig | undefined, onSave: (d: QuizzesConfig) => void, onChange: () => void, saving: boolean, readOnly?: boolean }) {
-  const [definitions, setDefinitions] = useState<Record<string, QuizDefinition>>(data?.definitions || {});
-  const [order, setOrder] = useState<string[]>(data?.order || Object.keys(definitions));
+  const initialDefs = data?.definitions && Object.keys(data.definitions).length > 0 ? data.definitions : (MODULE_QUIZ_MAP as any);
+  const [definitions, setDefinitions] = useState<Record<string, QuizDefinition>>(initialDefs);
+  const [order, setOrder] = useState<string[]>(data?.order || Object.keys(initialDefs));
   const [selectedQuiz, setSelectedQuiz] = useState<string | null>(null);
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
