@@ -141,7 +141,7 @@ export default function QuizzesEditor({ data, onSave, onChange, saving, readOnly
       {[
         { key: 'foundation', title: 'Part 1: Foundation Knowledge (พื้นฐาน)', color: 'text-amber-600 dark:text-amber-400 border-amber-500/20 bg-amber-500/5', icon: GraduationCap },
         { key: 'sales', title: 'Part 2: Sales & Core Competencies (ทักษะหลักและการขาย)', color: 'text-blue-600 dark:text-blue-400 border-blue-500/20 bg-blue-500/5', icon: Target },
-        { key: 'other', title: 'Part 3: Additional & Custom Assessments (แบบทดสอบเพิ่มเติม)', color: 'text-purple-600 dark:text-purple-400 border-purple-500/20 bg-purple-500/5', icon: Layers },
+        { key: 'other', title: 'Part 3: Broker & Payment (Zenstock, 200 Invest & Payment)', color: 'text-purple-600 dark:text-purple-400 border-purple-500/20 bg-purple-500/5', icon: Layers },
       ].map(sec => {
         const secQuizzes = order.filter(id => {
           const s = (definitions[id] as any)?.section || 'sales';
@@ -162,7 +162,7 @@ export default function QuizzesEditor({ data, onSave, onChange, saving, readOnly
                   setDefinitions({ 
                     ...definitions, 
                     [id]: { 
-                      title: { en: `New ${sec.key} Quiz`, th: `ควิซใหม่ ${sec.key}` }, 
+                      title: { en: `New ${sec.key === 'other' ? 'Broker & Payment' : sec.key} Quiz`, th: `ควิซใหม่ ${sec.key === 'other' ? 'โบรกเกอร์และการชำระเงิน' : sec.key}` }, 
                       description: { en: 'Custom quiz description', th: 'คำอธิบายควิซ' },
                       section: sec.key,
                       passThreshold: 0.7, 
@@ -238,7 +238,7 @@ export default function QuizzesEditor({ data, onSave, onChange, saving, readOnly
               >
                 <option value="foundation">Part 1: Foundation (พื้นฐาน)</option>
                 <option value="sales">Part 2: Sales & Core Competencies (ทักษะหลักและการขาย)</option>
-                <option value="other">Part 3: Custom & Special (แบบทดสอบพิเศษ)</option>
+                <option value="other">Part 3: Broker & Payment (Zenstock, 200 Invest & Payment)</option>
               </select>
             </FormField>
             <FormField id="q-pass" label="Pass Threshold (%)">

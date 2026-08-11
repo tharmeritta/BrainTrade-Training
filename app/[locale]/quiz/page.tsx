@@ -327,21 +327,38 @@ export default function QuizIndexPage() {
                   ? (lang === 'th' ? 'Part 1: ความรู้พื้นฐาน (Foundation)' : 'Part 1: Ecosystem & Foundation')
                   : sectionKey === 'sales'
                   ? (lang === 'th' ? 'Part 2: ทักษะหลักและการขาย (Sales & Core)' : 'Part 2: Sales & Core Competencies')
-                  : (lang === 'th' ? 'Part 3: แบบทดสอบเพิ่มเติม (Custom & Special)' : 'Part 3: Additional & Custom Assessments')
+                  : (lang === 'th' ? 'Part 3: โบรกเกอร์และการชำระเงิน (Broker & Payment)' : 'Part 3: Broker & Payment')
               }
               description={
                 sectionKey === 'foundation'
                   ? (lang === 'th' ? 'แบบทดสอบพื้นฐานระบบนิเวศการเทรด โบรกเกอร์ และผลิตภัณฑ์' : 'Essential trading ecosystem, broker mechanics, and foundational knowledge evaluations')
                   : sectionKey === 'sales'
                   ? (lang === 'th' ? 'แบบทดสอบทักษะการขาย KYC และการนำเสนอแพ็กเกจราคา' : 'Core sales process, KYC customer segmentation, and package pricing assessments')
-                  : (lang === 'th' ? 'แบบประเมินการฝึกอบรมพิเศษและหัวข้อเฉพาะทาง' : 'Custom and specialized training evaluations')
+                  : (lang === 'th' ? 'แบบทดสอบเกี่ยวกับโบรกเกอร์ (Zenstock & 200 Invest) และการชำระเงิน' : 'Evaluations covering specialized brokers (Zenstock & 200 Invest) and payment packages')
               }
             />
             <div className="space-y-3">
               {quizzes.map((quiz, qIdx) => {
+                const isStaff = hasStaffSession();
                 const prereqId = quiz.prerequisiteId;
-                const locked = prereqId ? !passedModules.has(prereqId) : false;
-                const prereqTitle = prereqId ? quizConfigs[prereqId]?.title?.[lang] : undefined;
+                
+                // If section is Part 3 ('other' / 'broker_payment'), lock until ALL Part 2 ('sales') quizzes are passed
+                let locked = false;
+                let prereqTitle: string | undefined = undefined;
+
+                if (!isStaff) {
+                  if (sectionKey === 'other' || (quiz as any).section === 'other') {
+                    const salesQuizzes = allQuizzes.filter(q => (q.section || 'sales') === 'sales');
+                    const allSalesPassed = salesQuizzes.every(q => passedModules.has(q.mKey));
+                    if (!allSalesPassed) {
+                      locked = true;
+                      prereqTitle = lang === 'th' ? 'แบบทดสอบใน Part 2 (Sales & Core)' : 'all Part 2 Sales Quizzes';
+                    }
+                  } else if (prereqId) {
+                    locked = !passedModules.has(prereqId);
+                    prereqTitle = quizConfigs[prereqId]?.title?.[lang];
+                  }
+                }
                 
                 return (
                   <ModuleCard
