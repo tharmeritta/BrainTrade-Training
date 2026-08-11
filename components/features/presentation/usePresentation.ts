@@ -87,11 +87,27 @@ export function usePresentation(
   const [preloadedSlides, setPreloadedSlides] = useState<Set<number>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
 
+  // Blob URL caching state & refs
+  const [blobUrls, setBlobUrls] = useState<Record<number, string>>({});
+  const blobUrlsRef = useRef<Map<number, string>>(new Map());
+
   const { presentationId, totalSlides: total, cacheKey, slideUrls } = module.presentations[lang];
   const hasContent = !!((slideUrls && slideUrls.length > 0) || presentationId);
   const isModuleComplete = viewedSlides.size >= total;
 
   useEffect(() => { slideRef.current = slide; }, [slide]);
+
+  // Cleanup Blob URLs on unmount or language/module change
+  useEffect(() => {
+    const currentBlobUrls = blobUrlsRef.current;
+    return () => {
+      currentBlobUrls.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+      currentBlobUrls.clear();
+      setBlobUrls({});
+    };
+  }, [module.id, lang]);
 
   const markAsComplete = useCallback(async () => {
     if (!agentId || !module.id || isTrainer || isSaving) return;
@@ -219,6 +235,38 @@ export function usePresentation(
     }
   }, [isModuleComplete, total, isLoaded, agentId, agentName, module.id, isTrainer]);
 
+  const getRawSlideUrl = useCallback(
+    (n: number) => {
+      const storageUrl = slideUrls?.[n - 1];
+      if (storageUrl) return storageUrl;
+      const vParam = cacheKey ? `&v=${encodeURIComponent(cacheKey)}` : '';
+      return `/api/slide?id=${presentationId}&page=${n}${vParam}`;
+    },
+    [presentationId, cacheKey, slideUrls]
+  );
+
+  const fetchAndCacheSlide = useCallback(
+    async (n: number) => {
+      if (blobUrlsRef.current.has(n)) {
+        return blobUrlsRef.current.get(n)!;
+      }
+      const rawUrl = getRawSlideUrl(n);
+      try {
+        const res = await fetch(rawUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        blobUrlsRef.current.set(n, objectUrl);
+        setBlobUrls(prev => ({ ...prev, [n]: objectUrl }));
+        return objectUrl;
+      } catch (err) {
+        console.error(`Failed to fetch slide ${n} blob:`, err);
+        return rawUrl;
+      }
+    },
+    [getRawSlideUrl]
+  );
+
   // Preloading Logic
   useEffect(() => {
     if (!hasContent) return;
@@ -251,11 +299,12 @@ export function usePresentation(
       let loadedInBatch = 0;
       for (const n of priority) {
         if (!active) break;
+        const objectUrl = await fetchAndCacheSlide(n);
+        if (!active) break;
+
         await new Promise((resolve) => {
           const img = new Image();
-          const storageUrl = slideUrls?.[n - 1];
-          const vParam = cacheKey ? `&v=${encodeURIComponent(cacheKey)}` : '';
-          img.src = storageUrl ?? `/api/slide?id=${presentationId}&page=${n}${vParam}`;
+          img.src = objectUrl;
           img.onload = () => {
             if (!active) return resolve(null);
             setPreloadedSlides(prev => new Set(prev).add(n));
@@ -275,7 +324,7 @@ export function usePresentation(
 
     preloadWindow();
     return () => { active = false; };
-  }, [slide, presentationId, total, cacheKey, slideUrls, hasContent, preloadedSlides]);
+  }, [slide, presentationId, total, cacheKey, slideUrls, hasContent, preloadedSlides, fetchAndCacheSlide]);
 
   // Persistent current slide for this session
   useEffect(() => {
@@ -369,11 +418,9 @@ export function usePresentation(
   }, [goToSlide]);
 
   const slideImageUrl = useMemo(() => {
-    const storageUrl = slideUrls?.[slide - 1];
-    if (storageUrl) return storageUrl;
-    const vParam = cacheKey ? `&v=${encodeURIComponent(cacheKey)}` : '';
-    return `/api/slide?id=${presentationId}&page=${slide}${vParam}`;
-  }, [presentationId, slide, cacheKey, slideUrls]);
+    if (blobUrls[slide]) return blobUrls[slide];
+    return getRawSlideUrl(slide);
+  }, [slide, blobUrls, getRawSlideUrl]);
 
   const progress = useMemo(
     () => ((slide - 1) / Math.max(total - 1, 1)) * 100,
