@@ -8,7 +8,7 @@ import { AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Settings, CreditCard, ChevronRight, ClipboardList,
   Lock, GraduationCap, Briefcase, CheckCircle2, ArrowDown,
-  HelpCircle, Globe, ShieldCheck,
+  HelpCircle, Globe, ShieldCheck, Layers,
   type LucideIcon,
 } from 'lucide-react';
 import { MODULE_QUIZ_MAP, type Language, type QuizDefinition } from '@/lib/quiz-data';
@@ -318,9 +318,21 @@ export default function QuizIndexPage() {
             className={sIdx > 0 ? 'mt-8' : ''}
           >
             <SectionHeader
-              icon={sectionKey === 'foundation' ? GraduationCap : Briefcase}
-              label={t.has(`sections.${sectionKey}.label`) ? t(`sections.${sectionKey}.label`) : (sectionKey === 'other' ? (lang === 'th' ? 'แบบทดสอบเพิ่มเติม' : 'Additional Assessments') : sectionKey)}
-              description={t.has(`sections.${sectionKey}.desc`) ? t(`sections.${sectionKey}.desc`) : (sectionKey === 'other' ? (lang === 'th' ? 'แบบประเมินการฝึกอบรมพิเศษและหัวข้ออื่นๆ' : 'Custom and specialized training evaluations') : '')}
+              icon={sectionKey === 'foundation' ? GraduationCap : sectionKey === 'sales' ? Briefcase : Layers}
+              label={
+                sectionKey === 'foundation'
+                  ? (lang === 'th' ? 'Part 1: ความรู้พื้นฐาน (Foundation)' : 'Part 1: Ecosystem & Foundation')
+                  : sectionKey === 'sales'
+                  ? (lang === 'th' ? 'Part 2: ทักษะหลักและการขาย (Sales & Core)' : 'Part 2: Sales & Core Competencies')
+                  : (lang === 'th' ? 'Part 3: แบบทดสอบเพิ่มเติม (Custom & Special)' : 'Part 3: Additional & Custom Assessments')
+              }
+              description={
+                sectionKey === 'foundation'
+                  ? (lang === 'th' ? 'แบบทดสอบพื้นฐานระบบนิเวศการเทรด โบรกเกอร์ และผลิตภัณฑ์' : 'Essential trading ecosystem, broker mechanics, and foundational knowledge evaluations')
+                  : sectionKey === 'sales'
+                  ? (lang === 'th' ? 'แบบทดสอบทักษะการขาย KYC และการนำเสนอแพ็กเกจราคา' : 'Core sales process, KYC customer segmentation, and package pricing assessments')
+                  : (lang === 'th' ? 'แบบประเมินการฝึกอบรมพิเศษและหัวข้อเฉพาะทาง' : 'Custom and specialized training evaluations')
+              }
             />
             <div className="space-y-3">
               {quizzes.map((quiz, qIdx) => {
