@@ -60,9 +60,9 @@
     "semantic_hash": ""
   },
   "app/[locale]/learn/[module]/page.tsx": {
-    "mtime": 1786083698.9213216,
-    "ast_hash": "5efe51ea7764cb1c251f72d8088c7875",
-    "semantic_hash": "5efe51ea7764cb1c251f72d8088c7875"
+    "mtime": 1786418833.829286,
+    "ast_hash": "f783f6502b48283b81c00e2d8c4d125b",
+    "semantic_hash": ""
   },
   "app/[locale]/learn/layout.tsx": {
     "mtime": 1786174800.7557056,
@@ -815,14 +815,14 @@
     "semantic_hash": "0c0aad3133a9217cdaa0511e33c54e6c"
   },
   "components/features/presentation/PresentationControls.tsx": {
-    "mtime": 1786083165.6210256,
-    "ast_hash": "bd4eb3887591ad840367df3b651bdedb",
-    "semantic_hash": "bd4eb3887591ad840367df3b651bdedb"
+    "mtime": 1786418824.002745,
+    "ast_hash": "f19b4d9356bd31c5a2443adbc29f5355",
+    "semantic_hash": ""
   },
   "components/features/presentation/PresentationHeader.tsx": {
-    "mtime": 1786083165.6211066,
-    "ast_hash": "9ef96101e8270e31336f87feaacf438b",
-    "semantic_hash": "9ef96101e8270e31336f87feaacf438b"
+    "mtime": 1786418819.6045365,
+    "ast_hash": "17ca27bd8dd3b462e9bb382aead9eb3c",
+    "semantic_hash": ""
   },
   "components/features/presentation/TrainerToolbar.tsx": {
     "mtime": 1786083165.621173,
@@ -830,9 +830,9 @@
     "semantic_hash": "8581650df9876d20329b9a7667b57184"
   },
   "components/features/presentation/usePresentation.ts": {
-    "mtime": 1786083165.6212773,
-    "ast_hash": "7e8a36ed0fa29fcff7aba3ef0fc8c40d",
-    "semantic_hash": "7e8a36ed0fa29fcff7aba3ef0fc8c40d"
+    "mtime": 1786418738.1783185,
+    "ast_hash": "28e2bab2915382089140d1107758b058",
+    "semantic_hash": ""
   },
   "components/features/quiz/QuizBriefing.tsx": {
     "mtime": 1786083165.6214159,
@@ -1220,8 +1220,8 @@
     "semantic_hash": ""
   },
   "GEMINI.md": {
-    "mtime": 1786257183.0279057,
-    "ast_hash": "46c91996600c03c6ac0ee92309fad07d",
+    "mtime": 1786418958.687872,
+    "ast_hash": "25c5c8405d007a357f10a252637672ac",
     "semantic_hash": ""
   },
   "apphosting.prod.yaml": {
@@ -1310,8 +1310,8 @@
     "semantic_hash": "cf80365cf078b88f701a77721c22e9d0"
   },
   "components/features/presentation/PresentationViewer.tsx": {
-    "mtime": 1786356442.8700128,
-    "ast_hash": "2cafd6dde39027431edc3d754041a517",
+    "mtime": 1786418831.3407338,
+    "ast_hash": "b4a7e468acc21b442f3119ed59f8c4c3",
     "semantic_hash": ""
   },
   "components/features/trainer/TrainerPanel.tsx": {

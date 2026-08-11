@@ -362,7 +362,7 @@ export function usePresentation(
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     if (touchStartX.current === null) return;
     const delta = touchStartX.current - e.changedTouches[0].clientX;
-    if (Math.abs(delta) > 50) {
+    if (Math.abs(delta) > 35) {
       goToSlide(slideRef.current + (delta > 0 ? 1 : -1));
     }
     touchStartX.current = null;

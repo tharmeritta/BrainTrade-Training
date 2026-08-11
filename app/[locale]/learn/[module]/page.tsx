@@ -45,7 +45,7 @@ export default async function LearnPage({
 
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-dvh">
         <Loader2 className="animate-spin text-primary" size={32} />
       </div>
     }>

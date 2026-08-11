@@ -79,12 +79,12 @@ export default function PresentationViewer({
     <div
       ref={containerRef}
       className={`flex flex-col overflow-hidden text-foreground ${embedded ? 'bg-transparent' : 'bg-muted/20 dark:bg-black/20'}`}
-      style={{ height: embedded ? '100%' : 'calc(100dvh - 56px)' }}
+      style={{ height: embedded ? '100%' : 'calc(100dvh - 3.5rem)' }}
     >
       {/* -- Main content area -- */}
       <main
         className={`relative flex flex-1 flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 ${
-          embedded ? 'p-0' : 'px-2 pt-12 pb-2 landscape:pt-10 landscape:px-3 sm:px-4 sm:pt-4 sm:pb-4'
+          embedded ? 'p-0' : 'px-2 pt-14 pb-2 landscape:pt-12 landscape:pb-1 landscape:px-3 sm:px-4 sm:pt-4 sm:pb-4 min-h-0'
         }`}
       >
         {!minimal && (
@@ -99,7 +99,7 @@ export default function PresentationViewer({
         <button
           disabled={!hasContent || slide === 1 || isControlledByOthers}
           onClick={() => goToSlide(slide - 1)}
-          className="relative z-10 hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border/50 bg-background/90 shadow-lg backdrop-blur-md transition-all active:scale-95 disabled:opacity-20 hover:bg-black/5 dark:hover:bg-white/5 sm:flex"
+          className="relative z-10 hidden h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-2xl border border-border/50 bg-background/90 shadow-lg backdrop-blur-md transition-all active:scale-95 disabled:opacity-20 hover:bg-black/5 dark:hover:bg-white/5 sm:flex"
           aria-label="Previous slide"
         >
           <ChevronLeft size={22} />
@@ -115,10 +115,12 @@ export default function PresentationViewer({
         )}
 
         {/* -- Center: slide + overlays -- */}
-        <div className="flex-1 w-full h-full min-w-0 min-h-0 flex items-center justify-center max-h-[100dvh]">
+        <div className="flex-1 w-full h-full min-w-0 min-h-0 flex items-center justify-center max-h-[100dvh] max-w-7xl mx-auto">
           <motion.div
             ref={frameRef}
-            className="relative aspect-video w-full max-w-full max-h-full overflow-hidden rounded-xl border border-border/40 bg-black shadow-2xl landscape:h-full landscape:w-auto sm:rounded-3xl"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            className="relative aspect-video w-full max-w-full max-h-full overflow-hidden rounded-xl border border-border/40 bg-black shadow-2xl landscape:h-full landscape:w-auto sm:rounded-3xl touch-pan-y max-w-6xl max-h-[calc(100dvh-7.5rem)] landscape:max-h-[calc(100dvh-4.5rem)]"
             initial={{ scale: 0.96, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             transition={TRANSITION.base}
@@ -215,7 +217,7 @@ export default function PresentationViewer({
         <button
           disabled={!hasContent || slide === total || isControlledByOthers}
           onClick={() => goToSlide(slide + 1)}
-          className="relative z-10 hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-20 sm:flex"
+          className="relative z-10 hidden h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-20 sm:flex"
           aria-label="Next slide"
         >
           <ChevronRight size={22} />
@@ -228,6 +230,9 @@ export default function PresentationViewer({
         isTrainer={isTrainer} viewedCount={viewedSlides.size} isModuleComplete={isModuleComplete}
         toggleFullscreen={toggleFullscreen} isFullscreen={isFullscreen}
         markAsComplete={() => setShowCompletionModal(true)} isSaving={isSaving}
+        onPrevSlide={() => goToSlide(slide - 1)}
+        onNextSlide={() => goToSlide(slide + 1)}
+        isControlledByOthers={isControlledByOthers}
       />
 
       {/* -- Completion Confirmation Pop-up Modal Prompt -- */}
@@ -242,9 +247,9 @@ export default function PresentationViewer({
             <motion.div
               initial={{ scale: 0.9, y: 20, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.9, y: 20, opacity: 0 }}
+              exit={{ scale: 0.9, y: 0, opacity: 1 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="w-full max-w-md bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-center overflow-hidden relative"
+              className="w-full max-w-md bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-center overflow-hidden relative max-h-[90dvh] overflow-y-auto"
             >
               <div className="absolute -top-16 -right-16 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
 

@@ -715,7 +715,7 @@
       "_origin": "ast",
       "id": "app_api_admin_agents_override_route",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "override/route.ts"
     },
     {
@@ -727,7 +727,7 @@
       "_origin": "ast",
       "id": "app_api_admin_agents_override_route_get",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "get()"
     },
     {
@@ -739,7 +739,7 @@
       "_origin": "ast",
       "id": "app_api_admin_agents_override_route_post",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "post()"
     },
     {
@@ -751,7 +751,7 @@
       "_origin": "ast",
       "id": "app_api_admin_agents_override_route_delete",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "delete()"
     },
     {
@@ -829,8 +829,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_route_get",
-      "community": 9,
-      "community_name": "server.ts",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "get()"
     },
     {
@@ -995,7 +995,7 @@
       "_origin": "ast",
       "id": "app_api_admin_change_password_route",
       "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community_name": "session/route.ts",
       "norm_label": "change-password/route.ts"
     },
     {
@@ -1007,7 +1007,7 @@
       "_origin": "ast",
       "id": "app_api_admin_change_password_route_post",
       "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community_name": "session/route.ts",
       "norm_label": "post()"
     },
     {
@@ -1018,7 +1018,7 @@
       "_origin": "ast",
       "id": "app_api_admin_config_diagnostics_ai_audit_route",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "diagnostics/ai-audit/route.ts"
     },
     {
@@ -1030,7 +1030,7 @@
       "_origin": "ast",
       "id": "app_api_admin_config_diagnostics_ai_audit_route_post",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "post()"
     },
     {
@@ -1040,8 +1040,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_config_diagnostics_route",
-      "community": 15,
-      "community_name": "fsGetAll",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "diagnostics/route.ts"
     },
     {
@@ -1052,8 +1052,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_config_diagnostics_route_get",
-      "community": 15,
-      "community_name": "fsGetAll",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "get()"
     },
     {
@@ -1064,7 +1064,7 @@
       "_origin": "ast",
       "id": "app_api_admin_config_repair_route",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "repair/route.ts"
     },
     {
@@ -1076,7 +1076,7 @@
       "_origin": "ast",
       "id": "app_api_admin_config_repair_route_post",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "post()"
     },
     {
@@ -1086,8 +1086,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_config_route",
-      "community": 9,
-      "community_name": "server.ts",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "admin/config/route.ts"
     },
     {
@@ -1098,8 +1098,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_config_route_get",
-      "community": 9,
-      "community_name": "server.ts",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "get()"
     },
     {
@@ -1110,8 +1110,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_config_route_patch",
-      "community": 9,
-      "community_name": "server.ts",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "patch()"
     },
     {
@@ -1132,8 +1132,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_evaluations_route",
-      "community": 9,
-      "community_name": "server.ts",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "admin/evaluations/route.ts"
     },
     {
@@ -1144,8 +1144,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_evaluations_route_get",
-      "community": 9,
-      "community_name": "server.ts",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "get()"
     },
     {
@@ -1189,8 +1189,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_export_staff_route",
-      "community": 9,
-      "community_name": "server.ts",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "export-staff/route.ts"
     },
     {
@@ -1201,8 +1201,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_export_staff_route_get",
-      "community": 9,
-      "community_name": "server.ts",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "get()"
     },
     {
@@ -1432,7 +1432,7 @@
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route",
       "community": 15,
-      "community_name": "fsGetAll",
+      "community_name": "Agent",
       "norm_label": "seed-mock-agents/route.ts"
     },
     {
@@ -1443,7 +1443,7 @@
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route_mockup_agents",
       "community": 15,
-      "community_name": "fsGetAll",
+      "community_name": "Agent",
       "norm_label": "mockup_agents"
     },
     {
@@ -1455,7 +1455,7 @@
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route_post",
       "community": 15,
-      "community_name": "fsGetAll",
+      "community_name": "Agent",
       "norm_label": "post()"
     },
     {
@@ -1467,7 +1467,7 @@
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route_get",
       "community": 15,
-      "community_name": "fsGetAll",
+      "community_name": "Agent",
       "norm_label": "get()"
     },
     {
@@ -1478,7 +1478,7 @@
       "_origin": "ast",
       "id": "app_api_admin_seed_route",
       "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community_name": "session/route.ts",
       "norm_label": "seed/route.ts"
     },
     {
@@ -1490,7 +1490,7 @@
       "_origin": "ast",
       "id": "app_api_admin_seed_route_post",
       "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community_name": "session/route.ts",
       "norm_label": "post()"
     },
     {
@@ -1580,7 +1580,7 @@
       "_origin": "ast",
       "id": "app_api_admin_training_finalize_route",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "finalize/route.ts"
     },
     {
@@ -1592,7 +1592,7 @@
       "_origin": "ast",
       "id": "app_api_admin_training_finalize_route_post",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "post()"
     },
     {
@@ -1603,7 +1603,7 @@
       "_origin": "ast",
       "id": "app_api_agent_acknowledge_route",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "acknowledge/route.ts"
     },
     {
@@ -1615,7 +1615,7 @@
       "_origin": "ast",
       "id": "app_api_agent_acknowledge_route_post",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "post()"
     },
     {
@@ -1732,7 +1732,7 @@
       "_origin": "ast",
       "id": "app_api_agents_route",
       "community": 15,
-      "community_name": "fsGetAll",
+      "community_name": "Agent",
       "norm_label": "api/agents/route.ts"
     },
     {
@@ -1744,7 +1744,7 @@
       "_origin": "ast",
       "id": "app_api_agents_route_get",
       "community": 15,
-      "community_name": "fsGetAll",
+      "community_name": "Agent",
       "norm_label": "get()"
     },
     {
@@ -1812,7 +1812,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_ai_eval_config_route",
-      "community": 23,
+      "community": 51,
       "community_name": "getAdminDb",
       "norm_label": "ai-eval/config/route.ts"
     },
@@ -1824,7 +1824,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_ai_eval_config_route_get",
-      "community": 23,
+      "community": 51,
       "community_name": "getAdminDb",
       "norm_label": "get()"
     },
@@ -1882,7 +1882,7 @@
       "_origin": "ast",
       "id": "app_api_auth_agent_login_route",
       "community": 15,
-      "community_name": "fsGetAll",
+      "community_name": "Agent",
       "norm_label": "agent-login/route.ts"
     },
     {
@@ -1894,7 +1894,7 @@
       "_origin": "ast",
       "id": "app_api_auth_agent_login_route_normalizename",
       "community": 15,
-      "community_name": "fsGetAll",
+      "community_name": "Agent",
       "norm_label": "normalizename()"
     },
     {
@@ -1906,7 +1906,7 @@
       "_origin": "ast",
       "id": "app_api_auth_agent_login_route_post",
       "community": 15,
-      "community_name": "fsGetAll",
+      "community_name": "Agent",
       "norm_label": "post()"
     },
     {
@@ -1917,7 +1917,7 @@
       "_origin": "ast",
       "id": "app_api_auth_firebase_token_route",
       "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community_name": "session/route.ts",
       "norm_label": "firebase-token/route.ts"
     },
     {
@@ -1929,7 +1929,7 @@
       "_origin": "ast",
       "id": "app_api_auth_firebase_token_route_get",
       "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community_name": "session/route.ts",
       "norm_label": "get()"
     },
     {
@@ -1940,7 +1940,7 @@
       "_origin": "ast",
       "id": "app_api_auth_session_route",
       "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community_name": "session/route.ts",
       "norm_label": "session/route.ts"
     },
     {
@@ -1952,7 +1952,7 @@
       "_origin": "ast",
       "id": "app_api_auth_session_route_setsession",
       "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community_name": "session/route.ts",
       "norm_label": "setsession()"
     },
     {
@@ -1964,7 +1964,7 @@
       "_origin": "ast",
       "id": "app_api_auth_session_route_createcustomtokensafe",
       "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community_name": "session/route.ts",
       "norm_label": "createcustomtokensafe()"
     },
     {
@@ -1976,7 +1976,7 @@
       "_origin": "ast",
       "id": "app_api_auth_session_route_post",
       "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community_name": "session/route.ts",
       "norm_label": "post()"
     },
     {
@@ -1988,7 +1988,7 @@
       "_origin": "ast",
       "id": "app_api_auth_session_route_delete",
       "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community_name": "session/route.ts",
       "norm_label": "delete()"
     },
     {
@@ -2114,7 +2114,7 @@
       "_origin": "ast",
       "id": "app_api_evaluator_evaluations_id_route",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "evaluations/[id]/route.ts"
     },
     {
@@ -2126,7 +2126,7 @@
       "_origin": "ast",
       "id": "app_api_evaluator_evaluations_id_route_patch",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "patch()"
     },
     {
@@ -2137,7 +2137,7 @@
       "_origin": "ast",
       "id": "app_api_evaluator_evaluations_route",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "evaluator/evaluations/route.ts"
     },
     {
@@ -2149,7 +2149,7 @@
       "_origin": "ast",
       "id": "app_api_evaluator_evaluations_route_get",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "get()"
     },
     {
@@ -2161,7 +2161,7 @@
       "_origin": "ast",
       "id": "app_api_evaluator_evaluations_route_post",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "post()"
     },
     {
@@ -6423,7 +6423,7 @@
       "label": "PresentationControls()",
       "file_type": "code",
       "source_file": "components/features/presentation/PresentationControls.tsx",
-      "source_location": "L22",
+      "source_location": "L25",
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_presentation_presentationcontrols_presentationcontrols",
@@ -9719,8 +9719,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fsgetall",
-      "community": 15,
-      "community_name": "fsGetAll",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "fsgetall()"
     },
     {
@@ -9744,7 +9744,7 @@
       "_origin": "ast",
       "id": "lib_server_db_fsgetwhere",
       "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community_name": "session/route.ts",
       "norm_label": "fsgetwhere()"
     },
     {
@@ -9779,8 +9779,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fsincrement",
-      "community": 23,
-      "community_name": "getAdminDb",
+      "community": 12,
+      "community_name": "db.ts",
       "norm_label": "fsincrement()"
     },
     {
@@ -9803,8 +9803,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fsupdatemany",
-      "community": 23,
-      "community_name": "getAdminDb",
+      "community": 10,
+      "community_name": "staff/route.ts",
       "norm_label": "fsupdatemany()"
     },
     {
@@ -9838,8 +9838,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_server_firebase_admin",
-      "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "firebase-admin.ts"
     },
     {
@@ -9850,8 +9850,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_firebase_admin_cleanvalue",
-      "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "cleanvalue()"
     },
     {
@@ -9862,8 +9862,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_firebase_admin_cleanid",
-      "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "cleanid()"
     },
     {
@@ -9874,8 +9874,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_firebase_admin_cleanemail",
-      "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "cleanemail()"
     },
     {
@@ -9886,8 +9886,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_firebase_admin_getadminapp",
-      "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "getadminapp()"
     },
     {
@@ -9909,8 +9909,8 @@
       "source_location": "L190",
       "_origin": "ast",
       "id": "lib_server_firebase_admin_globalwithfirestore",
-      "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "globalwithfirestore"
     },
     {
@@ -9921,7 +9921,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_firebase_admin_getadmindb",
-      "community": 23,
+      "community": 51,
       "community_name": "getAdminDb",
       "norm_label": "getadmindb()"
     },
@@ -9934,7 +9934,7 @@
       "_origin": "ast",
       "id": "lib_server_firebase_admin_getadminauth",
       "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community_name": "session/route.ts",
       "norm_label": "getadminauth()"
     },
     {
@@ -10276,7 +10276,7 @@
       "_origin": "ast",
       "id": "lib_services_audit_service",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "audit-service.ts"
     },
     {
@@ -10289,7 +10289,7 @@
       "_origin": "ast",
       "id": "lib_services_audit_service_auditaction",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "auditaction"
     },
     {
@@ -10302,7 +10302,7 @@
       "_origin": "ast",
       "id": "lib_services_audit_service_auditlog",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "auditlog"
     },
     {
@@ -10315,7 +10315,7 @@
       "_origin": "ast",
       "id": "lib_services_audit_service_auditservice",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "auditservice"
     },
     {
@@ -10327,7 +10327,7 @@
       "_origin": "ast",
       "id": "lib_services_audit_service_auditservice_log",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": ".log()"
     },
     {
@@ -10338,7 +10338,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_audit_service_auditservice_getrecentlogs",
-      "community": 23,
+      "community": 51,
       "community_name": "getAdminDb",
       "norm_label": ".getrecentlogs()"
     },
@@ -10350,7 +10350,7 @@
       "_origin": "ast",
       "id": "lib_services_batch_service",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "batch-service.ts"
     },
     {
@@ -10361,7 +10361,7 @@
       "_origin": "ast",
       "id": "lib_services_batch_service_batchservice",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "batchservice"
     },
     {
@@ -10563,8 +10563,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_services_stats_service",
-      "community": 23,
-      "community_name": "getAdminDb",
+      "community": 12,
+      "community_name": "db.ts",
       "norm_label": "stats-service.ts"
     },
     {
@@ -10576,8 +10576,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "lib_services_stats_service_globalstats",
-      "community": 23,
-      "community_name": "getAdminDb",
+      "community": 12,
+      "community_name": "db.ts",
       "norm_label": "globalstats"
     },
     {
@@ -10588,8 +10588,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_stats_service_updateglobalquizstats",
-      "community": 23,
-      "community_name": "getAdminDb",
+      "community": 12,
+      "community_name": "db.ts",
       "norm_label": "updateglobalquizstats()"
     },
     {
@@ -10600,8 +10600,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_stats_service_updateglobalaievalstats",
-      "community": 23,
-      "community_name": "getAdminDb",
+      "community": 12,
+      "community_name": "db.ts",
       "norm_label": "updateglobalaievalstats()"
     },
     {
@@ -10637,7 +10637,7 @@
       "_origin": "ast",
       "id": "lib_services_stats_service_updateagentoverallscore",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "updateagentoverallscore()"
     },
     {
@@ -10649,7 +10649,7 @@
       "_origin": "ast",
       "id": "lib_services_stats_service_recalculateglobalstats",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "recalculateglobalstats()"
     },
     {
@@ -10902,7 +10902,7 @@
       "_origin": "ast",
       "id": "lib_session_server_getserveruser",
       "community": 23,
-      "community_name": "getAdminDb",
+      "community_name": "getServerUser",
       "norm_label": "getserveruser"
     },
     {
@@ -10926,7 +10926,7 @@
       "_origin": "ast",
       "id": "lib_session_server_makesessiontoken",
       "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community_name": "session/route.ts",
       "norm_label": "makesessiontoken()"
     },
     {
@@ -10985,8 +10985,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_server_requireadminormanager",
-      "community": 9,
-      "community_name": "server.ts",
+      "community": 51,
+      "community_name": "getAdminDb",
       "norm_label": "requireadminormanager()"
     },
     {
@@ -13050,7 +13050,7 @@
       "_origin": "ast",
       "id": "types_index_staffaccount",
       "community": 19,
-      "community_name": "firebase-admin.ts",
+      "community_name": "session/route.ts",
       "norm_label": "staffaccount"
     },
     {
@@ -13076,7 +13076,7 @@
       "_origin": "ast",
       "id": "types_index_agent",
       "community": 15,
-      "community_name": "fsGetAll",
+      "community_name": "Agent",
       "norm_label": "agent"
     },
     {
@@ -34378,7 +34378,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresentationControls.tsx",
-      "source_location": "L22",
+      "source_location": "L25",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presentationcontrols",
@@ -46979,5 +46979,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "c93ffff8b62247a16ce87f6f5d06923b8f2aab47"
+  "built_at_commit": "35c2d3de4ca388e3ac723306a0ff53d7df45e7cc"
 }

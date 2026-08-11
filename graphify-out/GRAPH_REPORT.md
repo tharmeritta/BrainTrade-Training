@@ -1,16 +1,16 @@
-# Graph Report - BrainTrade-Training  (2026-08-10)
+# Graph Report - BrainTrade-Training  (2026-08-11)
 
 ## Corpus Check
-- 285 files · ~151,198 words
+- 285 files · ~151,715 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1159 nodes · 2854 edges · 84 communities (69 shown, 15 thin omitted)
+- 1159 nodes · 2854 edges · 85 communities (70 shown, 15 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 17 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c93ffff8`
+- Built from commit: `35c2d3de`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -30,15 +30,15 @@
 - db.ts
 - AdminDashboard.tsx
 - AdjustmentsTab.tsx
-- fsGetAll
+- Agent
 - quiz-data.ts
 - compilerOptions
 - quiz/index.tsx
-- firebase-admin.ts
+- session/route.ts
 - devDependencies
 - QuizResult.tsx
 - Dashboard.tsx
-- getAdminDb
+- getServerUser
 - sync-session-memory.js
 - StaffTab.tsx
 - fsUpdate
@@ -56,6 +56,7 @@
 - Environment Variables
 - GEMINI.md
 - BrandingPanel.tsx
+- getAdminDb
 - seed-mock-agents.mjs
 - next-env.d.ts
 - git-auto-commit.sh
@@ -104,7 +105,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (84 total, 15 thin omitted)
+## Communities (85 total, 15 thin omitted)
 
 ### Community 0 - "EvaluatorDashboard.tsx"
 Cohesion: 0.17
@@ -143,20 +144,20 @@ Cohesion: 0.17
 Nodes (12): DEV_MOCK_AGENTS, DevMockAgent, DevMockupSelector(), EntryAvatar(), EntryAvatarProps, LoginForm(), LoginFormProps, AgentEntry() (+4 more)
 
 ### Community 9 - "server.ts"
-Cohesion: 0.13
-Nodes (22): GET(), GET(), PATCH(), GET(), GET(), FeedItem, GET(), EMPTY (+14 more)
+Cohesion: 0.18
+Nodes (16): FeedItem, GET(), EMPTY, GET(), GET(), POST(), GET(), fsCount() (+8 more)
 
 ### Community 10 - "staff/route.ts"
-Cohesion: 0.21
-Nodes (10): DELETE, PATCH, GET, POST, GET, PATCH, POST, apiError() (+2 more)
+Cohesion: 0.19
+Nodes (11): DELETE, PATCH, GET, POST, GET, PATCH, POST, apiError() (+3 more)
 
 ### Community 11 - "AgentEvaluation"
 Cohesion: 0.09
 Nodes (19): POST(), POST(), maxDuration, POST(), POST(), COLOR_PRESETS, CertificateModal(), CertificateModalProps (+11 more)
 
 ### Community 12 - "db.ts"
-Cohesion: 0.23
-Nodes (10): POST(), defaults(), POST(), ProgressRecord, POST(), fsAdd(), fsGet(), getActiveTrainingPeriod() (+2 more)
+Cohesion: 0.20
+Nodes (14): POST(), defaults(), POST(), ProgressRecord, POST(), fsAdd(), fsGet(), fsIncrement() (+6 more)
 
 ### Community 13 - "AdminDashboard.tsx"
 Cohesion: 0.10
@@ -166,9 +167,9 @@ Nodes (23): AdminPageContent(), AdminHeader(), AdminHeaderProps, AdminSidebar(),
 Cohesion: 0.08
 Nodes (30): AiEvalConfig, AiEvalEditor(), DiagnosticResult, DiagnosticRunner(), HealthManager(), LearnConfig, LearnEditor(), LearnModule (+22 more)
 
-### Community 15 - "fsGetAll"
-Cohesion: 0.21
-Nodes (7): GET(), MOCKUP_AGENTS, POST(), normalizeName(), POST(), fsGetAll(), Agent
+### Community 15 - "Agent"
+Cohesion: 0.22
+Nodes (5): MOCKUP_AGENTS, POST(), normalizeName(), POST(), Agent
 
 ### Community 16 - "quiz-data.ts"
 Cohesion: 0.10
@@ -182,9 +183,9 @@ Nodes (27): dom, dom.iterable, esnext, .next/dev/types/**/*.ts, next-env.d.ts, .
 Cohesion: 0.14
 Nodes (15): QuizSystem(), QuizBriefing, reveal, QuizResult(), QuestionCard, QuestionMap, QuestionMapProps, QuizSession() (+7 more)
 
-### Community 19 - "firebase-admin.ts"
-Cohesion: 0.16
-Nodes (15): POST(), POST(), GET(), createCustomTokenSafe(), POST(), setSession(), fsGetWhere(), cleanEmail() (+7 more)
+### Community 19 - "session/route.ts"
+Cohesion: 0.21
+Nodes (10): POST(), POST(), GET(), createCustomTokenSafe(), POST(), setSession(), fsGetWhere(), getAdminAuth() (+2 more)
 
 ### Community 20 - "devDependencies"
 Cohesion: 0.04
@@ -198,9 +199,9 @@ Nodes (13): PhaseBreakdown, PhaseBreakdownProps, ResultView, ResultViewProps, Qu
 Cohesion: 0.15
 Nodes (10): MobileHeader(), MobileHeaderProps, MobileModuleChips(), ModuleChip, MODULES, DashboardHeader(), ModuleItem, MODULES (+2 more)
 
-### Community 23 - "getAdminDb"
-Cohesion: 0.17
-Nodes (24): DELETE(), GET(), POST(), POST(), POST(), POST(), POST(), GET() (+16 more)
+### Community 23 - "getServerUser"
+Cohesion: 0.21
+Nodes (17): DELETE(), GET(), POST(), POST(), POST(), POST(), POST(), PATCH() (+9 more)
 
 ### Community 24 - "sync-session-memory.js"
 Cohesion: 0.38
@@ -233,6 +234,10 @@ Nodes (5): __dirname, envPath, FULL_CURRICULUM_SCENARIOS, initAdmin(), seed()
 ### Community 50 - "BrandingPanel.tsx"
 Cohesion: 0.28
 Nodes (6): BrandingPanel(), MODULES, STATS_CONFIG, FloatingDecoration(), StatCounter(), StatCounterProps
+
+### Community 51 - "getAdminDb"
+Cohesion: 0.19
+Nodes (15): GET(), GET(), GET(), PATCH(), GET(), GET(), GET(), fsGetAll() (+7 more)
 
 ### Community 52 - "seed-mock-agents.mjs"
 Cohesion: 0.40
@@ -300,7 +305,7 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `dependencies` connect `dependencies` to `ai-eval.ts`, `devDependencies`, `CourseHub.tsx`?**
   _High betweenness centrality (0.069) - this node is a cross-community bridge._
-- **Why does `AgentStats` connect `AgentStats` to `EvaluatorDashboard.tsx`, `index.ts`, `agent-training/index.tsx`, `scoreColor`, `agent.ts`, `TrainingPeriod`, `agents.ts`, `server.ts`, `AgentEvaluation`, `HistorySections.tsx`, `OverviewPanel.tsx`, `ReportsTab.tsx`, `getAdminDb`, `CourseHub.tsx`, `HRAnalyticsTab.tsx`?**
+- **Why does `AgentStats` connect `AgentStats` to `EvaluatorDashboard.tsx`, `index.ts`, `agent-training/index.tsx`, `scoreColor`, `agent.ts`, `TrainingPeriod`, `agents.ts`, `server.ts`, `AgentEvaluation`, `HistorySections.tsx`, `db.ts`, `OverviewPanel.tsx`, `ReportsTab.tsx`, `CourseHub.tsx`, `HRAnalyticsTab.tsx`?**
   _High betweenness centrality (0.040) - this node is a cross-community bridge._
 - **What connects `dmSans`, `dmMono`, `Tab` to the rest of the system?**
   _270 weakly-connected nodes found - possible documentation gaps or missing edges._
