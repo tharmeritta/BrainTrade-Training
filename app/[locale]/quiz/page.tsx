@@ -201,8 +201,11 @@ export default function QuizIndexPage() {
       .then(r => r.json())
       .then(({ configs }: { configs?: Record<string, QuizDefinition> }) => {
         if (!configs || Object.keys(configs).length === 0) return;
-        // When admin has customized/deleted quizzes in DB, use DB definitions directly
-        setQuizConfigs(configs);
+        // Merge DB overrides onto static catalog map
+        setQuizConfigs(prev => ({
+          ...MODULE_QUIZ_MAP,
+          ...configs
+        }));
       })
       .catch(() => {});
   }, []);

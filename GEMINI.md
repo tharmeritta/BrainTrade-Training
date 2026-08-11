@@ -60,6 +60,7 @@ On session startup or when performing multi-step tasks:
    - **Security Vulnerability & Package tasks**: Delegate to `security-vulnerability-and-dependency-auditor` (audit npm dependencies, CVEs & secret leaks).
    - **Keyboard & Screen Reader A11y tasks**: Delegate to `a11y-screen-reader-and-keyboard-navigator` (audit modal keyboard focus traps & ARIA attributes).
    - **Code Refactoring & Clean Code tasks**: Delegate to `codebase-refactoring-and-clean-code-specialist` (decouple monolithic files, extract DRY helpers, eliminate duplicate logic & enforce clean architecture).
+   - **Dev Server & Cache Invalidation tasks**: Delegate to `dev-server-and-cache-maintainer` (manage background `npm run dev`, clear `.next` cache, and verify local server health).
    - **Code Modifications & Builds**: Delegate to `qa-build-and-graph-maintainer` (background QA & graphify update).
 
 ### Component-Level Specialist Subagent Mapping
