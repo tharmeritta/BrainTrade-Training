@@ -133,7 +133,7 @@ function ModuleCard({
 
       <div className="flex-1 min-w-0">
         <div className="font-bold text-foreground text-base leading-tight mb-0.5 flex items-center gap-2 flex-wrap">
-          {quiz.title?.[lang]}
+          {typeof quiz.title === 'string' ? quiz.title : (quiz.title?.[lang] || quiz.title?.en || quiz.title?.th || (quiz as any).mKey || '')}
           {passed && (
             <span
               className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
@@ -150,7 +150,7 @@ function ModuleCard({
           )}
         </div>
         <div className="text-xs text-muted-foreground leading-relaxed">
-          {quiz.description?.[lang]}
+          {typeof quiz.description === 'string' ? quiz.description : (quiz.description?.[lang] || quiz.description?.en || quiz.description?.th || '')}
         </div>
         {!locked && (
           <div className="mt-2 flex items-center gap-2 flex-wrap">
@@ -265,7 +265,9 @@ export default function QuizIndexPage() {
   const completedCount = allQuizzes.filter(q => passedModules.has(q.mKey)).length;
   
   const foundationKey = 'foundation';
-  const foundationTitle = quizConfigs[foundationKey]?.title?.[lang] ?? '';
+  const foundationTitle = typeof quizConfigs[foundationKey]?.title === 'string'
+    ? quizConfigs[foundationKey].title
+    : (quizConfigs[foundationKey]?.title?.[lang] || quizConfigs[foundationKey]?.title?.en || quizConfigs[foundationKey]?.title?.th || '');
   const foundationPassed = passedModules.has(foundationKey);
 
   return (
