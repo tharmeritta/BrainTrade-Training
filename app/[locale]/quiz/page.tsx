@@ -255,18 +255,20 @@ export default function QuizIndexPage() {
   const sections = useMemo(() => {
     const groups: Record<string, (QuizDefinition & { mKey: string })[]> = {};
     allQuizzes.forEach(q => {
-      const s = q.section || 'other';
+      const s = q.section || 'sales';
       if (!groups[s]) groups[s] = [];
       groups[s].push(q);
     });
 
-    // Enforce 3-part hierarchy: foundation -> sales -> other
+    // Enforce hierarchy: foundation -> sales -> other
     const SECTION_PRIORITY = ['foundation', 'sales', 'other'];
-    const sortedEntries = Object.entries(groups).sort(([aKey], [bKey]) => {
-      const aIdx = SECTION_PRIORITY.indexOf(aKey);
-      const bIdx = SECTION_PRIORITY.indexOf(bKey);
-      return (aIdx !== -1 ? aIdx : 99) - (bIdx !== -1 ? bIdx : 99);
-    });
+    const sortedEntries = Object.entries(groups)
+      .filter(([_, quizzes]) => quizzes.length > 0) // Only render sections that actually contain quizzes
+      .sort(([aKey], [bKey]) => {
+        const aIdx = SECTION_PRIORITY.indexOf(aKey);
+        const bIdx = SECTION_PRIORITY.indexOf(bKey);
+        return (aIdx !== -1 ? aIdx : 99) - (bIdx !== -1 ? bIdx : 99);
+      });
 
     return Object.fromEntries(sortedEntries);
   }, [allQuizzes]);

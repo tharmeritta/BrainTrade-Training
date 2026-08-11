@@ -242,7 +242,7 @@
       "_origin": "ast",
       "id": "app_locale_evaluator_page",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "evaluator/page.tsx"
     },
     {
@@ -254,7 +254,7 @@
       "_origin": "ast",
       "id": "app_locale_evaluator_page_evaluatorpagecontent",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "evaluatorpagecontent()"
     },
     {
@@ -266,7 +266,7 @@
       "_origin": "ast",
       "id": "app_locale_evaluator_page_evaluatorpage",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "evaluatorpage()"
     },
     {
@@ -276,8 +276,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_locale_layout",
-      "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "[locale]/layout.tsx"
     },
     {
@@ -287,8 +287,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "app_locale_layout_dmsans",
-      "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "dmsans"
     },
     {
@@ -298,8 +298,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "app_locale_layout_dmmono",
-      "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "dmmono"
     },
     {
@@ -310,8 +310,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_locale_layout_generatemetadata",
-      "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "generatemetadata()"
     },
     {
@@ -322,8 +322,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_locale_layout_localelayout",
-      "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "localelayout()"
     },
     {
@@ -794,8 +794,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_generate_route",
-      "community": 21,
-      "community_name": "ai-audit-service.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "generate/route.ts"
     },
     {
@@ -806,8 +806,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_generate_route_post",
-      "community": 21,
-      "community_name": "ai-audit-service.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "post()"
     },
     {
@@ -911,8 +911,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_bulk_progress_route",
-      "community": 74,
-      "community_name": "bulk-progress/route.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "bulk-progress/route.ts"
     },
     {
@@ -924,8 +924,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "app_api_admin_bulk_progress_route_progressrecord",
-      "community": 74,
-      "community_name": "bulk-progress/route.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "progressrecord"
     },
     {
@@ -936,8 +936,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_bulk_progress_route_defaults",
-      "community": 74,
-      "community_name": "bulk-progress/route.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "defaults()"
     },
     {
@@ -948,8 +948,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_bulk_progress_route_post",
-      "community": 74,
-      "community_name": "bulk-progress/route.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "post()"
     },
     {
@@ -1017,8 +1017,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_config_diagnostics_ai_audit_route",
-      "community": 28,
-      "community_name": "SemanticAuditService",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "diagnostics/ai-audit/route.ts"
     },
     {
@@ -1029,8 +1029,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_config_diagnostics_ai_audit_route_post",
-      "community": 28,
-      "community_name": "SemanticAuditService",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "post()"
     },
     {
@@ -1201,7 +1201,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_export_staff_route_get",
-      "community": 12,
+      "community": 4,
       "community_name": "xlsx",
       "norm_label": "get()"
     },
@@ -1397,8 +1397,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_parse_quiz_route",
-      "community": 21,
-      "community_name": "ai-audit-service.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "parse-quiz/route.ts"
     },
     {
@@ -1408,8 +1408,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "app_api_admin_parse_quiz_route_maxduration",
-      "community": 21,
-      "community_name": "ai-audit-service.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "maxduration"
     },
     {
@@ -1420,8 +1420,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_parse_quiz_route_post",
-      "community": 21,
-      "community_name": "ai-audit-service.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "post()"
     },
     {
@@ -1454,7 +1454,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route_post",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": "post()"
     },
@@ -1754,8 +1754,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_ai_audit_route",
-      "community": 21,
-      "community_name": "ai-audit-service.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "api/ai-audit/route.ts"
     },
     {
@@ -1766,8 +1766,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_ai_audit_route_post",
-      "community": 21,
-      "community_name": "ai-audit-service.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "post()"
     },
     {
@@ -1835,7 +1835,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_ai_eval_route",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": "ai-eval/route.ts"
     },
@@ -1847,7 +1847,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_ai_eval_route_post",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": "post()"
     },
@@ -2091,7 +2091,7 @@
       "_origin": "ast",
       "id": "app_api_evaluator_coaching_brief_route",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "coaching-brief/route.ts"
     },
     {
@@ -2103,7 +2103,7 @@
       "_origin": "ast",
       "id": "app_api_evaluator_coaching_brief_route_post",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "post()"
     },
     {
@@ -2795,8 +2795,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_adminhelpers",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "adminhelpers.ts"
     },
     {
@@ -2926,8 +2926,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_agentdetailmodal",
-      "community": 76,
-      "community_name": "HistorySections.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "agentdetailmodal.tsx"
     },
     {
@@ -2938,8 +2938,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_agentdetailmodal_agentdetailmodal",
-      "community": 76,
-      "community_name": "HistorySections.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "agentdetailmodal()"
     },
     {
@@ -2950,7 +2950,7 @@
       "_origin": "ast",
       "id": "components_features_admin_aiscenarioimportmodal",
       "community": 12,
-      "community_name": "xlsx",
+      "community_name": "AiScenarioImportModal.tsx",
       "norm_label": "aiscenarioimportmodal.tsx"
     },
     {
@@ -2963,7 +2963,7 @@
       "_origin": "ast",
       "id": "components_features_admin_aiscenarioimportmodal_aiscenarioimportmodalprops",
       "community": 12,
-      "community_name": "xlsx",
+      "community_name": "AiScenarioImportModal.tsx",
       "norm_label": "aiscenarioimportmodalprops"
     },
     {
@@ -2975,7 +2975,7 @@
       "_origin": "ast",
       "id": "components_features_admin_aiscenarioimportmodal_aiscenarioimportmodal",
       "community": 12,
-      "community_name": "xlsx",
+      "community_name": "AiScenarioImportModal.tsx",
       "norm_label": "aiscenarioimportmodal()"
     },
     {
@@ -2986,7 +2986,7 @@
       "_origin": "ast",
       "id": "components_features_admin_aiscenariostab",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "aiscenariostab.tsx"
     },
     {
@@ -2997,7 +2997,7 @@
       "_origin": "ast",
       "id": "components_features_admin_aiscenariostab_diff_styles",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "diff_styles"
     },
     {
@@ -3009,7 +3009,7 @@
       "_origin": "ast",
       "id": "components_features_admin_aiscenariostab_aiscenariostab",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "aiscenariostab()"
     },
     {
@@ -3019,8 +3019,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_approvalstab",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "approvalstab.tsx"
     },
     {
@@ -3031,8 +3031,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_approvalstab_approvalstab",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "approvalstab()"
     },
     {
@@ -3042,8 +3042,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_bulkimportmodal",
-      "community": 25,
-      "community_name": "StaffTab.tsx",
+      "community": 15,
+      "community_name": "AgentSection.tsx",
       "norm_label": "bulkimportmodal.tsx"
     },
     {
@@ -3055,8 +3055,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_bulkimportmodal_bulkimportmodalprops",
-      "community": 25,
-      "community_name": "StaffTab.tsx",
+      "community": 15,
+      "community_name": "AgentSection.tsx",
       "norm_label": "bulkimportmodalprops"
     },
     {
@@ -3067,8 +3067,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_bulkimportmodal_bulkimportmodal",
-      "community": 25,
-      "community_name": "StaffTab.tsx",
+      "community": 15,
+      "community_name": "AgentSection.tsx",
       "norm_label": "bulkimportmodal()"
     },
     {
@@ -3135,8 +3135,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_detailedevaluation",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "detailedevaluation.tsx"
     },
     {
@@ -3148,8 +3148,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_detailedevaluation_detailedevaluationprops",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "detailedevaluationprops"
     },
     {
@@ -3160,8 +3160,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_detailedevaluation_detailedevaluation",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "detailedevaluation()"
     },
     {
@@ -3171,8 +3171,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_evaluationstab",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "evaluationstab.tsx"
     },
     {
@@ -3183,8 +3183,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluationstab_evaluationstab",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "evaluationstab()"
     },
     {
@@ -3241,8 +3241,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_historytab",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "historytab.tsx"
     },
     {
@@ -3253,8 +3253,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_historytab_historytab",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "historytab()"
     },
     {
@@ -3300,8 +3300,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_overviewtab",
-      "community": 80,
-      "community_name": "OverviewTab.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "overviewtab.tsx"
     },
     {
@@ -3312,8 +3312,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_overviewtab_overviewtab",
-      "community": 80,
-      "community_name": "OverviewTab.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "overviewtab()"
     },
     {
@@ -3323,8 +3323,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_reportstab",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "reportstab.tsx"
     },
     {
@@ -3335,8 +3335,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_reportstab_reportstab",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "reportstab()"
     },
     {
@@ -3347,8 +3347,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_reportstab_searchicon",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "searchicon()"
     },
     {
@@ -3359,8 +3359,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_reportstab_statuspill",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "statuspill()"
     },
     {
@@ -3371,8 +3371,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_reportstab_getcompletionstatus",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "getcompletionstatus()"
     },
     {
@@ -3382,7 +3382,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_sandboxmanagermodal",
-      "community": 12,
+      "community": 4,
       "community_name": "xlsx",
       "norm_label": "sandboxmanagermodal.tsx"
     },
@@ -3395,7 +3395,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_sandboxmanagermodal_sandboxmanagermodalprops",
-      "community": 12,
+      "community": 4,
       "community_name": "xlsx",
       "norm_label": "sandboxmanagermodalprops"
     },
@@ -3407,7 +3407,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_sandboxmanagermodal_sandboxmanagermodal",
-      "community": 12,
+      "community": 4,
       "community_name": "xlsx",
       "norm_label": "sandboxmanagermodal()"
     },
@@ -3836,8 +3836,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_bypassmodal",
-      "community": 76,
-      "community_name": "HistorySections.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "bypassmodal.tsx"
     },
     {
@@ -3849,8 +3849,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_bypassmodal_bypassmodalprops",
-      "community": 76,
-      "community_name": "HistorySections.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "bypassmodalprops"
     },
     {
@@ -3861,8 +3861,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_bypassmodal_bypassmodal",
-      "community": 76,
-      "community_name": "HistorySections.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "bypassmodal()"
     },
     {
@@ -3872,8 +3872,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_historysections",
-      "community": 76,
-      "community_name": "HistorySections.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "historysections.tsx"
     },
     {
@@ -3884,8 +3884,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_historysections_actionbtn",
-      "community": 76,
-      "community_name": "HistorySections.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "actionbtn()"
     },
     {
@@ -3896,8 +3896,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_historysections_requestoverride",
-      "community": 76,
-      "community_name": "HistorySections.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "requestoverride()"
     },
     {
@@ -3908,8 +3908,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_historysections_detailedquizhistory",
-      "community": 76,
-      "community_name": "HistorySections.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "detailedquizhistory()"
     },
     {
@@ -3920,8 +3920,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_historysections_detailedaievalhistory",
-      "community": 76,
-      "community_name": "HistorySections.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "detailedaievalhistory()"
     },
     {
@@ -3932,8 +3932,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_historysections_detailedhumanevaluations",
-      "community": 76,
-      "community_name": "HistorySections.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "detailedhumanevaluations()"
     },
     {
@@ -3943,8 +3943,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_profileheader",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "profileheader.tsx"
     },
     {
@@ -3956,7 +3956,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_profileheader_profileheaderprops",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "profileheaderprops"
     },
@@ -3968,8 +3968,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_profileheader_profileheader",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "profileheader()"
     },
     {
@@ -3980,7 +3980,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenarioform",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "scenarioform.tsx"
     },
     {
@@ -3991,7 +3991,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenarioform_ai_suggestions",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "ai_suggestions"
     },
     {
@@ -4003,7 +4003,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenarioform_scenarioform",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "scenarioform()"
     },
     {
@@ -4014,7 +4014,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenariolist",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "scenariolist.tsx"
     },
     {
@@ -4026,7 +4026,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenariolist_scenariocard",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "scenariocard()"
     },
     {
@@ -4038,7 +4038,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenariolist_difficultysection",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "difficultysection()"
     },
     {
@@ -4049,7 +4049,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "ai-scenarios/constants.ts"
     },
     {
@@ -4060,7 +4060,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_diff",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "diff"
     },
     {
@@ -4071,7 +4071,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_diff_order",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "diff_order"
     },
     {
@@ -4082,7 +4082,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_empty_form",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "empty_form"
     },
     {
@@ -4093,7 +4093,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_inputcls",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "inputcls"
     },
     {
@@ -4104,7 +4104,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_textareacls",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "textareacls"
     },
     {
@@ -4115,7 +4115,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_templates",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "templates.ts"
     },
     {
@@ -4126,7 +4126,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_templates_preset_templates",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "preset_templates"
     },
     {
@@ -4306,8 +4306,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_evaluations_evalrow",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "evalrow.tsx"
     },
     {
@@ -4318,8 +4318,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluations_evalrow_evalrow",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "evalrow()"
     },
     {
@@ -4329,8 +4329,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_evaluations_evaluationsdashboard",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "evaluationsdashboard.tsx"
     },
     {
@@ -4342,8 +4342,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluations_evaluationsdashboard_evaluationsdashboardprops",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "evaluationsdashboardprops"
     },
     {
@@ -4354,8 +4354,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluations_evaluationsdashboard_evaluationsdashboard",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "evaluationsdashboard()"
     },
     {
@@ -4365,8 +4365,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_evaluations_useevaluationsdata",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "useevaluationsdata.ts"
     },
     {
@@ -4378,8 +4378,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluations_useevaluationsdata_admineval",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "admineval"
     },
     {
@@ -4391,8 +4391,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluations_useevaluationsdata_evaltab",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "evaltab"
     },
     {
@@ -4403,8 +4403,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluations_useevaluationsdata_useevaluationsdata",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "useevaluationsdata()"
     },
     {
@@ -4414,8 +4414,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_overview_completiongrid",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "completiongrid.tsx"
     },
     {
@@ -4427,8 +4427,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_completiongrid_completiongridprops",
-      "community": 80,
-      "community_name": "OverviewTab.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "completiongridprops"
     },
     {
@@ -4439,8 +4439,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_completiongrid_completiongrid",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "completiongrid()"
     },
     {
@@ -4450,7 +4450,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_overview_graduationroster",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "graduationroster.tsx"
     },
@@ -4463,7 +4463,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_graduationroster_graduationrosterprops",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "graduationrosterprops"
     },
@@ -4474,7 +4474,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "components_features_admin_overview_graduationroster_status_order",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "status_order"
     },
@@ -4486,7 +4486,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_graduationroster_graduationroster",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "graduationroster()"
     },
@@ -4497,8 +4497,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_overview_kpisection",
-      "community": 80,
-      "community_name": "OverviewTab.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "kpisection.tsx"
     },
     {
@@ -4510,8 +4510,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_kpisection_kpisectionprops",
-      "community": 80,
-      "community_name": "OverviewTab.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "kpisectionprops"
     },
     {
@@ -4522,8 +4522,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_kpisection_kpisection",
-      "community": 80,
-      "community_name": "OverviewTab.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "kpisection()"
     },
     {
@@ -4533,8 +4533,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_overview_leaderboardtable",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "leaderboardtable.tsx"
     },
     {
@@ -4546,7 +4546,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_leaderboardtable_leaderboardtableprops",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "leaderboardtableprops"
     },
@@ -4558,8 +4558,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_leaderboardtable_leaderboardtable",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "leaderboardtable()"
     },
     {
@@ -4569,8 +4569,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_overview_trainingwavessection",
-      "community": 80,
-      "community_name": "OverviewTab.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "trainingwavessection.tsx"
     },
     {
@@ -4582,8 +4582,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_trainingwavessection_trainingwavessectionprops",
-      "community": 80,
-      "community_name": "OverviewTab.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "trainingwavessectionprops"
     },
     {
@@ -4594,8 +4594,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_trainingwavessection_trainingwavessection",
-      "community": 80,
-      "community_name": "OverviewTab.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "trainingwavessection()"
     },
     {
@@ -4628,8 +4628,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_staff_agentsection",
-      "community": 25,
-      "community_name": "StaffTab.tsx",
+      "community": 15,
+      "community_name": "AgentSection.tsx",
       "norm_label": "agentsection.tsx"
     },
     {
@@ -4640,8 +4640,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_staff_agentsection_agentsection",
-      "community": 25,
-      "community_name": "StaffTab.tsx",
+      "community": 15,
+      "community_name": "AgentSection.tsx",
       "norm_label": "agentsection()"
     },
     {
@@ -4745,8 +4745,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_ui_badgepill",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "badgepill.tsx"
     },
     {
@@ -4757,8 +4757,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_ui_badgepill_badgepill",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "badgepill()"
     },
     {
@@ -4791,8 +4791,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_ui_metrics",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "metrics.tsx"
     },
     {
@@ -4803,8 +4803,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_ui_metrics_kpicard",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "kpicard()"
     },
     {
@@ -4815,8 +4815,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_ui_metrics_donutchart",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "donutchart()"
     },
     {
@@ -4827,8 +4827,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_ui_metrics_modulebar",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "modulebar()"
     },
     {
@@ -4838,7 +4838,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_ui_pipeline",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "pipeline.tsx"
     },
@@ -4850,7 +4850,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_ui_pipeline_statuspipeline",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "statuspipeline()"
     },
@@ -5345,8 +5345,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_agent_training_modulecard_target",
-      "community": 76,
-      "community_name": "HistorySections.tsx",
+      "community": 14,
+      "community_name": "AdjustmentsTab.tsx",
       "norm_label": "target()"
     },
     {
@@ -5795,7 +5795,7 @@
       "_origin": "ast",
       "id": "components_features_ai_eval_multiplechoiceview",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "multiplechoiceview.tsx"
     },
     {
@@ -5807,7 +5807,7 @@
       "_origin": "ast",
       "id": "components_features_ai_eval_multiplechoiceview_multiplechoiceview",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "multiplechoiceview()"
     },
     {
@@ -6128,7 +6128,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_agentperformancepanel",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "agentperformancepanel.tsx"
     },
     {
@@ -6140,7 +6140,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_evaluator_agentperformancepanel_agentperformancepanelprops",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "agentperformancepanelprops"
     },
@@ -6153,7 +6153,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_agentperformancepanel_agentperformancepanel",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "agentperformancepanel()"
     },
     {
@@ -6164,7 +6164,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_cohortheatmap",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "cohortheatmap.tsx"
     },
     {
@@ -6177,7 +6177,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_cohortheatmap_agentskillrow",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "agentskillrow"
     },
     {
@@ -6190,7 +6190,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_cohortheatmap_cohortheatmapprops",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "cohortheatmapprops"
     },
     {
@@ -6201,7 +6201,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_cohortheatmap_default_rows",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "default_rows"
     },
     {
@@ -6213,7 +6213,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_cohortheatmap_cohortheatmap",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "cohortheatmap()"
     },
     {
@@ -6224,7 +6224,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_evalform",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "evalform.tsx"
     },
     {
@@ -6237,7 +6237,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_evalform_evalformprops",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "evalformprops"
     },
     {
@@ -6249,7 +6249,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_evalform_evalform",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "evalform()"
     },
     {
@@ -6260,7 +6260,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_evalhistorycard",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "evalhistorycard.tsx"
     },
     {
@@ -6273,7 +6273,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_evalhistorycard_evalhistorycardprops",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "evalhistorycardprops"
     },
     {
@@ -6285,7 +6285,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_evalhistorycard_evalhistorycard",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "evalhistorycard()"
     },
     {
@@ -6296,7 +6296,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_evaluatordashboard",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "evaluatordashboard.tsx"
     },
     {
@@ -6308,7 +6308,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_evaluatordashboard_usekeyboardshortcuts",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "usekeyboardshortcuts()"
     },
     {
@@ -6321,7 +6321,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_evaluatordashboard_evaluatordashboardprops",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "evaluatordashboardprops"
     },
     {
@@ -6333,7 +6333,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_evaluatordashboard_evaluatordashboard",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "evaluatordashboard()"
     },
     {
@@ -6343,7 +6343,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_evaluator_overviewpanel",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "overviewpanel.tsx"
     },
@@ -6368,7 +6368,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_evaluator_overviewpanel_overviewpanel",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "overviewpanel()"
     },
@@ -6380,7 +6380,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_useevaluatordashboard",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "useevaluatordashboard.ts"
     },
     {
@@ -6392,7 +6392,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_useevaluatordashboard_useevaluatordashboard",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "useevaluatordashboard()"
     },
     {
@@ -7530,8 +7530,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_ui_commandpalette",
-      "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "commandpalette.tsx"
     },
     {
@@ -7542,8 +7542,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_ui_commandpalette_commandpalette",
-      "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "commandpalette()"
     },
     {
@@ -7682,8 +7682,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_ui_navigationprogress",
-      "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "navigationprogress.tsx"
     },
     {
@@ -7694,8 +7694,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_ui_navigationprogress_navigationprogress",
-      "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "navigationprogress()"
     },
     {
@@ -7706,7 +7706,7 @@
       "_origin": "ast",
       "id": "components_ui_scorering",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "scorering.tsx"
     },
     {
@@ -7719,7 +7719,7 @@
       "_origin": "ast",
       "id": "components_ui_scorering_scoreringprops",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "scoreringprops"
     },
     {
@@ -7731,7 +7731,7 @@
       "_origin": "ast",
       "id": "components_ui_scorering_scorehex",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "scorehex()"
     },
     {
@@ -7743,7 +7743,7 @@
       "_origin": "ast",
       "id": "components_ui_scorering_scorering",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "scorering()"
     },
     {
@@ -7921,8 +7921,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_ui_themescript",
-      "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "themescript.tsx"
     },
     {
@@ -7933,8 +7933,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_ui_themescript_themescript",
-      "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "themescript()"
     },
     {
@@ -8184,7 +8184,7 @@
       "_origin": "ast",
       "id": "lib_ai",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "ai.ts"
     },
     {
@@ -8196,7 +8196,7 @@
       "_origin": "ast",
       "id": "lib_ai_getgeminimodel",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "getgeminimodel()"
     },
     {
@@ -8208,7 +8208,7 @@
       "_origin": "ast",
       "id": "lib_ai_getopenai",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "getopenai()"
     },
     {
@@ -8220,7 +8220,7 @@
       "_origin": "ast",
       "id": "lib_ai_generatetext",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "generatetext()"
     },
     {
@@ -8391,7 +8391,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_completion",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "completion.ts"
     },
@@ -8404,7 +8404,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "lib_completion_completionstatus",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "completionstatus"
     },
@@ -8417,7 +8417,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "lib_completion_completioninfo",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "completioninfo"
     },
@@ -8430,7 +8430,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "lib_completion_completionconfig",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "completionconfig"
     },
@@ -8442,7 +8442,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_completion_getcompletionstatus",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "getcompletionstatus()"
     },
@@ -8454,7 +8454,7 @@
       "_origin": "ast",
       "id": "lib_constants",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "lib/constants.ts"
     },
     {
@@ -8465,7 +8465,7 @@
       "_origin": "ast",
       "id": "lib_constants_supported_locales",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "supported_locales"
     },
     {
@@ -8478,7 +8478,7 @@
       "_origin": "ast",
       "id": "lib_constants_supportedlocale",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "supportedlocale"
     },
     {
@@ -8489,7 +8489,7 @@
       "_origin": "ast",
       "id": "lib_constants_default_locale",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "default_locale"
     },
     {
@@ -8500,7 +8500,7 @@
       "_origin": "ast",
       "id": "lib_constants_default_gemini_model",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "default_gemini_model"
     },
     {
@@ -8511,7 +8511,7 @@
       "_origin": "ast",
       "id": "lib_constants_default_openai_model",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "default_openai_model"
     },
     {
@@ -8522,7 +8522,7 @@
       "_origin": "ast",
       "id": "lib_constants_score_thresholds",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "score_thresholds"
     },
     {
@@ -8594,7 +8594,7 @@
       "_origin": "ast",
       "id": "lib_evaluator_helpers",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "evaluator-helpers.ts"
     },
     {
@@ -8605,7 +8605,7 @@
       "_origin": "ast",
       "id": "lib_evaluator_helpers_performance_keys",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "performance_keys"
     },
     {
@@ -8616,7 +8616,7 @@
       "_origin": "ast",
       "id": "lib_evaluator_helpers_red_flag_keys",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "red_flag_keys"
     },
     {
@@ -8627,7 +8627,7 @@
       "_origin": "ast",
       "id": "lib_evaluator_helpers_status_cfg",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "status_cfg"
     },
     {
@@ -8638,7 +8638,7 @@
       "_origin": "ast",
       "id": "lib_evaluator_helpers_status_order",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "status_order"
     },
     {
@@ -8650,7 +8650,7 @@
       "_origin": "ast",
       "id": "lib_evaluator_helpers_emptyperf",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "emptyperf()"
     },
     {
@@ -8662,7 +8662,7 @@
       "_origin": "ast",
       "id": "lib_evaluator_helpers_emptycriteria",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "emptycriteria()"
     },
     {
@@ -8674,7 +8674,7 @@
       "_origin": "ast",
       "id": "lib_evaluator_helpers_calcscore",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "calcscore()"
     },
     {
@@ -8686,7 +8686,7 @@
       "_origin": "ast",
       "id": "lib_evaluator_helpers_timeago",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "timeago()"
     },
     {
@@ -8743,8 +8743,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_fetcher_fetchwithcache",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "fetchwithcache()"
     },
     {
@@ -8856,8 +8856,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_gemini",
-      "community": 21,
-      "community_name": "ai-audit-service.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "gemini.ts"
     },
     {
@@ -8868,8 +8868,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_gemini_getgeminimodel",
-      "community": 21,
-      "community_name": "ai-audit-service.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "getgeminimodel()"
     },
     {
@@ -9146,8 +9146,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_openai",
-      "community": 21,
-      "community_name": "ai-audit-service.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "openai.ts"
     },
     {
@@ -9158,8 +9158,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_openai_getopenai",
-      "community": 21,
-      "community_name": "ai-audit-service.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "getopenai()"
     },
     {
@@ -9686,8 +9686,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_scoring",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "scoring.ts"
     },
     {
@@ -9697,8 +9697,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "lib_scoring_badge_config",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "badge_config"
     },
     {
@@ -9708,8 +9708,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "lib_scoring_module_labels",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "module_labels"
     },
     {
@@ -9720,8 +9720,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_scoring_scorecolor",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "scorecolor()"
     },
     {
@@ -9732,8 +9732,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_scoring_scorebg",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "scorebg()"
     },
     {
@@ -9744,8 +9744,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_scoring_timeago",
-      "community": 4,
-      "community_name": "timeAgo",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "timeago()"
     },
     {
@@ -9757,7 +9757,7 @@
       "_origin": "ast",
       "id": "lib_scoring_getpassthresholdpct",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "getpassthresholdpct()"
     },
     {
@@ -9934,7 +9934,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fsset",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": "fsset()"
     },
@@ -10063,7 +10063,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_training_getactivetrainingperiod",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": "getactivetrainingperiod()"
     },
@@ -10074,8 +10074,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_services_ai_audit_service",
-      "community": 21,
-      "community_name": "ai-audit-service.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "ai-audit-service.ts"
     },
     {
@@ -10087,8 +10087,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "lib_services_ai_audit_service_aiauditservice",
-      "community": 21,
-      "community_name": "ai-audit-service.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "aiauditservice"
     },
     {
@@ -10099,8 +10099,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_audit_service_aiauditservice_fetchchattranscript",
-      "community": 21,
-      "community_name": "ai-audit-service.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": ".fetchchattranscript()"
     },
     {
@@ -10111,8 +10111,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_audit_service_aiauditservice_audittranscript",
-      "community": 21,
-      "community_name": "ai-audit-service.ts",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": ".audittranscript()"
     },
     {
@@ -10123,7 +10123,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_audit_service_aiauditservice_logauditcompletion",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": ".logauditcompletion()"
     },
@@ -10134,7 +10134,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_services_ai_eval_service",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": "ai-eval-service.ts"
     },
@@ -10147,7 +10147,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": "aievalservice"
     },
@@ -10159,7 +10159,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_getscenario",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": ".getscenario()"
     },
@@ -10171,7 +10171,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_startsession",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": ".startsession()"
     },
@@ -10183,7 +10183,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_processturn",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": ".processturn()"
     },
@@ -10195,7 +10195,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_callchatgpt",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": ".callchatgpt()"
     },
@@ -10207,7 +10207,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_injectvariables",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": ".injectvariables()"
     },
@@ -10219,7 +10219,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_buildfallbacksystemprompt",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": ".buildfallbacksystemprompt()"
     },
@@ -10231,7 +10231,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_seedallscenarios",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": ".seedallscenarios()"
     },
@@ -10243,7 +10243,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_cleanjson",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": ".cleanjson()"
     },
@@ -10255,7 +10255,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_logcompletion",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": ".logcompletion()"
     },
@@ -10267,7 +10267,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_seeddefaultscenario",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": ".seeddefaultscenario()"
     },
@@ -10279,7 +10279,7 @@
       "_origin": "ast",
       "id": "lib_services_ai_scenarios_utils",
       "community": 12,
-      "community_name": "xlsx",
+      "community_name": "AiScenarioImportModal.tsx",
       "norm_label": "utils.ts"
     },
     {
@@ -10290,7 +10290,7 @@
       "_origin": "ast",
       "id": "lib_services_ai_scenarios_utils_default_criteria",
       "community": 12,
-      "community_name": "xlsx",
+      "community_name": "AiScenarioImportModal.tsx",
       "norm_label": "default_criteria"
     },
     {
@@ -10301,7 +10301,7 @@
       "_origin": "ast",
       "id": "lib_services_ai_scenarios_utils_ai_scenario_template",
       "community": 12,
-      "community_name": "xlsx",
+      "community_name": "AiScenarioImportModal.tsx",
       "norm_label": "ai_scenario_template"
     },
     {
@@ -10313,7 +10313,7 @@
       "_origin": "ast",
       "id": "lib_services_ai_scenarios_utils_downloadscenariotemplate",
       "community": 12,
-      "community_name": "xlsx",
+      "community_name": "AiScenarioImportModal.tsx",
       "norm_label": "downloadscenariotemplate()"
     },
     {
@@ -10325,7 +10325,7 @@
       "_origin": "ast",
       "id": "lib_services_ai_scenarios_utils_parsescenariofile",
       "community": 12,
-      "community_name": "xlsx",
+      "community_name": "AiScenarioImportModal.tsx",
       "norm_label": "parsescenariofile()"
     },
     {
@@ -10575,8 +10575,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice",
-      "community": 28,
-      "community_name": "SemanticAuditService",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": "semanticauditservice"
     },
     {
@@ -10587,8 +10587,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_runfullaudit",
-      "community": 28,
-      "community_name": "SemanticAuditService",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": ".runfullaudit()"
     },
     {
@@ -10599,8 +10599,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_fetchconfigs",
-      "community": 28,
-      "community_name": "SemanticAuditService",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": ".fetchconfigs()"
     },
     {
@@ -10611,8 +10611,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_fetchevaluations",
-      "community": 28,
-      "community_name": "SemanticAuditService",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": ".fetchevaluations()"
     },
     {
@@ -10623,8 +10623,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_fetchagents",
-      "community": 28,
-      "community_name": "SemanticAuditService",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": ".fetchagents()"
     },
     {
@@ -10635,8 +10635,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_auditconfigs",
-      "community": 28,
-      "community_name": "SemanticAuditService",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": ".auditconfigs()"
     },
     {
@@ -10647,8 +10647,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_auditevaluations",
-      "community": 28,
-      "community_name": "SemanticAuditService",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": ".auditevaluations()"
     },
     {
@@ -10659,8 +10659,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_auditagentjourneys",
-      "community": 28,
-      "community_name": "SemanticAuditService",
+      "community": 1,
+      "community_name": "fsSet",
       "norm_label": ".auditagentjourneys()"
     },
     {
@@ -10779,7 +10779,7 @@
       "_origin": "ast",
       "id": "lib_services_telesales_coaching",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "telesales-coaching.ts"
     },
     {
@@ -10792,7 +10792,7 @@
       "_origin": "ast",
       "id": "lib_services_telesales_coaching_coachingbrief",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "coachingbrief"
     },
     {
@@ -10804,7 +10804,7 @@
       "_origin": "ast",
       "id": "lib_services_telesales_coaching_generatecoachingbrief",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "generatecoachingbrief()"
     },
     {
@@ -10940,8 +10940,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_agent_setagentsession",
-      "community": 79,
-      "community_name": "scoreColor",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "setagentsession()"
     },
     {
@@ -11188,7 +11188,7 @@
       "_origin": "ast",
       "id": "middleware",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "middleware.ts"
     },
     {
@@ -11199,7 +11199,7 @@
       "_origin": "ast",
       "id": "middleware_config",
       "community": 73,
-      "community_name": "[locale]/layout.tsx",
+      "community_name": "lib/constants.ts",
       "norm_label": "config"
     },
     {
@@ -11264,8 +11264,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "package",
-      "community": 81,
-      "community_name": "package.json",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "package.json"
     },
     {
@@ -11275,8 +11275,8 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "package_name",
-      "community": 81,
-      "community_name": "package.json",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "name"
     },
     {
@@ -11286,8 +11286,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "package_version",
-      "community": 81,
-      "community_name": "package.json",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "version"
     },
     {
@@ -11297,8 +11297,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "package_private",
-      "community": 81,
-      "community_name": "package.json",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "private"
     },
     {
@@ -11308,8 +11308,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "package_scripts",
-      "community": 22,
-      "community_name": "scripts",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "scripts"
     },
     {
@@ -11319,8 +11319,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "package_scripts_dev",
-      "community": 22,
-      "community_name": "scripts",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "dev"
     },
     {
@@ -11330,8 +11330,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "package_scripts_dev_auto",
-      "community": 22,
-      "community_name": "scripts",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "dev:auto"
     },
     {
@@ -11341,8 +11341,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "package_scripts_build",
-      "community": 22,
-      "community_name": "scripts",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "build"
     },
     {
@@ -11352,8 +11352,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "package_scripts_start",
-      "community": 22,
-      "community_name": "scripts",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "start"
     },
     {
@@ -11363,8 +11363,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "package_scripts_lint",
-      "community": 22,
-      "community_name": "scripts",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "lint"
     },
     {
@@ -11374,8 +11374,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "package_scripts_check",
-      "community": 22,
-      "community_name": "scripts",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "check"
     },
     {
@@ -11385,8 +11385,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "package_scripts_seed",
-      "community": 22,
-      "community_name": "scripts",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "seed"
     },
     {
@@ -11396,8 +11396,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "package_scripts_seed_agents",
-      "community": 22,
-      "community_name": "scripts",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "seed:agents"
     },
     {
@@ -11407,8 +11407,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "package_scripts_agy_start",
-      "community": 22,
-      "community_name": "scripts",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "agy:start"
     },
     {
@@ -11418,8 +11418,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "package_scripts_agy_check",
-      "community": 22,
-      "community_name": "scripts",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "agy:check"
     },
     {
@@ -11429,8 +11429,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "package_scripts_agy_commit",
-      "community": 22,
-      "community_name": "scripts",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "agy:commit"
     },
     {
@@ -11451,8 +11451,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "package_dependencies_google_cloud_storage",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 22,
+      "community_name": "@google-cloud/storage",
       "norm_label": "@google-cloud/storage"
     },
     {
@@ -11462,8 +11462,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "google_cloud_storage",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 22,
+      "community_name": "@google-cloud/storage",
       "norm_label": "@google-cloud/storage"
     },
     {
@@ -11517,8 +11517,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "package_dependencies_firebase_admin",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 21,
+      "community_name": "firebase-admin",
       "norm_label": "firebase-admin"
     },
     {
@@ -11528,8 +11528,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "firebase_admin",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 21,
+      "community_name": "firebase-admin",
       "norm_label": "firebase-admin"
     },
     {
@@ -11605,8 +11605,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "package_dependencies_next_intl",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 28,
+      "community_name": "next-intl",
       "norm_label": "next-intl"
     },
     {
@@ -11616,8 +11616,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "next_intl",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 28,
+      "community_name": "next-intl",
       "norm_label": "next-intl"
     },
     {
@@ -11715,7 +11715,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "package_dependencies_xlsx",
-      "community": 12,
+      "community": 4,
       "community_name": "xlsx",
       "norm_label": "xlsx"
     },
@@ -11726,7 +11726,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "xlsx",
-      "community": 12,
+      "community": 4,
       "community_name": "xlsx",
       "norm_label": "xlsx"
     },
@@ -11814,8 +11814,8 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "package_devdependencies_types_node",
-      "community": 82,
-      "community_name": "@types/node",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "@types/node"
     },
     {
@@ -11825,8 +11825,8 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "types_node",
-      "community": 82,
-      "community_name": "@types/node",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "@types/node"
     },
     {
@@ -11836,8 +11836,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "package_devdependencies_types_nodemailer",
-      "community": 84,
-      "community_name": "@types/nodemailer",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "@types/nodemailer"
     },
     {
@@ -11847,8 +11847,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "types_nodemailer",
-      "community": 84,
-      "community_name": "@types/nodemailer",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "@types/nodemailer"
     },
     {
@@ -11858,8 +11858,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "package_devdependencies_types_react",
-      "community": 85,
-      "community_name": "@types/react",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "@types/react"
     },
     {
@@ -11869,8 +11869,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "types_react",
-      "community": 85,
-      "community_name": "@types/react",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "@types/react"
     },
     {
@@ -12034,8 +12034,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "package_devdependencies_postcss",
-      "community": 86,
-      "community_name": "postcss",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "postcss"
     },
     {
@@ -12045,8 +12045,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "postcss",
-      "community": 86,
-      "community_name": "postcss",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "postcss"
     },
     {
@@ -13020,7 +13020,7 @@
       "_origin": "ast",
       "id": "types_ai_eval",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "ai-eval.ts"
     },
     {
@@ -13033,7 +13033,7 @@
       "_origin": "ast",
       "id": "types_ai_eval_localizedstring",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "localizedstring"
     },
     {
@@ -13046,7 +13046,7 @@
       "_origin": "ast",
       "id": "types_ai_eval_scenariochoice",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "scenariochoice"
     },
     {
@@ -13057,7 +13057,7 @@
       "_origin": "ast",
       "id": "types_ai_eval_aievalscenarioschema",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "aievalscenarioschema"
     },
     {
@@ -13069,7 +13069,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_ai_eval_aievalscenario",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": "aievalscenario"
     },
@@ -13083,7 +13083,7 @@
       "_origin": "ast",
       "id": "types_ai_eval_scenariosubmitresult",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "scenariosubmitresult"
     },
     {
@@ -13094,7 +13094,7 @@
       "_origin": "ast",
       "id": "types_ai_eval_aievalturnresponseschema",
       "community": 1,
-      "community_name": "ai-eval.ts",
+      "community_name": "fsSet",
       "norm_label": "aievalturnresponseschema"
     },
     {
@@ -13106,7 +13106,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_ai_eval_aievalturnresponse",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": "aievalturnresponse"
     },
@@ -13119,7 +13119,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_ai_eval_aievalsession",
-      "community": 15,
+      "community": 1,
       "community_name": "fsSet",
       "norm_label": "aievalsession"
     },
@@ -13208,7 +13208,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_agentstats",
-      "community": 78,
+      "community": 0,
       "community_name": "AgentStats",
       "norm_label": "agentstats"
     },
@@ -13234,8 +13234,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_adminoverviewdata",
-      "community": 80,
-      "community_name": "OverviewTab.tsx",
+      "community": 0,
+      "community_name": "AgentStats",
       "norm_label": "adminoverviewdata"
     },
     {
@@ -13261,7 +13261,7 @@
       "_origin": "ast",
       "id": "types_index_salescallperformanceitem",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "salescallperformanceitem"
     },
     {
@@ -13274,7 +13274,7 @@
       "_origin": "ast",
       "id": "types_index_salescallcriteria",
       "community": 0,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community_name": "AgentStats",
       "norm_label": "salescallcriteria"
     },
     {
@@ -26995,6 +26995,18 @@
       "source": "components_features_admin_adjustments_quizzeseditor",
       "target": "lib_quiz_data_module_quiz_map",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "indirect_call",
+      "context": "collection",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "components/features/admin/adjustments/QuizzesEditor.tsx",
+      "source_location": "L143",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "components_features_admin_adjustments_quizzeseditor_quizzeseditor",
+      "target": "components_features_agent_training_modulecard_target"
     },
     {
       "relation": "calls",
@@ -47498,5 +47510,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "47d0b794504312b7411f5fce8c620c4814cd9ea4"
+  "built_at_commit": "d21707ba45590f3a76813900b966b1ce99e6dbce"
 }
