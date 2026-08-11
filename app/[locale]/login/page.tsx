@@ -203,7 +203,7 @@ export default function LoginPage() {
                   <input
                     type="text" value={username} onChange={e => setUsername(e.target.value)}
                     placeholder={t('usernamePlaceholder')} required
-                    className="w-full px-4 min-h-[44px] rounded-2xl text-sm font-medium outline-none transition-all"
+                    className="w-full px-4 min-h-[44px] rounded-2xl text-base sm:text-sm font-medium outline-none transition-all"
                     style={{ background: 'var(--entry-input-bg)', border: '1px solid var(--hub-border)', color: 'var(--hub-text)' }}
                     onFocus={e => { e.currentTarget.style.borderColor = cfg.accent + '80'; e.currentTarget.style.boxShadow = `0 0 20px -5px ${cfg.accent}20`; }}
                     onBlur={e => { e.currentTarget.style.borderColor = 'var(--hub-border)'; e.currentTarget.style.boxShadow = 'none'; }}
@@ -218,7 +218,7 @@ export default function LoginPage() {
                       type={showPass ? 'text' : 'password'} value={password}
                       onChange={e => setPassword(e.target.value)}
                       placeholder={t('passwordPlaceholder')} required
-                      className="w-full px-4 min-h-[44px] pr-12 rounded-2xl text-sm font-medium outline-none transition-all"
+                      className="w-full px-4 min-h-[44px] pr-12 rounded-2xl text-base sm:text-sm font-medium outline-none transition-all"
                       style={{ background: 'var(--entry-input-bg)', border: '1px solid var(--hub-border)', color: 'var(--hub-text)' }}
                       onFocus={e => { e.currentTarget.style.borderColor = cfg.accent + '80'; e.currentTarget.style.boxShadow = `0 0 20px -5px ${cfg.accent}20`; }}
                       onBlur={e => { e.currentTarget.style.borderColor = 'var(--hub-border)'; e.currentTarget.style.boxShadow = 'none'; }}

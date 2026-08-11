@@ -85,8 +85,8 @@
     "semantic_hash": "a8be9ebf5bd3437414411fa5db384754"
   },
   "app/[locale]/login/page.tsx": {
-    "mtime": 1786420619.6897929,
-    "ast_hash": "a59c04ed46dd32c1925ba505b65cec28",
+    "mtime": 1786421077.2773666,
+    "ast_hash": "716e5b318b272cfb6c2e5aebf93079e2",
     "semantic_hash": ""
   },
   "app/[locale]/page.tsx": {
@@ -820,8 +820,8 @@
     "semantic_hash": ""
   },
   "components/features/presentation/PresentationHeader.tsx": {
-    "mtime": 1786418819.6045365,
-    "ast_hash": "17ca27bd8dd3b462e9bb382aead9eb3c",
+    "mtime": 1786421073.7563863,
+    "ast_hash": "68dd2c3258291787f3a40f50b715247a",
     "semantic_hash": ""
   },
   "components/features/presentation/TrainerToolbar.tsx": {

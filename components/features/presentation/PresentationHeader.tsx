@@ -72,7 +72,7 @@ export function PresentationHeader({
             <button
               key={l}
               onClick={() => onLangChange(l)}
-              className={`min-h-[36px] min-w-[36px] sm:min-h-[32px] sm:min-w-[32px] flex items-center justify-center rounded-lg px-2.5 py-1 text-xs font-bold transition-all active:scale-95 ${
+              className={`min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center rounded-lg px-2.5 py-1 text-xs font-bold transition-all active:scale-95 ${
                 lang === l
                   ? 'bg-background text-primary shadow-sm shadow-black/5'
                   : 'text-muted-foreground hover:text-foreground'
