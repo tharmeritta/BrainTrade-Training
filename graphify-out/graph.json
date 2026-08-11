@@ -12034,8 +12034,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "package_devdependencies_postcss",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 86,
+      "community_name": "postcss",
       "norm_label": "postcss"
     },
     {
@@ -12045,8 +12045,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "postcss",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 86,
+      "community_name": "postcss",
       "norm_label": "postcss"
     },
     {
@@ -12078,8 +12078,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "package_devdependencies_typescript",
-      "community": 86,
-      "community_name": "typescript",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "typescript"
     },
     {
@@ -12089,8 +12089,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "typescript",
-      "community": 86,
-      "community_name": "typescript",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "typescript"
     },
     {
@@ -27002,7 +27002,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "components/features/admin/adjustments/QuizzesEditor.tsx",
-      "source_location": "L67",
+      "source_location": "L75",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_admin_adjustments_quizzeseditor_quizzeseditor",
@@ -27014,7 +27014,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "components/features/admin/adjustments/QuizzesEditor.tsx",
-      "source_location": "L75",
+      "source_location": "L83",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_admin_adjustments_quizzeseditor_quizzeseditor",
@@ -47498,5 +47498,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "1d5895098e608c92b0a7d85128d6f28e5e1f44ee"
+  "built_at_commit": "eb273c2e7fe35a636de169e4153aacbc3332b58f"
 }

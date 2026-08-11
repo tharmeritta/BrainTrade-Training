@@ -1,7 +1,7 @@
 # Graph Report - BrainTrade-Training  (2026-08-11)
 
 ## Corpus Check
-- 286 files · ~155,106 words
+- 286 files · ~155,129 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `1d589509`
+- Built from commit: `eb273c2e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -78,7 +78,7 @@
 - ensure-dev-server.js
 - @types/nodemailer
 - @types/react
-- typescript
+- postcss
 - ShowcaseTab.tsx
 - ReturningUserBanner.tsx
 
@@ -309,7 +309,7 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `dependencies` connect `dependencies` to `package.json`, `xlsx`, `CourseHub.tsx`?**
   _High betweenness centrality (0.070) - this node is a cross-community bridge._
-- **Why does `devDependencies` connect `devDependencies` to `package.json`, `@types/node`, `@types/nodemailer`, `@types/react`, `typescript`?**
+- **Why does `devDependencies` connect `devDependencies` to `package.json`, `@types/node`, `@types/nodemailer`, `@types/react`, `postcss`?**
   _High betweenness centrality (0.040) - this node is a cross-community bridge._
 - **Why does `AgentStats` connect `AgentStats` to `EvaluatorDashboard.tsx`, `agent-training/index.tsx`, `agent.ts`, `TrainingPeriod`, `agents.ts`, `index.ts`, `HistorySections.tsx`, `scoreColor`, `OverviewTab.tsx`, `getAdminDb`, `CourseHub.tsx`, `HRAnalyticsTab.tsx`?**
   _High betweenness centrality (0.039) - this node is a cross-community bridge._

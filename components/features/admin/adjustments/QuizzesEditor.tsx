@@ -44,6 +44,14 @@ export default function QuizzesEditor({ data, onSave, onChange, saving, readOnly
   const [importError, setImportError] = useState('');
 
   useEffect(() => {
+    const activeDefs = data?.definitions && Object.keys(data.definitions).length > 0 
+      ? data.definitions 
+      : (MODULE_QUIZ_MAP as any);
+    setDefinitions(activeDefs);
+    setOrder(data?.order || Object.keys(activeDefs));
+  }, [data]);
+
+  useEffect(() => {
     const quizIds = Object.keys(definitions);
     const newOrder = [...order];
     let changed = false;

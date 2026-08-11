@@ -85,7 +85,7 @@
   "83": "ensure-dev-server.js",
   "84": "@types/nodemailer",
   "85": "@types/react",
-  "86": "typescript",
+  "86": "postcss",
   "90": "ShowcaseTab.tsx",
   "92": "ReturningUserBanner.tsx"
 }
