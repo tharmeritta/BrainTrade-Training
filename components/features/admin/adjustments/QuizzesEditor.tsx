@@ -82,12 +82,21 @@ export default function QuizzesEditor({ data, onSave, onChange, saving, readOnly
       reader.onload = (evt) => {
         try {
           const data = XLSX.utils.sheet_to_json(XLSX.read(evt.target?.result, { type: 'binary' }).Sheets[XLSX.read(evt.target?.result, { type: 'binary' }).SheetNames[0]]);
-          const parsed: QuizQuestion[] = data.map((row: any) => ({
-            en: row.question_en || '', th: row.question_th || '', type: (row.type as any) || 'mcq',
-            options: { en: [row.option_1_en, row.option_2_en, row.option_3_en, row.option_4_en].filter(Boolean), th: [row.option_1_th, row.option_2_th, row.option_3_th, row.option_4_th].filter(Boolean) },
-            correctIdx: parseInt(row.correct_index ?? 0),
-            explain: { en: row.explanation_en || '', th: row.explanation_th || '' }
-          }));
+          const parsed: QuizQuestion[] = data.map((row: any) => {
+            const rawIdx = parseInt(row.correct_index, 10);
+            const correctIdx = Number.isNaN(rawIdx) ? 0 : Math.max(0, rawIdx);
+            return {
+              en: row.question_en || '',
+              th: row.question_th || '',
+              type: (row.type as any) || 'mcq',
+              options: {
+                en: [row.option_1_en, row.option_2_en, row.option_3_en, row.option_4_en].filter((x): x is string => typeof x === 'string' && x.trim().length > 0),
+                th: [row.option_1_th, row.option_2_th, row.option_3_th, row.option_4_th].filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+              },
+              correctIdx,
+              explain: { en: row.explanation_en || '', th: row.explanation_th || '' }
+            };
+          });
           setDefinitions(prev => updateDeep(prev, `${selectedQuiz}.questions`, importMode === 'append' ? [...(prev[selectedQuiz].questions || []), ...parsed] : parsed));
           onChange();
         } catch (err: any) { setImportError(err.message); } finally { setImporting(false); }
@@ -148,9 +157,48 @@ export default function QuizzesEditor({ data, onSave, onChange, saving, readOnly
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <FormField id="q-id" label="Internal ID"><input id="q-id" defaultValue={selectedQuiz} onBlur={e => handleUpdate(selectedQuiz, 'id', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm font-mono outline-none" /></FormField>
-            <FormField id="q-pass" label="Pass Threshold (%)"><input id="q-pass" type="number" value={Math.round((definitions[selectedQuiz].passThreshold || 0.7)*100)} onChange={e => handleUpdate(selectedQuiz, 'passThreshold', parseInt(e.target.value)/100)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm outline-none" /></FormField>
-            <div className="space-y-1"><span className="text-[10px] font-black uppercase opacity-50 px-1">Import</span><div className="flex gap-2"><button onClick={downloadTemplate} className="flex-1 py-2 rounded-xl border border-border text-[10px] font-black"><Download size={12} className="inline mr-1"/>Tmpl</button><button onClick={() => document.getElementById('q-imp')?.click()} className="flex-1 py-2 rounded-xl bg-emerald-500/5 text-emerald-600 text-[10px] font-black"><FileUp size={12} className="inline mr-1"/>{importing?'...':'Imp'}</button><input type="file" id="q-imp" className="hidden" onChange={handleFileImport} /></div></div>
+            <FormField id="q-pass" label="Pass Threshold (%)">
+              <input
+                id="q-pass"
+                type="number"
+                min="0"
+                max="100"
+                value={Math.round((definitions[selectedQuiz].passThreshold ?? 0.7) * 100)}
+                onChange={e => {
+                  const raw = parseInt(e.target.value, 10);
+                  const validVal = Number.isNaN(raw) ? 70 : Math.min(100, Math.max(0, raw));
+                  handleUpdate(selectedQuiz, 'passThreshold', validVal / 100);
+                }}
+                className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm outline-none"
+              />
+            </FormField>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase opacity-50 px-1">Import Mode</span>
+                <div className="flex items-center gap-2 text-[10px]">
+                  <label className="flex items-center gap-1 cursor-pointer">
+                    <input type="radio" name="importMode" value="replace" checked={importMode === 'replace'} onChange={() => setImportMode('replace')} />
+                    <span>Replace</span>
+                  </label>
+                  <label className="flex items-center gap-1 cursor-pointer">
+                    <input type="radio" name="importMode" value="append" checked={importMode === 'append'} onChange={() => setImportMode('append')} />
+                    <span>Append</span>
+                  </label>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={downloadTemplate} className="flex-1 py-2 rounded-xl border border-border text-[10px] font-black"><Download size={12} className="inline mr-1"/>Tmpl</button>
+                <button onClick={() => document.getElementById('q-imp')?.click()} className="flex-1 py-2 rounded-xl bg-emerald-500/5 text-emerald-600 text-[10px] font-black"><FileUp size={12} className="inline mr-1"/>{importing ? '...' : 'Imp'}</button>
+                <input type="file" id="q-imp" className="hidden" accept=".xlsx, .xls, .csv" onChange={handleFileImport} />
+              </div>
+            </div>
           </div>
+          {importError && (
+            <div className="flex items-center gap-2 text-xs text-red-500 bg-red-500/10 p-2.5 rounded-xl">
+              <AlertCircle size={14} />
+              <span>{importError}</span>
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField id="q-t-en" label="Title EN"><input id="q-t-en" value={definitions[selectedQuiz].title?.en || ''} onChange={e => handleUpdate(selectedQuiz, 'title.en', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm outline-none" /></FormField>
             <FormField id="q-t-th" label="Title TH"><input id="q-t-th" value={definitions[selectedQuiz].title?.th || ''} onChange={e => handleUpdate(selectedQuiz, 'title.th', e.target.value)} className="w-full bg-secondary/30 p-2.5 rounded-xl text-sm outline-none" /></FormField>
