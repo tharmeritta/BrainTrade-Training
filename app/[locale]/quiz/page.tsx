@@ -256,7 +256,18 @@ export default function QuizIndexPage() {
       if (!groups[s]) groups[s] = [];
       groups[s].push(q);
     });
-    return groups;
+
+    // Enforce strict top-to-bottom section hierarchy: foundation -> sales -> other
+    const SECTION_PRIORITY = ['foundation', 'sales', 'other'];
+    const sortedEntries = Object.entries(groups).sort(([aKey], [bKey]) => {
+      const aIdx = SECTION_PRIORITY.indexOf(aKey);
+      const bIdx = SECTION_PRIORITY.indexOf(bKey);
+      const aRank = aIdx !== -1 ? aIdx : 99;
+      const bRank = bIdx !== -1 ? bIdx : 99;
+      return aRank - bRank;
+    });
+
+    return Object.fromEntries(sortedEntries);
   }, [allQuizzes]);
 
   const completedCount = allQuizzes.filter(q => passedModules.has(q.mKey)).length;
