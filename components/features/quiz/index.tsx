@@ -11,7 +11,7 @@ import {
   type Language, type QuizDefinition, type QuestionData,
 } from '@/lib/quiz-data';
 import { getAgentSession, type AgentSession } from '@/lib/session/agent';
-import { TRAINING_REGISTRY } from '@/lib/registry';
+import { TRAINING_REGISTRY, getCanonicalQuizKey } from '@/lib/registry';
 import { C, isAnswerCorrect } from './shared';
 import type { Screen, SessionMode } from './types';
 import { QuizBriefing } from './QuizBriefing';
@@ -84,10 +84,19 @@ export default function QuizSystem({ moduleId }: { moduleId: string }) {
     fetch(`/api/quiz/config?moduleId=${moduleId}`)
       .then(r => r.json())
       .then(d => {
-        if (d.config) setQuiz(d.config);
-        else          setQuiz(MODULE_QUIZ_MAP[moduleId] || null);
+        if (d.config) {
+          setQuiz(d.config);
+        } else {
+          const canonicalKey = getCanonicalQuizKey(moduleId);
+          const fallback = MODULE_QUIZ_MAP[moduleId] || MODULE_QUIZ_MAP[canonicalKey] || null;
+          setQuiz(fallback);
+        }
       })
-      .catch(() => setQuiz(MODULE_QUIZ_MAP[moduleId] || null))
+      .catch(() => {
+        const canonicalKey = getCanonicalQuizKey(moduleId);
+        const fallback = MODULE_QUIZ_MAP[moduleId] || MODULE_QUIZ_MAP[canonicalKey] || null;
+        setQuiz(fallback);
+      })
       .finally(() => setLoadingConfig(false));
   }, [moduleId, locale, router]);
 

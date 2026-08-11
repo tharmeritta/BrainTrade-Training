@@ -276,8 +276,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_locale_layout",
-      "community": 5,
-      "community_name": "agent.ts",
+      "community": 73,
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "[locale]/layout.tsx"
     },
     {
@@ -287,8 +287,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "app_locale_layout_dmsans",
-      "community": 5,
-      "community_name": "agent.ts",
+      "community": 73,
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "dmsans"
     },
     {
@@ -298,8 +298,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "app_locale_layout_dmmono",
-      "community": 5,
-      "community_name": "agent.ts",
+      "community": 73,
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "dmmono"
     },
     {
@@ -310,8 +310,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_locale_layout_generatemetadata",
-      "community": 5,
-      "community_name": "agent.ts",
+      "community": 73,
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "generatemetadata()"
     },
     {
@@ -322,8 +322,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_locale_layout_localelayout",
-      "community": 5,
-      "community_name": "agent.ts",
+      "community": 73,
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "localelayout()"
     },
     {
@@ -794,8 +794,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_generate_route",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 15,
+      "community_name": "ai-audit-service.ts",
       "norm_label": "generate/route.ts"
     },
     {
@@ -806,8 +806,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_generate_route_post",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 15,
+      "community_name": "ai-audit-service.ts",
       "norm_label": "post()"
     },
     {
@@ -911,8 +911,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_bulk_progress_route",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 28,
+      "community_name": "bulk-progress/route.ts",
       "norm_label": "bulk-progress/route.ts"
     },
     {
@@ -924,8 +924,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "app_api_admin_bulk_progress_route_progressrecord",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 28,
+      "community_name": "bulk-progress/route.ts",
       "norm_label": "progressrecord"
     },
     {
@@ -936,8 +936,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_bulk_progress_route_defaults",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 28,
+      "community_name": "bulk-progress/route.ts",
       "norm_label": "defaults()"
     },
     {
@@ -948,8 +948,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_bulk_progress_route_post",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 28,
+      "community_name": "bulk-progress/route.ts",
       "norm_label": "post()"
     },
     {
@@ -1017,8 +1017,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_config_diagnostics_ai_audit_route",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 22,
+      "community_name": "SemanticAuditService",
       "norm_label": "diagnostics/ai-audit/route.ts"
     },
     {
@@ -1029,8 +1029,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_config_diagnostics_ai_audit_route_post",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 22,
+      "community_name": "SemanticAuditService",
       "norm_label": "post()"
     },
     {
@@ -1201,7 +1201,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_export_staff_route_get",
-      "community": 4,
+      "community": 12,
       "community_name": "xlsx",
       "norm_label": "get()"
     },
@@ -1397,8 +1397,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_parse_quiz_route",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 15,
+      "community_name": "ai-audit-service.ts",
       "norm_label": "parse-quiz/route.ts"
     },
     {
@@ -1408,8 +1408,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "app_api_admin_parse_quiz_route_maxduration",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 15,
+      "community_name": "ai-audit-service.ts",
       "norm_label": "maxduration"
     },
     {
@@ -1420,8 +1420,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_parse_quiz_route_post",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 15,
+      "community_name": "ai-audit-service.ts",
       "norm_label": "post()"
     },
     {
@@ -1454,7 +1454,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route_post",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": "post()"
     },
@@ -1754,8 +1754,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_ai_audit_route",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 15,
+      "community_name": "ai-audit-service.ts",
       "norm_label": "api/ai-audit/route.ts"
     },
     {
@@ -1766,8 +1766,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_ai_audit_route_post",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 15,
+      "community_name": "ai-audit-service.ts",
       "norm_label": "post()"
     },
     {
@@ -1835,7 +1835,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_ai_eval_route",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": "ai-eval/route.ts"
     },
@@ -1847,7 +1847,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_ai_eval_route_post",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": "post()"
     },
@@ -2091,7 +2091,7 @@
       "_origin": "ast",
       "id": "app_api_evaluator_coaching_brief_route",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "coaching-brief/route.ts"
     },
     {
@@ -2103,7 +2103,7 @@
       "_origin": "ast",
       "id": "app_api_evaluator_coaching_brief_route_post",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "post()"
     },
     {
@@ -2950,7 +2950,7 @@
       "_origin": "ast",
       "id": "components_features_admin_aiscenarioimportmodal",
       "community": 12,
-      "community_name": "AiScenarioImportModal.tsx",
+      "community_name": "xlsx",
       "norm_label": "aiscenarioimportmodal.tsx"
     },
     {
@@ -2963,7 +2963,7 @@
       "_origin": "ast",
       "id": "components_features_admin_aiscenarioimportmodal_aiscenarioimportmodalprops",
       "community": 12,
-      "community_name": "AiScenarioImportModal.tsx",
+      "community_name": "xlsx",
       "norm_label": "aiscenarioimportmodalprops"
     },
     {
@@ -2975,7 +2975,7 @@
       "_origin": "ast",
       "id": "components_features_admin_aiscenarioimportmodal_aiscenarioimportmodal",
       "community": 12,
-      "community_name": "AiScenarioImportModal.tsx",
+      "community_name": "xlsx",
       "norm_label": "aiscenarioimportmodal()"
     },
     {
@@ -2986,7 +2986,7 @@
       "_origin": "ast",
       "id": "components_features_admin_aiscenariostab",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "aiscenariostab.tsx"
     },
     {
@@ -2997,7 +2997,7 @@
       "_origin": "ast",
       "id": "components_features_admin_aiscenariostab_diff_styles",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "diff_styles"
     },
     {
@@ -3009,7 +3009,7 @@
       "_origin": "ast",
       "id": "components_features_admin_aiscenariostab_aiscenariostab",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "aiscenariostab()"
     },
     {
@@ -3042,8 +3042,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_bulkimportmodal",
-      "community": 15,
-      "community_name": "AgentSection.tsx",
+      "community": 25,
+      "community_name": "StaffTab.tsx",
       "norm_label": "bulkimportmodal.tsx"
     },
     {
@@ -3055,8 +3055,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_bulkimportmodal_bulkimportmodalprops",
-      "community": 15,
-      "community_name": "AgentSection.tsx",
+      "community": 25,
+      "community_name": "StaffTab.tsx",
       "norm_label": "bulkimportmodalprops"
     },
     {
@@ -3067,8 +3067,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_bulkimportmodal_bulkimportmodal",
-      "community": 15,
-      "community_name": "AgentSection.tsx",
+      "community": 25,
+      "community_name": "StaffTab.tsx",
       "norm_label": "bulkimportmodal()"
     },
     {
@@ -3382,7 +3382,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_sandboxmanagermodal",
-      "community": 4,
+      "community": 12,
       "community_name": "xlsx",
       "norm_label": "sandboxmanagermodal.tsx"
     },
@@ -3395,7 +3395,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_sandboxmanagermodal_sandboxmanagermodalprops",
-      "community": 4,
+      "community": 12,
       "community_name": "xlsx",
       "norm_label": "sandboxmanagermodalprops"
     },
@@ -3407,7 +3407,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_sandboxmanagermodal_sandboxmanagermodal",
-      "community": 4,
+      "community": 12,
       "community_name": "xlsx",
       "norm_label": "sandboxmanagermodal()"
     },
@@ -3980,7 +3980,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenarioform",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "scenarioform.tsx"
     },
     {
@@ -3991,7 +3991,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenarioform_ai_suggestions",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "ai_suggestions"
     },
     {
@@ -4003,7 +4003,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenarioform_scenarioform",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "scenarioform()"
     },
     {
@@ -4014,7 +4014,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenariolist",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "scenariolist.tsx"
     },
     {
@@ -4026,7 +4026,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenariolist_scenariocard",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "scenariocard()"
     },
     {
@@ -4038,7 +4038,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenariolist_difficultysection",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "difficultysection()"
     },
     {
@@ -4049,7 +4049,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "ai-scenarios/constants.ts"
     },
     {
@@ -4060,7 +4060,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_diff",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "diff"
     },
     {
@@ -4071,7 +4071,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_diff_order",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "diff_order"
     },
     {
@@ -4082,7 +4082,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_empty_form",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "empty_form"
     },
     {
@@ -4093,7 +4093,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_inputcls",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "inputcls"
     },
     {
@@ -4104,7 +4104,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_textareacls",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "textareacls"
     },
     {
@@ -4115,7 +4115,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_templates",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "templates.ts"
     },
     {
@@ -4126,7 +4126,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_templates_preset_templates",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "preset_templates"
     },
     {
@@ -4628,8 +4628,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_staff_agentsection",
-      "community": 15,
-      "community_name": "AgentSection.tsx",
+      "community": 25,
+      "community_name": "StaffTab.tsx",
       "norm_label": "agentsection.tsx"
     },
     {
@@ -4640,8 +4640,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_staff_agentsection_agentsection",
-      "community": 15,
-      "community_name": "AgentSection.tsx",
+      "community": 25,
+      "community_name": "StaffTab.tsx",
       "norm_label": "agentsection()"
     },
     {
@@ -5795,7 +5795,7 @@
       "_origin": "ast",
       "id": "components_features_ai_eval_multiplechoiceview",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "multiplechoiceview.tsx"
     },
     {
@@ -5807,7 +5807,7 @@
       "_origin": "ast",
       "id": "components_features_ai_eval_multiplechoiceview_multiplechoiceview",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "multiplechoiceview()"
     },
     {
@@ -6164,7 +6164,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_cohortheatmap",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "cohortheatmap.tsx"
     },
     {
@@ -6177,7 +6177,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_cohortheatmap_agentskillrow",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "agentskillrow"
     },
     {
@@ -6190,7 +6190,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_cohortheatmap_cohortheatmapprops",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "cohortheatmapprops"
     },
     {
@@ -6201,7 +6201,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_cohortheatmap_default_rows",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "default_rows"
     },
     {
@@ -6213,7 +6213,7 @@
       "_origin": "ast",
       "id": "components_features_evaluator_cohortheatmap_cohortheatmap",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "cohortheatmap()"
     },
     {
@@ -7530,8 +7530,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_ui_commandpalette",
-      "community": 5,
-      "community_name": "agent.ts",
+      "community": 73,
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "commandpalette.tsx"
     },
     {
@@ -7542,8 +7542,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_ui_commandpalette_commandpalette",
-      "community": 5,
-      "community_name": "agent.ts",
+      "community": 73,
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "commandpalette()"
     },
     {
@@ -7682,8 +7682,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_ui_navigationprogress",
-      "community": 5,
-      "community_name": "agent.ts",
+      "community": 73,
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "navigationprogress.tsx"
     },
     {
@@ -7694,8 +7694,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_ui_navigationprogress_navigationprogress",
-      "community": 5,
-      "community_name": "agent.ts",
+      "community": 73,
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "navigationprogress()"
     },
     {
@@ -7921,8 +7921,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_ui_themescript",
-      "community": 5,
-      "community_name": "agent.ts",
+      "community": 73,
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "themescript.tsx"
     },
     {
@@ -7933,8 +7933,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_ui_themescript_themescript",
-      "community": 5,
-      "community_name": "agent.ts",
+      "community": 73,
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "themescript()"
     },
     {
@@ -8184,7 +8184,7 @@
       "_origin": "ast",
       "id": "lib_ai",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "ai.ts"
     },
     {
@@ -8196,7 +8196,7 @@
       "_origin": "ast",
       "id": "lib_ai_getgeminimodel",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "getgeminimodel()"
     },
     {
@@ -8208,7 +8208,7 @@
       "_origin": "ast",
       "id": "lib_ai_getopenai",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "getopenai()"
     },
     {
@@ -8220,7 +8220,7 @@
       "_origin": "ast",
       "id": "lib_ai_generatetext",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "generatetext()"
     },
     {
@@ -8454,7 +8454,7 @@
       "_origin": "ast",
       "id": "lib_constants",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "lib/constants.ts"
     },
     {
@@ -8465,7 +8465,7 @@
       "_origin": "ast",
       "id": "lib_constants_supported_locales",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "supported_locales"
     },
     {
@@ -8478,7 +8478,7 @@
       "_origin": "ast",
       "id": "lib_constants_supportedlocale",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "supportedlocale"
     },
     {
@@ -8489,7 +8489,7 @@
       "_origin": "ast",
       "id": "lib_constants_default_locale",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "default_locale"
     },
     {
@@ -8500,7 +8500,7 @@
       "_origin": "ast",
       "id": "lib_constants_default_gemini_model",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "default_gemini_model"
     },
     {
@@ -8511,7 +8511,7 @@
       "_origin": "ast",
       "id": "lib_constants_default_openai_model",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "default_openai_model"
     },
     {
@@ -8522,7 +8522,7 @@
       "_origin": "ast",
       "id": "lib_constants_score_thresholds",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "score_thresholds"
     },
     {
@@ -8856,8 +8856,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_gemini",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 15,
+      "community_name": "ai-audit-service.ts",
       "norm_label": "gemini.ts"
     },
     {
@@ -8868,8 +8868,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_gemini_getgeminimodel",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 15,
+      "community_name": "ai-audit-service.ts",
       "norm_label": "getgeminimodel()"
     },
     {
@@ -9146,8 +9146,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_openai",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 15,
+      "community_name": "ai-audit-service.ts",
       "norm_label": "openai.ts"
     },
     {
@@ -9158,8 +9158,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_openai_getopenai",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 15,
+      "community_name": "ai-audit-service.ts",
       "norm_label": "getopenai()"
     },
     {
@@ -9757,7 +9757,7 @@
       "_origin": "ast",
       "id": "lib_scoring_getpassthresholdpct",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "getpassthresholdpct()"
     },
     {
@@ -9934,7 +9934,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fsset",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": "fsset()"
     },
@@ -10063,7 +10063,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_training_getactivetrainingperiod",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": "getactivetrainingperiod()"
     },
@@ -10074,8 +10074,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_services_ai_audit_service",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 15,
+      "community_name": "ai-audit-service.ts",
       "norm_label": "ai-audit-service.ts"
     },
     {
@@ -10087,8 +10087,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "lib_services_ai_audit_service_aiauditservice",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 15,
+      "community_name": "ai-audit-service.ts",
       "norm_label": "aiauditservice"
     },
     {
@@ -10099,8 +10099,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_audit_service_aiauditservice_fetchchattranscript",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 15,
+      "community_name": "ai-audit-service.ts",
       "norm_label": ".fetchchattranscript()"
     },
     {
@@ -10111,8 +10111,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_audit_service_aiauditservice_audittranscript",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 15,
+      "community_name": "ai-audit-service.ts",
       "norm_label": ".audittranscript()"
     },
     {
@@ -10123,7 +10123,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_audit_service_aiauditservice_logauditcompletion",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": ".logauditcompletion()"
     },
@@ -10134,7 +10134,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_services_ai_eval_service",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": "ai-eval-service.ts"
     },
@@ -10147,7 +10147,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": "aievalservice"
     },
@@ -10159,7 +10159,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_getscenario",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": ".getscenario()"
     },
@@ -10171,7 +10171,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_startsession",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": ".startsession()"
     },
@@ -10183,7 +10183,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_processturn",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": ".processturn()"
     },
@@ -10195,7 +10195,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_callchatgpt",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": ".callchatgpt()"
     },
@@ -10207,7 +10207,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_injectvariables",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": ".injectvariables()"
     },
@@ -10219,7 +10219,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_buildfallbacksystemprompt",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": ".buildfallbacksystemprompt()"
     },
@@ -10231,7 +10231,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_seedallscenarios",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": ".seedallscenarios()"
     },
@@ -10243,7 +10243,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_cleanjson",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": ".cleanjson()"
     },
@@ -10255,7 +10255,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_logcompletion",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": ".logcompletion()"
     },
@@ -10267,7 +10267,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_seeddefaultscenario",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": ".seeddefaultscenario()"
     },
@@ -10279,7 +10279,7 @@
       "_origin": "ast",
       "id": "lib_services_ai_scenarios_utils",
       "community": 12,
-      "community_name": "AiScenarioImportModal.tsx",
+      "community_name": "xlsx",
       "norm_label": "utils.ts"
     },
     {
@@ -10290,7 +10290,7 @@
       "_origin": "ast",
       "id": "lib_services_ai_scenarios_utils_default_criteria",
       "community": 12,
-      "community_name": "AiScenarioImportModal.tsx",
+      "community_name": "xlsx",
       "norm_label": "default_criteria"
     },
     {
@@ -10301,7 +10301,7 @@
       "_origin": "ast",
       "id": "lib_services_ai_scenarios_utils_ai_scenario_template",
       "community": 12,
-      "community_name": "AiScenarioImportModal.tsx",
+      "community_name": "xlsx",
       "norm_label": "ai_scenario_template"
     },
     {
@@ -10313,7 +10313,7 @@
       "_origin": "ast",
       "id": "lib_services_ai_scenarios_utils_downloadscenariotemplate",
       "community": 12,
-      "community_name": "AiScenarioImportModal.tsx",
+      "community_name": "xlsx",
       "norm_label": "downloadscenariotemplate()"
     },
     {
@@ -10325,7 +10325,7 @@
       "_origin": "ast",
       "id": "lib_services_ai_scenarios_utils_parsescenariofile",
       "community": 12,
-      "community_name": "AiScenarioImportModal.tsx",
+      "community_name": "xlsx",
       "norm_label": "parsescenariofile()"
     },
     {
@@ -10575,8 +10575,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 22,
+      "community_name": "SemanticAuditService",
       "norm_label": "semanticauditservice"
     },
     {
@@ -10587,8 +10587,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_runfullaudit",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 22,
+      "community_name": "SemanticAuditService",
       "norm_label": ".runfullaudit()"
     },
     {
@@ -10599,8 +10599,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_fetchconfigs",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 22,
+      "community_name": "SemanticAuditService",
       "norm_label": ".fetchconfigs()"
     },
     {
@@ -10611,8 +10611,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_fetchevaluations",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 22,
+      "community_name": "SemanticAuditService",
       "norm_label": ".fetchevaluations()"
     },
     {
@@ -10623,8 +10623,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_fetchagents",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 22,
+      "community_name": "SemanticAuditService",
       "norm_label": ".fetchagents()"
     },
     {
@@ -10635,8 +10635,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_auditconfigs",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 22,
+      "community_name": "SemanticAuditService",
       "norm_label": ".auditconfigs()"
     },
     {
@@ -10647,8 +10647,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_auditevaluations",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 22,
+      "community_name": "SemanticAuditService",
       "norm_label": ".auditevaluations()"
     },
     {
@@ -10659,8 +10659,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_auditagentjourneys",
-      "community": 1,
-      "community_name": "fsSet",
+      "community": 22,
+      "community_name": "SemanticAuditService",
       "norm_label": ".auditagentjourneys()"
     },
     {
@@ -10779,7 +10779,7 @@
       "_origin": "ast",
       "id": "lib_services_telesales_coaching",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "telesales-coaching.ts"
     },
     {
@@ -10792,7 +10792,7 @@
       "_origin": "ast",
       "id": "lib_services_telesales_coaching_coachingbrief",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "coachingbrief"
     },
     {
@@ -10804,7 +10804,7 @@
       "_origin": "ast",
       "id": "lib_services_telesales_coaching_generatecoachingbrief",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "generatecoachingbrief()"
     },
     {
@@ -11188,7 +11188,7 @@
       "_origin": "ast",
       "id": "middleware",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "middleware.ts"
     },
     {
@@ -11199,7 +11199,7 @@
       "_origin": "ast",
       "id": "middleware_config",
       "community": 73,
-      "community_name": "lib/constants.ts",
+      "community_name": "[locale]/layout.tsx",
       "norm_label": "config"
     },
     {
@@ -11264,8 +11264,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "package",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 74,
+      "community_name": "package.json",
       "norm_label": "package.json"
     },
     {
@@ -11275,8 +11275,8 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "package_name",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 74,
+      "community_name": "package.json",
       "norm_label": "name"
     },
     {
@@ -11286,8 +11286,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "package_version",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 74,
+      "community_name": "package.json",
       "norm_label": "version"
     },
     {
@@ -11297,8 +11297,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "package_private",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 74,
+      "community_name": "package.json",
       "norm_label": "private"
     },
     {
@@ -11308,8 +11308,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "package_scripts",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 21,
+      "community_name": "scripts",
       "norm_label": "scripts"
     },
     {
@@ -11319,8 +11319,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "package_scripts_dev",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 21,
+      "community_name": "scripts",
       "norm_label": "dev"
     },
     {
@@ -11330,8 +11330,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "package_scripts_dev_auto",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 21,
+      "community_name": "scripts",
       "norm_label": "dev:auto"
     },
     {
@@ -11341,8 +11341,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "package_scripts_build",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 21,
+      "community_name": "scripts",
       "norm_label": "build"
     },
     {
@@ -11352,8 +11352,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "package_scripts_start",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 21,
+      "community_name": "scripts",
       "norm_label": "start"
     },
     {
@@ -11363,8 +11363,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "package_scripts_lint",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 21,
+      "community_name": "scripts",
       "norm_label": "lint"
     },
     {
@@ -11374,8 +11374,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "package_scripts_check",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 21,
+      "community_name": "scripts",
       "norm_label": "check"
     },
     {
@@ -11385,8 +11385,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "package_scripts_seed",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 21,
+      "community_name": "scripts",
       "norm_label": "seed"
     },
     {
@@ -11396,8 +11396,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "package_scripts_seed_agents",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 21,
+      "community_name": "scripts",
       "norm_label": "seed:agents"
     },
     {
@@ -11407,8 +11407,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "package_scripts_agy_start",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 21,
+      "community_name": "scripts",
       "norm_label": "agy:start"
     },
     {
@@ -11418,8 +11418,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "package_scripts_agy_check",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 21,
+      "community_name": "scripts",
       "norm_label": "agy:check"
     },
     {
@@ -11429,8 +11429,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "package_scripts_agy_commit",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 21,
+      "community_name": "scripts",
       "norm_label": "agy:commit"
     },
     {
@@ -11451,8 +11451,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "package_dependencies_google_cloud_storage",
-      "community": 22,
-      "community_name": "@google-cloud/storage",
+      "community": 11,
+      "community_name": "dependencies",
       "norm_label": "@google-cloud/storage"
     },
     {
@@ -11462,8 +11462,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "google_cloud_storage",
-      "community": 22,
-      "community_name": "@google-cloud/storage",
+      "community": 11,
+      "community_name": "dependencies",
       "norm_label": "@google-cloud/storage"
     },
     {
@@ -11517,8 +11517,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "package_dependencies_firebase_admin",
-      "community": 21,
-      "community_name": "firebase-admin",
+      "community": 11,
+      "community_name": "dependencies",
       "norm_label": "firebase-admin"
     },
     {
@@ -11528,8 +11528,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "firebase_admin",
-      "community": 21,
-      "community_name": "firebase-admin",
+      "community": 11,
+      "community_name": "dependencies",
       "norm_label": "firebase-admin"
     },
     {
@@ -11605,8 +11605,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "package_dependencies_next_intl",
-      "community": 28,
-      "community_name": "next-intl",
+      "community": 11,
+      "community_name": "dependencies",
       "norm_label": "next-intl"
     },
     {
@@ -11616,8 +11616,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "next_intl",
-      "community": 28,
-      "community_name": "next-intl",
+      "community": 11,
+      "community_name": "dependencies",
       "norm_label": "next-intl"
     },
     {
@@ -11715,7 +11715,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "package_dependencies_xlsx",
-      "community": 4,
+      "community": 12,
       "community_name": "xlsx",
       "norm_label": "xlsx"
     },
@@ -11726,7 +11726,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "xlsx",
-      "community": 4,
+      "community": 12,
       "community_name": "xlsx",
       "norm_label": "xlsx"
     },
@@ -11814,8 +11814,8 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "package_devdependencies_types_node",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 76,
+      "community_name": "@types/node",
       "norm_label": "@types/node"
     },
     {
@@ -11825,8 +11825,8 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "types_node",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 76,
+      "community_name": "@types/node",
       "norm_label": "@types/node"
     },
     {
@@ -11836,8 +11836,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "package_devdependencies_types_nodemailer",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 78,
+      "community_name": "@types/nodemailer",
       "norm_label": "@types/nodemailer"
     },
     {
@@ -11847,8 +11847,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "types_nodemailer",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 78,
+      "community_name": "@types/nodemailer",
       "norm_label": "@types/nodemailer"
     },
     {
@@ -11858,8 +11858,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "package_devdependencies_types_react",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 79,
+      "community_name": "@types/react",
       "norm_label": "@types/react"
     },
     {
@@ -11869,8 +11869,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "types_react",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 79,
+      "community_name": "@types/react",
       "norm_label": "@types/react"
     },
     {
@@ -12078,8 +12078,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "package_devdependencies_typescript",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 80,
+      "community_name": "typescript",
       "norm_label": "typescript"
     },
     {
@@ -12089,8 +12089,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "typescript",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 80,
+      "community_name": "typescript",
       "norm_label": "typescript"
     },
     {
@@ -13020,7 +13020,7 @@
       "_origin": "ast",
       "id": "types_ai_eval",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "ai-eval.ts"
     },
     {
@@ -13033,7 +13033,7 @@
       "_origin": "ast",
       "id": "types_ai_eval_localizedstring",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "localizedstring"
     },
     {
@@ -13046,7 +13046,7 @@
       "_origin": "ast",
       "id": "types_ai_eval_scenariochoice",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "scenariochoice"
     },
     {
@@ -13057,7 +13057,7 @@
       "_origin": "ast",
       "id": "types_ai_eval_aievalscenarioschema",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "aievalscenarioschema"
     },
     {
@@ -13069,7 +13069,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_ai_eval_aievalscenario",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": "aievalscenario"
     },
@@ -13083,7 +13083,7 @@
       "_origin": "ast",
       "id": "types_ai_eval_scenariosubmitresult",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "scenariosubmitresult"
     },
     {
@@ -13094,7 +13094,7 @@
       "_origin": "ast",
       "id": "types_ai_eval_aievalturnresponseschema",
       "community": 1,
-      "community_name": "fsSet",
+      "community_name": "ai-eval.ts",
       "norm_label": "aievalturnresponseschema"
     },
     {
@@ -13106,7 +13106,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_ai_eval_aievalturnresponse",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": "aievalturnresponse"
     },
@@ -13119,7 +13119,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_ai_eval_aievalsession",
-      "community": 1,
+      "community": 4,
       "community_name": "fsSet",
       "norm_label": "aievalsession"
     },
@@ -36519,6 +36519,18 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_quiz_index",
+      "target": "lib_registry_getcanonicalquizkey",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "components/features/quiz/index.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "components_features_quiz_index",
       "target": "lib_registry_training_registry",
       "confidence_score": 1.0
     },
@@ -36564,11 +36576,23 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "components/features/quiz/index.tsx",
-      "source_location": "L114",
+      "source_location": "L123",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_quiz_index_quizsystem",
       "target": "components_features_quiz_shared_isanswercorrect"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "components/features/quiz/index.tsx",
+      "source_location": "L90",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "components_features_quiz_index_quizsystem",
+      "target": "lib_registry_getcanonicalquizkey"
     },
     {
       "relation": "calls",
@@ -47510,5 +47534,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "d21707ba45590f3a76813900b966b1ce99e6dbce"
+  "built_at_commit": "4f764c9c3ef7f0ad343d31d2498e76f293b79555"
 }
