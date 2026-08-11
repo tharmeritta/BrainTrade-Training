@@ -79,7 +79,7 @@
   "77": "animations.ts",
   "78": "OverviewPanel.tsx",
   "79": "AgentStats",
-  "80": "EvaluationsTab.tsx",
+  "80": "OverviewTab.tsx",
   "81": "ReportsTab.tsx",
   "83": "ensure-dev-server.js",
   "90": "ShowcaseTab.tsx",

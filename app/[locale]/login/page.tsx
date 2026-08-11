@@ -105,14 +105,14 @@ export default function LoginPage() {
 
   return (
     <div
-      className="h-screen w-screen overflow-hidden flex items-center justify-center relative"
+      className="min-h-dvh w-full overflow-y-auto pt-safe pb-safe flex items-center justify-center relative p-4 py-8"
       style={{ background: 'var(--hub-bg)', fontFamily: "'DM Sans', system-ui, sans-serif" }}
     >
       <BackgroundEffects />
 
-      <div className="relative z-10 w-full max-w-[440px] px-6">
+      <div className="relative z-10 w-full max-w-[440px] px-2 sm:px-6">
         <Link href={`/${locale}`}
-          className="group inline-flex items-center gap-2 text-xs font-bold mb-8 transition-all hover:translate-x-[-4px]"
+          className="group inline-flex items-center gap-2 min-h-[44px] text-xs font-bold mb-6 sm:mb-8 transition-all hover:translate-x-[-4px]"
           style={{ color: 'var(--hub-muted)' }}
         >
           <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 border border-white/10 group-hover:bg-brand-cyan/10 group-hover:border-brand-cyan/20 transition-all">
@@ -150,7 +150,7 @@ export default function LoginPage() {
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
             />
 
-            <div style={{ padding: '36px 32px' }}>
+            <div style={{ padding: '36px 24px' }}>
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white text-lg shadow-lg"
                   style={{ background: `linear-gradient(135deg, ${CYAN}, ${PURPLE})` }}>B</div>
@@ -168,7 +168,7 @@ export default function LoginPage() {
                   const active = role === r;
                   return (
                     <button key={r} onClick={() => switchRole(r)}
-                      className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl transition-all relative overflow-hidden"
+                      className="flex-1 flex flex-col items-center justify-center gap-1.5 py-2.5 min-h-[44px] rounded-xl transition-all relative overflow-hidden"
                       style={{
                         background: active ? 'var(--hub-card)' : 'transparent',
                         color: active ? c.accent : 'var(--hub-muted)',
@@ -203,7 +203,7 @@ export default function LoginPage() {
                   <input
                     type="text" value={username} onChange={e => setUsername(e.target.value)}
                     placeholder={t('usernamePlaceholder')} required
-                    className="w-full px-4 py-3 rounded-2xl text-sm font-medium outline-none transition-all"
+                    className="w-full px-4 min-h-[44px] rounded-2xl text-sm font-medium outline-none transition-all"
                     style={{ background: 'var(--entry-input-bg)', border: '1px solid var(--hub-border)', color: 'var(--hub-text)' }}
                     onFocus={e => { e.currentTarget.style.borderColor = cfg.accent + '80'; e.currentTarget.style.boxShadow = `0 0 20px -5px ${cfg.accent}20`; }}
                     onBlur={e => { e.currentTarget.style.borderColor = 'var(--hub-border)'; e.currentTarget.style.boxShadow = 'none'; }}
@@ -218,13 +218,13 @@ export default function LoginPage() {
                       type={showPass ? 'text' : 'password'} value={password}
                       onChange={e => setPassword(e.target.value)}
                       placeholder={t('passwordPlaceholder')} required
-                      className="w-full px-4 py-3 pr-12 rounded-2xl text-sm font-medium outline-none transition-all"
+                      className="w-full px-4 min-h-[44px] pr-12 rounded-2xl text-sm font-medium outline-none transition-all"
                       style={{ background: 'var(--entry-input-bg)', border: '1px solid var(--hub-border)', color: 'var(--hub-text)' }}
                       onFocus={e => { e.currentTarget.style.borderColor = cfg.accent + '80'; e.currentTarget.style.boxShadow = `0 0 20px -5px ${cfg.accent}20`; }}
                       onBlur={e => { e.currentTarget.style.borderColor = 'var(--hub-border)'; e.currentTarget.style.boxShadow = 'none'; }}
                     />
                     <button type="button" onClick={() => setShowPass(v => !v)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors hover:text-white"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors hover:text-white"
                       style={{ color: 'var(--hub-muted)' }}>
                       {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>

@@ -36,11 +36,13 @@ function NavGroup({
           const active = activeTabId === item.id;
           return (
             <button
+              type="button"
               key={item.id}
               onClick={() => onSelectTab(item.id)}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectTab(item.id); } }}
               title={sidebarCollapsed ? t(`tabs.${item.labelKey}`) : undefined}
-              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all group
+              aria-label={t(`tabs.${item.labelKey}`)}
+              className={`relative flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-sm font-semibold transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
                 ${active
                   ? 'bg-primary/10 text-primary'
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
@@ -105,13 +107,13 @@ export default function AdminSidebar({
   t
 }: AdminSidebarProps) {
   const roleBadgeClass =
-    role === 'admin'   ? 'bg-purple-500/15 text-purple-400 border-purple-500/20' :
-    role === 'it'      ? 'bg-blue-500/15 text-blue-400 border-blue-500/20' :
-    role === 'trainer' ? 'bg-amber-500/15 text-amber-400 border-amber-500/20' :
-                         'bg-slate-500/15 text-slate-400 border-slate-500/20';
+    role === 'admin'   ? 'bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/20' :
+    role === 'it'      ? 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/20' :
+    role === 'trainer' ? 'bg-amber-500/15 text-amber-800 dark:text-amber-400 border-amber-500/20' :
+                         'bg-slate-500/15 text-slate-700 dark:text-slate-400 border-slate-500/20';
 
   return (
-    <aside className={`flex flex-col shrink-0 bg-background/70 backdrop-blur-2xl border-r border-border/40 sticky top-0 h-screen transition-all duration-300 ${state.sidebarCollapsed ? 'w-[60px]' : 'w-[220px]'}`}>
+    <aside className={`flex flex-col shrink-0 bg-background/70 backdrop-blur-2xl border-r border-border/40 sticky top-0 h-dvh pt-safe pb-safe transition-all duration-300 ${state.sidebarCollapsed ? 'w-[60px]' : 'w-[220px]'}`}>
       
       {/* Logo */}
       <div className={`flex items-center h-16 border-b border-border/40 px-4 ${state.sidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
@@ -132,10 +134,12 @@ export default function AdminSidebar({
       {/* User badge */}
       <div className={`px-3 pt-4 pb-2 relative`}>
         <button
+          type="button"
           onClick={() => actions.setProfileOpen(v => !v)}
-          className={`w-full flex items-center gap-2.5 rounded-xl border transition-all hover:opacity-80 active:scale-[0.98]
+          aria-label={`User menu for ${name}`}
+          className={`w-full flex items-center gap-2.5 min-h-[44px] rounded-xl border transition-all hover:opacity-80 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
             ${roleBadgeClass}
-            ${state.sidebarCollapsed ? 'justify-center p-2' : 'px-3 py-2.5'}
+            ${state.sidebarCollapsed ? 'justify-center p-2' : 'px-3 py-2'}
           `}
           title={state.sidebarCollapsed ? name : undefined}
         >
@@ -163,10 +167,10 @@ export default function AdminSidebar({
                 aria-label="Close profile popover"
               />
               <motion.div
-                initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                initial={{ opacity: 0, y: -6, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 4, scale: 0.97 }}
-                transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                exit={{ opacity: 0, y: -6, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
                 className={`absolute z-50 top-full mt-2 bg-card/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl shadow-black/20 overflow-hidden
                   ${state.sidebarCollapsed ? 'left-full ml-2 top-0 mt-0 w-[220px]' : 'left-3 right-3'}
                 `}
@@ -183,8 +187,9 @@ export default function AdminSidebar({
                 </div>
                 <div className="p-2">
                   <button
+                    type="button"
                     onClick={() => { actions.setIsPwModalOpen(true); actions.setProfileOpen(false); }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all"
+                    className="w-full flex items-center gap-2.5 px-3 min-h-[44px] rounded-xl text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Zap size={14} className="shrink-0" />
                     {t('changePw')}
@@ -226,20 +231,21 @@ export default function AdminSidebar({
         {state.isReadOnlyRole && !state.sidebarCollapsed && (
           <div className="mt-6 px-3">
             <div className={`p-4 rounded-2xl border ${state.isInteractive ? 'bg-blue-500/10 border-blue-500/20' : 'bg-amber-500/10 border-amber-500/20'}`}>
-              <p className={`text-[10px] font-bold uppercase tracking-wider mb-2 ${state.isInteractive ? 'text-blue-400' : 'text-amber-400'}`}>
+              <p className={`text-[10px] font-bold uppercase tracking-wider mb-2 ${state.isInteractive ? 'text-blue-600 dark:text-blue-400' : 'text-amber-700 dark:text-amber-400'}`}>
                 {state.isInteractive ? t('it.interactiveActive') : t('it.readOnlyMode')}
               </p>
               {!state.isInteractive && (
                 <button
+                  type="button"
                   onClick={actions.requestInteractiveAccess}
                   disabled={state.requestingAccess}
-                  className="w-full py-2 bg-amber-500 text-white text-xs font-bold rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-50"
+                  className="w-full py-2.5 min-h-[44px] bg-amber-500 text-white text-xs font-bold rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {state.requestingAccess ? '...' : t('it.requestInteractive')}
                 </button>
               )}
               {state.isInteractive && interactiveAccessUntil && (
-                <p className="text-[9px] text-blue-400/80 leading-tight">
+                <p className="text-[9px] text-blue-600 dark:text-blue-400/80 leading-tight">
                   {t('it.expiresAt', { time: new Date(interactiveAccessUntil).toLocaleTimeString() })}
                 </p>
               )}
@@ -251,16 +257,20 @@ export default function AdminSidebar({
       {/* Bottom */}
       <div className={`border-t border-border/40 p-2 flex flex-col gap-1`}>
         <button
+          type="button"
           onClick={actions.logout}
           title={t('signOut')}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all ${state.sidebarCollapsed ? 'justify-center' : ''}`}
+          aria-label={t('signOut')}
+          className={`flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-sm font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${state.sidebarCollapsed ? 'justify-center' : ''}`}
         >
           <LogOut size={15} className="shrink-0" />
           {!state.sidebarCollapsed && <span>{t('signOut')}</span>}
         </button>
         <button
+          type="button"
           onClick={() => actions.setSidebarCollapsed(!state.sidebarCollapsed)}
-          className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs text-muted-foreground/60 hover:text-muted-foreground hover:bg-secondary/40 transition-all ${state.sidebarCollapsed ? 'justify-center' : ''}`}
+          aria-label="Toggle sidebar collapse"
+          className={`flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-xs text-muted-foreground/60 hover:text-muted-foreground hover:bg-secondary/40 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${state.sidebarCollapsed ? 'justify-center' : ''}`}
         >
           <ChevronRight size={13} className={`shrink-0 transition-transform duration-300 ${state.sidebarCollapsed ? '' : 'rotate-180'}`} />
           {!state.sidebarCollapsed && <span>Collapse</span>}

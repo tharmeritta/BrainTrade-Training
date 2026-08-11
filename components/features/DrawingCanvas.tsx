@@ -31,17 +31,21 @@ export default function DrawingCanvas({
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentPath, setCurrentPath] = useState<Point[]>([]);
+  const currentPathRef = useRef<Point[]>([]);
 
-  // Draw existing paths
-  useEffect(() => {
+  // Function to redraw all elements on canvas
+  const redraw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear and Redraw
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+    const dpr = window.devicePixelRatio || 1;
+    const cssWidth = canvas.width / dpr;
+    const cssHeight = canvas.height / dpr;
+
+    ctx.clearRect(0, 0, cssWidth, cssHeight);
+
     const drawPath = (path: Point[], strokeColor: string, width: number) => {
       if (path.length < 2) return;
       ctx.beginPath();
@@ -49,10 +53,10 @@ export default function DrawingCanvas({
       ctx.lineWidth = width;
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
-      
-      ctx.moveTo(path[0].x * canvas.width, path[0].y * canvas.height);
+
+      ctx.moveTo(path[0].x * cssWidth, path[0].y * cssHeight);
       for (let i = 1; i < path.length; i++) {
-        ctx.lineTo(path[i].x * canvas.width, path[i].y * canvas.height);
+        ctx.lineTo(path[i].x * cssWidth, path[i].y * cssHeight);
       }
       ctx.stroke();
     };
@@ -66,18 +70,51 @@ export default function DrawingCanvas({
     }
   }, [drawings, currentPath, color]);
 
-  // Handle Resize
+  // Handle Resize and Retina DPI scaling
+  const updateSize = useCallback(() => {
+    const container = containerRef.current;
+    const canvas = canvasRef.current;
+    if (!container || !canvas) return;
+
+    const rect = container.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    canvas.style.width = `${rect.width}px`;
+    canvas.style.height = `${rect.height}px`;
+
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.scale(dpr, dpr);
+    }
+
+    redraw();
+  }, [redraw]);
+
+  // ResizeObserver for element & window resize
   useEffect(() => {
-    const updateSize = () => {
-      if (containerRef.current && canvasRef.current) {
-        canvasRef.current.width = containerRef.current.clientWidth;
-        canvasRef.current.height = containerRef.current.clientHeight;
-      }
-    };
     updateSize();
+    const container = containerRef.current;
+    if (!container) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateSize();
+    });
+
+    resizeObserver.observe(container);
     window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
-  }, []);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateSize);
+    };
+  }, [updateSize]);
+
+  // Trigger redraw on path updates
+  useEffect(() => {
+    redraw();
+  }, [redraw]);
 
   const getPos = (e: React.MouseEvent | React.TouchEvent): Point | null => {
     if (!containerRef.current) return null;
@@ -98,6 +135,7 @@ export default function DrawingCanvas({
 
     if (mode === 'pen') {
       setIsDrawing(true);
+      currentPathRef.current = [pos];
       setCurrentPath([pos]);
       onDrawStart?.();
     } else if (mode === 'laser') {
@@ -111,7 +149,8 @@ export default function DrawingCanvas({
     if (!pos) return;
 
     if (mode === 'pen' && isDrawing) {
-      setCurrentPath(prev => [...prev, pos]);
+      currentPathRef.current.push(pos);
+      setCurrentPath([...currentPathRef.current]);
     } else if (mode === 'laser') {
       onLaserMove?.(pos);
     }
@@ -121,15 +160,17 @@ export default function DrawingCanvas({
     if (!isTrainer || !isActive) return;
     
     if (mode === 'pen' && isDrawing) {
-      if (currentPath.length > 1) {
+      const finalPath = currentPathRef.current;
+      if (finalPath.length > 1) {
         onDrawEnd?.({
           id: Math.random().toString(36).substring(7),
-          points: currentPath,
+          points: finalPath,
           color: color,
           width: 3
         });
       }
       setIsDrawing(false);
+      currentPathRef.current = [];
       setCurrentPath([]);
     } else if (mode === 'laser') {
       onLaserMove?.(null);

@@ -40,7 +40,7 @@ export default function AdminHeader({
       <div>
         <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
           {t('title')}
-          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
             Live QA Mode
           </span>
         </h1>
@@ -54,6 +54,7 @@ export default function AdminHeader({
             <select
               value={activeRoleView}
               onChange={(e) => onRoleViewChange(e.target.value as UserRole)}
+              aria-label="View platform as role"
               className="bg-transparent text-xs font-bold text-foreground focus:outline-none cursor-pointer"
             >
               <option value="admin" className="bg-card text-foreground font-bold">🛡️ Full Admin</option>
@@ -69,9 +70,9 @@ export default function AdminHeader({
         {isAdmin && (
           <>
             <Link
-              href="/th/demo"
+              href="/demo"
               target="_blank"
-              className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
+              className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-400 border border-purple-500/30 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Open Standalone Client Showcase & Sales Presentation Hub"
             >
               <Presentation size={14} />
@@ -80,10 +81,10 @@ export default function AdminHeader({
             </Link>
 
             <Link
-              href="/th/dashboard"
+              href="/dashboard"
               target="_blank"
               onClick={handlePreviewAgent}
-              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               title="Preview Live Agent AI Scenarios & Quiz Platform without logging out"
             >
               <UserCheck size={14} />

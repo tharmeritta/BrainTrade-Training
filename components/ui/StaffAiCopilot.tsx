@@ -44,8 +44,10 @@ export default function StaffAiCopilot() {
     <>
       {/* Floating Trigger Button */}
       <button
+        type="button"
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-3 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xs shadow-xl hover:shadow-purple-500/25 hover:scale-105 transition-all border border-white/20"
+        aria-label="Staff AI Copilot"
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 min-h-[44px] rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xs shadow-xl hover:shadow-purple-500/25 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all border border-white/20"
       >
         <Sparkles size={16} className="animate-spin" />
         <span>Staff AI Copilot</span>
@@ -58,29 +60,37 @@ export default function StaffAiCopilot() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex justify-end"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex justify-end"
             onClick={() => setIsOpen(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Trainer AI Copilot"
           >
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="w-full max-w-md bg-slate-950 border-l border-white/10 p-5 flex flex-col justify-between shadow-2xl"
+              className="w-full max-w-md bg-card text-card-foreground border-l border-border p-5 pt-safe pb-safe flex flex-col justify-between shadow-2xl h-dvh"
               onClick={e => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center justify-between border-b border-border pb-4">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-500/20 text-purple-500 dark:text-purple-400 border border-purple-500/30">
                     <Bot size={18} />
                   </div>
                   <div>
-                    <h3 className="font-black text-xs uppercase tracking-wider text-slate-100">Trainer AI Copilot</h3>
-                    <p className="text-[10px] text-slate-400">Natural language team intelligence</p>
+                    <h3 className="font-black text-xs uppercase tracking-wider text-foreground">Trainer AI Copilot</h3>
+                    <p className="text-[10px] text-muted-foreground">Natural language team intelligence</p>
                   </div>
                 </div>
-                <button onClick={() => setIsOpen(false)} className="p-1 rounded-lg hover:bg-white/10 text-slate-400">
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)} 
+                  aria-label="Close Staff AI Copilot"
+                  className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
                   <X size={18} />
                 </button>
               </div>
@@ -93,7 +103,7 @@ export default function StaffAiCopilot() {
                     className={`flex gap-2.5 ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {m.sender === 'ai' && (
-                      <div className="h-6 w-6 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0 text-[10px] font-black">
+                      <div className="h-6 w-6 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-500 dark:text-purple-400 shrink-0 text-[10px] font-black">
                         AI
                       </div>
                     )}
@@ -101,7 +111,7 @@ export default function StaffAiCopilot() {
                       className={`max-w-[80%] p-3 rounded-2xl leading-relaxed ${
                         m.sender === 'user'
                           ? 'bg-purple-600 text-white font-medium rounded-br-none'
-                          : 'bg-slate-900 border border-white/10 text-slate-200 rounded-bl-none'
+                          : 'bg-muted/60 border border-border text-foreground rounded-bl-none'
                       }`}
                     >
                       {m.text}
@@ -109,7 +119,7 @@ export default function StaffAiCopilot() {
                   </div>
                 ))}
                 {loading && (
-                  <div className="flex items-center gap-2 text-purple-400 text-xs animate-pulse">
+                  <div className="flex items-center gap-2 text-purple-500 dark:text-purple-400 text-xs animate-pulse">
                     <Sparkles size={14} className="animate-spin" />
                     <span>Analyzing cohort metrics...</span>
                   </div>
@@ -117,18 +127,21 @@ export default function StaffAiCopilot() {
               </div>
 
               {/* Input Footer */}
-              <div className="pt-3 border-t border-white/10 flex items-center gap-2">
+              <div className="pt-3 border-t border-border flex items-center gap-2">
                 <input
                   type="text"
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSend()}
                   placeholder="Ask Copilot (e.g. Who needs coaching today?)..."
-                  className="flex-1 bg-slate-900 border border-white/10 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-100 outline-none placeholder:text-slate-500 focus:border-purple-500/40"
+                  aria-label="Message to Staff AI Copilot"
+                  className="flex-1 bg-muted/40 border border-border rounded-xl px-3.5 py-2 text-xs font-medium text-foreground outline-none placeholder:text-muted-foreground focus:border-purple-500/40 focus-visible:ring-2 focus-visible:ring-ring"
                 />
                 <button
+                  type="button"
                   onClick={handleSend}
-                  className="p-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold transition-all"
+                  aria-label="Send message"
+                  className="p-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Send size={14} />
                 </button>

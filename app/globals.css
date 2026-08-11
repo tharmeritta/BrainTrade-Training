@@ -74,8 +74,8 @@
     --hub-card: #0B1524;
     --hub-border: rgba(255,255,255,0.07);
     --hub-text: #EEF4FF;
-    --hub-muted: #4A6A8A;
-    --hub-dim: #1C3050;
+    --hub-muted: #8CA8C7;
+    --hub-dim: #3B5475;
     --hub-dim-border: rgba(28,48,80,0.4);
     --hub-locked-bg: rgba(255,255,255,0.015);
     --hub-locked-icon: rgba(255,255,255,0.03);
@@ -117,3 +117,18 @@
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* Safe area padding utilities for mobile notch and home bar insets */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pl-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+.pr-safe {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+

@@ -19,7 +19,9 @@ export function ScoreRing({ score, size = 'md' }: ScoreRingProps) {
   const sw   = size === 'sm' ? 3.5 : size === 'lg' ? 5.5 : 4.5;
   const fs   = size === 'sm' ? 12 : size === 'lg' ? 18 : 15;
   const circ = 2 * Math.PI * r;
-  const clr  = scoreHex(score);
+  
+  const textClass = score >= 70 ? 'text-blue-600 dark:text-blue-400' : score >= 50 ? 'text-amber-700 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400';
+  const clr = scoreHex(score);
 
   return (
     <div className="relative flex items-center justify-center shrink-0" style={{ width: dim, height: dim }}>
@@ -44,7 +46,7 @@ export function ScoreRing({ score, size = 'md' }: ScoreRingProps) {
           style={{ filter: `drop-shadow(0 0 4px ${clr}50)` }}
         />
       </svg>
-      <span className="font-black tabular-nums" style={{ color: clr, fontSize: fs }}>
+      <span className={`font-black tabular-nums ${textClass}`} style={{ fontSize: fs }}>
         {score}
       </span>
     </div>

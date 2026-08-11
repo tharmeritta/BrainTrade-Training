@@ -88,7 +88,12 @@ export const ScenarioPicker = memo(({
               <span>{error}</span>
             </div>
             {onClearError && (
-              <button onClick={onClearError} className="p-1 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-lg transition-colors">
+              <button 
+                type="button"
+                onClick={onClearError} 
+                aria-label="Clear error notification"
+                className="p-1 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
                 <ChevronLeft size={18} className="rotate-90" />
               </button>
             )}
@@ -100,9 +105,10 @@ export const ScenarioPicker = memo(({
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-4 flex-1">
           <button
+            type="button"
             onClick={onBack}
             disabled={loading}
-            className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary transition-all group disabled:opacity-50"
+            className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary transition-all group disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg px-1"
           >
             <div className="p-1.5 rounded-lg group-hover:bg-primary/10 transition-colors">
               <ChevronLeft size={18} />
@@ -245,10 +251,10 @@ export const ScenarioPicker = memo(({
                         <div className="flex items-start justify-between">
                           <div className="flex flex-wrap gap-2">
                             <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                              s.difficulty === 'beginner'     ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                              s.difficulty === 'intermediate' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'     :
-                              s.difficulty === 'advanced'     ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'       :
-                                                                'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                              s.difficulty === 'beginner'     ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20' :
+                              s.difficulty === 'intermediate' ? 'bg-amber-500/10 text-amber-800 dark:text-amber-400 border border-amber-500/20'     :
+                              s.difficulty === 'advanced'     ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20'       :
+                                                                'bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20'
                             }`}>
                               {t(`difficultyLabel.${s.difficulty}`)}
                             </div>

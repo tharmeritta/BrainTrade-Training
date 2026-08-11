@@ -99,13 +99,13 @@ export function usePresentation(
 
   // Cleanup Blob URLs on unmount or language/module change
   useEffect(() => {
+    setBlobUrls({});
     const currentBlobUrls = blobUrlsRef.current;
     return () => {
       currentBlobUrls.forEach((url) => {
         URL.revokeObjectURL(url);
       });
       currentBlobUrls.clear();
-      setBlobUrls({});
     };
   }, [module.id, lang]);
 

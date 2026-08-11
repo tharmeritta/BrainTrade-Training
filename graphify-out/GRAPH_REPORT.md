@@ -1,7 +1,7 @@
 # Graph Report - BrainTrade-Training  (2026-08-11)
 
 ## Corpus Check
-- 285 files · ~151,715 words
+- 285 files · ~152,297 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `35c2d3de`
+- Built from commit: `ff01dca7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -72,7 +72,7 @@
 - animations.ts
 - OverviewPanel.tsx
 - AgentStats
-- EvaluationsTab.tsx
+- OverviewTab.tsx
 - ReportsTab.tsx
 - ensure-dev-server.js
 - ShowcaseTab.tsx
@@ -108,24 +108,24 @@
 ## Communities (85 total, 15 thin omitted)
 
 ### Community 0 - "EvaluatorDashboard.tsx"
-Cohesion: 0.17
-Nodes (22): EvaluatorPageContent(), AgentPerformancePanel(), EvalForm(), EvalFormProps, EvalHistoryCard(), EvaluatorDashboard(), EvaluatorDashboardProps, useKeyboardShortcuts() (+14 more)
+Cohesion: 0.16
+Nodes (23): EvaluatorPageContent(), AgentPerformancePanel(), AgentPerformancePanelProps, EvalForm(), EvalFormProps, EvalHistoryCard(), EvaluatorDashboard(), EvaluatorDashboardProps (+15 more)
 
 ### Community 1 - "ai-eval.ts"
 Cohesion: 0.07
 Nodes (33): POST(), DIFF, DIFF_ORDER, EMPTY_FORM, inputCls, textareaCls, AI_SUGGESTIONS, ScenarioForm() (+25 more)
 
 ### Community 2 - "index.ts"
-Cohesion: 0.13
-Nodes (18): ApprovalsTab(), CompletionGrid(), CompletionGridProps, KpiSection(), KpiSectionProps, TrainingWavesSection(), TrainingWavesSectionProps, AdminOverviewData (+10 more)
+Cohesion: 0.17
+Nodes (11): ApprovalsTab(), AgentProgress, ApprovalActionType, ApprovalRequest, EvaluationCriteria, EvaluationSessionType, Evaluator, LiveSessionRecord (+3 more)
 
 ### Community 3 - "agent-training/index.tsx"
 Cohesion: 0.18
 Nodes (21): HRAnalyticsTab(), BackgroundEffects, AgentTrainingHub(), CongratulationsCard, Props, ModuleCard, ModuleCardProps, ModuleHeader (+13 more)
 
 ### Community 4 - "scoreColor"
-Cohesion: 0.20
-Nodes (16): DetailedEvaluation(), DetailedEvaluationProps, EvalRow(), EvaluationsDashboard(), EvaluationsDashboardProps, AdminEval, EvalTab, HistoryTab() (+8 more)
+Cohesion: 0.15
+Nodes (18): DetailedEvaluation(), DetailedEvaluationProps, ActiveBatchHeader(), ActiveBatchHeaderProps, ArchiveSelectionGrid(), ArchiveSelectionGridProps, EvalRow(), EvaluationsDashboard() (+10 more)
 
 ### Community 5 - "agent.ts"
 Cohesion: 0.06
@@ -276,12 +276,12 @@ Cohesion: 0.35
 Nodes (8): GraduationRoster(), STATUS_ORDER, StatusPipeline(), OverviewPanel(), CompletionConfig, CompletionInfo, CompletionStatus, getCompletionStatus()
 
 ### Community 79 - "AgentStats"
-Cohesion: 0.33
-Nodes (8): ProfileHeader(), ProfileHeaderProps, GraduationRosterProps, LeaderboardTableProps, BadgePill(), AgentPerformancePanelProps, setAgentSession(), AgentStats
+Cohesion: 0.30
+Nodes (9): ProfileHeader(), ProfileHeaderProps, GraduationRosterProps, LeaderboardTableProps, BadgePill(), BADGE_CONFIG, MODULE_LABELS, setAgentSession() (+1 more)
 
-### Community 80 - "EvaluationsTab.tsx"
-Cohesion: 0.31
-Nodes (6): ActiveBatchHeader(), ActiveBatchHeaderProps, ArchiveSelectionGrid(), ArchiveSelectionGridProps, useEvaluationsData(), EvaluationsTab()
+### Community 80 - "OverviewTab.tsx"
+Cohesion: 0.25
+Nodes (9): HistoryTab(), CompletionGrid(), CompletionGridProps, KpiSection(), KpiSectionProps, TrainingWavesSection(), TrainingWavesSectionProps, scoreBg() (+1 more)
 
 ### Community 81 - "ReportsTab.tsx"
 Cohesion: 0.53
@@ -305,15 +305,15 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `dependencies` connect `dependencies` to `ai-eval.ts`, `devDependencies`, `CourseHub.tsx`?**
   _High betweenness centrality (0.069) - this node is a cross-community bridge._
-- **Why does `AgentStats` connect `AgentStats` to `EvaluatorDashboard.tsx`, `index.ts`, `agent-training/index.tsx`, `scoreColor`, `agent.ts`, `TrainingPeriod`, `agents.ts`, `server.ts`, `AgentEvaluation`, `HistorySections.tsx`, `db.ts`, `OverviewPanel.tsx`, `ReportsTab.tsx`, `CourseHub.tsx`, `HRAnalyticsTab.tsx`?**
+- **Why does `AgentStats` connect `AgentStats` to `EvaluatorDashboard.tsx`, `index.ts`, `agent-training/index.tsx`, `agent.ts`, `TrainingPeriod`, `agents.ts`, `server.ts`, `AgentEvaluation`, `HistorySections.tsx`, `db.ts`, `OverviewPanel.tsx`, `OverviewTab.tsx`, `ReportsTab.tsx`, `CourseHub.tsx`, `HRAnalyticsTab.tsx`?**
   _High betweenness centrality (0.040) - this node is a cross-community bridge._
 - **What connects `dmSans`, `dmMono`, `Tab` to the rest of the system?**
   _270 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `ai-eval.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.07205387205387205 - nodes in this community are weakly interconnected._
-- **Should `index.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.12666666666666668 - nodes in this community are weakly interconnected._
 - **Should `agent.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.058385093167701865 - nodes in this community are weakly interconnected._
 - **Should `TrainingPeriod` be split into smaller, more focused modules?**
   _Cohesion score 0.08708272859216255 - nodes in this community are weakly interconnected._
+- **Should `agents.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.08710801393728224 - nodes in this community are weakly interconnected._

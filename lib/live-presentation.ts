@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { ref, onValue, set, update, onDisconnect } from 'firebase/database';
 import { rtdb } from './firebase';
 
@@ -31,6 +31,14 @@ export interface LiveSessionState {
 export function useLivePresentation(moduleId: string, userId?: string, userName?: string, isTrainer: boolean = false) {
   const [session, setSession] = useState<LiveSessionState | null>(null);
   const sessionRef = useMemo(() => ref(rtdb, `live_sessions/${moduleId}`), [moduleId]);
+
+  const activeRef = useRef(false);
+  const sessionDrawingsRef = useRef<DrawingPath[]>([]);
+
+  useEffect(() => {
+    activeRef.current = !!session?.active;
+    sessionDrawingsRef.current = session?.drawings || [];
+  }, [session?.active, session?.drawings]);
 
   // 1. Listen for updates
   useEffect(() => {
@@ -77,29 +85,29 @@ export function useLivePresentation(moduleId: string, userId?: string, userName?
   }, [isTrainer, sessionRef]);
 
   const syncSlide = useCallback(async (slide: number, lang: 'en' | 'th') => {
-    if (!isTrainer || !session?.active) return;
+    if (!isTrainer || !activeRef.current) return;
     await update(sessionRef, { slide, lang, updatedAt: Date.now() });
-  }, [isTrainer, session, sessionRef]);
+  }, [isTrainer, sessionRef]);
 
   const updateLaser = useCallback((pos: Point | null) => {
-    if (!isTrainer || !session?.active) return;
+    if (!isTrainer || !activeRef.current) return;
     // We use set for laser to avoid merging, it's a high-frequency update
     set(ref(rtdb, `live_sessions/${moduleId}/laserPos`), pos);
-  }, [isTrainer, session, moduleId]);
+  }, [isTrainer, moduleId]);
 
   const addDrawingPath = useCallback(async (path: DrawingPath) => {
-    if (!isTrainer || !session?.active) return;
-    const currentDrawings = session.drawings || [];
+    if (!isTrainer || !activeRef.current) return;
+    const currentDrawings = sessionDrawingsRef.current;
     await update(sessionRef, { 
       drawings: [...currentDrawings, path],
       updatedAt: Date.now() 
     });
-  }, [isTrainer, session, sessionRef]);
+  }, [isTrainer, sessionRef]);
 
   const clearDrawings = useCallback(async () => {
-    if (!isTrainer || !session?.active) return;
+    if (!isTrainer || !activeRef.current) return;
     await update(sessionRef, { drawings: [], updatedAt: Date.now() });
-  }, [isTrainer, session, sessionRef]);
+  }, [isTrainer, sessionRef]);
 
   return {
     session,

@@ -151,7 +151,7 @@ export default function AgentSection({ role }: { role: string }) {
 
       {agentErr && <p className="text-sm text-red-500 bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3">{agentErr}</p>}
 
-      <div className="bg-card/40 backdrop-blur-md rounded-2xl border border-border/50 shadow-sm overflow-hidden">
+      <div className="bg-card/40 backdrop-blur-md rounded-2xl border border-border/50 shadow-sm overflow-x-auto">
         {loadingAgents ? (
           <div className="text-center py-16 flex flex-col items-center gap-3"><div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /><span className="text-sm text-muted-foreground animate-pulse">{t('agents.loading')}</span></div>
         ) : filteredAgents.length === 0 ? (

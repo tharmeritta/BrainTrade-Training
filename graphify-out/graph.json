@@ -2795,8 +2795,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_adminhelpers",
-      "community": 4,
-      "community_name": "scoreColor",
+      "community": 79,
+      "community_name": "AgentStats",
       "norm_label": "adminhelpers.ts"
     },
     {
@@ -2839,7 +2839,7 @@
       "label": "AdminSidebarProps",
       "file_type": "code",
       "source_file": "components/features/admin/AdminSidebar.tsx",
-      "source_location": "L70",
+      "source_location": "L72",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
@@ -2852,7 +2852,7 @@
       "label": "AdminSidebar()",
       "file_type": "code",
       "source_file": "components/features/admin/AdminSidebar.tsx",
-      "source_location": "L98",
+      "source_location": "L100",
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_adminsidebar_adminsidebar",
@@ -3171,8 +3171,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_evaluationstab",
-      "community": 80,
-      "community_name": "EvaluationsTab.tsx",
+      "community": 4,
+      "community_name": "scoreColor",
       "norm_label": "evaluationstab.tsx"
     },
     {
@@ -3183,8 +3183,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluationstab_evaluationstab",
-      "community": 80,
-      "community_name": "EvaluationsTab.tsx",
+      "community": 4,
+      "community_name": "scoreColor",
       "norm_label": "evaluationstab()"
     },
     {
@@ -3241,8 +3241,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_historytab",
-      "community": 4,
-      "community_name": "scoreColor",
+      "community": 79,
+      "community_name": "AgentStats",
       "norm_label": "historytab.tsx"
     },
     {
@@ -3253,8 +3253,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_historytab_historytab",
-      "community": 4,
-      "community_name": "scoreColor",
+      "community": 80,
+      "community_name": "OverviewTab.tsx",
       "norm_label": "historytab()"
     },
     {
@@ -3300,8 +3300,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_overviewtab",
-      "community": 2,
-      "community_name": "index.ts",
+      "community": 80,
+      "community_name": "OverviewTab.tsx",
       "norm_label": "overviewtab.tsx"
     },
     {
@@ -3312,8 +3312,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_overviewtab_overviewtab",
-      "community": 2,
-      "community_name": "index.ts",
+      "community": 80,
+      "community_name": "OverviewTab.tsx",
       "norm_label": "overviewtab()"
     },
     {
@@ -4234,8 +4234,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_evaluations_activebatchheader",
-      "community": 80,
-      "community_name": "EvaluationsTab.tsx",
+      "community": 4,
+      "community_name": "scoreColor",
       "norm_label": "activebatchheader.tsx"
     },
     {
@@ -4247,8 +4247,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluations_activebatchheader_activebatchheaderprops",
-      "community": 80,
-      "community_name": "EvaluationsTab.tsx",
+      "community": 4,
+      "community_name": "scoreColor",
       "norm_label": "activebatchheaderprops"
     },
     {
@@ -4259,8 +4259,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluations_activebatchheader_activebatchheader",
-      "community": 80,
-      "community_name": "EvaluationsTab.tsx",
+      "community": 4,
+      "community_name": "scoreColor",
       "norm_label": "activebatchheader()"
     },
     {
@@ -4270,8 +4270,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_evaluations_archiveselectiongrid",
-      "community": 80,
-      "community_name": "EvaluationsTab.tsx",
+      "community": 4,
+      "community_name": "scoreColor",
       "norm_label": "archiveselectiongrid.tsx"
     },
     {
@@ -4283,8 +4283,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluations_archiveselectiongrid_archiveselectiongridprops",
-      "community": 80,
-      "community_name": "EvaluationsTab.tsx",
+      "community": 4,
+      "community_name": "scoreColor",
       "norm_label": "archiveselectiongridprops"
     },
     {
@@ -4295,8 +4295,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluations_archiveselectiongrid_archiveselectiongrid",
-      "community": 80,
-      "community_name": "EvaluationsTab.tsx",
+      "community": 4,
+      "community_name": "scoreColor",
       "norm_label": "archiveselectiongrid()"
     },
     {
@@ -4403,8 +4403,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluations_useevaluationsdata_useevaluationsdata",
-      "community": 80,
-      "community_name": "EvaluationsTab.tsx",
+      "community": 4,
+      "community_name": "scoreColor",
       "norm_label": "useevaluationsdata()"
     },
     {
@@ -4414,8 +4414,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_overview_completiongrid",
-      "community": 2,
-      "community_name": "index.ts",
+      "community": 80,
+      "community_name": "OverviewTab.tsx",
       "norm_label": "completiongrid.tsx"
     },
     {
@@ -4427,8 +4427,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_completiongrid_completiongridprops",
-      "community": 2,
-      "community_name": "index.ts",
+      "community": 80,
+      "community_name": "OverviewTab.tsx",
       "norm_label": "completiongridprops"
     },
     {
@@ -4439,8 +4439,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_completiongrid_completiongrid",
-      "community": 2,
-      "community_name": "index.ts",
+      "community": 80,
+      "community_name": "OverviewTab.tsx",
       "norm_label": "completiongrid()"
     },
     {
@@ -4497,8 +4497,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_overview_kpisection",
-      "community": 2,
-      "community_name": "index.ts",
+      "community": 80,
+      "community_name": "OverviewTab.tsx",
       "norm_label": "kpisection.tsx"
     },
     {
@@ -4510,8 +4510,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_kpisection_kpisectionprops",
-      "community": 2,
-      "community_name": "index.ts",
+      "community": 80,
+      "community_name": "OverviewTab.tsx",
       "norm_label": "kpisectionprops"
     },
     {
@@ -4522,8 +4522,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_kpisection_kpisection",
-      "community": 2,
-      "community_name": "index.ts",
+      "community": 80,
+      "community_name": "OverviewTab.tsx",
       "norm_label": "kpisection()"
     },
     {
@@ -4569,8 +4569,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_overview_trainingwavessection",
-      "community": 2,
-      "community_name": "index.ts",
+      "community": 80,
+      "community_name": "OverviewTab.tsx",
       "norm_label": "trainingwavessection.tsx"
     },
     {
@@ -4582,8 +4582,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_trainingwavessection_trainingwavessectionprops",
-      "community": 2,
-      "community_name": "index.ts",
+      "community": 80,
+      "community_name": "OverviewTab.tsx",
       "norm_label": "trainingwavessectionprops"
     },
     {
@@ -4594,8 +4594,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_trainingwavessection_trainingwavessection",
-      "community": 2,
-      "community_name": "index.ts",
+      "community": 80,
+      "community_name": "OverviewTab.tsx",
       "norm_label": "trainingwavessection()"
     },
     {
@@ -6140,8 +6140,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_evaluator_agentperformancepanel_agentperformancepanelprops",
-      "community": 79,
-      "community_name": "AgentStats",
+      "community": 0,
+      "community_name": "EvaluatorDashboard.tsx",
       "norm_label": "agentperformancepanelprops"
     },
     {
@@ -9579,8 +9579,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_scoring",
-      "community": 4,
-      "community_name": "scoreColor",
+      "community": 79,
+      "community_name": "AgentStats",
       "norm_label": "scoring.ts"
     },
     {
@@ -9590,8 +9590,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "lib_scoring_badge_config",
-      "community": 4,
-      "community_name": "scoreColor",
+      "community": 79,
+      "community_name": "AgentStats",
       "norm_label": "badge_config"
     },
     {
@@ -9601,8 +9601,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "lib_scoring_module_labels",
-      "community": 4,
-      "community_name": "scoreColor",
+      "community": 79,
+      "community_name": "AgentStats",
       "norm_label": "module_labels"
     },
     {
@@ -9625,8 +9625,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_scoring_scorebg",
-      "community": 4,
-      "community_name": "scoreColor",
+      "community": 80,
+      "community_name": "OverviewTab.tsx",
       "norm_label": "scorebg()"
     },
     {
@@ -13127,8 +13127,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_adminoverviewdata",
-      "community": 2,
-      "community_name": "index.ts",
+      "community": 80,
+      "community_name": "OverviewTab.tsx",
       "norm_label": "adminoverviewdata"
     },
     {
@@ -24306,7 +24306,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "components/features/admin/AdminSidebar.tsx",
-      "source_location": "L98",
+      "source_location": "L100",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_admin_adminsidebar",
@@ -24317,7 +24317,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "components/features/admin/AdminSidebar.tsx",
-      "source_location": "L70",
+      "source_location": "L72",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_admin_adminsidebar",
@@ -24423,7 +24423,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "components/features/admin/AdminSidebar.tsx",
-      "source_location": "L74",
+      "source_location": "L76",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_admin_adminsidebar_adminsidebarprops",
@@ -24435,7 +24435,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "components/features/admin/AdminSidebar.tsx",
-      "source_location": "L90",
+      "source_location": "L92",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_admin_adminsidebar_adminsidebarprops",
@@ -38179,7 +38179,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "components/ui/ScoreRing.tsx",
-      "source_location": "L22",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_ui_scorering_scorering",
@@ -46979,5 +46979,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "35c2d3de4ca388e3ac723306a0ff53d7df45e7cc"
+  "built_at_commit": "ff01dca7ae322c618e451daefd2949454855f863"
 }

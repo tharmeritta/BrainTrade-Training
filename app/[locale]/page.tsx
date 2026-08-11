@@ -20,11 +20,11 @@ export default function LandingPage() {
   const locale = (params?.locale as string) || 'th';
 
   return (
-    <div className="relative w-full min-h-screen overflow-x-hidden flex flex-col" style={{ background: 'var(--hub-bg)', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+    <div className="relative w-full min-h-dvh overflow-x-hidden flex flex-col" style={{ background: 'var(--hub-bg)', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       <BackgroundEffects />
       
       {/* Header with Lang Toggle */}
-      <header className="relative z-20 flex items-center justify-between px-6 py-4 lg:px-12">
+      <header className="relative z-20 flex items-center justify-between px-6 py-4 pt-safe lg:px-12">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-sm shadow-lg"
             style={{ background: `linear-gradient(135deg, ${CYAN}, ${PURPLE})` }}>B</div>
@@ -157,7 +157,7 @@ export default function LandingPage() {
         </motion.div>
       </main>
 
-      <footer className="relative z-10 p-8 text-center">
+      <footer className="relative z-10 p-8 pb-safe text-center">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40" style={{ color: 'var(--hub-text)' }}>
           {t('footer')}
         </p>

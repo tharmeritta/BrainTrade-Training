@@ -110,7 +110,7 @@ export default function TrainerPanel({ role, uid, name, readOnly }: TrainerPanel
   const completedPeriods = periods.filter(p => !p.active);
 
   return (
-    <div className="flex flex-col" style={{ minHeight: 'calc(100vh - 160px)' }}>
+    <div className="flex flex-col" style={{ minHeight: 'calc(100dvh - 160px)' }}>
       {/* Panel header */}
       <div className="flex items-center gap-4 mb-8">
         <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg"
@@ -123,9 +123,9 @@ export default function TrainerPanel({ role, uid, name, readOnly }: TrainerPanel
         </div>
       </div>
 
-      <div className="gap-6 flex flex-1 min-h-0">
+      <div className="gap-6 flex flex-col lg:flex-row flex-1 min-h-0">
         {/* Left sidebar — period list */}
-        <div className="w-72 flex-shrink-0 flex flex-col gap-3">
+        <div className="w-full lg:w-72 flex-shrink-0 flex flex-col gap-3">
           <div className="flex items-center justify-between px-1 mb-1">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-50">
               {t('trainingPeriods', { count: periods.length })}
@@ -133,7 +133,7 @@ export default function TrainerPanel({ role, uid, name, readOnly }: TrainerPanel
             {canManage && (
               <button
                 onClick={() => setShowNewPeriod(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all hover:scale-105 active:scale-95 shadow-sm"
+                className="flex items-center gap-1.5 px-3 min-h-[44px] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all hover:scale-105 active:scale-95 shadow-sm"
                 style={{ background: T.amberBg, color: T.amber, border: `1px solid ${T.amberBorder}` }}
               >
                 <Plus size={12} strokeWidth={3} /> {t('newPeriod')}

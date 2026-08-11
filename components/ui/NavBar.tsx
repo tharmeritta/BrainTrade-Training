@@ -101,11 +101,11 @@ export default function NavBar() {
   }
 
   return (
-    <header className="relative flex items-center justify-between px-4 h-14 shrink-0 border-b border-border/60 bg-background/80 backdrop-blur-md z-50">
+    <header className="relative flex items-center justify-between px-3 md:px-4 min-h-[56px] pt-safe shrink-0 border-b border-border/60 bg-background/80 backdrop-blur-md z-50">
 
       {/* -- Logo ------------------------------------------- */}
-      <div className="flex items-center gap-3">
-        <Link href={`/${locale}/dashboard`} className="flex items-center gap-2.5 group">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <Link href={`/${locale}/dashboard`} className="flex items-center gap-2.5 min-h-[44px] min-w-[44px] py-1 px-1 group">
           <motion.div
             className="relative w-7 h-7 rounded-lg overflow-hidden shrink-0"
             whileHover={{ scale: 1.12, rotate: -4 }}
@@ -124,10 +124,12 @@ export default function NavBar() {
 
         {isStaff && (
           <motion.button
+            type="button"
+            aria-label={t('admin')}
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             onClick={backToAdmin}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
           >
             <ShieldCheck size={12} />
             <span className="text-[10px] font-bold uppercase tracking-wider hidden md:block">
@@ -138,7 +140,7 @@ export default function NavBar() {
       </div>
 
       {/* -- Nav Pills -------------------------------------- */}
-      <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-0.5 bg-muted/50 border border-border/50 rounded-full p-1">
+      <nav aria-label="Main Navigation" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-0.5 bg-muted/50 border border-border/50 rounded-full p-1">
         {NAV_ITEMS.map((item) => {
           const active = isActive(item.href);
           const Icon   = item.icon;
@@ -156,7 +158,7 @@ export default function NavBar() {
               >
                 <Link
                   href={`/${locale}${item.href}`}
-                  className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm select-none group/pill"
+                  className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm select-none group/pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={(e) => handleNavClick(e, item.href)}
                 >
                   {/* Sliding active capsule */}
@@ -184,7 +186,7 @@ export default function NavBar() {
                     transition={{ type: 'spring', stiffness: 400, damping: 15 }}
                   >
                     <Icon
-                      size={13}
+                      size={15}
                       className={`transition-colors ${
                         active ? 'text-foreground' : 'text-muted-foreground'
                       }`}
@@ -205,7 +207,7 @@ export default function NavBar() {
       </nav>
 
       {/* -- Controls --------------------------------------- */}
-      <div className="flex items-center gap-0.5 bg-muted/50 border border-border/50 rounded-full p-1">
+      <div className="flex items-center gap-0.5 bg-muted/50 border border-border/50 rounded-full p-0.5 sm:p-1 shrink-0">
         <LangToggle />
         <ThemeToggle />
       </div>

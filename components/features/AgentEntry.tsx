@@ -54,7 +54,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
       initial="initial"
       animate="animate"
       variants={STAGGER_CONTAINER}
-      className="relative w-full h-full overflow-hidden flex" 
+      className="relative w-full min-h-dvh overflow-x-hidden flex flex-col lg:flex-row pt-safe pb-safe" 
       style={{ background: 'var(--hub-bg)', fontFamily: "'DM Sans', system-ui, sans-serif" }}
     >
       <BackgroundEffects />
@@ -131,7 +131,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                           <p className="text-xs font-bold mb-0.5 tracking-tight" style={{ color: '#C4B5FD' }}>{t('loginRequiredTitle')}</p>
                           <p className="text-[11px] leading-relaxed font-medium" style={{ color: 'rgba(196,181,253,0.75)' }}>{t('loginRequiredDesc')}</p>
                         </div>
-                        <button onClick={closeLoginPrompt} className="text-xs shrink-0 mt-0.5 opacity-40 hover:opacity-100 transition-opacity p-1" style={{ color: '#A78BFA' }}>✕</button>
+                        <button onClick={closeLoginPrompt} className="text-xs shrink-0 mt-0.5 opacity-40 hover:opacity-100 transition-opacity min-h-[44px] min-w-[44px] flex items-center justify-center p-1" style={{ color: '#A78BFA' }}>✕</button>
                       </div>
                     </motion.div>
                   )}
@@ -170,7 +170,7 @@ export default function AgentEntry({ onAgentSelected }: AgentEntryProps) {
                       <button 
                         type="button"
                         onClick={handleMockupLogin}
-                        className="text-[11px] font-black text-brand-cyan hover:brightness-125 transition-all text-left uppercase tracking-wider"
+                        className="text-[11px] font-black text-brand-cyan hover:brightness-125 transition-all text-left uppercase tracking-wider min-h-[44px] flex items-center"
                       >
                         {t('mockupBtn')}
                       </button>

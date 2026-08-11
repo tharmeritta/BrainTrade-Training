@@ -17,6 +17,7 @@ export function GlassCard({
   intensity = 'md', 
   borderOpacity = 0.1,
   hoverEffect = false,
+  style,
   ...props 
 }: GlassCardProps) {
   const blurAmount = {
@@ -25,23 +26,15 @@ export function GlassCard({
     high: 'blur(24px)',
   };
 
-  const bgOpacity = {
-    low: '0.03',
-    md: '0.05',
-    high: '0.08',
-  };
-
   return (
     <motion.div
       {...props}
       whileHover={hoverEffect ? { y: -4, transition: { duration: 0.2 } } : undefined}
-      className={`rounded-3xl border overflow-hidden relative ${className}`}
+      className={`rounded-3xl border overflow-hidden relative bg-white/80 dark:bg-[#0B1524]/80 border-black/10 dark:border-white/10 ${className}`}
       style={{
         backdropFilter: blurAmount[intensity],
         WebkitBackdropFilter: blurAmount[intensity],
-        background: `rgba(255, 255, 255, ${bgOpacity[intensity]})`,
-        borderColor: `rgba(255, 255, 255, ${borderOpacity})`,
-        ...props.style
+        ...style,
       }}
     >
       {children}

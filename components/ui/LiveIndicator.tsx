@@ -17,10 +17,10 @@ export function LiveIndicator({ status, size = 'sm', showLabel = false, label }:
     offline: '#9CA3AF', // Gray 400
   };
 
-  const bgColors = {
-    focused: 'rgba(52,211,153,0.2)',
-    away:    'rgba(251,191,36,0.2)',
-    offline: 'rgba(156,163,175,0.2)',
+  const textClasses = {
+    focused: 'text-emerald-600 dark:text-emerald-400',
+    away:    'text-amber-700 dark:text-amber-400',
+    offline: 'text-slate-600 dark:text-slate-400',
   };
 
   const dotSize = size === 'sm' ? 'w-2 h-2' : 'w-2.5 h-2.5';
@@ -42,7 +42,7 @@ export function LiveIndicator({ status, size = 'sm', showLabel = false, label }:
         />
       </div>
       {showLabel && (
-        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: colors[status] }}>
+        <span className={`text-[10px] font-bold uppercase tracking-wider ${textClasses[status]}`}>
           {label || status}
         </span>
       )}

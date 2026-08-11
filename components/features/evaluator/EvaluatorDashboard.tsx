@@ -108,12 +108,12 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
   }, [passwordChanged]);
 
   return (
-    <div className="min-h-screen bg-background relative selection:bg-primary/20" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-dvh bg-background relative selection:bg-primary/20" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <ChangePasswordModal isOpen={isPwModalOpen} onClose={() => setIsPwModalOpen(false)} />
 
       {/* Keyboard Shortcuts Help */}
       <div className="fixed bottom-24 right-6 z-50 group">
-        <div className="bg-card/80 backdrop-blur-xl border border-border rounded-full p-2.5 shadow-lg text-muted-foreground hover:text-foreground transition-all cursor-help">
+        <div className="bg-card/80 backdrop-blur-xl border border-border rounded-full p-2.5 shadow-lg text-muted-foreground hover:text-foreground transition-all cursor-help min-h-[44px] min-w-[44px] flex items-center justify-center">
           <Keyboard size={20} />
         </div>
         <div className="absolute bottom-full right-0 mb-3 w-64 bg-card border border-border rounded-2xl shadow-2xl p-4 opacity-0 group-hover:opacity-100 pointer-events-none transition-all translate-y-2 group-hover:translate-y-0">
@@ -133,10 +133,10 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
         <div className="absolute -bottom-[10%] left-[20%] w-[30%] h-[30%] bg-amber-500/10 rounded-full blur-[80px]" />
       </div>
 
-      <div className="relative z-10 flex min-h-screen">
+      <div className="relative z-10 flex min-h-dvh">
 
         {/* -- Sidebar ---------------------------------------------------- */}
-        <aside className={`flex flex-col shrink-0 bg-background/70 backdrop-blur-2xl border-r border-border/40 sticky top-0 h-screen transition-all duration-300 ${sidebarCollapsed ? 'w-[60px]' : 'w-[220px]'}`}>
+        <aside className={`flex flex-col shrink-0 bg-background/70 backdrop-blur-2xl border-r border-border/40 sticky top-0 h-dvh pt-safe pb-safe transition-all duration-300 ${sidebarCollapsed ? 'w-[60px]' : 'w-[220px]'}`}>
 
           <div className={`flex items-center h-16 border-b border-border/40 px-4 ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
             <div className="relative w-8 h-8 rounded-xl overflow-hidden shrink-0">
@@ -276,10 +276,10 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
               ) : tab === 'new' ? (
                 <motion.div key="eval-new" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="p-6">
                   <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
-                    <div className="w-full lg:w-[400px] shrink-0"><div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pb-4 pr-1"><AgentPerformancePanel stats={agentStats} loading={loadingStats} /></div></div>
+                    <div className="w-full lg:w-[400px] shrink-0"><div className="sticky top-20 max-h-[calc(100dvh-6rem)] overflow-y-auto pb-4 pr-1"><AgentPerformancePanel stats={agentStats} loading={loadingStats} /></div></div>
                     <div className="flex-1 space-y-4">
                       <div className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-primary/5 border border-primary/10"><ActivityIcon size={18} className="text-primary" /><span className="text-sm font-bold text-primary">{t('salesSimBadge')}</span></div>
-                      {editingEval && (<div className="flex items-center justify-between px-5 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-sm font-bold"><span>{t('editBanner')}</span><button onClick={() => { setCriteria(emptyCriteria()); handleEditEval(null as any); }}><X size={16} /></button></div>)}
+                      {editingEval && (<div className="flex items-center justify-between px-5 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-sm font-bold"><span>{t('editBanner')}</span><button onClick={() => { setCriteria(emptyCriteria()); handleEditEval(null as any); }} className="min-h-[44px] min-w-[44px] flex items-center justify-center p-1"><X size={16} /></button></div>)}
                       <EvalForm criteria={criteria} onChange={setCriteria} />
                     </div>
                   </div>
@@ -296,7 +296,7 @@ export default function EvaluatorDashboard({ evaluatorId, evaluatorName, passwor
 
           <AnimatePresence>
             {selectedAgent && tab === 'new' && (
-              <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }} className="border-t border-border/40 bg-background/80 backdrop-blur-xl px-6 py-3.5 flex items-center justify-center z-30">
+              <motion.div initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }} className="border-t border-border/40 bg-background/80 backdrop-blur-xl px-6 py-3.5 pb-safe flex items-center justify-center z-30">
                 <div className="w-full max-w-5xl flex items-center gap-4">
                   <ScoreRing score={calcScore(criteria)} size="sm" />
                   <div className="flex-1 min-w-0">

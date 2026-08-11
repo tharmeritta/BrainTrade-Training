@@ -25,9 +25,10 @@ export default function LangToggle() {
     <div className="relative flex items-center p-1 bg-secondary/50 border border-black/5 dark:border-white/10 rounded-xl shadow-inner select-none">
       {/* TH Option */}
       <button
+        type="button"
         onClick={() => switchLocale('th')}
         aria-label="Switch to Thai"
-        className={`relative z-10 flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-black tracking-wider transition-colors duration-200 ${
+        className={`relative z-10 flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-black tracking-wider transition-colors duration-200 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
           locale === 'th' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
         }`}
       >
@@ -37,9 +38,10 @@ export default function LangToggle() {
 
       {/* EN Option */}
       <button
+        type="button"
         onClick={() => switchLocale('en')}
         aria-label="Switch to English"
-        className={`relative z-10 flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-black tracking-wider transition-colors duration-200 ${
+        className={`relative z-10 flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-black tracking-wider transition-colors duration-200 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
           locale === 'en' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
         }`}
       >
