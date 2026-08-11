@@ -255,14 +255,13 @@ export default function QuizIndexPage() {
   const sections = useMemo(() => {
     const groups: Record<string, (QuizDefinition & { mKey: string })[]> = {};
     allQuizzes.forEach(q => {
-      // Map all non-foundation quizzes to Part 2 (sales & core) to eliminate unnecessary Part 3
-      const s = q.section === 'foundation' ? 'foundation' : 'sales';
+      const s = q.section || 'other';
       if (!groups[s]) groups[s] = [];
       groups[s].push(q);
     });
 
-    // Enforce 2-part structure: Part 1 Foundation -> Part 2 Sales & Core Competencies
-    const SECTION_PRIORITY = ['foundation', 'sales'];
+    // Enforce 3-part hierarchy: foundation -> sales -> other
+    const SECTION_PRIORITY = ['foundation', 'sales', 'other'];
     const sortedEntries = Object.entries(groups).sort(([aKey], [bKey]) => {
       const aIdx = SECTION_PRIORITY.indexOf(aKey);
       const bIdx = SECTION_PRIORITY.indexOf(bKey);
@@ -320,16 +319,20 @@ export default function QuizIndexPage() {
             className={sIdx > 0 ? 'mt-8' : ''}
           >
             <SectionHeader
-              icon={sectionKey === 'foundation' ? GraduationCap : Briefcase}
+              icon={sectionKey === 'foundation' ? GraduationCap : sectionKey === 'sales' ? Briefcase : Layers}
               label={
                 sectionKey === 'foundation'
                   ? (lang === 'th' ? 'Part 1: ความรู้พื้นฐาน (Foundation)' : 'Part 1: Ecosystem & Foundation')
-                  : (lang === 'th' ? 'Part 2: ทักษะหลักและการขาย (Sales & Core)' : 'Part 2: Sales & Core Competencies')
+                  : sectionKey === 'sales'
+                  ? (lang === 'th' ? 'Part 2: ทักษะหลักและการขาย (Sales & Core)' : 'Part 2: Sales & Core Competencies')
+                  : (lang === 'th' ? 'Part 3: แบบทดสอบเพิ่มเติม (Custom & Special)' : 'Part 3: Additional & Custom Assessments')
               }
               description={
                 sectionKey === 'foundation'
                   ? (lang === 'th' ? 'แบบทดสอบพื้นฐานระบบนิเวศการเทรด โบรกเกอร์ และผลิตภัณฑ์' : 'Essential trading ecosystem, broker mechanics, and foundational knowledge evaluations')
-                  : (lang === 'th' ? 'แบบทดสอบทักษะการขาย KYC และการนำเสนอแพ็กเกจราคา' : 'Core sales process, KYC customer segmentation, and package pricing assessments')
+                  : sectionKey === 'sales'
+                  ? (lang === 'th' ? 'แบบทดสอบทักษะการขาย KYC และการนำเสนอแพ็กเกจราคา' : 'Core sales process, KYC customer segmentation, and package pricing assessments')
+                  : (lang === 'th' ? 'แบบประเมินการฝึกอบรมพิเศษและหัวข้อเฉพาะทาง' : 'Custom and specialized training evaluations')
               }
             />
             <div className="space-y-3">
