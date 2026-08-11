@@ -835,19 +835,19 @@
     "semantic_hash": ""
   },
   "components/features/quiz/QuizBriefing.tsx": {
-    "mtime": 1786083165.6214159,
-    "ast_hash": "dbef32bea594a3e9aa6ab24c2b4739bb",
-    "semantic_hash": "dbef32bea594a3e9aa6ab24c2b4739bb"
+    "mtime": 1786421454.3658648,
+    "ast_hash": "44b504e0d25f0328a36d322df2f9aa5a",
+    "semantic_hash": ""
   },
   "components/features/quiz/QuizResult.tsx": {
-    "mtime": 1786083165.621524,
-    "ast_hash": "7c6293c4b4aaab017e1a836d5189f85e",
-    "semantic_hash": "7c6293c4b4aaab017e1a836d5189f85e"
+    "mtime": 1786421460.934476,
+    "ast_hash": "330921d46878019fb0b577b8c724b5d8",
+    "semantic_hash": ""
   },
   "components/features/quiz/QuizSession.tsx": {
-    "mtime": 1786083165.621639,
-    "ast_hash": "d2d1d1864973b211357800a0378a8678",
-    "semantic_hash": "d2d1d1864973b211357800a0378a8678"
+    "mtime": 1786421449.637712,
+    "ast_hash": "8bff1dffe70d1983e07c548460af8fa1",
+    "semantic_hash": ""
   },
   "components/features/quiz/index.tsx": {
     "mtime": 1786083165.621744,
@@ -1502,6 +1502,11 @@
   "components/features/admin/ShowcaseTab.tsx": {
     "mtime": 1786259525.9885128,
     "ast_hash": "ac6bc11e4a8633507ce88781184a5c7f",
+    "semantic_hash": ""
+  },
+  "components/features/quiz/gamification.tsx": {
+    "mtime": 1786421481.7838004,
+    "ast_hash": "f37c7f7826b799ccee4417d19c9023f9",
     "semantic_hash": ""
   }
 }
