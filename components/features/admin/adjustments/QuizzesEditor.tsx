@@ -119,14 +119,27 @@ export default function QuizzesEditor({ data, onSave, onChange, saving, readOnly
         }} className="bg-secondary px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5"><Plus size={14} /> Add Quiz</button>
       </EditorHeader>
 
+      {/* Admin live sync notice banner */}
+      <div className="p-3.5 rounded-xl border border-primary/20 bg-primary/5 flex items-center justify-between gap-3 text-xs text-foreground">
+        <div className="flex items-center gap-2">
+          <Database size={16} className="text-primary shrink-0" />
+          <span><strong>Live Agent Synchronization:</strong> Changes saved here directly reflect on the Agent Quiz page (<code className="font-mono bg-background px-1.5 py-0.5 rounded text-primary">/quiz</code>) and within course modules.</span>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         {order.map((id, idx) => {
           const isRequired = definitions[id]?.required;
+          const section = (definitions[id] as any)?.section || 'sales';
           return (
             <div key={id} className={`group relative p-4 rounded-xl border transition-all ${selectedQuiz === id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-secondary/10 hover:border-primary/30'}`}>
               <button onClick={() => { setSelectedQuiz(id); setSelectedQuestions([]); setSearchQuery(''); }} className="w-full text-left font-bold text-sm truncate pr-12">
                 <div className="flex items-center gap-1.5">{definitions[id]?.title?.en || id} {isRequired && <ShieldCheck size={12} className="text-primary" />}</div>
-                <span className="block text-[10px] opacity-50">{id} · {(definitions[id]?.questions || []).length} Qs</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">{id}</span>
+                  <span className="text-[10px] font-semibold text-muted-foreground">{(definitions[id]?.questions || []).length} Qs</span>
+                  <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary">{section}</span>
+                </div>
               </button>
               <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                  <button onClick={() => { const n = [...order]; [n[idx], n[idx-1]] = [n[idx-1], n[idx]]; setOrder(n); onChange(); }} disabled={idx===0} className="p-1 disabled:opacity-20"><ArrowUp size={14} /></button>
