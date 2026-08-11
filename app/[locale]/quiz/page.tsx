@@ -255,19 +255,18 @@ export default function QuizIndexPage() {
   const sections = useMemo(() => {
     const groups: Record<string, (QuizDefinition & { mKey: string })[]> = {};
     allQuizzes.forEach(q => {
-      const s = q.section || 'other';
+      // Map all non-foundation quizzes to Part 2 (sales & core) to eliminate unnecessary Part 3
+      const s = q.section === 'foundation' ? 'foundation' : 'sales';
       if (!groups[s]) groups[s] = [];
       groups[s].push(q);
     });
 
-    // Enforce strict top-to-bottom section hierarchy: foundation -> sales -> other
-    const SECTION_PRIORITY = ['foundation', 'sales', 'other'];
+    // Enforce 2-part structure: Part 1 Foundation -> Part 2 Sales & Core Competencies
+    const SECTION_PRIORITY = ['foundation', 'sales'];
     const sortedEntries = Object.entries(groups).sort(([aKey], [bKey]) => {
       const aIdx = SECTION_PRIORITY.indexOf(aKey);
       const bIdx = SECTION_PRIORITY.indexOf(bKey);
-      const aRank = aIdx !== -1 ? aIdx : 99;
-      const bRank = bIdx !== -1 ? bIdx : 99;
-      return aRank - bRank;
+      return (aIdx !== -1 ? aIdx : 99) - (bIdx !== -1 ? bIdx : 99);
     });
 
     return Object.fromEntries(sortedEntries);
@@ -321,20 +320,16 @@ export default function QuizIndexPage() {
             className={sIdx > 0 ? 'mt-8' : ''}
           >
             <SectionHeader
-              icon={sectionKey === 'foundation' ? GraduationCap : sectionKey === 'sales' ? Briefcase : Layers}
+              icon={sectionKey === 'foundation' ? GraduationCap : Briefcase}
               label={
                 sectionKey === 'foundation'
                   ? (lang === 'th' ? 'Part 1: ความรู้พื้นฐาน (Foundation)' : 'Part 1: Ecosystem & Foundation')
-                  : sectionKey === 'sales'
-                  ? (lang === 'th' ? 'Part 2: ทักษะหลักและการขาย (Sales & Core)' : 'Part 2: Sales & Core Competencies')
-                  : (lang === 'th' ? 'Part 3: แบบทดสอบเพิ่มเติม (Custom & Special)' : 'Part 3: Additional & Custom Assessments')
+                  : (lang === 'th' ? 'Part 2: ทักษะหลักและการขาย (Sales & Core)' : 'Part 2: Sales & Core Competencies')
               }
               description={
                 sectionKey === 'foundation'
                   ? (lang === 'th' ? 'แบบทดสอบพื้นฐานระบบนิเวศการเทรด โบรกเกอร์ และผลิตภัณฑ์' : 'Essential trading ecosystem, broker mechanics, and foundational knowledge evaluations')
-                  : sectionKey === 'sales'
-                  ? (lang === 'th' ? 'แบบทดสอบทักษะการขาย KYC และการนำเสนอแพ็กเกจราคา' : 'Core sales process, KYC customer segmentation, and package pricing assessments')
-                  : (lang === 'th' ? 'แบบประเมินการฝึกอบรมพิเศษและหัวข้อเฉพาะทาง' : 'Custom and specialized training evaluations')
+                  : (lang === 'th' ? 'แบบทดสอบทักษะการขาย KYC และการนำเสนอแพ็กเกจราคา' : 'Core sales process, KYC customer segmentation, and package pricing assessments')
               }
             />
             <div className="space-y-3">
