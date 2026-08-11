@@ -200,12 +200,9 @@ export default function QuizIndexPage() {
     fetch('/api/quiz/config')
       .then(r => r.json())
       .then(({ configs }: { configs?: Record<string, QuizDefinition> }) => {
-        if (!configs) return;
-        const merged: Record<string, QuizDefinition> = { ...MODULE_QUIZ_MAP };
-        for (const [key, dbQuiz] of Object.entries(configs)) {
-          merged[key] = { ...(MODULE_QUIZ_MAP[key] ?? {}), ...dbQuiz } as QuizDefinition;
-        }
-        setQuizConfigs(merged);
+        if (!configs || Object.keys(configs).length === 0) return;
+        // When admin has customized/deleted quizzes in DB, use DB definitions directly
+        setQuizConfigs(configs);
       })
       .catch(() => {});
   }, []);

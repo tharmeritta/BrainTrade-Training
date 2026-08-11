@@ -110,8 +110,8 @@
     "semantic_hash": "a9439b9a55ef4bd41111b801cc5702ce"
   },
   "app/[locale]/quiz/page.tsx": {
-    "mtime": 1786421908.4103587,
-    "ast_hash": "dc41b99e23727906193dfaebf01acb00",
+    "mtime": 1786423076.3136,
+    "ast_hash": "dc5a4479c851da03faa2ef822f655af7",
     "semantic_hash": ""
   },
   "app/api/admin/agents/[id]/route.ts": {

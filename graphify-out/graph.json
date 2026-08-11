@@ -15521,7 +15521,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "app/[locale]/quiz/page.tsx",
-      "source_location": "L243",
+      "source_location": "L240",
       "weight": 1.0,
       "_origin": "ast",
       "source": "app_locale_quiz_page_quizindexpage",
@@ -15533,7 +15533,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/[locale]/quiz/page.tsx",
-      "source_location": "L232",
+      "source_location": "L229",
       "weight": 1.0,
       "_origin": "ast",
       "source": "app_locale_quiz_page_quizindexpage",
@@ -15545,7 +15545,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/[locale]/quiz/page.tsx",
-      "source_location": "L214",
+      "source_location": "L211",
       "weight": 1.0,
       "_origin": "ast",
       "source": "app_locale_quiz_page_quizindexpage",
@@ -15557,7 +15557,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/[locale]/quiz/page.tsx",
-      "source_location": "L217",
+      "source_location": "L214",
       "weight": 1.0,
       "_origin": "ast",
       "source": "app_locale_quiz_page_quizindexpage",
@@ -47474,5 +47474,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "e1be5fd1e031f8900f985b3fa6770004a6c93fcd"
+  "built_at_commit": "be890bee55fe170c898d136a0f323ac5e1a09708"
 }
