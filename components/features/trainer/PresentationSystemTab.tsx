@@ -45,6 +45,21 @@ export function PresentationSystemTab({ role, uid, name, readOnly }: Presentatio
     'en'
   );
 
+  const [modules, setModules] = useState<CourseModule[]>(Object.values(COURSE_MODULES));
+
+  // Fetch live course module configuration from Firebase server
+  useEffect(() => {
+    fetch('/api/courses')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.modules && Array.isArray(data.modules) && data.modules.length > 0) {
+          setModules(data.modules);
+          setSelectedModule(prev => data.modules.find((m: CourseModule) => m.id === prev.id) || data.modules[0]);
+        }
+      })
+      .catch(err => console.error('Failed to fetch Firebase course modules:', err));
+  }, []);
+
   // Listen for live RTDB broadcast sessions
   useEffect(() => {
     const liveRef = ref(rtdb, 'live_sessions');
@@ -54,8 +69,6 @@ export function PresentationSystemTab({ role, uid, name, readOnly }: Presentatio
     });
     return () => unsubscribe();
   }, []);
-
-  const modules = Object.values(COURSE_MODULES);
 
   return (
     <div className="flex flex-col gap-6 flex-1 min-h-0">
