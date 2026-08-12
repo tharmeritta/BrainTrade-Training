@@ -17,6 +17,7 @@ interface PresentationInfo {
   slideUrls?: string[];
   presentationId?: string;
   totalSlides: number;
+  speakerNotes?: Record<number, string>;
 }
 
 interface LearnModule {
@@ -194,6 +195,27 @@ export default function LearnEditor({ initialModules, data, onSave, onChange, sa
                           ))}
                         </div>
                       )}
+                    </div>
+
+                    {/* Pre-configured Speaker Notes Editor */}
+                    <div className="space-y-2 pt-2 border-t border-border/50">
+                      <label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                        <FileText size={12} className="text-primary" /> Speaker Notes ({lang.toUpperCase()})
+                      </label>
+                      <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                        {Array.from({ length: pres?.totalSlides || 0 }, (_, i) => i + 1).map(slideNum => (
+                          <div key={slideNum} className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono font-bold text-muted-foreground w-12 shrink-0">#{slideNum}</span>
+                            <input
+                              type="text"
+                              placeholder={`Notes for Slide ${slideNum}...`}
+                              value={pres?.speakerNotes?.[slideNum] || ''}
+                              onChange={e => handleUpdate(editingId, `presentations.${lang}.speakerNotes.${slideNum}`, e.target.value)}
+                              className="flex-1 bg-background border p-1.5 rounded-lg text-xs outline-none"
+                            />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 );

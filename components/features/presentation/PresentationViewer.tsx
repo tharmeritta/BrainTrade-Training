@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import React, { useRef } from 'react';
@@ -26,6 +27,7 @@ import { usePresentation } from './usePresentation';
 import { PresentationHeader } from './PresentationHeader';
 import { PresentationControls } from './PresentationControls';
 import { TrainerToolbar } from './TrainerToolbar';
+import { PresenterViewModal } from './PresenterViewModal';
 
 interface PresentationViewerProps {
   module: CourseModule;
@@ -46,6 +48,7 @@ export default function PresentationViewer({
   const router = useRouter();
   const frameRef = useRef<HTMLDivElement>(null);
   const [showCompletionModal, setShowCompletionModal] = React.useState(false);
+  const [isPresenterViewOpen, setIsPresenterViewOpen] = React.useState(false);
   const promptedRef = useRef(false);
 
   const {
@@ -57,7 +60,7 @@ export default function PresentationViewer({
     agentName,
     isPreloading, preloadingProgress,
     containerRef, handleTouchStart, handleTouchEnd,
-    slideImageUrl, progress,
+    slideImageUrl, nextSlideImageUrl, progress,
     total, hasContent,
     activeTool, setActiveTool,
     isTrainer,
@@ -81,6 +84,30 @@ export default function PresentationViewer({
       className={`flex flex-col overflow-hidden text-foreground ${embedded ? 'bg-transparent' : 'bg-muted/20 dark:bg-black/20'}`}
       style={{ height: embedded ? '100%' : 'calc(100dvh - 3.5rem)' }}
     >
+      {/* -- Presenter View Modal (macOS Dual Screen Presenter) -- */}
+      {isTrainer && (
+        <PresenterViewModal
+          isOpen={isPresenterViewOpen}
+          onClose={() => setIsPresenterViewOpen(false)}
+          module={module}
+          slide={slide}
+          total={total}
+          lang={lang}
+          slideImageUrl={slideImageUrl}
+          nextSlideImageUrl={nextSlideImageUrl}
+          goToSlide={goToSlide}
+          activeTool={activeTool}
+          setActiveTool={setActiveTool}
+          clearDrawings={clearDrawings}
+          isLive={isLive}
+          startLive={startLive}
+          stopLive={stopLive}
+          session={session}
+          addDrawingPath={addDrawingPath}
+          updateLaser={updateLaser}
+        />
+      )}
+
       {/* -- Main content area -- */}
       <main
         className={`relative flex flex-1 flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 ${
@@ -111,6 +138,7 @@ export default function PresentationViewer({
             isLive={isLive} activeTool={activeTool} setActiveTool={setActiveTool}
             clearDrawings={clearDrawings} startLive={startLive} stopLive={stopLive}
             slide={slide} lang={lang}
+            onOpenPresenterMode={() => setIsPresenterViewOpen(true)}
           />
         )}
 
@@ -225,8 +253,10 @@ export default function PresentationViewer({
                     mode={activeTool} drawings={session?.drawings || []} laserPos={session?.laserPos || null}
                     onDrawEnd={addDrawingPath} onLaserMove={updateLaser}
                   />
-                  <NextImage
-                    src={slideImageUrl} fill className="object-contain pointer-events-none select-none" alt={`Slide ${slide}`} priority
+                  <img
+                    src={slideImageUrl}
+                    alt={`Slide ${slide}`}
+                    className="absolute inset-0 h-full w-full object-contain pointer-events-none select-none"
                     onLoad={() => { setIsLoaded(true); setLoadError(false); }}
                     onError={() => setLoadError(true)}
                     draggable={false}

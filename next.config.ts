@@ -30,6 +30,23 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ['firebase-admin'],
   images: {
+    localPatterns: [
+      {
+        pathname: '/api/slide',
+        search: '?**',
+      },
+      {
+        pathname: '/api/slide',
+        search: '?id=*',
+      },
+      {
+        pathname: '/api/**',
+        search: '?**',
+      },
+      {
+        pathname: '/**',
+      },
+    ],
     remotePatterns: [
       { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
       { protocol: 'https', hostname: 'storage.googleapis.com' },

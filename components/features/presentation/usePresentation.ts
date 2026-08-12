@@ -140,13 +140,38 @@ export function usePresentation(
     if (!isControlledByOthers) setLang(initialLang);
   }, [initialLang, isControlledByOthers]);
 
-  // 1. Follow trainer
+  // 1. Follow trainer via Firebase RTDB
   useEffect(() => {
     if (isControlledByOthers && session?.active) {
       if (session.slide !== slide) setSlide(session.slide);
       if (session.lang !== lang) setLang(session.lang as CourseLang);
     }
   }, [isControlledByOthers, session, slide, lang]);
+
+  // 1b. Listen to local macOS Dual Screen BroadcastChannel (Audience Window Mode)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const isAudienceView = urlParams.get('audienceView') === 'true';
+
+    if (!isAudienceView) return;
+
+    const channel = new BroadcastChannel('bt_presenter_dual_screen');
+    channel.onmessage = (event) => {
+      if (event.data?.type === 'SYNC_SLIDE' && event.data?.moduleId === module.id) {
+        if (event.data.slide && event.data.slide !== slide) {
+          setSlide(event.data.slide);
+          setIsLoaded(false);
+        }
+        if (event.data.lang && event.data.lang !== lang) {
+          setLang(event.data.lang as CourseLang);
+          setIsLoaded(false);
+        }
+      }
+    };
+
+    return () => channel.close();
+  }, [module.id, slide, lang]);
 
   // 2. Broadcast updates (as trainer)
   useEffect(() => {
@@ -253,14 +278,18 @@ export function usePresentation(
       const rawUrl = getRawSlideUrl(n);
       try {
         const res = await fetch(rawUrl);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) {
+          // Log non-ok responses (410/404) cleanly without throwing unhandled exceptions
+          console.warn(`[Presentation] Slide #${n} returned HTTP ${res.status}`);
+          return rawUrl;
+        }
         const blob = await res.blob();
         const objectUrl = URL.createObjectURL(blob);
         blobUrlsRef.current.set(n, objectUrl);
         setBlobUrls(prev => ({ ...prev, [n]: objectUrl }));
         return objectUrl;
       } catch (err) {
-        console.error(`Failed to fetch slide ${n} blob:`, err);
+        console.warn(`[Presentation] Failed to fetch slide #${n} blob:`, err);
         return rawUrl;
       }
     },
@@ -314,6 +343,8 @@ export function usePresentation(
           };
           img.onerror = () => {
             if (!active) return resolve(null);
+            // Mark attempted so we do not infinitely retry broken/410 upstream slides
+            setPreloadedSlides(prev => new Set(prev).add(n));
             loadedInBatch++;
             resolve(null);
           };
@@ -388,21 +419,29 @@ export function usePresentation(
     return () => document.removeEventListener('fullscreenchange', onChange);
   }, []);
 
-  // Keyboard navigation
+  // Keyboard & Wireless Remote Clicker Navigation (Logitech, Kensington, Targus, etc.)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement).tagName === 'INPUT') return;
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+
+      const nextKeys = ['ArrowRight', 'ArrowDown', 'PageDown', 'Space', 'n', 'N'];
+      const prevKeys = ['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace', 'p', 'P'];
+
+      if (nextKeys.includes(e.key)) {
         e.preventDefault();
         goToSlide(slideRef.current + 1);
-      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      } else if (prevKeys.includes(e.key)) {
         e.preventDefault();
         goToSlide(slideRef.current - 1);
+      } else if (e.key === 'F5' || e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [goToSlide]);
+  }, [goToSlide, toggleFullscreen]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -422,6 +461,13 @@ export function usePresentation(
     return getRawSlideUrl(slide);
   }, [slide, blobUrls, getRawSlideUrl]);
 
+  const nextSlideImageUrl = useMemo(() => {
+    if (slide >= total) return null;
+    const nextNum = slide + 1;
+    if (blobUrls[nextNum]) return blobUrls[nextNum];
+    return getRawSlideUrl(nextNum);
+  }, [slide, total, blobUrls, getRawSlideUrl]);
+
   const progress = useMemo(
     () => ((slide - 1) / Math.max(total - 1, 1)) * 100,
     [slide, total]
@@ -436,7 +482,7 @@ export function usePresentation(
     agentName, agentId,
     isPreloading, preloadingProgress,
     containerRef, handleTouchStart, handleTouchEnd,
-    slideImageUrl, progress,
+    slideImageUrl, nextSlideImageUrl, progress,
     total, hasContent,
     activeTool, setActiveTool,
     isTrainer,

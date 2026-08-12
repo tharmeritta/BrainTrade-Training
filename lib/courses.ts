@@ -6,6 +6,8 @@ export interface CoursePresentation {
   cacheKey?: string;
   /** Firebase Storage URLs for each slide (1-indexed, index 0 = slide 1). When present, used instead of /api/slide. */
   slideUrls?: string[];
+  /** Pre-loaded speaker notes per slide number (1-indexed) */
+  speakerNotes?: Record<number, string>;
 }
 
 export interface CourseModule {

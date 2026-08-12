@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
@@ -203,18 +204,16 @@ const CourseCard = memo(({ module, lang, index, onStart, isCompleted, onMarkComp
           )}
         </AnimatePresence>
 
-        <Image
+        <img
           src={pres.slideUrls && pres.slideUrls.length > 0 
             ? pres.slideUrls[0] 
             : `/api/slide?id=${pres.presentationId}&page=1${pres.cacheKey ? `&v=${encodeURIComponent(pres.cacheKey)}` : ''}`}
           alt={title}
-          fill
-          className={`object-cover transition-all duration-1000 group-hover:scale-110 z-10 ${
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 group-hover:scale-110 z-10 ${
             imgStatus === 'success' ? 'opacity-90 group-hover:opacity-100' : 'opacity-0'
           }`}
           onLoad={() => setImgStatus('success')}
           onError={() => setImgStatus('error')}
-          unoptimized
         />
         
         <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500 z-20" />
