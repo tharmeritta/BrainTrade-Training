@@ -264,7 +264,7 @@ export function PresentationSystemTab({ role, uid, name, readOnly }: Presentatio
                 const pres = selectedModule.presentations[lang];
                 const slideThumbUrl = pres.slideUrls && pres.slideUrls[n - 1]
                   ? pres.slideUrls[n - 1]
-                  : `/api/slide?id=${pres.presentationId}&page=${n}${pres.cacheKey ? `&v=${encodeURIComponent(pres.cacheKey)}` : ''}`;
+                  : `/api/slide?page=${n}`;
 
                 return (
                   <button

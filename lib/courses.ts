@@ -1,10 +1,10 @@
 export type CourseLang = 'th' | 'en';
 
 export interface CoursePresentation {
-  presentationId: string;
+  presentationId?: string;
   totalSlides: number;
   cacheKey?: string;
-  /** Firebase Storage URLs for each slide (1-indexed, index 0 = slide 1). When present, used instead of /api/slide. */
+  /** Firebase Storage URLs for each slide (1-indexed, index 0 = slide 1). */
   slideUrls?: string[];
   /** Pre-loaded speaker notes per slide number (1-indexed) */
   speakerNotes?: Record<number, string>;
@@ -30,8 +30,8 @@ export const COURSE_MODULES: Record<string, CourseModule> = {
     descriptionTh: 'เรียนรู้พื้นฐานของหุ้น ส่วนของผู้ถือหุ้น และวิธีการทำงานของตลาดหลักทรัพย์',
     gradient: 'from-blue-600 to-indigo-700',
     presentations: {
-      th: { presentationId: '1SNZxAJAZets0wMIGsLSoaVDtV2tTP21i', totalSlides: 16 },
-      en: { presentationId: '1U0Vbd0NgJIfKfiTl17Q4c67ytl1GMtY-', totalSlides: 16 },
+      th: { totalSlides: 16 },
+      en: { totalSlides: 16 },
     },
   },
   kyc: {
@@ -42,8 +42,8 @@ export const COURSE_MODULES: Record<string, CourseModule> = {
     descriptionTh: 'เรียนรู้กระบวนการ KYC การตรวจสอบตัวตนลูกค้า และข้อกำหนดด้านการปฏิบัติตามกฎระเบียบสำหรับบริการทางการเงิน',
     gradient: 'from-emerald-600 to-teal-700',
     presentations: {
-      th: { presentationId: '1DMs0-BZ1dI0KE6HYncMzeNjDUavdPOtA', totalSlides: 11 },
-      en: { presentationId: '1SeHjETc4hrYlo4QAQREk5yzjOMznfdxm', totalSlides: 11 },
+      th: { totalSlides: 11 },
+      en: { totalSlides: 11 },
     },
   },
   website: {
@@ -54,8 +54,8 @@ export const COURSE_MODULES: Record<string, CourseModule> = {
     descriptionTh: 'แนะนำแพลตฟอร์ม BrainTrade ฟีเจอร์ต่างๆ และวิธีการใช้งานเว็บไซต์อย่างมีประสิทธิภาพ',
     gradient: 'from-violet-600 to-purple-700',
     presentations: {
-      th: { presentationId: '1DZvsOEv_0G4ZLm1hC6JQlxm2EpaLHqk6', totalSlides: 16 },
-      en: { presentationId: '1FW-wC8qqlvHyTo8mhliCqoOC0kL7mYXK', totalSlides: 16 },
+      th: { totalSlides: 16 },
+      en: { totalSlides: 16 },
     },
   },
 };

@@ -264,10 +264,9 @@ export function usePresentation(
     (n: number) => {
       const storageUrl = slideUrls?.[n - 1];
       if (storageUrl) return storageUrl;
-      const vParam = cacheKey ? `&v=${encodeURIComponent(cacheKey)}` : '';
-      return `/api/slide?id=${presentationId}&page=${n}${vParam}`;
+      return `/api/slide?page=${n}`;
     },
-    [presentationId, cacheKey, slideUrls]
+    [slideUrls]
   );
 
   const fetchAndCacheSlide = useCallback(

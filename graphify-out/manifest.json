@@ -179,11 +179,6 @@
     "ast_hash": "62f993a5bb68f567ccfeb32c1bb76fdd",
     "semantic_hash": "62f993a5bb68f567ccfeb32c1bb76fdd"
   },
-  "app/api/admin/export-slides/route.ts": {
-    "mtime": 1786083165.6023717,
-    "ast_hash": "4f5b55558898fdb954f0a0651bd1ca87",
-    "semantic_hash": "4f5b55558898fdb954f0a0651bd1ca87"
-  },
   "app/api/admin/export-staff/route.ts": {
     "mtime": 1786083165.6025887,
     "ast_hash": "dea2af9dc82f008baa9abed1cbdb80c4",
@@ -340,8 +335,8 @@
     "semantic_hash": "32b8c26f50b077830ab4a3dbf0e23ec9"
   },
   "app/api/slide/route.ts": {
-    "mtime": 1786508781.5583656,
-    "ast_hash": "acee46e1f65ee9b067e669431963553b",
+    "mtime": 1786509032.509731,
+    "ast_hash": "2888888e98f297692f2402feffa2bfab",
     "semantic_hash": ""
   },
   "app/api/trainer/discipline/[id]/route.ts": {
@@ -515,8 +510,8 @@
     "semantic_hash": "5c3e0adbbaa5b4a2b75bed7a430b63bf"
   },
   "components/features/admin/adjustments/LearnEditor.tsx": {
-    "mtime": 1786506717.4926822,
-    "ast_hash": "98bff3cb40f7c626e497855cdda53c22",
+    "mtime": 1786509020.6083894,
+    "ast_hash": "c68fe4028d1a616df261922c7533aed7",
     "semantic_hash": ""
   },
   "components/features/admin/adjustments/OverridesManager.tsx": {
@@ -830,8 +825,8 @@
     "semantic_hash": ""
   },
   "components/features/presentation/usePresentation.ts": {
-    "mtime": 1786507605.962056,
-    "ast_hash": "4c24f0c62390d7c71ff47f6205418bad",
+    "mtime": 1786509043.6036496,
+    "ast_hash": "a2b60b5f6fa4b0c9be7cca606339562b",
     "semantic_hash": ""
   },
   "components/features/quiz/QuizBriefing.tsx": {
@@ -1005,8 +1000,8 @@
     "semantic_hash": "c9372339f270ef71f2a21c12d742e5aa"
   },
   "lib/courses.ts": {
-    "mtime": 1786506693.5585322,
-    "ast_hash": "2390557d3ea6d5c469a2aaf0c69cd303",
+    "mtime": 1786509038.80425,
+    "ast_hash": "a86e87197028bda007ffae112c6e804c",
     "semantic_hash": ""
   },
   "lib/evaluator-helpers.ts": {
@@ -1300,8 +1295,8 @@
     "semantic_hash": "8bd478bb8ac98a2b1d064f3a9eab9b93"
   },
   "components/features/courses/CourseHub.tsx": {
-    "mtime": 1786508147.3345242,
-    "ast_hash": "ce5420fd24d470b28362ab9c52104566",
+    "mtime": 1786509054.7684371,
+    "ast_hash": "d49d13e7b2ca655e0f6d9bf1b331314d",
     "semantic_hash": ""
   },
   "components/features/evaluator/EvaluatorDashboard.tsx": {
@@ -1520,8 +1515,8 @@
     "semantic_hash": ""
   },
   "components/features/trainer/PresentationSystemTab.tsx": {
-    "mtime": 1786508978.3198752,
-    "ast_hash": "3bb6e1bc68f367391a4600593e22f538",
+    "mtime": 1786509051.9656837,
+    "ast_hash": "9cafb84f4c2171b0397096f81a20016e",
     "semantic_hash": ""
   },
   "components/features/trainer/WaveManagementTab.tsx": {

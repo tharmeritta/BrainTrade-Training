@@ -140,7 +140,6 @@ export default function LearnEditor({ initialModules, data, onSave, onChange, sa
               <h4 className="font-bold truncate text-sm mb-1">{mod.title || 'Untitled'}</h4>
               <div className="flex flex-col gap-1 text-[10px] font-bold text-muted-foreground">
                 <div className="flex items-center gap-1"><FileText size={10} /> {(mod.presentations?.en?.slideUrls?.length || 0) + (mod.presentations?.th?.slideUrls?.length || 0)} Slides</div>
-                {(mod.presentations?.en?.presentationId || mod.presentations?.th?.presentationId) && <div className="text-primary flex items-center gap-1"><ExternalLink size={10} /> Has Google Slides</div>}
               </div>
               <div className="flex items-center gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button disabled={idx === 0} onClick={() => moveModule(idx, 'up')} className="p-1 rounded bg-background/50 border border-border disabled:opacity-20"><ArrowUp size={10} /></button>
@@ -181,8 +180,7 @@ export default function LearnEditor({ initialModules, data, onSave, onChange, sa
                 return (
                   <div key={lang} className="p-5 rounded-2xl bg-secondary/10 border border-border space-y-4">
                     <div className="flex items-center justify-between"><h5 className="text-xs font-black uppercase text-primary">{lang === 'en' ? 'English' : 'Thai'} Pres</h5>{uploadStatus[`${editingId}_${lang}`] === 'loading' && <Loader2 size={14} className="animate-spin text-primary" />}</div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <FormField id={`pres-${lang}`} label="Google Slides ID"><input id={`pres-${lang}`} value={pres?.presentationId || ''} onChange={e => handleUpdate(editingId, `presentations.${lang}.presentationId`, e.target.value)} className="w-full bg-background border p-2 rounded-lg text-xs font-mono outline-none" /></FormField>
+                    <div className="grid grid-cols-1 gap-3">
                       <FormField id={`slides-${lang}`} label="Total Slides"><input id={`slides-${lang}`} type="number" value={pres?.totalSlides || 0} onChange={e => handleUpdate(editingId, `presentations.${lang}.totalSlides`, parseInt(e.target.value) || 0)} className="w-full bg-background border p-2 rounded-lg text-xs outline-none" /></FormField>
                     </div>
                     <div className="space-y-2">
