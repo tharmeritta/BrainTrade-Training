@@ -73,6 +73,34 @@ export function CertificateModal({
     verified: 'Verified Certificate'
   };
 
+  // Helper function to draw wrapped text on 2D canvas (supporting English & Thai character wrapping)
+  const drawWrappedCanvasText = (
+    context: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    startY: number,
+    maxWidth: number,
+    lineHeight: number
+  ) => {
+    const isWordSeparated = text.includes(' ');
+    const tokens = isWordSeparated ? text.split(' ') : text.split('');
+    let line = '';
+    let y = startY;
+
+    for (let n = 0; n < tokens.length; n++) {
+      const testLine = line + (isWordSeparated ? tokens[n] + ' ' : tokens[n]);
+      const metrics = context.measureText(testLine);
+      if (metrics.width > maxWidth && n > 0) {
+        context.fillText(line.trim(), x, y);
+        line = isWordSeparated ? tokens[n] + ' ' : tokens[n];
+        y += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    context.fillText(line.trim(), x, y);
+  };
+
   // Generate PNG image via HTML5 Canvas (Global Standard White Certificate)
   const handleDownload = async () => {
     if (downloading || !certCardRef.current) return;
@@ -136,20 +164,20 @@ export function CertificateModal({
       ctx.font = '600 12px sans-serif';
       ctx.fillText(stageName, width / 2, 185);
 
-      // 6. Notes / Graduation Statement
+      // 6. Notes / Graduation Statement (Wrapped to avoid canvas clipping)
       ctx.fillStyle = '#334155';
       ctx.font = '12px sans-serif';
-      ctx.fillText(certText.notes, width / 2, 220);
+      drawWrappedCanvasText(ctx, certText.notes, width / 2, 215, width - 100, 18);
 
       // 7. Footer: Score Pill
       ctx.fillStyle = '#fef3c7';
-      ctx.fillRect(width / 2 - 90, 240, 180, 28);
+      ctx.fillRect(width / 2 - 90, 250, 180, 28);
       ctx.strokeStyle = '#d97706';
-      ctx.strokeRect(width / 2 - 90, 240, 180, 28);
+      ctx.strokeRect(width / 2 - 90, 250, 180, 28);
 
       ctx.fillStyle = '#92400e';
       ctx.font = 'bold 13px sans-serif';
-      ctx.fillText(certText.scoreLabel, width / 2, 258);
+      ctx.fillText(certText.scoreLabel, width / 2, 268);
 
       // Signatory Authority (Left Footer)
       ctx.textAlign = 'left';
@@ -172,7 +200,9 @@ export function CertificateModal({
       const link = document.createElement('a');
       link.download = `BrainTrade_Certificate_${agentName.replace(/\s+/g, '_')}_${certLang.toUpperCase()}.png`;
       link.href = canvas.toDataURL('image/png');
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
     } catch (err) {
       console.error('Failed to download certificate image:', err);
     } finally {

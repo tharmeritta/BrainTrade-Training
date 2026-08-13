@@ -18,8 +18,12 @@ import { ProfileSidebar } from './ProfileSidebar';
 import { ModuleHeader } from './ModuleHeader';
 import { ModuleCard } from './ModuleCard';
 import { StepTimeline } from './StepTimeline';
+import { QuickNextTaskBanner } from './QuickNextTaskBanner';
 
 import { CertificateModal } from './CertificateModal';
+
+import { WelcomeOnboardingModal } from '@/components/ui/WelcomeOnboardingModal';
+import { FeatureSpotlightTour } from '@/components/ui/FeatureSpotlightTour';
 
 // Lazy-load celebration UI for performance
 const CongratulationsCard = dynamic(
@@ -42,6 +46,31 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
   const pathname  = usePathname();
   const locale    = pathname.split('/')[1] ?? 'th';
   const [showCertModal, setShowCertModal] = React.useState(false);
+  const [showOnboarding, setShowOnboarding] = React.useState(false);
+  const [showSpotlightTour, setShowSpotlightTour] = React.useState(false);
+
+  // Check first-time login
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const done = localStorage.getItem(`onboarding_completed_${agentId}`);
+      if (!done) {
+        setShowOnboarding(true);
+      }
+    }
+  }, [agentId]);
+
+  const handleCompleteOnboarding = (startTour?: boolean) => {
+    localStorage.setItem(`onboarding_completed_${agentId}`, 'true');
+    setShowOnboarding(false);
+    if (startTour) {
+      setShowSpotlightTour(true);
+    }
+  };
+
+  const handleCompleteSpotlightTour = () => {
+    localStorage.setItem(`spotlight_completed_${agentId}`, 'true');
+    setShowSpotlightTour(false);
+  };
 
   const handleSync = async () => {
     try {
@@ -134,9 +163,22 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
       />
 
       <div className="relative z-10 flex-1 flex flex-col lg:overflow-y-auto">
-        <ModuleHeader doneCount={doneCount} stats={stats} t={t} />
+        <ModuleHeader 
+          doneCount={doneCount} 
+          stats={stats} 
+          t={t} 
+          onOpenTutorial={() => setShowOnboarding(true)} 
+        />
 
         <div className="px-6 py-8 lg:px-10 lg:py-12">
+          {/* Quick-Continue Action Banner */}
+          <QuickNextTaskBanner
+            currentStep={currentStep}
+            derived={derived}
+            locale={locale}
+            t={t}
+          />
+
           {allDone && (
             <CongratulationsCard 
               t={t} 
@@ -188,6 +230,22 @@ export default function AgentTrainingHub({ agentName, agentId, agentStageName, s
         completedAt={stats?.agent?.graduatedAt}
         certificateId={stats?.agent?.certificateId || `BT-CERT-2026-${agentId.slice(-5).toUpperCase()}`}
         agentEmail={stats?.agent?.email}
+      />
+
+      <WelcomeOnboardingModal
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        onComplete={handleCompleteOnboarding}
+        onStartTour={() => {
+          setShowOnboarding(false);
+          setShowSpotlightTour(true);
+        }}
+      />
+
+      <FeatureSpotlightTour
+        isOpen={showSpotlightTour}
+        onClose={() => setShowSpotlightTour(false)}
+        onComplete={handleCompleteSpotlightTour}
       />
     </div>
   );

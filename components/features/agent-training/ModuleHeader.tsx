@@ -9,9 +9,10 @@ interface ModuleHeaderProps {
   doneCount: number;
   stats: AgentStats | null;
   t: (key: string, values?: any) => string;
+  onOpenTutorial?: () => void;
 }
 
-export const ModuleHeader = memo(({ doneCount, stats, t }: ModuleHeaderProps) => {
+export const ModuleHeader = memo(({ doneCount, stats, t, onOpenTutorial }: ModuleHeaderProps) => {
   const badge = (stats?.badge ?? 'developing') as keyof typeof BADGE;
   const badgeCfg = BADGE[badge];
 
@@ -73,6 +74,16 @@ export const ModuleHeader = memo(({ doneCount, stats, t }: ModuleHeaderProps) =>
             style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
             {doneCount} / {STEPS.length} Completed
           </span>
+
+          {onOpenTutorial && (
+            <button
+              type="button"
+              onClick={onOpenTutorial}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black bg-amber-500/10 text-amber-600 border border-amber-500/20 hover:bg-amber-500/20 transition-all active:scale-95 shrink-0"
+            >
+              <span>❓ How It Works</span>
+            </button>
+          )}
         </div>
       </div>
     </motion.div>

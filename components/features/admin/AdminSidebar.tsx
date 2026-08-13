@@ -90,9 +90,10 @@ interface AdminSidebarProps {
     logout: () => void;
   };
   navigation: {
-    operationsTabs: TabItem[];
+    monitoringTabs: TabItem[];
+    academyTabs: TabItem[];
     analyticsTabs: TabItem[];
-    managementTabs: TabItem[];
+    governanceTabs: TabItem[];
   };
   t: any;
 }
@@ -204,8 +205,16 @@ export default function AdminSidebar({
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 py-2 scrollbar-hide">
         <NavGroup 
-          label={t('groups.operations')}
-          items={navigation.operationsTabs} 
+          label={t('groups.monitoring')}
+          items={navigation.monitoringTabs} 
+          sidebarCollapsed={state.sidebarCollapsed} 
+          activeTabId={state.tab} 
+          onSelectTab={actions.setTab} 
+          t={t}
+        />
+        <NavGroup 
+          label={t('groups.academy')}
+          items={navigation.academyTabs} 
           sidebarCollapsed={state.sidebarCollapsed} 
           activeTabId={state.tab} 
           onSelectTab={actions.setTab} 
@@ -220,8 +229,8 @@ export default function AdminSidebar({
           t={t}
         />
         <NavGroup 
-          label={t('groups.management')}
-          items={navigation.managementTabs} 
+          label={t('groups.governance')}
+          items={navigation.governanceTabs} 
           sidebarCollapsed={state.sidebarCollapsed} 
           activeTabId={state.tab} 
           onSelectTab={actions.setTab} 

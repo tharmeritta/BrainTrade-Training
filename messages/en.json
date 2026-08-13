@@ -134,6 +134,9 @@
     "matchError": "Name not found in system. Please check and try again."
   },
   "trainingHub": {
+    "learn": "Learn",
+    "quiz": "Quiz",
+    "aiEval": "AI Evaluation",
     "study": "Study",
     "test": "Test",
     "analyse": "Analyze",
@@ -201,9 +204,10 @@
       "profile": "User Profile"
     },
     "groups": {
-      "operations": "Operations",
-      "analytics": "Analytics",
-      "management": "Management"
+      "monitoring": "Dashboard & Monitoring",
+      "academy": "Learning & Academy",
+      "analytics": "HR & Roster Analytics",
+      "governance": "Governance & Control"
     },
     "aiScenarios": {
       "title": "AI Training Scenarios",
@@ -953,6 +957,7 @@
     "passScore": "Pass: {threshold}%",
     "passFirst": "Pass \"{title}\" first",
     "passed": "Passed",
+    "locked": "Locked",
     "prereqLocked": "Complete \"{title}\" to unlock",
     "prereqUnlocked": "\"{title}\" complete — unlocked",
     "sections": {
@@ -969,5 +974,37 @@
         "desc": "Custom and specialized training evaluations"
       }
     }
+  },
+  "onboarding": {
+    "welcomeTitle": "Welcome to Sales Academy!",
+    "welcomeSubtitle": "Your interactive journey to sales excellence starts here.",
+    "step1Title": "1. Learn & Master",
+    "step1Desc": "Study product decks, sales scripts, and listen to voiceover lessons.",
+    "step2Title": "2. Quiz & Earn XP",
+    "step2Desc": "Test your knowledge, maintain 3 hearts, and earn XP level badges.",
+    "step3Title": "3. AI Call Simulation",
+    "step3Desc": "Practice live telesales calls with realistic customer AI personas.",
+    "startJourney": "Start Training Journey",
+    "howItWorks": "How It Works",
+    "questTitle": "Trainee Starter Quest",
+    "questIntro": "Complete system intro tour",
+    "questLearn": "Finish 1st Learn Module",
+    "questQuiz": "Pass 1st Quiz Stage",
+    "questAi": "Complete 1st AI Simulation",
+    "tourTitle": "Interactive System Tour",
+    "tourStep1Title": "Learn & Product Decks",
+    "tourStep1Desc": "Access product knowledge, sales scripts, and audio guidelines here.",
+    "tourStep2Title": "Interactive Quiz & Tests",
+    "tourStep2Desc": "Test your comprehension, earn XP, and unlock higher ranks.",
+    "tourStep3Title": "AI Tele-sales Call Simulation",
+    "tourStep3Desc": "Practice actual phone sales calls with AI customer personas and get real-time feedback.",
+    "tourStep4Title": "Profile & XP Progress",
+    "tourStep4Desc": "Track your overall score, completion badges, and starter quest progress.",
+    "nextStep": "Next Step",
+    "prevStep": "Previous",
+    "skipTour": "Skip Tour",
+    "finishTour": "Finish Tour",
+    "startTour": "Take Guided Tour",
+    "stepCount": "Step {current} of {total}"
   }
 }

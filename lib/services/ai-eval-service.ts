@@ -454,7 +454,13 @@ export class AiEvalService {
   /* --- Helpers -------------------------------------------------------------- */
 
   private static cleanJson(raw: string): string {
-    return raw.replace(/```json/g, '').replace(/```/g, '').trim();
+    const stripped = raw.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const firstBrace = stripped.indexOf('{');
+    const lastBrace = stripped.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      return stripped.substring(firstBrace, lastBrace + 1);
+    }
+    return stripped;
   }
 
   /**

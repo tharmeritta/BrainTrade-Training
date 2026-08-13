@@ -63,9 +63,10 @@ export function useAdminDashboard({ role, uid, name, interactiveAccessUntil }: U
       : getVisibleTabs(effectiveRole, isReadOnlyRole);
   }, [role, activeRoleView, effectiveRole, isReadOnlyRole]);
 
-  const operationsTabs = useMemo(() => visibleTabs.filter(t => t.group === 'operations'), [visibleTabs]);
+  const monitoringTabs = useMemo(() => visibleTabs.filter(t => t.group === 'monitoring'), [visibleTabs]);
+  const academyTabs    = useMemo(() => visibleTabs.filter(t => t.group === 'academy'), [visibleTabs]);
   const analyticsTabs  = useMemo(() => visibleTabs.filter(t => t.group === 'analytics'), [visibleTabs]);
-  const managementTabs = useMemo(() => visibleTabs.filter(t => t.group === 'management'), [visibleTabs]);
+  const governanceTabs = useMemo(() => visibleTabs.filter(t => t.group === 'governance'), [visibleTabs]);
 
   const activeTab = useMemo(() => visibleTabs.find(t => t.id === tab) || visibleTabs[0], [visibleTabs, tab]);
 
@@ -125,9 +126,10 @@ export function useAdminDashboard({ role, uid, name, interactiveAccessUntil }: U
       setActiveRoleView,
     },
     navigation: {
-      operationsTabs,
+      monitoringTabs,
+      academyTabs,
       analyticsTabs,
-      managementTabs,
+      governanceTabs,
       activeTab,
       visibleTabs,
     },

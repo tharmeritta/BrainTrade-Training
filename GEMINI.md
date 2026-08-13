@@ -14,6 +14,23 @@ This process is now **fully automated** in this workspace!
 - **Hook Script**: `.gemini/hooks/init.js` automatically runs on every launch of `gemini` or `agy` in this project. It scans, compiles, and dynamically loads `GEMINI.md`, `graphify-out/GRAPH_REPORT.md`, and any local or private project memories into the agent's startup context.
 - **Auto-Compaction**: Automatic context compression (`/compress`) triggers dynamically when the session token count reaches the `compressionThreshold` (set to 30% of the model window) to keep your chat history clean and fast without user intervention.
 
+## Token Optimization & Subagent Handoff Protocol
+
+To minimize token usage (saving 50-80% tokens per session) and maintain 100% memory losslessness across long tasks:
+1. **Subagent Delegation Architecture**:
+   - Spawns and coordinates two primary subagents:
+     - `handoff-agent`: Responsible for architectural planning, maintaining `handoff.md`, feature roadmap planning, and task breakdown.
+     - `hands-on-agent`: Responsible for code modifications, component refactoring, QA checks (`npm run check`), and AST knowledge graph maintenance (`graphify update .`).
+   - Delegate heavy file reads (>150 lines), research, or multi-file edits to `hands-on-agent` or `research` running on the `flash` model tier so raw file tokens do not inflate the primary context window.
+2. **Automated Plan-and-Clear Handoff Flow**:
+   - **Plan**: `handoff-agent` MUST update `handoff.md` at the project root with the architectural plan, affected files, and task steps BEFORE code execution begins.
+   - **Direct Messaging**: `handoff-agent` will call `send_message` to dispatch execution instructions directly to `hands-on-agent`.
+   - **Context Clearance**: The primary agent relies on automatic context compaction (`/compress` or `compressionThreshold: 0.25`) to flush historical chat logs. On post-compaction Turn 1, `hands-on-agent` and `handoff-agent` read `handoff.md` and `graphify-out/GRAPH_REPORT.md` to resume work in <5,000 tokens.
+3. **Master `handoff.md` Synchronization**:
+   - Maintain `handoff.md` at the repository root detailing Executive Summary, System Topology, Subagent Roles, Anti-hardcoding Guidelines, and Task Roadmaps.
+4. **Tight Line-Range Slicing**:
+   - Always specify tight line ranges (`StartLine`/`EndLine`) when viewing files. Use `graphify query` / `GRAPH_REPORT.md` for cross-module dependency queries.
+
 ## Anti-Hardcoding & Configuration Governance Rules
 
 All subagents and code edits MUST enforce the following anti-hardcoding rules:

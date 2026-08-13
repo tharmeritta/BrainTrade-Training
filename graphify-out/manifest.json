@@ -110,8 +110,8 @@
     "semantic_hash": "a9439b9a55ef4bd41111b801cc5702ce"
   },
   "app/[locale]/quiz/page.tsx": {
-    "mtime": 1786448675.5865662,
-    "ast_hash": "02278792b5d121ec98449096b8cbcd5d",
+    "mtime": 1786515937.6507127,
+    "ast_hash": "eb2fb9ee2b41e27850706b461760d939",
     "semantic_hash": ""
   },
   "app/api/admin/agents/[id]/route.ts": {
@@ -360,9 +360,9 @@
     "semantic_hash": "dca80917847c9ecab98b3383d81db29c"
   },
   "app/api/trainer/training-periods/route.ts": {
-    "mtime": 1786083165.6083062,
-    "ast_hash": "93eca5923d203a6770b39524bf92a73f",
-    "semantic_hash": "93eca5923d203a6770b39524bf92a73f"
+    "mtime": 1786511874.3199246,
+    "ast_hash": "6e6340ddef3bda0ce1988238eb68a018",
+    "semantic_hash": ""
   },
   "app/layout.tsx": {
     "mtime": 1786083165.6084545,
@@ -395,8 +395,8 @@
     "semantic_hash": ""
   },
   "components/features/admin/AdjustmentsTab.tsx": {
-    "mtime": 1786345131.3460414,
-    "ast_hash": "0abd3ff8c4445044af668318a084c9a3",
+    "mtime": 1786535825.040262,
+    "ast_hash": "b957e99c94f7bfc06f4967f66f3e44ae",
     "semantic_hash": ""
   },
   "components/features/admin/AdminHeader.tsx": {
@@ -410,19 +410,19 @@
     "semantic_hash": "932da802743a94f6589e10c41bf05af7"
   },
   "components/features/admin/AdminSidebar.tsx": {
-    "mtime": 1786420629.1374483,
-    "ast_hash": "2cae38edaa6907be6060c2f21b22ec8f",
+    "mtime": 1786510606.868023,
+    "ast_hash": "3f1bc091494ed1bcf4c5e7af8d384210",
     "semantic_hash": ""
   },
   "components/features/admin/AdminTabContent.tsx": {
-    "mtime": 1786345131.346672,
-    "ast_hash": "2625cf4a8aea8c79143f3396e23368de",
+    "mtime": 1786535821.499213,
+    "ast_hash": "962bb13ab90677a6f6ccc7504d6a6ef0",
     "semantic_hash": ""
   },
   "components/features/admin/AgentDetailModal.tsx": {
-    "mtime": 1786083165.611231,
-    "ast_hash": "a75c704f9755d162ebe3fe70eb2f21a5",
-    "semantic_hash": "a75c704f9755d162ebe3fe70eb2f21a5"
+    "mtime": 1786535843.7672224,
+    "ast_hash": "f6ceddc31fed6844b3f19ad474c7fac8",
+    "semantic_hash": ""
   },
   "components/features/admin/AiScenarioImportModal.tsx": {
     "mtime": 1786345131.3469868,
@@ -455,8 +455,8 @@
     "semantic_hash": "b679147b0185589551e0805c2d0ef937"
   },
   "components/features/admin/EvaluationsTab.tsx": {
-    "mtime": 1786175551.2072616,
-    "ast_hash": "80758250042edeca16f877e3c988f566",
+    "mtime": 1786535830.8596902,
+    "ast_hash": "59fd0e6869bf232c9f2c5fb7ae96007b",
     "semantic_hash": ""
   },
   "components/features/admin/HRAnalyticsTab.tsx": {
@@ -565,8 +565,8 @@
     "semantic_hash": "7bda29227097b2da8c731323d0ea826b"
   },
   "components/features/admin/dashboard-policy.ts": {
-    "mtime": 1786345131.349776,
-    "ast_hash": "f09d037f340712c26a110b9fb08904d3",
+    "mtime": 1786510599.6813715,
+    "ast_hash": "ad423535d56d52a49be30abc4413f499",
     "semantic_hash": ""
   },
   "components/features/admin/evaluations/ActiveBatchHeader.tsx": {
@@ -655,8 +655,8 @@
     "semantic_hash": "afa3432a7d661a1e5ffdb4c8ec798452"
   },
   "components/features/admin/useAdminDashboard.ts": {
-    "mtime": 1786096624.6651924,
-    "ast_hash": "e5395536c98c1b7cffddcf0d2ba7ec6e",
+    "mtime": 1786510602.1677399,
+    "ast_hash": "99c3c765a5dc5182d2370a42676a6255",
     "semantic_hash": ""
   },
   "components/features/agent-entry/BrandingPanel.tsx": {
@@ -700,18 +700,18 @@
     "semantic_hash": "a14ea39fb363ac196640fbdf258e3e3e"
   },
   "components/features/agent-training/ModuleCard.tsx": {
-    "mtime": 1786096358.5300107,
-    "ast_hash": "75f51fdc51518ec115fddc802ca2af18",
+    "mtime": 1786515840.3594677,
+    "ast_hash": "a709dd7a12b5f2c49377570fe9aff05e",
     "semantic_hash": ""
   },
   "components/features/agent-training/ModuleHeader.tsx": {
-    "mtime": 1786083165.6182554,
-    "ast_hash": "d919b0483c0dc455bff2111c335c3fad",
-    "semantic_hash": "d919b0483c0dc455bff2111c335c3fad"
+    "mtime": 1786515060.8118546,
+    "ast_hash": "5ed154dd6f960b35f60a4c255707a8a7",
+    "semantic_hash": ""
   },
   "components/features/agent-training/ProfileSidebar.tsx": {
-    "mtime": 1786261104.742527,
-    "ast_hash": "6d8a5ec8758350a1454645b810236ed8",
+    "mtime": 1786515821.5483046,
+    "ast_hash": "09a05a8a90d679f17b96aa2cb9ed5a09",
     "semantic_hash": ""
   },
   "components/features/agent-training/StepTimeline.tsx": {
@@ -735,8 +735,8 @@
     "semantic_hash": ""
   },
   "components/features/agent-training/index.tsx": {
-    "mtime": 1786345131.3507214,
-    "ast_hash": "9b425b440b94fa809c14cd23dd6b42c3",
+    "mtime": 1786515815.7292836,
+    "ast_hash": "c06c0aba3a648720ba9ff57ea2ec89e0",
     "semantic_hash": ""
   },
   "components/features/ai-eval/AuditFlow.tsx": {
@@ -785,9 +785,9 @@
     "semantic_hash": "4cea1ce5972b15dda6da34c058966a6b"
   },
   "components/features/evaluator/AgentPerformancePanel.tsx": {
-    "mtime": 1786083723.229107,
-    "ast_hash": "f5a862d8105266870c903dac3a0385bb",
-    "semantic_hash": "f5a862d8105266870c903dac3a0385bb"
+    "mtime": 1786535840.6210923,
+    "ast_hash": "8157f9b4b27c7889c8172ef22c78c94d",
+    "semantic_hash": ""
   },
   "components/features/evaluator/EvalForm.tsx": {
     "mtime": 1786083165.6206002,
@@ -840,8 +840,8 @@
     "semantic_hash": ""
   },
   "components/features/quiz/QuizSession.tsx": {
-    "mtime": 1786425594.4723866,
-    "ast_hash": "a8efb301d6b8a6539489435e28727649",
+    "mtime": 1786514162.1309087,
+    "ast_hash": "d88dcb69ac4e5f7ed109d3d1725168c2",
     "semantic_hash": ""
   },
   "components/features/quiz/index.tsx": {
@@ -855,9 +855,9 @@
     "semantic_hash": "2fc5cc1b6ba7200987c175e57502cb9a"
   },
   "components/features/quiz/types.ts": {
-    "mtime": 1786083165.6218834,
-    "ast_hash": "0bea185c3c63242b5166f8cd76f6f968",
-    "semantic_hash": "0bea185c3c63242b5166f8cd76f6f968"
+    "mtime": 1786514129.8161185,
+    "ast_hash": "483216f1c3b96118d427e8a55a3ccdf0",
+    "semantic_hash": ""
   },
   "components/features/trainer/DaysTab.tsx": {
     "mtime": 1786083165.6220503,
@@ -870,13 +870,13 @@
     "semantic_hash": "ea071af95362450e64fb5bcacb36a247"
   },
   "components/features/trainer/NewPeriodModal.tsx": {
-    "mtime": 1786083165.6224015,
-    "ast_hash": "a187a33bf12ceaef31dd5305c6c59f4e",
-    "semantic_hash": "a187a33bf12ceaef31dd5305c6c59f4e"
+    "mtime": 1786513890.6116292,
+    "ast_hash": "aa5e3af778333b3be5b5c9fbb6fcf681",
+    "semantic_hash": ""
   },
   "components/features/trainer/PeriodDetail.tsx": {
-    "mtime": 1786260543.2057145,
-    "ast_hash": "8e62a3e3ac3b57c62a6a8b879938f979",
+    "mtime": 1786513893.0974224,
+    "ast_hash": "c031c6b95a7e28ed97dbb62f631dc16e",
     "semantic_hash": ""
   },
   "components/features/trainer/TrainerConstants.tsx": {
@@ -915,8 +915,8 @@
     "semantic_hash": ""
   },
   "components/ui/NavBar.tsx": {
-    "mtime": 1786420594.59341,
-    "ast_hash": "779ce545d75f4d3af3201b53b60a23ae",
+    "mtime": 1786535598.2815318,
+    "ast_hash": "7734adbc9582662e546e61747761b11a",
     "semantic_hash": ""
   },
   "components/ui/NavigationProgress.tsx": {
@@ -1085,8 +1085,8 @@
     "semantic_hash": ""
   },
   "lib/services/ai-eval-service.ts": {
-    "mtime": 1786348405.8595726,
-    "ast_hash": "9f299bc6fc599d553ef308373e43ef12",
+    "mtime": 1786522941.1026864,
+    "ast_hash": "fa12dbebfdcadca5ee5cddb1737a5da4",
     "semantic_hash": ""
   },
   "lib/services/ai-scenarios/utils.ts": {
@@ -1150,17 +1150,17 @@
     "semantic_hash": "f2218e8722ac3ccfc7ab7adec1f11fe0"
   },
   "messages/en.json": {
-    "mtime": 1786349513.0837026,
-    "ast_hash": "6ca2936ca68d336d90d179ab8930fe05",
+    "mtime": 1786524602.3162732,
+    "ast_hash": "7a2e53494876eca8dbb9b227c1788ffd",
     "semantic_hash": ""
   },
   "messages/th.json": {
-    "mtime": 1786349514.8852642,
-    "ast_hash": "8e8bfc55e00ed7d755ed38d9fe4b3fd6",
+    "mtime": 1786524603.3975625,
+    "ast_hash": "6d1e971d782e656a41979f0245bec572",
     "semantic_hash": ""
   },
   "next-env.d.ts": {
-    "mtime": 1786276726.0931196,
+    "mtime": 1786535346.0165267,
     "ast_hash": "d0f8375ae1199dc7acd3977fc33b78b8",
     "semantic_hash": ""
   },
@@ -1210,13 +1210,13 @@
     "semantic_hash": ""
   },
   "types/index.ts": {
-    "mtime": 1786260280.9102468,
-    "ast_hash": "1ce6ee37570f98ac6cf417a36082256e",
+    "mtime": 1786511872.4312036,
+    "ast_hash": "7172bd908a6565fff9c51c10d78624c0",
     "semantic_hash": ""
   },
   "GEMINI.md": {
-    "mtime": 1786424834.2198074,
-    "ast_hash": "4b8141def36a272fd7dde02252ece994",
+    "mtime": 1786524331.937463,
+    "ast_hash": "d8789eaf3b55eeb98867ee484b0536c3",
     "semantic_hash": ""
   },
   "apphosting.prod.yaml": {
@@ -1310,8 +1310,8 @@
     "semantic_hash": ""
   },
   "components/features/trainer/TrainerPanel.tsx": {
-    "mtime": 1786507037.3200192,
-    "ast_hash": "68862d9f67a238c9e1ce85c8eb52439e",
+    "mtime": 1786535850.26331,
+    "ast_hash": "3bcdbe540b0604a883c9429f6b13f7e6",
     "semantic_hash": ""
   },
   "components/providers/AgentAuthGuard.tsx": {
@@ -1460,8 +1460,8 @@
     "semantic_hash": ""
   },
   "components/features/agent-training/CertificateModal.tsx": {
-    "mtime": 1786345131.3503277,
-    "ast_hash": "b5358049670e3e04add2811aedaca90b",
+    "mtime": 1786522946.0333009,
+    "ast_hash": "25eef3db3174007d2c27f2342a5aaf6e",
     "semantic_hash": ""
   },
   "app/api/admin/certificate-config/route.ts": {
@@ -1500,8 +1500,8 @@
     "semantic_hash": ""
   },
   "components/features/quiz/gamification.tsx": {
-    "mtime": 1786421481.7838004,
-    "ast_hash": "f37c7f7826b799ccee4417d19c9023f9",
+    "mtime": 1786514140.3173175,
+    "ast_hash": "a4d84ed491432b8c8a505075a6657811",
     "semantic_hash": ""
   },
   "SKILL.md": {
@@ -1522,6 +1522,61 @@
   "components/features/trainer/WaveManagementTab.tsx": {
     "mtime": 1786507042.578824,
     "ast_hash": "bc1249bea3534e8fdf3e9c858b87beab",
+    "semantic_hash": ""
+  },
+  "app/[locale]/join/page.tsx": {
+    "mtime": 1786511889.795428,
+    "ast_hash": "72680d7bf5188ef6cea8b008c49095a5",
+    "semantic_hash": ""
+  },
+  "app/api/join/route.ts": {
+    "mtime": 1786511870.1636415,
+    "ast_hash": "148a77a032e62f2dc9c626acb3eb940f",
+    "semantic_hash": ""
+  },
+  "components/features/quiz/QuestMapCanvas.tsx": {
+    "mtime": 1786535350.455149,
+    "ast_hash": "52f9a486c5b59b2b059c13fd2c3b4da4",
+    "semantic_hash": ""
+  },
+  "components/features/quiz/ArcadeStageCard.tsx": {
+    "mtime": 1786514433.6920013,
+    "ast_hash": "206d822acef0a58bc2406ca3fa9492a9",
+    "semantic_hash": ""
+  },
+  "components/features/quiz/QuizPlayerHUD.tsx": {
+    "mtime": 1786514430.3903162,
+    "ast_hash": "aaac41197d2838e3481ff7fd67ca56f7",
+    "semantic_hash": ""
+  },
+  "components/ui/WelcomeOnboardingModal.tsx": {
+    "mtime": 1786515891.3056815,
+    "ast_hash": "7ef13fcb154d4a04d829ba9a7cb9d88e",
+    "semantic_hash": ""
+  },
+  "components/ui/FeatureSpotlightTour.tsx": {
+    "mtime": 1786515081.6639307,
+    "ast_hash": "56767b109c1292d9bbe815e8dfdf4673",
+    "semantic_hash": ""
+  },
+  "components/features/agent-training/QuickNextTaskBanner.tsx": {
+    "mtime": 1786515808.5373504,
+    "ast_hash": "8f58c03439261c29058277d750c217bd",
+    "semantic_hash": ""
+  },
+  "handoff.md": {
+    "mtime": 1786535957.7249243,
+    "ast_hash": "017b93ab4c63699447bf9cfcbbcd8fca",
+    "semantic_hash": ""
+  },
+  ".agents/skills/token-optimization-and-handoff/SKILL.md": {
+    "mtime": 1786523228.3201838,
+    "ast_hash": "146ee42e2104350639566ab1f45e41f8",
+    "semantic_hash": ""
+  },
+  "app/[locale]/template.tsx": {
+    "mtime": 1786535817.7247527,
+    "ast_hash": "d649e83bced3e592fa7c647513da34f7",
     "semantic_hash": ""
   }
 }

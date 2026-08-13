@@ -249,6 +249,7 @@ export interface TrainingPeriod {
   startDate: string;      // YYYY-MM-DD
   trainerId: string;
   trainerName: string;
+  inviteCode?: string;    // Self-join wave code e.g. WAVE-8K3P
   dayTopics?: Record<number, string>; // dayNumber -> topic
   active: boolean;
   scoringWeights?: {

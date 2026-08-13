@@ -84,7 +84,18 @@ export function getNextRankProgress(xp: number): { nextRank: RankInfo | null; pc
 
 // --- Web Audio Synthesizer ----------------------------------------------------
 
-export function playGamifiedSound(type: 'correct' | 'wrong' | 'combo' | 'finish' | 'rankup') {
+export function playGamifiedSound(
+  type:
+    | 'correct'
+    | 'wrong'
+    | 'combo'
+    | 'finish'
+    | 'rankup'
+    | 'heart-loss'
+    | 'heart-shatter'
+    | 'shield-gain'
+    | 'shield-break'
+) {
   if (typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -117,6 +128,47 @@ export function playGamifiedSound(type: 'correct' | 'wrong' | 'combo' | 'finish'
       gain.connect(ctx.destination);
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.22);
+    } else if (type === 'heart-loss' || type === 'heart-shatter') {
+      // Low impact pitch drop (heart break)
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(220, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(55, ctx.currentTime + 0.35);
+      gain.gain.setValueAtTime(0.22, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.35);
+    } else if (type === 'shield-gain') {
+      // Ascending chime (G5 -> C6 -> E6 -> G6)
+      const notes = [783.99, 1046.50, 1318.51, 1567.98];
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.06 + 0.28);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + i * 0.06);
+        osc.stop(ctx.currentTime + i * 0.06 + 0.28);
+      });
+    } else if (type === 'shield-break') {
+      // High triangle shatter drop
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(987.77, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.3);
     } else if (type === 'combo') {
       const notes = [659.25, 783.99, 1046.50, 1318.51]; // E5, G5, C6, E6
       notes.forEach((freq, i) => {
@@ -151,7 +203,9 @@ export function playGamifiedSound(type: 'correct' | 'wrong' | 'combo' | 'finish'
   }
 }
 
-export function triggerHaptic(type: 'correct' | 'wrong' | 'combo') {
+export function triggerHaptic(
+  type: 'correct' | 'wrong' | 'combo' | 'heart-loss' | 'shield-gain' | 'shield-break'
+) {
   if (typeof window === 'undefined' || !window.navigator?.vibrate) return;
   try {
     if (type === 'correct') {
@@ -160,10 +214,59 @@ export function triggerHaptic(type: 'correct' | 'wrong' | 'combo') {
       window.navigator.vibrate([40, 30, 60]);
     } else if (type === 'wrong') {
       window.navigator.vibrate([80, 40, 80]);
+    } else if (type === 'heart-loss') {
+      window.navigator.vibrate([120, 50, 150]);
+    } else if (type === 'shield-gain') {
+      window.navigator.vibrate([30, 40, 50]);
+    } else if (type === 'shield-break') {
+      window.navigator.vibrate([60, 30, 60, 30, 90]);
     }
   } catch {
     // Ignore unsupported haptic errors
   }
+}
+
+// --- Hearts & Gamification Badges -------------------------------------------
+
+export function HeartLivesIndicator({ lives = 3, maxLives = 3 }: { lives?: number; maxLives?: number }) {
+  return (
+    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 shadow-sm">
+      {Array.from({ length: maxLives }).map((_, i) => {
+        const active = i < lives;
+        return (
+          <motion.span
+            key={i}
+            initial={false}
+            animate={
+              active
+                ? { scale: [1, 1.25, 1] }
+                : { scale: [1, 0.5, 0.8], opacity: [1, 0.4, 0.25], rotate: [0, -15, 0] }
+            }
+            transition={{ duration: 0.4 }}
+            className="text-sm select-none inline-block"
+            title={`Heart ${i + 1}`}
+          >
+            {active ? '❤️' : '💔'}
+          </motion.span>
+        );
+      })}
+    </div>
+  );
+}
+
+export function StreakShieldBadge({ active }: { active: boolean }) {
+  if (!active) return null;
+  return (
+    <motion.div
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ scale: [0.8, 1.1, 1], opacity: 1 }}
+      exit={{ scale: 0, opacity: 0 }}
+      className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-[11px] font-black text-cyan-600 dark:text-cyan-400 tracking-wider uppercase shadow-sm animate-pulse"
+    >
+      <span>🛡️</span>
+      <span>Shield Active</span>
+    </motion.div>
+  );
 }
 
 // --- Confetti & Sound Visualizers --------------------------------------------

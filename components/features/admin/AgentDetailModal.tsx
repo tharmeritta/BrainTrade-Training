@@ -112,29 +112,39 @@ export default function AgentDetailModal({
         {/* Tab Navigation */}
         <div className="px-8 border-b border-border bg-card shrink-0">
           <div className="flex gap-8 overflow-x-auto scrollbar-hide">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-4 border-b-2 transition-all flex items-center gap-2 text-sm font-bold whitespace-nowrap ${
-                  activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <tab.icon size={16} /> {tab.label}
-              </button>
-            ))}
+            {tabs.map(tab => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative py-4 transition-all flex items-center gap-2 text-sm font-bold whitespace-nowrap ${
+                    isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <tab.icon size={16} /> {tab.label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="agent-modal-tab-indicator"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-8 bg-card/30">
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={activeTab}
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             >
               {activeTab === 'summary' && (
                 <div className="max-w-2xl mx-auto">
@@ -147,6 +157,7 @@ export default function AgentDetailModal({
             </motion.div>
           </AnimatePresence>
         </div>
+
       </motion.div>
     </motion.div>
   );

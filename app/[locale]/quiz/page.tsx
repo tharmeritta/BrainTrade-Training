@@ -2,19 +2,24 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Settings, CreditCard, ChevronRight, ClipboardList,
   Lock, GraduationCap, Briefcase, CheckCircle2, ArrowDown,
-  HelpCircle, Globe, ShieldCheck, Layers,
+  HelpCircle, Globe, ShieldCheck, Layers, Map, Grid,
   type LucideIcon,
 } from 'lucide-react';
+
 import { MODULE_QUIZ_MAP, type Language, type QuizDefinition } from '@/lib/quiz-data';
 import { getAgentSession } from '@/lib/session/agent';
 import { hasStaffSession } from '@/lib/session/client';
 import { TRAINING_REGISTRY, getCanonicalQuizKey } from '@/lib/registry';
+
+import { QuizPlayerHUD } from '@/components/features/quiz/QuizPlayerHUD';
+import { QuestMapCanvas } from '@/components/features/quiz/QuestMapCanvas';
+import { ArcadeStageCard } from '@/components/features/quiz/ArcadeStageCard';
+import { playGamifiedSound, triggerHaptic } from '@/components/features/quiz/gamification';
 
 const ICON_MAP: Record<string, LucideIcon> = {
   GraduationCap,
@@ -28,7 +33,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
 
 const C = {
   border: 'rgba(0,0,0,0.1)',
-  card:   'rgba(255,255,255,0.8)',
+  card:   'rgba(255,255,255,0.85)',
   muted:  'rgba(0,0,0,0.05)',
   mutedFg: 'rgba(0,0,0,0.4)',
 };
@@ -37,13 +42,13 @@ const C = {
 
 function SectionHeader({ icon: Icon, label, description }: { icon: LucideIcon; label: string; description: string }) {
   return (
-    <div className="flex items-center gap-3 mb-4">
-      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-muted/40 border border-border">
-        <Icon size={16} className="text-muted-foreground" />
+    <div className="flex items-center gap-3 mb-4 select-none">
+      <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-primary/10 border border-primary/20">
+        <Icon size={18} className="text-primary" />
       </div>
       <div>
-        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground leading-tight">{label}</p>
-        <p className="text-xs text-muted-foreground/70">{description}</p>
+        <p className="text-xs font-black uppercase tracking-widest text-primary leading-tight">{label}</p>
+        <p className="text-xs text-muted-foreground/80">{description}</p>
       </div>
     </div>
   );
@@ -54,136 +59,30 @@ function SectionHeader({ icon: Icon, label, description }: { icon: LucideIcon; l
 function PrereqConnector({ prereqTitle, unlocked }: { prereqTitle: string; unlocked: boolean }) {
   const t = useTranslations('quizSelection');
   return (
-    <div className="relative flex flex-col items-center my-3 select-none">
-      <div className="w-px h-5 bg-border" />
+    <div className="relative flex flex-col items-center my-4 select-none">
+      <div className="w-px h-6 bg-border" />
       <div
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-semibold transition-colors duration-300"
+        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-[11px] font-bold transition-all duration-300 shadow-sm"
         style={{
           borderColor: unlocked ? 'rgba(34,197,94,0.4)' : C.border,
-          background:   unlocked ? 'rgba(34,197,94,0.07)' : C.muted,
+          background:   unlocked ? 'rgba(34,197,94,0.08)' : C.muted,
           color:        unlocked ? '#16a34a' : C.mutedFg,
         }}
       >
-        {unlocked ? <CheckCircle2 size={11} /> : <Lock size={11} />}
+        {unlocked ? <CheckCircle2 size={12} /> : <Lock size={12} />}
         <span>
           {unlocked
             ? t('prereqUnlocked', { title: prereqTitle })
             : t('prereqLocked',   { title: prereqTitle })}
         </span>
       </div>
-      <div className="w-px h-5 bg-border" />
-      <ArrowDown size={12} className="text-muted-foreground/30 -mt-1" />
+      <div className="w-px h-6 bg-border" />
+      <ArrowDown size={14} className="text-muted-foreground/40 -mt-1" />
     </div>
   );
 }
 
-// --- ModuleCard ---------------------------------------------------------------
-
-function ModuleCard({
-  mKey, quiz, locked, passed, lang, locale, index, prereqTitle,
-}: {
-  mKey: string;
-  quiz: QuizDefinition;
-  locked: boolean;
-  passed: boolean;
-  lang: Language;
-  locale: string;
-  index: number;
-  prereqTitle?: string;
-}) {
-  const t = useTranslations('quizSelection');
-  const router = useRouter();
-  
-  const Icon = (quiz.icon ? ICON_MAP[quiz.icon] : null) || HelpCircle;
-  const color = quiz.color || '#D97706';
-  const glow = `${color}12`;
-
-  const total = quiz.questions.length;
-  const thresholdPct = Math.round((quiz.passThreshold ?? 0.7) * 100);
-
-  return (
-    <motion.button
-      onClick={() => { if (!locked) router.push(`/${locale}/quiz/${mKey}`); }}
-      disabled={locked}
-      className="w-full flex items-center gap-4 p-5 rounded-2xl border-2 text-left transition-all group relative overflow-hidden"
-      style={{
-        borderColor: passed ? color + '50' : C.border,
-        background:  passed ? glow        : locked ? 'transparent' : C.card,
-        opacity:     locked ? 0.55          : 1,
-        cursor:      locked ? 'not-allowed' : 'pointer',
-      }}
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: locked ? 0.55 : 1, y: 0 }}
-      transition={{ delay: index * 0.08, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={locked ? {} : { scale: 1.01, borderColor: color + '60' }}
-      whileTap={locked   ? {} : { scale: 0.98 }}
-    >
-      <div
-        className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-        style={{
-          background: locked ? 'transparent' : glow,
-          border: `1px solid ${locked ? C.border : color + '30'}`,
-        }}
-      >
-        {locked
-          ? <Lock size={20} className="text-muted-foreground" />
-          : <Icon size={22} style={{ color: color }} />
-        }
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <div className="font-bold text-foreground text-base leading-tight mb-0.5 flex items-center gap-2 flex-wrap">
-          {typeof quiz.title === 'string' ? quiz.title : (quiz.title?.[lang] || quiz.title?.en || quiz.title?.th || (quiz as any).mKey || '')}
-          {passed && (
-            <span
-              className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
-              style={{ background: color + '20', color: color }}
-            >
-              <CheckCircle2 size={10} />
-              {t('passed')}
-            </span>
-          )}
-          {locked && prereqTitle && (
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-              {t('passFirst', { title: prereqTitle })}
-            </span>
-          )}
-        </div>
-        <div className="text-xs text-muted-foreground leading-relaxed">
-          {typeof quiz.description === 'string' ? quiz.description : (quiz.description?.[lang] || quiz.description?.en || quiz.description?.th || '')}
-        </div>
-        {!locked && (
-          <div className="mt-2 flex items-center gap-2 flex-wrap">
-            {total > 0 && (
-              <span
-                className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                style={{ background: glow, color: color }}
-              >
-                {t('questions', { count: total })}
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-              {t('passScore', { threshold: thresholdPct })}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {locked
-        ? <Lock size={16} className="shrink-0 text-muted-foreground" />
-        : passed
-          ? <CheckCircle2 size={18} className="shrink-0" style={{ color: color }} />
-          : <ChevronRight
-              size={18}
-              className="shrink-0 transition-transform group-hover:translate-x-1"
-              style={{ color: color }}
-            />
-      }
-    </motion.button>
-  );
-}
-
-// --- Page ---------------------------------------------------------------------
+// --- Main Quiz Selection Page Component ---------------------------------------
 
 export default function QuizIndexPage() {
   const t = useTranslations('quizSelection');
@@ -192,16 +91,17 @@ export default function QuizIndexPage() {
   const locale   = pathname.split('/')[1] ?? 'th';
   const lang     = (locale === 'en' ? 'en' : 'th') as Language;
 
-  const [passedModules,    setPassedModules]    = useState<Set<string>>(new Set());
-  const [quizConfigs,      setQuizConfigs]      = useState<Record<string, QuizDefinition>>(MODULE_QUIZ_MAP);
-  const [showLockedModal,  setShowLockedModal]  = useState(false);
+  const [passedModules,   setPassedModules]   = useState<Set<string>>(new Set());
+  const [quizScores,      setQuizScores]      = useState<Record<string, number>>({});
+  const [quizConfigs,     setQuizConfigs]     = useState<Record<string, QuizDefinition>>(MODULE_QUIZ_MAP);
+  const [showLockedModal, setShowLockedModal] = useState(false);
+  const [viewMode,        setViewMode]        = useState<'quest-map' | 'arcade-grid'>('quest-map');
 
   useEffect(() => {
     fetch('/api/quiz/config')
       .then(r => r.json())
       .then(({ configs }: { configs?: Record<string, QuizDefinition> }) => {
         if (!configs || Object.keys(configs).length === 0) return;
-        // Merge DB overrides onto static catalog map
         setQuizConfigs(prev => ({
           ...MODULE_QUIZ_MAP,
           ...configs
@@ -223,6 +123,16 @@ export default function QuizIndexPage() {
         if (!isStaffPreview && learnedCount < TRAINING_REGISTRY.learn.minToUnlockNext) {
           setShowLockedModal(true);
         }
+
+        if (d.stats?.quiz) {
+          const scores: Record<string, number> = {};
+          Object.entries(d.stats.quiz).forEach(([k, v]: [string, any]) => {
+            if (v && typeof v.bestScore === 'number') {
+              scores[k] = v.bestScore;
+            }
+          });
+          setQuizScores(scores);
+        }
       })
       .catch(() => {});
 
@@ -236,7 +146,6 @@ export default function QuizIndexPage() {
   }, [locale, router]);
 
   const allQuizzes = useMemo(() => {
-    // Priority 1: DB Order/Definitions
     const dbOrder = (quizConfigs as any)._order || Object.keys(quizConfigs).filter(k => k !== '_order');
     const dbQuizzes = (dbOrder as string[]).map(key => ({
       ...quizConfigs[key],
@@ -245,7 +154,6 @@ export default function QuizIndexPage() {
 
     if (dbQuizzes.length > 0) return dbQuizzes;
 
-    // Fallback: Registry
     return TRAINING_REGISTRY.quiz.required.map(key => ({
       ...quizConfigs[key],
       mKey: key
@@ -260,10 +168,9 @@ export default function QuizIndexPage() {
       groups[s].push(q);
     });
 
-    // Enforce hierarchy: foundation -> sales -> other
     const SECTION_PRIORITY = ['foundation', 'sales', 'other'];
     const sortedEntries = Object.entries(groups)
-      .filter(([_, quizzes]) => quizzes.length > 0) // Only render sections that actually contain quizzes
+      .filter(([_, quizzes]) => quizzes.length > 0)
       .sort(([aKey], [bKey]) => {
         const aIdx = SECTION_PRIORITY.indexOf(aKey);
         const bIdx = SECTION_PRIORITY.indexOf(bKey);
@@ -281,104 +188,191 @@ export default function QuizIndexPage() {
     : (quizConfigs[foundationKey]?.title?.[lang] || quizConfigs[foundationKey]?.title?.en || quizConfigs[foundationKey]?.title?.th || '');
   const foundationPassed = passedModules.has(foundationKey);
 
+  const handleSelectStage = (mKey: string, locked: boolean) => {
+    if (!locked) {
+      router.push(`/${locale}/quiz/${mKey}`);
+    }
+  };
+
+  const handleToggleViewMode = (mode: 'quest-map' | 'arcade-grid') => {
+    if (mode !== viewMode) {
+      playGamifiedSound('combo');
+      triggerHaptic('combo');
+      setViewMode(mode);
+    }
+  };
+
   return (
-    <div className="max-w-2xl mx-auto py-10 px-4">
+    <div className="max-w-3xl mx-auto py-6 sm:py-8 px-3.5 sm:px-4 overflow-x-hidden">
+      {/* Title & Hub Description Header */}
       <motion.div
-        className="mb-8"
+        className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <ClipboardList size={18} className="text-primary" />
-              <span className="text-xs font-bold uppercase tracking-widest text-primary">
-                {t('title')}
-              </span>
-            </div>
-            <h1 className="text-2xl font-black text-foreground">{t('title')}</h1>
-            <p className="text-sm text-muted-foreground mt-1">{t('subtitle')}</p>
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <ClipboardList size={18} className="text-primary" />
+            <span className="text-xs font-black uppercase tracking-widest text-primary">
+              {t('title')}
+            </span>
           </div>
+          <h1 className="text-2xl font-black text-foreground tracking-tight">{t('title')}</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">{t('subtitle')}</p>
+        </div>
 
-          <div className="shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-2xl border-2 border-primary/20 bg-primary/5">
-            <span className="text-xl font-black text-primary leading-none">{completedCount}</span>
-            <span className="text-[10px] font-bold text-primary/60 uppercase tracking-wide">/ {allQuizzes.length}</span>
-          </div>
+        {/* View Mode Switcher (Quest Map vs Arcade Grid) */}
+        <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-muted/80 border border-border shadow-inner self-start sm:self-auto max-w-full overflow-x-auto">
+          <button
+            onClick={() => handleToggleViewMode('quest-map')}
+            className={`flex items-center justify-center gap-1.5 px-3.5 py-2.5 min-h-[44px] rounded-xl text-xs font-black transition-all ${
+              viewMode === 'quest-map'
+                ? 'bg-background text-primary shadow-md border border-border'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Map size={14} />
+            <span>Quest Map</span>
+          </button>
+          <button
+            onClick={() => handleToggleViewMode('arcade-grid')}
+            className={`flex items-center justify-center gap-1.5 px-3.5 py-2.5 min-h-[44px] rounded-xl text-xs font-black transition-all ${
+              viewMode === 'arcade-grid'
+                ? 'bg-background text-primary shadow-md border border-border'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Grid size={14} />
+            <span>Arcade Cards</span>
+          </button>
         </div>
       </motion.div>
 
-      {Object.entries(sections).map(([sectionKey, quizzes], sIdx) => (
-        <div key={sectionKey}>
-          {sIdx === 1 && (
-             <PrereqConnector prereqTitle={foundationTitle} unlocked={foundationPassed} />
-          )}
+      {/* Gamified Player HUD */}
+      <QuizPlayerHUD
+        passedCount={completedCount}
+        totalCount={allQuizzes.length}
+        quizScores={quizScores}
+        lang={lang}
+      />
 
+      {/* View Mode Content Container */}
+      <AnimatePresence mode="wait">
+        {viewMode === 'quest-map' ? (
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: sIdx * 0.1 }}
-            className={sIdx > 0 ? 'mt-8' : ''}
+            key="quest-map-view"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.3 }}
           >
-            <SectionHeader
-              icon={sectionKey === 'foundation' ? GraduationCap : sectionKey === 'sales' ? Briefcase : Layers}
-              label={
-                sectionKey === 'foundation'
-                  ? (lang === 'th' ? 'Part 1: ความรู้พื้นฐาน (Foundation)' : 'Part 1: Ecosystem & Foundation')
-                  : sectionKey === 'sales'
-                  ? (lang === 'th' ? 'Part 2: ทักษะหลักและการขาย (Sales & Core)' : 'Part 2: Sales & Core Competencies')
-                  : (lang === 'th' ? 'Part 3: โบรกเกอร์และการชำระเงิน (Broker & Payment)' : 'Part 3: Broker & Payment')
-              }
-              description={
-                sectionKey === 'foundation'
-                  ? (lang === 'th' ? 'แบบทดสอบพื้นฐานระบบนิเวศการเทรด โบรกเกอร์ และผลิตภัณฑ์' : 'Essential trading ecosystem, broker mechanics, and foundational knowledge evaluations')
-                  : sectionKey === 'sales'
-                  ? (lang === 'th' ? 'แบบทดสอบทักษะการขาย KYC และการนำเสนอแพ็กเกจราคา' : 'Core sales process, KYC customer segmentation, and package pricing assessments')
-                  : (lang === 'th' ? 'แบบทดสอบเกี่ยวกับโบรกเกอร์ (Zenstock & 200 Invest) และการชำระเงิน' : 'Evaluations covering specialized brokers (Zenstock & 200 Invest) and payment packages')
-              }
+            <QuestMapCanvas
+              sections={sections}
+              passedModules={passedModules}
+              quizScores={quizScores}
+              lang={lang}
+              locale={locale}
+              onSelectStage={handleSelectStage}
+              iconMap={ICON_MAP}
             />
-            <div className="space-y-3">
-              {quizzes.map((quiz, qIdx) => {
-                const isStaff = hasStaffSession();
-                const prereqId = quiz.prerequisiteId;
-                
-                // If section is Part 3 ('other' / 'broker_payment'), lock until ALL Part 2 ('sales') quizzes are passed
-                let locked = false;
-                let prereqTitle: string | undefined = undefined;
-
-                if (!isStaff) {
-                  if (sectionKey === 'other' || (quiz as any).section === 'other') {
-                    const salesQuizzes = allQuizzes.filter(q => (q.section || 'sales') === 'sales');
-                    const allSalesPassed = salesQuizzes.every(q => passedModules.has(q.mKey));
-                    if (!allSalesPassed) {
-                      locked = true;
-                      prereqTitle = lang === 'th' ? 'แบบทดสอบใน Part 2 (Sales & Core)' : 'all Part 2 Sales Quizzes';
-                    }
-                  } else if (prereqId) {
-                    locked = !passedModules.has(prereqId);
-                    prereqTitle = quizConfigs[prereqId]?.title?.[lang];
-                  }
-                }
-                
-                return (
-                  <ModuleCard
-                    key={quiz.mKey}
-                    mKey={quiz.mKey}
-                    quiz={quiz}
-                    locked={locked}
-                    passed={passedModules.has(quiz.mKey)}
-                    lang={lang}
-                    locale={locale}
-                    index={qIdx + (sIdx * 5)}
-                    prereqTitle={prereqTitle}
-                  />
-                );
-              })}
-            </div>
           </motion.div>
-        </div>
-      ))}
+        ) : (
+          <motion.div
+            key="arcade-grid-view"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-8"
+          >
+            {Object.entries(sections).map(([sectionKey, quizzes], sIdx) => (
+              <div key={sectionKey}>
+                {sIdx === 1 && (
+                  <PrereqConnector prereqTitle={foundationTitle} unlocked={foundationPassed} />
+                )}
 
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: sIdx * 0.1 }}
+                  className={sIdx > 0 ? 'mt-6' : ''}
+                >
+                  <SectionHeader
+                    icon={sectionKey === 'foundation' ? GraduationCap : sectionKey === 'sales' ? Briefcase : Layers}
+                    label={
+                      sectionKey === 'foundation'
+                        ? (lang === 'th' ? 'Part 1: ความรู้พื้นฐาน (Foundation)' : 'Part 1: Ecosystem & Foundation')
+                        : sectionKey === 'sales'
+                        ? (lang === 'th' ? 'Part 2: ทักษะหลักและการขาย (Sales & Core)' : 'Part 2: Sales & Core Competencies')
+                        : (lang === 'th' ? 'Part 3: โบรกเกอร์และการชำระเงิน (Broker & Payment)' : 'Part 3: Broker & Payment')
+                    }
+                    description={
+                      sectionKey === 'foundation'
+                        ? (lang === 'th' ? 'แบบทดสอบพื้นฐานระบบนิเวศการเทรด โบรกเกอร์ และผลิตภัณฑ์' : 'Essential trading ecosystem, broker mechanics, and foundational knowledge evaluations')
+                        : sectionKey === 'sales'
+                        ? (lang === 'th' ? 'แบบทดสอบทักษะการขาย KYC และการนำเสนอแพ็กเกจราคา' : 'Core sales process, KYC customer segmentation, and package pricing assessments')
+                        : (lang === 'th' ? 'แบบทดสอบเกี่ยวกับโบรกเกอร์ (Zenstock & 200 Invest) และการชำระเงิน' : 'Evaluations covering specialized brokers (Zenstock & 200 Invest) and payment packages')
+                    }
+                  />
+
+                  <div className="space-y-3.5">
+                    {quizzes.map((quiz, qIdx) => {
+                      const isStaff = hasStaffSession();
+                      const prereqId = quiz.prerequisiteId;
+                      
+                      let locked = false;
+                      let prereqTitle: string | undefined = undefined;
+
+                      if (!isStaff) {
+                        if (sectionKey === 'other' || (quiz as any).section === 'other') {
+                          const salesQuizzes = allQuizzes.filter(q => (q.section || 'sales') === 'sales');
+                          const allSalesPassed = salesQuizzes.every(q => passedModules.has(q.mKey));
+                          if (!allSalesPassed) {
+                            locked = true;
+                            prereqTitle = lang === 'th' ? 'แบบทดสอบใน Part 2 (Sales & Core)' : 'all Part 2 Sales Quizzes';
+                          }
+                        } else if (prereqId) {
+                          locked = !passedModules.has(prereqId);
+                          prereqTitle = quizConfigs[prereqId]?.title?.[lang];
+                        }
+                      }
+
+                      const passed = passedModules.has(quiz.mKey);
+                      const score = quizScores[quiz.mKey] ?? (passed ? 100 : 0);
+
+                      let stars = 0;
+                      if (score >= 100) stars = 3;
+                      else if (score >= 85) stars = 2;
+                      else if (passed || score >= (quiz.passThreshold ?? 0.7) * 100) stars = 1;
+                      
+                      return (
+                        <ArcadeStageCard
+                          key={quiz.mKey}
+                          mKey={quiz.mKey}
+                          quiz={quiz}
+                          locked={locked}
+                          passed={passed}
+                          score={score}
+                          stars={stars}
+                          lang={lang}
+                          locale={locale}
+                          index={qIdx + (sIdx * 5)}
+                          prereqTitle={prereqTitle}
+                          iconMap={ICON_MAP}
+                          onSelect={() => handleSelectStage(quiz.mKey, locked)}
+                        />
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Locked Stage Overlay Modal */}
       <AnimatePresence>
         {showLockedModal && (
           <motion.div
@@ -394,7 +388,7 @@ export default function QuizIndexPage() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.94, opacity: 0, y: 12 }}
               transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-              className="bg-card border border-border rounded-3xl p-7 w-full max-w-sm shadow-2xl shadow-black/20 text-center"
+              className="bg-card border border-border rounded-3xl p-5 sm:p-7 w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/20 text-center"
               onClick={e => e.stopPropagation()}
             >
               <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-500/15 flex items-center justify-center mx-auto mb-4">
@@ -409,13 +403,13 @@ export default function QuizIndexPage() {
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => router.push(`/${locale}/learn`)}
-                  className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-black hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95"
+                  className="w-full bg-primary text-primary-foreground py-3 min-h-[44px] flex items-center justify-center rounded-xl text-sm font-black hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95"
                 >
                   Go to Learn
                 </button>
                 <button
                   onClick={() => setShowLockedModal(false)}
-                  className="w-full py-2.5 rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                  className="w-full py-2.5 min-h-[44px] flex items-center justify-center rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                 >
                   Maybe Later
                 </button>

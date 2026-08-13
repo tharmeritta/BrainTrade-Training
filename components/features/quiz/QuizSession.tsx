@@ -15,7 +15,7 @@ import { C, LABELS, isAnswerCorrect } from './shared';
 import type { QuizSessionProps } from './types';
 import {
   getRankForXp, getNextRankProgress, playGamifiedSound, triggerHaptic,
-  ConfettiBurst, SoundWaveIndicator,
+  ConfettiBurst, SoundWaveIndicator, HeartLivesIndicator, StreakShieldBadge,
 } from './gamification';
 
 // --- Interactive Quest Map ---------------------------------------------------
@@ -292,6 +292,19 @@ const QuestionCard = memo(({
             >
               {phaseName}
             </span>
+          )}
+
+          {/* Boss Question Badge */}
+          {index >= total - 2 && total >= 3 && (
+            <motion.span
+              initial={{ scale: 0.9 }}
+              animate={{ scale: [0.9, 1.05, 1] }}
+              transition={{ repeat: Infinity, repeatType: 'reverse', duration: 1.5 }}
+              className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/20 via-purple-500/20 to-rose-500/20 text-amber-600 border border-amber-500/30 flex items-center gap-1"
+            >
+              <span>👑 BOSS QUESTION</span>
+              <span className="text-purple-600 dark:text-purple-400 font-extrabold">(⚡ 2x XP)</span>
+            </motion.span>
           )}
 
           {question.isNew && (
@@ -645,6 +658,9 @@ export function QuizSession({
   const [lastXpGain, setLastXpGain] = useState(0);
   const [showComboBanner, setShowComboBanner] = useState(false);
   const [comboMessage, setComboMessage] = useState('');
+  const [lives, setLives] = useState(3);
+  const [hasShield, setHasShield] = useState(false);
+  const [outOfHearts, setOutOfHearts] = useState(false);
 
   const phases     = quiz.phases ?? [];
   const total      = filteredQuestions.length;
@@ -669,6 +685,14 @@ export function QuizSession({
     if (isRight) {
       const newStreak = streak + 1;
       setStreak(newStreak);
+
+      // Award Streak Shield at 3-in-a-row (or every 3 streak)
+      if (newStreak >= 3 && newStreak % 3 === 0 && !hasShield) {
+        setHasShield(true);
+        playGamifiedSound('shield-gain');
+        triggerHaptic('shield-gain');
+      }
+
       const baseGain = 100;
       const comboBonus = (newStreak - 1) * 50;
       const totalGain = baseGain + comboBonus;
@@ -678,25 +702,52 @@ export function QuizSession({
 
       if (newStreak >= 2) {
         let msg = `🔥 ${newStreak}x Combo!`;
-        if (newStreak === 3) msg = `⚡ ${newStreak}x Streak!`;
+        if (newStreak === 3) msg = `⚡ ${newStreak}x Streak! (Shield Active 🛡️)`;
         if (newStreak === 4) msg = `🚀 ${newStreak}x Unstoppable!`;
         if (newStreak >= 5) msg = `👑 ${newStreak}x Godlike!`;
         setComboMessage(msg);
         setShowComboBanner(true);
-        playGamifiedSound('combo');
-        triggerHaptic('combo');
+        if (newStreak !== 3) {
+          playGamifiedSound('combo');
+          triggerHaptic('combo');
+        }
         setTimeout(() => setShowComboBanner(false), 2200);
       } else {
         playGamifiedSound('correct');
         triggerHaptic('correct');
       }
     } else {
+      // Check if Streak Shield absorbs mistake
+      if (hasShield) {
+        setHasShield(false);
+        setComboMessage('🛡️ Shield Absorbed the Mistake!');
+        setShowComboBanner(true);
+        playGamifiedSound('shield-break');
+        triggerHaptic('shield-break');
+        setTimeout(() => setShowComboBanner(false), 2200);
+        return;
+      }
+
       setStreak(0);
       setLastXpGain(0);
-      playGamifiedSound('wrong');
-      triggerHaptic('wrong');
+
+      // Deduct heart in scored mode
+      if (!isPractice) {
+        playGamifiedSound('heart-loss');
+        triggerHaptic('heart-loss');
+        setLives(prev => {
+          const next = prev - 1;
+          if (next <= 0) {
+            setTimeout(() => setOutOfHearts(true), 400);
+          }
+          return Math.max(0, next);
+        });
+      } else {
+        playGamifiedSound('wrong');
+        triggerHaptic('wrong');
+      }
     }
-  }, [currentQ, onAnswer, streak]);
+  }, [currentQ, onAnswer, streak, hasShield, isPractice]);
 
   const handleGamifiedFillText = useCallback((text: string) => {
     onFillText(text);
@@ -733,6 +784,10 @@ export function QuizSession({
             </button>
 
             <div className="flex items-center gap-2 flex-wrap justify-end">
+              {!isPractice && (
+                <HeartLivesIndicator lives={lives} maxLives={3} />
+              )}
+              <StreakShieldBadge active={hasShield} />
               {isPractice && (
                 <span
                   className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm"
@@ -750,6 +805,53 @@ export function QuizSession({
               <ActiveAgentUI agentName={agentName} />
             </div>
           </div>
+
+          {/* Out of Hearts Modal Overlay */}
+          <AnimatePresence>
+            {outOfHearts && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xl"
+              >
+                <motion.div
+                  initial={{ scale: 0.9, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  className="w-full max-w-sm rounded-3xl p-6 bg-card border border-rose-500/20 shadow-2xl text-center space-y-4"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center mx-auto text-2xl">
+                    💔
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-foreground tracking-tight">Out of Hearts!</h3>
+                    <p className="text-xs font-bold text-muted-foreground mt-1">
+                      You ran out of lives for this scored run. Don't worry, practice mode is unlocked!
+                    </p>
+                  </div>
+                  <div className="pt-2 space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLives(3);
+                        setOutOfHearts(false);
+                      }}
+                      className="w-full py-3 rounded-2xl bg-rose-500 text-white font-black text-xs uppercase tracking-wider shadow-lg hover:bg-rose-600 transition-all active:scale-95"
+                    >
+                      Try Again (3 Hearts Reset)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onBack}
+                      className="w-full py-2.5 rounded-2xl text-xs font-bold text-muted-foreground hover:bg-secondary transition-colors"
+                    >
+                      Return to Quiz Hub
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Dynamic XP & Rank Progress Bar Header */}
           <div className="mb-5 rounded-2xl p-4 border shadow-sm bg-white border-[#E2E0DA] flex flex-col gap-3">

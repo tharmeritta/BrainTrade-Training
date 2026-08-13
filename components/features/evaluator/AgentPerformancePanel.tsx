@@ -93,24 +93,37 @@ export const AgentPerformancePanel = ({
       </div>
 
       {/* Tab bar */}
-      <div className="flex gap-0.5 p-1 bg-secondary/30 border border-border rounded-xl">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
-              activeTab === tab.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <tab.icon size={10} />
-            <span>{tab.label}</span>
-          </button>
-        ))}
+      <div className="flex gap-0.5 p-1 bg-secondary/30 border border-border rounded-xl relative">
+        {tabs.map(tab => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`relative flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="performance-panel-tab"
+                  className="absolute inset-0 bg-card rounded-lg shadow-sm"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-1">
+                <tab.icon size={10} />
+                <span>{tab.label}</span>
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Tab content */}
-      <AnimatePresence mode="wait">
-        <motion.div key={activeTab} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="space-y-2">
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div key={activeTab} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }} className="space-y-2">
+
 
           {/* -- Overview -- */}
           {activeTab === 'overview' && (

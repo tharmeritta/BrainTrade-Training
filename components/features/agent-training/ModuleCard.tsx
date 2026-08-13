@@ -7,6 +7,7 @@ import { CheckCircle2, Lock, XCircle, Zap, RotateCcw, ArrowRight, Star } from 'l
 import { STAGGER_ITEM } from '@/lib/animations';
 import { StepState, scoreColor } from '@/lib/training';
 import { STEPS } from '@/constants/training';
+import { playGamifiedSound, triggerHaptic } from '@/components/features/quiz/gamification';
 
 interface ModuleCardProps {
   step: typeof STEPS[number];
@@ -22,8 +23,25 @@ export const ModuleCard = memo(({ step, state, href, t, navT }: ModuleCardProps)
   const isNext    = !locked && !passed && score === undefined;
   const hasFailed = !locked && !passed && score !== undefined && score < 70;
 
+  // Calculate 3-Star Mastery Rating
+  let stars = 0;
+  if (score !== undefined && score >= 100) stars = 3;
+  else if (score !== undefined && score >= 85) stars = 2;
+  else if (passed || (score !== undefined && score >= 70)) stars = 1;
+
+  const handleCardClick = () => {
+    if (locked) {
+      playGamifiedSound('wrong');
+      triggerHaptic('wrong');
+    } else {
+      playGamifiedSound('correct');
+      triggerHaptic('correct');
+    }
+  };
+
   return (
     <motion.div
+      data-tour={`${step.id}-module`}
       variants={STAGGER_ITEM}
       whileHover={locked ? {} : { y: -8, scale: 1.01, transition: { duration: 0.3, ease: 'easeOut' } }}
       className="group relative flex flex-col rounded-[2.5rem] overflow-hidden transition-all duration-500 h-full border backdrop-blur-xl"
@@ -80,6 +98,22 @@ export const ModuleCard = memo(({ step, state, href, t, navT }: ModuleCardProps)
               style={{ color: locked ? 'inherit' : color }}>
               Phase {stepNum}
             </span>
+            {/* 3-Star Mastery Rating Badges */}
+            {!locked && (
+              <div className="flex items-center gap-0.5 ml-1">
+                {[1, 2, 3].map(starNum => (
+                  <Star
+                    key={starNum}
+                    size={13}
+                    className={`transition-all duration-300 ${
+                      starNum <= stars
+                        ? 'fill-amber-400 text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]'
+                        : 'text-muted-foreground/30 fill-muted/10'
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
           {isNext && (
             <motion.div 
@@ -160,11 +194,19 @@ export const ModuleCard = memo(({ step, state, href, t, navT }: ModuleCardProps)
         )}
 
         {locked ? (
-          <div className="w-full flex items-center justify-center gap-3 py-5 rounded-[1.25rem] bg-white/[0.02] border border-white/5 text-muted-foreground/40 text-[11px] font-black uppercase tracking-[0.25em] transition-all duration-500">
+          <div
+            tabIndex={0}
+            role="button"
+            aria-disabled="true"
+            onClick={handleCardClick}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCardClick(); }}
+            className="w-full flex items-center justify-center gap-3 py-5 rounded-[1.25rem] bg-white/[0.02] border border-white/5 text-muted-foreground/40 text-[11px] font-black uppercase tracking-[0.25em] transition-all duration-500 cursor-not-allowed"
+          >
             <Lock size={16} /> {t('locked')}
           </div>
         ) : (
           <Link href={href}
+            onClick={handleCardClick}
             className="group/btn w-full flex items-center justify-center gap-3 py-5 rounded-[1.25rem] text-sm font-black transition-all duration-500 border shadow-lg hover:shadow-2xl active:scale-[0.98]"
             style={{ 
               background: isNext ? color : 'rgba(255,255,255,0.05)',

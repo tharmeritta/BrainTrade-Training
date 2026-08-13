@@ -27,6 +27,14 @@ export async function POST(req: NextRequest) {
   const finalTrainerId = (['admin', 'manager'].includes(user.role) && trainerId) ? trainerId : user.uid;
   const finalTrainerName = (['admin', 'manager'].includes(user.role) && trainerName) ? trainerName : user.name;
 
+  // Auto-generate invite code e.g. WAVE-9K2P
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let inviteSuffix = '';
+  for (let i = 0; i < 4; i++) {
+    inviteSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  const inviteCode = `WAVE-${inviteSuffix}`;
+
   const periodData = {
     name: name.trim(),
     agentIds: agentIds ?? [],
@@ -35,6 +43,7 @@ export async function POST(req: NextRequest) {
     startDate: startDate ?? new Date().toISOString().slice(0, 10),
     trainerId: finalTrainerId,
     trainerName: finalTrainerName,
+    inviteCode,
     dayTopics: dayTopics ?? {},
     active: true,
     createdAt: new Date().toISOString(),

@@ -57,7 +57,7 @@ export default function NavBar() {
 
   const [hasSession, setHasSession] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
-  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState(section);
 
   useEffect(() => {
     const refresh = () => {
@@ -69,30 +69,62 @@ export default function NavBar() {
     return () => window.removeEventListener('agent-session-changed', refresh);
   }, []);
 
+  // Sync active section when Next.js pathname changes
   useEffect(() => {
-    setPendingHref(null); // navigation completed — clear optimistic state
+    const segs = pathname.split('/');
+    const sec = segs[2] ? `/${segs[2]}` : '/dashboard';
+    setActiveSection(sec);
   }, [pathname]);
 
-  function guardedNavigate(e: React.MouseEvent, href: string) {
-    if (href === '/dashboard') return; // always allow
-    const activeSession = getAgentSession();
-    const activeStaff = hasStaffSession();
-    if (!activeSession && !activeStaff) {
-      e.preventDefault();
-      router.push(`/${locale}/dashboard?loginRequired=1`);
-    }
-  }
+  // Sync active section on browser back/forward (popstate)
+  useEffect(() => {
+    const handlePopState = () => {
+      const segs = window.location.pathname.split('/');
+      const sec = segs[2] ? `/${segs[2]}` : '/dashboard';
+      setActiveSection(sec);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   function handleNavClick(e: React.MouseEvent, href: string) {
-    guardedNavigate(e, href);
-    setPendingHref(href);
+    e.preventDefault();
+
+    // Guard navigation logic: check session for non-dashboard routes
+    if (href !== '/dashboard') {
+      const activeSession = getAgentSession();
+      const activeStaff = hasStaffSession();
+      if (!activeSession && !activeStaff) {
+        router.push(`/${locale}/dashboard?loginRequired=1`);
+        return;
+      }
+    }
+
+    const targetUrl = `/${locale}${href}`;
+
+    // If already on target route, return early
+    if (window.location.pathname === targetUrl) {
+      return;
+    }
+
+    // 1. Instant 0ms visual active tab switch
+    setActiveSection(href);
+
+    // 2. Perform shallow window.history.pushState without full page reload
+    window.history.pushState({ path: targetUrl }, '', targetUrl);
+
+    // 3. Dispatch popstate event to notify history/route listeners
+    window.dispatchEvent(new PopStateEvent('popstate', { state: { path: targetUrl } }));
+
+    // 4. Dispatch custom event for UI feedback / progress bar
     window.dispatchEvent(new Event('nav:start'));
+
+    // 5. Synchronize Next.js URL state without full page reload
+    router.push(targetUrl, { scroll: false });
   }
 
   function isActive(href: string) {
-    // Optimistically show the clicked item as active before route resolves
-    if (pendingHref) return pendingHref === href;
-    return section === href;
+    return activeSection === href;
   }
 
   function backToAdmin() {
@@ -105,7 +137,11 @@ export default function NavBar() {
 
       {/* -- Logo ------------------------------------------- */}
       <div className="flex items-center gap-2 sm:gap-3">
-        <Link href={`/${locale}/dashboard`} className="flex items-center gap-2.5 min-h-[44px] min-w-[44px] py-1 px-1 group">
+        <Link
+          href={`/${locale}/dashboard`}
+          onClick={(e) => handleNavClick(e, '/dashboard')}
+          className="flex items-center gap-2.5 min-h-[44px] min-w-[44px] py-1 px-1 group"
+        >
           <motion.div
             className="relative w-7 h-7 rounded-lg overflow-hidden shrink-0"
             whileHover={{ scale: 1.12, rotate: -4 }}
@@ -150,51 +186,58 @@ export default function NavBar() {
             <div
               key={item.href}
               className="relative"
+              data-tour={`nav-${item.key === 'aiEval' ? 'ai-eval' : item.key}`}
             >
               {/* Pill Button */}
               <motion.div
-                whileTap={{ scale: 0.93 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                whileTap={{ scale: 0.94 }}
+                transition={{ type: 'spring', stiffness: 450, damping: 25 }}
               >
                 <Link
                   href={`/${locale}${item.href}`}
-                  className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm select-none group/pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className={`relative flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm select-none group/pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors duration-200 ${
+                    active ? 'text-foreground font-semibold' : 'text-muted-foreground hover:text-foreground/80'
+                  }`}
                   onClick={(e) => handleNavClick(e, item.href)}
                 >
                   {/* Sliding active capsule */}
                   {active && (
                     <motion.div
                       layoutId="nav-capsule"
-                      className="absolute inset-0 rounded-full bg-background shadow-sm border border-border/60"
-                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                    />
+                      className="absolute inset-0 rounded-full bg-background shadow-md border border-border/80"
+                      transition={{ type: 'spring', stiffness: 380, damping: 28, mass: 0.8 }}
+                    >
+                      {/* Subtle gradient glow inside active pill */}
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/10 via-primary/5 to-transparent pointer-events-none" />
+                    </motion.div>
                   )}
 
                   {/* Hover highlight for inactive */}
                   {!active && (
                     <motion.div
-                      className="absolute inset-0 rounded-full bg-foreground/6"
-                      initial={{ opacity: 0 }}
-                      whileHover={{ opacity: 1 }}
-                      transition={{ duration: 0.15 }}
+                      className="absolute inset-0 rounded-full bg-foreground/[0.04]"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      whileHover={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.15, ease: 'easeOut' }}
                     />
                   )}
 
                   <motion.span
-                    className="relative z-10"
-                    whileHover={{ scale: 1.18 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                    className="relative z-10 flex items-center justify-center"
+                    animate={{ scale: active ? 1.08 : 1, rotate: active ? -6 : 0 }}
+                    whileHover={{ scale: 1.15 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                   >
                     <Icon
-                      size={15}
-                      className={`transition-colors ${
-                        active ? 'text-foreground' : 'text-muted-foreground'
+                      size={16}
+                      className={`transition-colors duration-200 ${
+                        active ? 'text-primary' : 'text-muted-foreground group-hover/pill:text-foreground'
                       }`}
                     />
                   </motion.span>
                   <span
-                    className={`relative z-10 transition-colors hidden sm:inline ${
-                      active ? 'text-foreground font-medium' : 'text-muted-foreground'
+                    className={`relative z-10 transition-colors duration-200 hidden sm:inline ${
+                      active ? 'text-foreground font-semibold' : 'text-muted-foreground group-hover/pill:text-foreground/90'
                     }`}
                   >
                     {label}
@@ -207,10 +250,11 @@ export default function NavBar() {
       </nav>
 
       {/* -- Controls --------------------------------------- */}
-      <div className="flex items-center gap-0.5 bg-muted/50 border border-border/50 rounded-full p-0.5 sm:p-1 shrink-0">
+      <div data-tour="lang-toggle" className="flex items-center gap-0.5 bg-muted/50 border border-border/50 rounded-full p-0.5 sm:p-1 shrink-0">
         <LangToggle />
         <ThemeToggle />
       </div>
     </header>
   );
 }
+

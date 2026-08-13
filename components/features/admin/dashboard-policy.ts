@@ -5,7 +5,7 @@ import {
 
 export type Tab = 'overview' | 'hranalytics' | 'reports' | 'staff' | 'evaluations' | 'training' | 'adjustments' | 'approvals' | 'aiscenarios' | 'history' | 'certification' | 'showcase';
 
-export type TabGroup = 'operations' | 'analytics' | 'management';
+export type TabGroup = 'monitoring' | 'academy' | 'analytics' | 'governance';
 
 export interface TabItem {
   id: Tab;
@@ -20,23 +20,25 @@ export interface TabItem {
 export type UserRole = 'admin' | 'manager' | 'it' | 'trainer' | 'hr';
 
 export const ALL_TABS: TabItem[] = [
-  // Operations
-  { id: 'overview',      labelKey: 'overview',       icon: LayoutDashboard,  group: 'operations' },
-  { id: 'training',      labelKey: 'training',       icon: GraduationCap,    group: 'operations' },
-  { id: 'evaluations',   labelKey: 'evaluations',    icon: ClipboardCheck,   hideForTrainer: true, group: 'operations' },
-  { id: 'approvals',     labelKey: 'approvals',      icon: Clock,            adminOnly: true, group: 'operations' },
+  // Dashboard & Monitoring
+  { id: 'overview',      labelKey: 'overview',       icon: LayoutDashboard,  group: 'monitoring' },
+  { id: 'history',       labelKey: 'history',        icon: History,          group: 'monitoring' },
 
-  // Analytics
+  // Learning & Academy
+  { id: 'training',      labelKey: 'training',       icon: GraduationCap,    group: 'academy' },
+  { id: 'showcase',      labelKey: 'showcase',       icon: Presentation,     adminOnly: true, group: 'academy' },
+  { id: 'evaluations',   labelKey: 'evaluations',    icon: ClipboardCheck,   hideForTrainer: true, group: 'academy' },
+  { id: 'aiscenarios',   labelKey: 'aiscenarios',    icon: Zap,              adminOnly: true, hideForIT: true, group: 'academy' },
+
+  // HR & Roster Analytics
   { id: 'hranalytics',   labelKey: 'hranalytics',    icon: Users,            group: 'analytics' },
   { id: 'reports',       labelKey: 'reports',        icon: FileSpreadsheet,  hideForTrainer: true, group: 'analytics' },
-  { id: 'history',       labelKey: 'history',        icon: History,          group: 'analytics' },
+  { id: 'certification', labelKey: 'certification',  icon: Award,            adminOnly: true, hideForIT: true, group: 'analytics' },
 
-  // Management
-  { id: 'showcase',      labelKey: 'showcase',       icon: Presentation,     adminOnly: true, group: 'management' },
-  { id: 'staff',         labelKey: 'accounts',       icon: ShieldCheck,      adminOnly: true, group: 'management' },
-  { id: 'aiscenarios',   labelKey: 'aiscenarios',    icon: Zap,              adminOnly: true, hideForIT: true, group: 'management' },
-  { id: 'certification', labelKey: 'certification',  icon: Award,            adminOnly: true, hideForIT: true, group: 'management' },
-  { id: 'adjustments',   labelKey: 'adjustments',    icon: Edit3,            adminOnly: true, hideForIT: true, group: 'management' },
+  // Governance & Control
+  { id: 'staff',         labelKey: 'accounts',       icon: ShieldCheck,      adminOnly: true, group: 'governance' },
+  { id: 'adjustments',   labelKey: 'adjustments',    icon: Edit3,            adminOnly: true, hideForIT: true, group: 'governance' },
+  { id: 'approvals',     labelKey: 'approvals',      icon: Clock,            adminOnly: true, group: 'governance' },
 ];
 
 export function getVisibleTabs(role: UserRole, isReadOnlyRole: boolean): TabItem[] {

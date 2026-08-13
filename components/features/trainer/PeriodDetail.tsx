@@ -224,6 +224,36 @@ export function PeriodDetail({
             {period.active ? t('active') : t('inactive')}
           </span>
 
+          {period.inviteCode && (
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                  const joinUrl = `${origin}/th/join?code=${period.inviteCode}`;
+                  navigator.clipboard.writeText(joinUrl);
+                  alert(`Copied Direct Join Link:\n${joinUrl}`);
+                }}
+                title="Click to copy full join link for agents"
+                className="flex items-center gap-1 px-3 py-1 rounded-xl text-[11px] font-black uppercase bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all active:scale-95"
+              >
+                <span>🔗 Copy Join Link</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(period.inviteCode!);
+                  alert(`Copied Wave Invite Code: ${period.inviteCode}`);
+                }}
+                title="Click to copy invite code for agents"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-black uppercase bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all active:scale-95"
+              >
+                <span>Code: {period.inviteCode}</span>
+              </button>
+            </div>
+          )}
+
           {canManage && (
             <div className="ml-auto flex items-center gap-2">
               <select 

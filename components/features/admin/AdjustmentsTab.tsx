@@ -79,26 +79,49 @@ export default function AdjustmentsTab({ role, readOnly }: { role: string; readO
         </AnimatePresence>
       </div>
 
-      <div className="flex p-1 rounded-xl bg-secondary/30 border border-border w-fit overflow-x-auto scrollbar-hide">
-        {TABS.map(tab => (
-          <button 
-            key={tab.id}
-            onClick={() => confirmTabChange(tab.id)} 
-            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === tab.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-          >
-            <tab.icon size={16} /> {tab.label}
-          </button>
-        ))}
+      <div className="flex p-1 rounded-xl bg-secondary/30 border border-border w-fit overflow-x-auto scrollbar-hide relative">
+        {TABS.map(tab => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button 
+              key={tab.id}
+              onClick={() => confirmTabChange(tab.id)} 
+              className={`relative px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap ${isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="adjustments-active-tab"
+                  className="absolute inset-0 bg-card rounded-lg shadow-sm border border-border/50"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-2">
+                <tab.icon size={16} /> {tab.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
-      <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
-        {activeTab === 'learn' && <LearnEditor initialModules={initialModules} data={configs.learn} onSave={d => handleSave('learn', d)} onChange={() => setHasUnsavedChanges(true)} saving={saving} readOnly={readOnly} />}
-        {activeTab === 'quizzes' && <QuizzesEditor data={configs.quizzes} onSave={d => handleSave('quizzes', d)} onChange={() => setHasUnsavedChanges(true)} saving={saving} readOnly={readOnly} />}
-        {activeTab === 'ai-eval' && <AiEvalEditor data={configs.ai_eval} onSave={d => handleSave('ai_eval', d)} onChange={() => setHasUnsavedChanges(true)} saving={saving} readOnly={readOnly} />}
-        {activeTab === 'overrides' && <OverridesManager readOnly={readOnly} />}
-        {activeTab === 'features' && <SystemEditor data={configs.features} onSave={d => handleSave('features', d)} onChange={() => setHasUnsavedChanges(true)} saving={saving} readOnly={readOnly} />}
-        {activeTab === 'health' && <HealthManager readOnly={readOnly} />}
+      <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm min-h-[300px]">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {activeTab === 'learn' && <LearnEditor initialModules={initialModules} data={configs.learn} onSave={d => handleSave('learn', d)} onChange={() => setHasUnsavedChanges(true)} saving={saving} readOnly={readOnly} />}
+            {activeTab === 'quizzes' && <QuizzesEditor data={configs.quizzes} onSave={d => handleSave('quizzes', d)} onChange={() => setHasUnsavedChanges(true)} saving={saving} readOnly={readOnly} />}
+            {activeTab === 'ai-eval' && <AiEvalEditor data={configs.ai_eval} onSave={d => handleSave('ai_eval', d)} onChange={() => setHasUnsavedChanges(true)} saving={saving} readOnly={readOnly} />}
+            {activeTab === 'overrides' && <OverridesManager readOnly={readOnly} />}
+            {activeTab === 'features' && <SystemEditor data={configs.features} onSave={d => handleSave('features', d)} onChange={() => setHasUnsavedChanges(true)} saving={saving} readOnly={readOnly} />}
+            {activeTab === 'health' && <HealthManager readOnly={readOnly} />}
+          </motion.div>
+        </AnimatePresence>
       </div>
+
     </div>
   );
 }

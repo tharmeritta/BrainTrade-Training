@@ -15,6 +15,27 @@ export type SessionMode =
   | { type: 'practice-all' }
   | { type: 'retry'; questions: QuestionData[] };
 
+export const DEFAULT_MAX_HEARTS = 3;
+
+export type GamifiedSoundType =
+  | 'correct'
+  | 'wrong'
+  | 'combo'
+  | 'finish'
+  | 'rankup'
+  | 'heart-loss'
+  | 'heart-shatter'
+  | 'shield-gain'
+  | 'shield-break';
+
+export type GamifiedHapticType =
+  | 'correct'
+  | 'wrong'
+  | 'combo'
+  | 'heart-loss'
+  | 'shield-gain'
+  | 'shield-break';
+
 // -- Screen-level component props ----------------------------------------------
 
 export interface QuizBriefingProps {

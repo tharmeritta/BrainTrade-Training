@@ -39,10 +39,19 @@ export function NewPeriodModal({ agents, trainers, currentUser, onClose, onCreat
     });
   }
 
+  const [createdPeriod, setCreatedPeriod] = useState<TrainingPeriod | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  const getJoinUrl = (code?: string) => {
+    if (typeof window === 'undefined') return '';
+    const origin = window.location.origin;
+    return code ? `${origin}/th/join?code=${code}` : `${origin}/th/join`;
+  };
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) { setErr(t('batchName')); return; }
-    if (selectedIds.size === 0) { setErr(t('selectAgents', { count: 0 })); return; }
     setSaving(true);
     setErr('');
     try {
@@ -67,7 +76,7 @@ export function NewPeriodModal({ agents, trainers, currentUser, onClose, onCreat
       }
 
       const period = await TrainerService.createPeriod(body);
-      onCreated(period);
+      setCreatedPeriod(period);
     } catch (e: any) { 
       setErr(e.message || 'Network error'); 
     } finally { 
@@ -75,19 +84,25 @@ export function NewPeriodModal({ agents, trainers, currentUser, onClose, onCreat
     }
   }
 
+  function handleCloseSuccess() {
+    if (createdPeriod) {
+      onCreated(createdPeriod);
+    } else {
+      onClose();
+    }
+  }
+
   return (
-    <motion.div
+    <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md"
-      style={{ background: 'rgba(0, 0, 0, 0.4)' }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xl"
     >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+      <motion.div 
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
         className="w-full max-w-lg rounded-[2.5rem] overflow-hidden border relative shadow-2xl bg-card text-card-foreground"
         style={{ 
           borderColor: 'rgba(245, 158, 11, 0.2)', 
@@ -97,178 +112,251 @@ export function NewPeriodModal({ agents, trainers, currentUser, onClose, onCreat
         {/* Decorative Top Glow */}
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
         
-        <div className="flex items-center justify-between px-8 py-7 border-b border-border/40">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-amber-500/10 border border-amber-500/20 shadow-inner">
-              <GraduationCap size={24} className="text-amber-500" />
+        {createdPeriod ? (
+          /* Success Screen with Copy Link */
+          <div className="p-8 space-y-6 text-center">
+            <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto shadow-inner">
+              <Check size={32} strokeWidth={3} />
             </div>
+
             <div>
-              <h3 className="font-black text-xl tracking-tight leading-none mb-1.5">{t('createPeriodTitle')}</h3>
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-60">Training Wave Designer</p>
-              </div>
-            </div>
-          </div>
-          <button 
-            onClick={onClose} 
-            className="w-10 h-10 flex items-center justify-center rounded-2xl transition-all hover:bg-secondary text-muted-foreground hover:text-foreground active:scale-90"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-8 space-y-7">
-          <div className="grid grid-cols-1 gap-6">
-            <div>
-              <label className="block text-[11px] font-black uppercase tracking-[0.2em] mb-2.5 text-muted-foreground/70">{t('batchName')}</label>
-              <input
-                value={name} onChange={e => setName(e.target.value)}
-                placeholder={t('batchNamePlaceholder')}
-                required
-                className="w-full px-5 py-4 rounded-2xl text-sm outline-none transition-all font-bold bg-muted/30 border border-border/50 hover:border-amber-500/30 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5 placeholder:text-muted-foreground/40"
-              />
+              <h3 className="text-2xl font-black tracking-tight mb-1">Wave Created Successfully!</h3>
+              <p className="text-xs font-bold text-muted-foreground">
+                Share this link or invite code with trainees to let them self-join
+              </p>
             </div>
 
-            {canPickTrainer && trainers.length > 0 && (
+            {/* Link & Code Box */}
+            <div className="p-5 rounded-2xl bg-secondary/40 border border-border/60 text-left space-y-4">
               <div>
-                <label className="block text-[11px] font-black uppercase tracking-[0.2em] mb-2.5 text-muted-foreground/70">{t('trainerLabel')}</label>
-                <div className="relative group">
-                  <select
-                    value={trainerId} onChange={e => setTrainerId(e.target.value)}
-                    className="w-full px-5 py-4 rounded-2xl text-sm outline-none transition-all font-bold appearance-none bg-muted/30 border border-border/50 hover:border-amber-500/30 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5"
+                <label className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">
+                  Direct Trainee Join Link
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={getJoinUrl(createdPeriod.inviteCode)}
+                    className="flex-1 px-4 py-3 rounded-xl bg-background border border-border text-xs font-mono select-all outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(getJoinUrl(createdPeriod.inviteCode));
+                      setCopiedLink(true);
+                      setTimeout(() => setCopiedLink(false), 2000);
+                    }}
+                    className="px-4 py-3 rounded-xl bg-amber-500 text-white text-xs font-black uppercase tracking-wider hover:bg-amber-600 transition-all shrink-0 active:scale-95"
                   >
-                    {trainers.map(tr => (
-                      <option key={tr.id} value={tr.id} className="bg-card text-foreground py-2">{tr.name}</option>
-                    ))}
-                  </select>
-                  <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
-                    <Plus size={14} className="rotate-45" />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <label className="block text-[11px] font-black uppercase tracking-[0.2em] mb-2.5 text-muted-foreground/70">{t('startDate')}</label>
-                <input
-                  type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
-                  className="w-full px-5 py-4 rounded-2xl text-sm outline-none transition-all font-bold bg-muted/30 border border-border/50 hover:border-amber-500/30 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5"
-                />
-              </div>
-              <div>
-                <label className="block text-[11px] font-black uppercase tracking-[0.2em] mb-2.5 text-muted-foreground/70">{t('totalDays')}</label>
-                <input
-                  type="number" min={1} max={60} value={totalDays}
-                  onChange={e => setTotalDays(Math.max(1, parseInt(e.target.value) || 5))}
-                  className="w-full px-5 py-4 rounded-2xl text-sm outline-none transition-all font-bold bg-muted/30 border border-border/50 hover:border-amber-500/30 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-3 px-1">
-              <label className="block text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">
-                {t('selectAgents', { count: selectedIds.size })}
-              </label>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">
-                  {availableAgents.length} {t('noAgents').includes('ไม่มี') ? 'ที่ว่าง' : 'Available'}
-                </span>
-                {selectedIds.size > 0 && (
-                  <button 
-                    type="button" 
-                    onClick={() => setSelectedIds(new Set())}
-                    className="text-[10px] font-black text-amber-500 hover:text-amber-600 uppercase tracking-widest transition-colors"
-                  >
-                    {t('noAgents').includes('ไม่มี') ? 'ล้าง' : 'Clear'}
+                    {copiedLink ? 'Copied ✓' : 'Copy Link'}
                   </button>
-                )}
-              </div>
-            </div>
-            
-            <div className="rounded-[1.5rem] overflow-hidden max-h-56 overflow-y-auto border border-border/60 bg-muted/20 shadow-inner custom-scrollbar">
-              {availableAgents.length === 0 ? (
-                <div className="px-6 py-12 text-center">
-                  <p className="text-xs font-bold text-muted-foreground/40 italic uppercase tracking-widest leading-relaxed">
-                    {t('noAgents')}
-                  </p>
                 </div>
-              ) : (
-                <div className="divide-y divide-border/30">
-                  {availableAgents.map(a => (
-                    <button
-                      key={a.id} type="button"
-                      onClick={() => toggleAgent(a.id)}
-                      className="w-full flex items-center gap-4 px-6 py-4 text-left transition-all hover:bg-amber-500/[0.03] group"
-                    >
-                      <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 transition-all border shadow-sm"
-                        style={{
-                          background: selectedIds.has(a.id) ? 'linear-gradient(135deg, #F59E0B, #D97706)' : 'transparent',
-                          borderColor: selectedIds.has(a.id) ? '#F59E0B' : 'rgba(0,0,0,0.1)',
-                        }}>
-                        {selectedIds.has(a.id) && <Check size={12} className="text-white" strokeWidth={4} />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <span className={`text-sm font-bold tracking-tight transition-colors ${selectedIds.has(a.id) ? 'text-amber-600' : 'text-foreground/70 group-hover:text-foreground'}`}>
-                          {a.name}
-                        </span>
-                      </div>
-                      {selectedIds.has(a.id) && (
-                        <motion.div 
-                          layoutId="selection-pill"
-                          className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-[9px] font-black text-amber-600 uppercase tracking-tighter"
-                        >
-                          Added
-                        </motion.div>
-                      )}
-                    </button>
-                  ))}
+              </div>
+
+              {createdPeriod.inviteCode && (
+                <div className="pt-2 border-t border-border/40 flex items-center justify-between">
+                  <div>
+                    <span className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground">Wave Invite Code</span>
+                    <span className="text-base font-black text-amber-500 tracking-wider">{createdPeriod.inviteCode}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(createdPeriod.inviteCode!);
+                      setCopiedCode(true);
+                      setTimeout(() => setCopiedCode(false), 2000);
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-600 border border-amber-500/20 text-[11px] font-black uppercase tracking-wider hover:bg-amber-500/20 transition-all active:scale-95"
+                  >
+                    {copiedCode ? 'Copied ✓' : 'Copy Code'}
+                  </button>
                 </div>
               )}
             </div>
-          </div>
 
-          {err && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center gap-3"
-            >
-              <div className="w-8 h-8 rounded-xl bg-destructive/20 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle size={16} className="text-destructive" />
-              </div>
-              <p className="text-xs font-bold text-destructive leading-tight">{err}</p>
-            </motion.div>
-          )}
-
-          <div className="flex items-center gap-4 pt-4">
             <button
-              type="submit" disabled={saving}
-              className="flex-1 h-16 flex items-center justify-center gap-3 rounded-2xl text-sm font-black uppercase tracking-[0.2em] transition-all active:scale-[0.97] shadow-xl disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden text-white"
-              style={{ 
-                background: 'linear-gradient(135deg, #F59E0B, #D97706)', 
-                boxShadow: '0 10px 30px -5px rgba(245, 158, 11, 0.4)'
-              }}
+              type="button"
+              onClick={handleCloseSuccess}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-white text-sm font-black uppercase tracking-[0.2em] shadow-lg hover:from-amber-600 hover:to-amber-700 transition-all active:scale-95"
             >
-              <div className="absolute inset-0 bg-white/20 translate-y-full transition-transform group-hover:translate-y-0" />
-              {saving ? <Spinner size={22} color="white" /> : <Plus size={20} strokeWidth={3} />}
-              <span className="relative">{saving ? t('creating') : t('createBtn')}</span>
-            </button>
-            <button 
-              type="button" 
-              onClick={onClose}
-              className="h-16 px-10 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all hover:bg-secondary text-muted-foreground hover:text-foreground active:scale-95"
-            >
-              {t('cancel')}
+              Open Wave Dashboard
             </button>
           </div>
-        </form>
+        ) : (
+          /* Form Screen */
+          <>
+            <div className="flex items-center justify-between px-8 py-7 border-b border-border/40">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-amber-500/10 border border-amber-500/20 shadow-inner">
+                  <GraduationCap size={24} className="text-amber-500" />
+                </div>
+                <div>
+                  <h3 className="font-black text-xl tracking-tight leading-none mb-1.5">{t('createPeriodTitle')}</h3>
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-60">Training Wave Designer</p>
+                  </div>
+                </div>
+              </div>
+              <button 
+                onClick={onClose} 
+                className="w-10 h-10 flex items-center justify-center rounded-2xl transition-all hover:bg-secondary text-muted-foreground hover:text-foreground active:scale-90"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-8 space-y-7">
+              <div className="grid grid-cols-1 gap-6">
+                <div>
+                  <label className="block text-[11px] font-black uppercase tracking-[0.2em] mb-2.5 text-muted-foreground/70">{t('batchName')}</label>
+                  <input
+                    value={name} onChange={e => setName(e.target.value)}
+                    placeholder={t('batchNamePlaceholder')}
+                    required
+                    className="w-full px-5 py-4 rounded-2xl text-sm outline-none transition-all font-bold bg-muted/30 border border-border/50 hover:border-amber-500/30 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5 placeholder:text-muted-foreground/40"
+                  />
+                </div>
+
+                {canPickTrainer && trainers.length > 0 && (
+                  <div>
+                    <label className="block text-[11px] font-black uppercase tracking-[0.2em] mb-2.5 text-muted-foreground/70">{t('trainerLabel')}</label>
+                    <div className="relative group">
+                      <select
+                        value={trainerId} onChange={e => setTrainerId(e.target.value)}
+                        className="w-full px-5 py-4 rounded-2xl text-sm outline-none transition-all font-bold appearance-none bg-muted/30 border border-border/50 hover:border-amber-500/30 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5"
+                      >
+                        {trainers.map(tr => (
+                          <option key={tr.id} value={tr.id} className="bg-card text-foreground py-2">{tr.name}</option>
+                        ))}
+                      </select>
+                      <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+                        <Plus size={14} className="rotate-45" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-[11px] font-black uppercase tracking-[0.2em] mb-2.5 text-muted-foreground/70">{t('startDate')}</label>
+                    <input
+                      type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
+                      className="w-full px-5 py-4 rounded-2xl text-sm outline-none transition-all font-bold bg-muted/30 border border-border/50 hover:border-amber-500/30 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-black uppercase tracking-[0.2em] mb-2.5 text-muted-foreground/70">{t('totalDays')}</label>
+                    <input
+                      type="number" min={1} max={60} value={totalDays}
+                      onChange={e => setTotalDays(Math.max(1, parseInt(e.target.value) || 5))}
+                      className="w-full px-5 py-4 rounded-2xl text-sm outline-none transition-all font-bold bg-muted/30 border border-border/50 hover:border-amber-500/30 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/5"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <label className="block text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">
+                    {t('selectAgents', { count: selectedIds.size })}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">
+                      {availableAgents.length} {t('noAgents').includes('ไม่มี') ? 'ที่ว่าง' : 'Available'}
+                    </span>
+                    {selectedIds.size > 0 && (
+                      <button 
+                        type="button" 
+                        onClick={() => setSelectedIds(new Set())}
+                        className="text-[10px] font-black text-amber-500 hover:text-amber-600 uppercase tracking-widest transition-colors"
+                      >
+                        {t('noAgents').includes('ไม่มี') ? 'ล้าง' : 'Clear'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="rounded-[1.5rem] overflow-hidden max-h-56 overflow-y-auto border border-border/60 bg-muted/20 shadow-inner custom-scrollbar">
+                  {availableAgents.length === 0 ? (
+                    <div className="px-6 py-12 text-center">
+                      <p className="text-xs font-bold text-muted-foreground/40 italic uppercase tracking-widest leading-relaxed">
+                        {t('noAgents')}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-border/30">
+                      {availableAgents.map(a => (
+                        <button
+                          key={a.id} type="button"
+                          onClick={() => toggleAgent(a.id)}
+                          className="w-full flex items-center gap-4 px-6 py-4 text-left transition-all hover:bg-amber-500/[0.03] group"
+                        >
+                          <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 transition-all border shadow-sm"
+                            style={{
+                              background: selectedIds.has(a.id) ? 'linear-gradient(135deg, #F59E0B, #D97706)' : 'transparent',
+                              borderColor: selectedIds.has(a.id) ? '#F59E0B' : 'rgba(0,0,0,0.1)',
+                            }}>
+                            {selectedIds.has(a.id) && <Check size={12} className="text-white" strokeWidth={4} />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className={`text-sm font-bold tracking-tight transition-colors ${selectedIds.has(a.id) ? 'text-amber-600' : 'text-foreground/70 group-hover:text-foreground'}`}>
+                              {a.name}
+                            </span>
+                          </div>
+                          {selectedIds.has(a.id) && (
+                            <motion.div 
+                              layoutId="selection-pill"
+                              className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-[9px] font-black text-amber-600 uppercase tracking-tighter"
+                            >
+                              Added
+                            </motion.div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {err && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center gap-3"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-destructive/20 flex items-center justify-center flex-shrink-0">
+                    <AlertTriangle size={16} className="text-destructive" />
+                  </div>
+                  <p className="text-xs font-bold text-destructive leading-tight">{err}</p>
+                </motion.div>
+              )}
+
+              <div className="flex items-center gap-4 pt-4">
+                <button
+                  type="submit" disabled={saving}
+                  className="flex-1 h-16 flex items-center justify-center gap-3 rounded-2xl text-sm font-black uppercase tracking-[0.2em] transition-all active:scale-[0.97] shadow-xl disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden text-white"
+                  style={{ 
+                    background: 'linear-gradient(135deg, #F59E0B, #D97706)', 
+                    boxShadow: '0 10px 30px -5px rgba(245, 158, 11, 0.4)'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-white/20 translate-y-full transition-transform group-hover:translate-y-0" />
+                  {saving ? <Spinner size={22} color="white" /> : <Plus size={20} strokeWidth={3} />}
+                  <span className="relative">{saving ? t('creating') : t('createBtn')}</span>
+                </button>
+                <button 
+                  type="button" 
+                  onClick={onClose}
+                  className="h-16 px-10 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all hover:bg-secondary text-muted-foreground hover:text-foreground active:scale-95"
+                >
+                  {t('cancel')}
+                </button>
+              </div>
+            </form>
+          </>
+        )}
       </motion.div>
     </motion.div>
-
-
   );
 }

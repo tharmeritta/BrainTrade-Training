@@ -2,11 +2,12 @@
 
 import React, { memo, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { LogOut, CheckCircle2, Lock, Trophy, Target, ChevronRight, RefreshCw } from 'lucide-react';
+import { LogOut, CheckCircle2, Lock, Trophy, Target, ChevronRight, RefreshCw, Flame } from 'lucide-react';
 import { ScoreRing, scoreHex } from '@/components/ui/ScoreRing';
 import { FADE_IN, EASE, TRANSITION } from '@/lib/animations';
 import { StepState } from '@/lib/training';
 import { STEPS, BADGE, BadgeType } from '@/constants/training';
+import { playGamifiedSound, triggerHaptic } from '@/components/features/quiz/gamification';
 import Link from 'next/link';
 
 interface ProfileSidebarProps {
@@ -64,17 +65,22 @@ export const ProfileSidebar = memo(({
 }: ProfileSidebarProps) => {
   const [syncing, setSyncing] = useState(false);
 
+  const completedCount = useMemo(() => {
+    return Object.values(derived).filter(s => s.passed).length;
+  }, [derived]);
+
   const handleSync = async () => {
     if (!onSync || syncing) return;
     setSyncing(true);
+    playGamifiedSound('shield-gain');
+    triggerHaptic('shield-gain');
     await onSync();
     setSyncing(false);
   };
 
-  const statusColor = acknowledged ? '#10B981' : allDone ? '#FBBF24' : currentStep ? currentStep.color : 'var(--hub-dim)';
-
   return (
     <motion.div
+      data-tour="profile-sidebar"
       variants={FADE_IN}
       initial="initial"
       animate="animate"
@@ -109,7 +115,7 @@ export const ProfileSidebar = memo(({
 
         {/* Career Tier XP Badge */}
         <div className="mb-2.5 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-wider bg-purple-500/10 border-purple-500/30 text-purple-400">
-          💎 Elite Telesales Trainee • {Math.round(score * 25 + pct * 5)} XP
+          💎 {locale === 'th' ? 'นักขายผู้เชี่ยวชาญ' : 'Elite Telesales Trainee'} • {Math.round(score * 25 + pct * 5)} XP
         </div>
 
         <div className="mb-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full border"
@@ -139,25 +145,64 @@ export const ProfileSidebar = memo(({
         >
           ★ {badgeCfg.label}
         </span>
+
+        {/* Glassmorphic Daily Goal Tracker */}
+        <div className="w-full mt-5 p-4 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-card/60 to-amber-500/10 backdrop-blur-xl shadow-lg relative overflow-hidden text-left">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5 text-xs font-black text-foreground">
+              <span className="text-sm">🎯</span>
+              <span>{locale === 'th' ? 'เป้าหมายประจำวัน' : 'Daily Goal'}</span>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+              +150 XP
+            </span>
+          </div>
+          <div className="flex justify-between items-center text-[11px] font-semibold text-muted-foreground mb-1.5">
+            <span>{locale === 'th' ? 'ภารกิจที่ทำสำเร็จ' : 'Tasks Completed'}</span>
+            <span className="font-bold text-foreground">{completedCount} / 3</span>
+          </div>
+          <div className="h-2 rounded-full bg-secondary overflow-hidden border border-border/50">
+            <motion.div
+              className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(100, Math.round((completedCount / 3) * 100))}%` }}
+              transition={{ duration: 1, ease: EASE.smooth }}
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Next Action Button */}
+      {/* Quick-Continue Next Task Banner */}
       {!allDone && currentStep && (
-        <div className="w-full mt-6 px-1">
-          <Link 
+        <div className="w-full mt-4 px-1">
+          <Link
             href={currentStep.id === 'learn' ? `/${locale}/learn` : currentStep.id === 'quiz' ? `/${locale}/quiz` : `/${locale}/ai-eval`}
-            className="flex items-center justify-between w-full p-4 rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all group"
+            onClick={() => {
+              playGamifiedSound('correct');
+              triggerHaptic('correct');
+            }}
+            className="group relative flex items-center justify-between w-full p-4 rounded-3xl bg-gradient-to-r from-primary via-primary/95 to-amber-600 text-primary-foreground shadow-xl shadow-primary/25 overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-white/20">
-                <Target size={18} />
+            {/* Animated Pulsing Glow Border */}
+            <div className="absolute inset-0 rounded-3xl border-2 border-white/30 animate-pulse pointer-events-none" />
+
+            <div className="flex items-center gap-3 relative z-10">
+              <div className="p-2.5 rounded-2xl bg-white/20 shadow-inner">
+                <Target size={20} />
               </div>
               <div className="text-left">
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-70 leading-none mb-1">Next Task</p>
-                <p className="text-sm font-black leading-none">{navT(currentStep.labelKey)}</p>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-[9px] font-black uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded-full">
+                    ⚡ {locale === 'th' ? 'ลุยภารกิจถัดไป' : 'QUICK CONTINUE'}
+                  </span>
+                  <span className="text-[9px] font-bold opacity-80">
+                    ⏱️ ~15 {locale === 'th' ? 'นาที' : 'mins'}
+                  </span>
+                </div>
+                <p className="text-sm font-black leading-tight">{navT(currentStep.labelKey)}</p>
               </div>
             </div>
-            <ChevronRight size={18} className="opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+            <ChevronRight size={20} className="opacity-70 group-hover:opacity-100 group-hover:translate-x-1 transition-all relative z-10" />
           </Link>
         </div>
       )}
@@ -219,7 +264,11 @@ export const ProfileSidebar = memo(({
 
             {onOpenCertificate && (
               <button
-                onClick={onOpenCertificate}
+                onClick={() => {
+                  playGamifiedSound('finish');
+                  triggerHaptic('combo');
+                  onOpenCertificate();
+                }}
                 className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-95 transition-all w-full"
               >
                 <Trophy size={14} />
