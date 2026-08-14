@@ -40,8 +40,8 @@ export async function POST(req: NextRequest) {
     const { agentId, agentName } = body;
     if (!agentId) return NextResponse.json({ error: 'agentId required' }, { status: 400 });
 
-    // Handle Mockup Agent
-    if (agentId === MOCKUP_AGENT_ID) {
+    // Handle Mockup Agent & Admin Preview Agent
+    if (agentId === MOCKUP_AGENT_ID || agentId === 'admin-preview-agent') {
       return NextResponse.json({ success: true, mockup: true });
     }
 

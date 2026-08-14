@@ -235,9 +235,9 @@
     "semantic_hash": "e3eba0e9f71fa7cf88cb42d8eb4f54f6"
   },
   "app/api/agent/progress/route.ts": {
-    "mtime": 1786083165.6047974,
-    "ast_hash": "72571f4e47814bd17da620937d7f6191",
-    "semantic_hash": "72571f4e47814bd17da620937d7f6191"
+    "mtime": 1786694948.8853667,
+    "ast_hash": "72bf4c9c76fea0b749366f17453248ac",
+    "semantic_hash": ""
   },
   "app/api/agent/sync/route.ts": {
     "mtime": 1786083165.6049578,
@@ -825,8 +825,8 @@
     "semantic_hash": ""
   },
   "components/features/presentation/usePresentation.ts": {
-    "mtime": 1786692057.7131069,
-    "ast_hash": "00ee02bacc85ef35c738b671c2a6b8b0",
+    "mtime": 1786694971.83451,
+    "ast_hash": "5eb3a007a6b4396c0bef1433e0a8fc46",
     "semantic_hash": ""
   },
   "components/features/quiz/QuizBriefing.tsx": {

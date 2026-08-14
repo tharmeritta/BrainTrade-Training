@@ -26,8 +26,6 @@ export function usePresentation(
   const [lang, setLang] = useState<CourseLang>(initialLang);
   const [activeTool, setActiveTool] = useState<'pen' | 'laser' | null>(null);
   
-  const isTrainer = !!(user && ['admin', 'trainer', 'manager'].includes(user.role));
-
   // Identify the session immediately if possible (client-side)
   const [agentId, setAgentId] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null;
@@ -37,6 +35,8 @@ export function usePresentation(
     if (typeof window === 'undefined') return null;
     return getAgentSession()?.name || null;
   });
+
+  const isTrainer = !!(user && ['admin', 'trainer', 'manager'].includes(user.role)) && agentId !== 'admin-preview-agent';
 
   // Unique identifier for this session's progress
   const effectiveId = useMemo(() => {

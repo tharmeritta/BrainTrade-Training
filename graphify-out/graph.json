@@ -11,7 +11,7 @@
       "_origin": "ast",
       "id": "app_locale_admin_page",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "admin/page.tsx"
     },
     {
@@ -23,7 +23,7 @@
       "_origin": "ast",
       "id": "app_locale_admin_page_adminpagecontent",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "adminpagecontent()"
     },
     {
@@ -35,7 +35,7 @@
       "_origin": "ast",
       "id": "app_locale_admin_page_adminpage",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "adminpage()"
     },
     {
@@ -715,8 +715,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_agents_id_route",
-      "community": 91,
-      "community_name": "fsUpdate",
+      "community": 10,
+      "community_name": "staff/route.ts",
       "norm_label": "agents/[id]/route.ts"
     },
     {
@@ -726,8 +726,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "app_api_admin_agents_id_route_patch",
-      "community": 91,
-      "community_name": "fsUpdate",
+      "community": 10,
+      "community_name": "staff/route.ts",
       "norm_label": "patch"
     },
     {
@@ -737,8 +737,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "app_api_admin_agents_id_route_delete",
-      "community": 91,
-      "community_name": "fsUpdate",
+      "community": 10,
+      "community_name": "staff/route.ts",
       "norm_label": "delete"
     },
     {
@@ -851,7 +851,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_route",
-      "community": 21,
+      "community": 91,
       "community_name": "fsSet",
       "norm_label": "ai-scenarios/route.ts"
     },
@@ -863,7 +863,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_route_get",
-      "community": 21,
+      "community": 91,
       "community_name": "fsSet",
       "norm_label": "get()"
     },
@@ -875,7 +875,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_route_post",
-      "community": 21,
+      "community": 91,
       "community_name": "fsSet",
       "norm_label": "post()"
     },
@@ -887,7 +887,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_route_patch",
-      "community": 21,
+      "community": 91,
       "community_name": "fsSet",
       "norm_label": "patch()"
     },
@@ -899,8 +899,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_route_delete",
-      "community": 91,
-      "community_name": "fsUpdate",
+      "community": 12,
+      "community_name": "fsDelete",
       "norm_label": "delete()"
     },
     {
@@ -910,8 +910,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_approvals_route",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 91,
+      "community_name": "fsSet",
       "norm_label": "approvals/route.ts"
     },
     {
@@ -922,8 +922,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_approvals_route_get",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 91,
+      "community_name": "fsSet",
       "norm_label": "get()"
     },
     {
@@ -934,8 +934,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_approvals_route_post",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 91,
+      "community_name": "fsSet",
       "norm_label": "post()"
     },
     {
@@ -945,7 +945,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_bulk_progress_route",
-      "community": 21,
+      "community": 91,
       "community_name": "fsSet",
       "norm_label": "bulk-progress/route.ts"
     },
@@ -958,7 +958,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "app_api_admin_bulk_progress_route_progressrecord",
-      "community": 21,
+      "community": 91,
       "community_name": "fsSet",
       "norm_label": "progressrecord"
     },
@@ -970,7 +970,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_bulk_progress_route_defaults",
-      "community": 21,
+      "community": 91,
       "community_name": "fsSet",
       "norm_label": "defaults()"
     },
@@ -982,7 +982,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_bulk_progress_route_post",
-      "community": 21,
+      "community": 91,
       "community_name": "fsSet",
       "norm_label": "post()"
     },
@@ -993,7 +993,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_certificate_config_route",
-      "community": 12,
+      "community": 16,
       "community_name": "server.ts",
       "norm_label": "certificate-config/route.ts"
     },
@@ -1005,7 +1005,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_certificate_config_route_get",
-      "community": 12,
+      "community": 16,
       "community_name": "server.ts",
       "norm_label": "get()"
     },
@@ -1017,7 +1017,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_certificate_config_route_post",
-      "community": 12,
+      "community": 16,
       "community_name": "server.ts",
       "norm_label": "post()"
     },
@@ -1028,8 +1028,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_change_password_route",
-      "community": 21,
-      "community_name": "fsSet",
+      "community": 2,
+      "community_name": "firebase-admin.ts",
       "norm_label": "change-password/route.ts"
     },
     {
@@ -1040,8 +1040,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_change_password_route_post",
-      "community": 21,
-      "community_name": "fsSet",
+      "community": 2,
+      "community_name": "firebase-admin.ts",
       "norm_label": "post()"
     },
     {
@@ -1074,7 +1074,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_config_diagnostics_route",
-      "community": 16,
+      "community": 21,
       "community_name": "fsGetAll",
       "norm_label": "diagnostics/route.ts"
     },
@@ -1086,7 +1086,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_config_diagnostics_route_get",
-      "community": 16,
+      "community": 21,
       "community_name": "fsGetAll",
       "norm_label": "get()"
     },
@@ -1121,7 +1121,7 @@
       "_origin": "ast",
       "id": "app_api_admin_config_route",
       "community": 91,
-      "community_name": "fsUpdate",
+      "community_name": "fsSet",
       "norm_label": "admin/config/route.ts"
     },
     {
@@ -1133,7 +1133,7 @@
       "_origin": "ast",
       "id": "app_api_admin_config_route_get",
       "community": 91,
-      "community_name": "fsUpdate",
+      "community_name": "fsSet",
       "norm_label": "get()"
     },
     {
@@ -1145,7 +1145,7 @@
       "_origin": "ast",
       "id": "app_api_admin_config_route_patch",
       "community": 91,
-      "community_name": "fsUpdate",
+      "community_name": "fsSet",
       "norm_label": "patch()"
     },
     {
@@ -1166,7 +1166,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_evaluations_route",
-      "community": 16,
+      "community": 21,
       "community_name": "fsGetAll",
       "norm_label": "admin/evaluations/route.ts"
     },
@@ -1178,7 +1178,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_evaluations_route_get",
-      "community": 16,
+      "community": 21,
       "community_name": "fsGetAll",
       "norm_label": "get()"
     },
@@ -1328,7 +1328,7 @@
       "_origin": "ast",
       "id": "app_api_admin_live_feed_route",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "live-feed/route.ts"
     },
     {
@@ -1341,7 +1341,7 @@
       "_origin": "ast",
       "id": "app_api_admin_live_feed_route_feeditem",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "feeditem"
     },
     {
@@ -1353,7 +1353,7 @@
       "_origin": "ast",
       "id": "app_api_admin_live_feed_route_get",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "get()"
     },
     {
@@ -1364,7 +1364,7 @@
       "_origin": "ast",
       "id": "app_api_admin_overview_route",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "overview/route.ts"
     },
     {
@@ -1375,7 +1375,7 @@
       "_origin": "ast",
       "id": "app_api_admin_overview_route_empty",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "empty"
     },
     {
@@ -1387,7 +1387,7 @@
       "_origin": "ast",
       "id": "app_api_admin_overview_route_get",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "get()"
     },
     {
@@ -1432,7 +1432,7 @@
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route",
       "community": 21,
-      "community_name": "fsSet",
+      "community_name": "fsGetAll",
       "norm_label": "seed-mock-agents/route.ts"
     },
     {
@@ -1443,7 +1443,7 @@
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route_mockup_agents",
       "community": 21,
-      "community_name": "fsSet",
+      "community_name": "fsGetAll",
       "norm_label": "mockup_agents"
     },
     {
@@ -1455,7 +1455,7 @@
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route_post",
       "community": 21,
-      "community_name": "fsSet",
+      "community_name": "fsGetAll",
       "norm_label": "post()"
     },
     {
@@ -1467,7 +1467,7 @@
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route_get",
       "community": 21,
-      "community_name": "fsSet",
+      "community_name": "fsGetAll",
       "norm_label": "get()"
     },
     {
@@ -1501,7 +1501,7 @@
       "_origin": "ast",
       "id": "app_api_admin_staff_id_route",
       "community": 91,
-      "community_name": "fsUpdate",
+      "community_name": "fsSet",
       "norm_label": "staff/[id]/route.ts"
     },
     {
@@ -1513,7 +1513,7 @@
       "_origin": "ast",
       "id": "app_api_admin_staff_id_route_patch",
       "community": 91,
-      "community_name": "fsUpdate",
+      "community_name": "fsSet",
       "norm_label": "patch()"
     },
     {
@@ -1525,7 +1525,7 @@
       "_origin": "ast",
       "id": "app_api_admin_staff_id_route_delete",
       "community": 91,
-      "community_name": "fsUpdate",
+      "community_name": "fsSet",
       "norm_label": "delete()"
     },
     {
@@ -1732,7 +1732,7 @@
       "_origin": "ast",
       "id": "app_api_agents_route",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "api/agents/route.ts"
     },
     {
@@ -1744,7 +1744,7 @@
       "_origin": "ast",
       "id": "app_api_agents_route_get",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "get()"
     },
     {
@@ -1777,8 +1777,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_ai_eval_active_route",
-      "community": 22,
-      "community_name": "db.ts",
+      "community": 12,
+      "community_name": "fsDelete",
       "norm_label": "active/route.ts"
     },
     {
@@ -1789,8 +1789,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_ai_eval_active_route_get",
-      "community": 22,
-      "community_name": "db.ts",
+      "community": 12,
+      "community_name": "fsDelete",
       "norm_label": "get()"
     },
     {
@@ -1801,8 +1801,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_ai_eval_active_route_delete",
-      "community": 22,
-      "community_name": "db.ts",
+      "community": 12,
+      "community_name": "fsDelete",
       "norm_label": "delete()"
     },
     {
@@ -1812,8 +1812,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_ai_eval_config_route",
-      "community": 28,
-      "community_name": "getAdminDb",
+      "community": 2,
+      "community_name": "firebase-admin.ts",
       "norm_label": "ai-eval/config/route.ts"
     },
     {
@@ -1824,8 +1824,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_ai_eval_config_route_get",
-      "community": 28,
-      "community_name": "getAdminDb",
+      "community": 2,
+      "community_name": "firebase-admin.ts",
       "norm_label": "get()"
     },
     {
@@ -1881,7 +1881,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_auth_agent_login_route",
-      "community": 16,
+      "community": 21,
       "community_name": "fsGetAll",
       "norm_label": "agent-login/route.ts"
     },
@@ -1893,7 +1893,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_auth_agent_login_route_normalizename",
-      "community": 16,
+      "community": 21,
       "community_name": "fsGetAll",
       "norm_label": "normalizename()"
     },
@@ -1905,7 +1905,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_auth_agent_login_route_post",
-      "community": 16,
+      "community": 21,
       "community_name": "fsGetAll",
       "norm_label": "post()"
     },
@@ -2171,8 +2171,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_join_route",
-      "community": 2,
-      "community_name": "firebase-admin.ts",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "join/route.ts"
     },
     {
@@ -2183,8 +2183,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_join_route_generateinvitecode",
-      "community": 2,
-      "community_name": "firebase-admin.ts",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "generateinvitecode()"
     },
     {
@@ -2195,8 +2195,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_join_route_get",
-      "community": 2,
-      "community_name": "firebase-admin.ts",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "get()"
     },
     {
@@ -2207,8 +2207,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_join_route_post",
-      "community": 2,
-      "community_name": "firebase-admin.ts",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "post()"
     },
     {
@@ -2323,8 +2323,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_trainer_discipline_id_route",
-      "community": 91,
-      "community_name": "fsUpdate",
+      "community": 12,
+      "community_name": "fsDelete",
       "norm_label": "discipline/[id]/route.ts"
     },
     {
@@ -2335,8 +2335,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_trainer_discipline_id_route_patch",
-      "community": 91,
-      "community_name": "fsUpdate",
+      "community": 12,
+      "community_name": "fsDelete",
       "norm_label": "patch()"
     },
     {
@@ -2347,8 +2347,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_trainer_discipline_id_route_delete",
-      "community": 91,
-      "community_name": "fsUpdate",
+      "community": 12,
+      "community_name": "fsDelete",
       "norm_label": "delete()"
     },
     {
@@ -2359,7 +2359,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_discipline_route",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "discipline/route.ts"
     },
     {
@@ -2371,7 +2371,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_discipline_route_get",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "get()"
     },
     {
@@ -2383,7 +2383,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_discipline_route_post",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "post()"
     },
     {
@@ -2393,8 +2393,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_days_route",
-      "community": 91,
-      "community_name": "fsUpdate",
+      "community": 12,
+      "community_name": "fsDelete",
       "norm_label": "days/route.ts"
     },
     {
@@ -2405,8 +2405,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_days_route_get",
-      "community": 91,
-      "community_name": "fsUpdate",
+      "community": 12,
+      "community_name": "fsDelete",
       "norm_label": "get()"
     },
     {
@@ -2417,8 +2417,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_days_route_post",
-      "community": 91,
-      "community_name": "fsUpdate",
+      "community": 12,
+      "community_name": "fsDelete",
       "norm_label": "post()"
     },
     {
@@ -2428,8 +2428,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_route",
-      "community": 91,
-      "community_name": "fsUpdate",
+      "community": 12,
+      "community_name": "fsDelete",
       "norm_label": "training-periods/[id]/route.ts"
     },
     {
@@ -2440,8 +2440,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_route_patch",
-      "community": 91,
-      "community_name": "fsUpdate",
+      "community": 12,
+      "community_name": "fsDelete",
       "norm_label": "patch()"
     },
     {
@@ -2452,8 +2452,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_route_delete",
-      "community": 91,
-      "community_name": "fsUpdate",
+      "community": 12,
+      "community_name": "fsDelete",
       "norm_label": "delete()"
     },
     {
@@ -2464,7 +2464,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_route",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "training-periods/route.ts"
     },
     {
@@ -2476,7 +2476,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_route_get",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "get()"
     },
     {
@@ -2488,7 +2488,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_route_post",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "post()"
     },
     {
@@ -10331,7 +10331,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fsgetall",
-      "community": 16,
+      "community": 21,
       "community_name": "fsGetAll",
       "norm_label": "fsgetall()"
     },
@@ -10368,7 +10368,7 @@
       "_origin": "ast",
       "id": "lib_server_db_fsquery",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "fsquery()"
     },
     {
@@ -10380,7 +10380,7 @@
       "_origin": "ast",
       "id": "lib_server_db_fscount",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "fscount()"
     },
     {
@@ -10403,8 +10403,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fsupdate",
-      "community": 91,
-      "community_name": "fsUpdate",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "fsupdate()"
     },
     {
@@ -10415,8 +10415,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fsupdatemany",
-      "community": 28,
-      "community_name": "getAdminDb",
+      "community": 10,
+      "community_name": "staff/route.ts",
       "norm_label": "fsupdatemany()"
     },
     {
@@ -10427,8 +10427,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fsdelete",
-      "community": 91,
-      "community_name": "fsUpdate",
+      "community": 12,
+      "community_name": "fsDelete",
       "norm_label": "fsdelete()"
     },
     {
@@ -10439,7 +10439,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fsset",
-      "community": 21,
+      "community": 91,
       "community_name": "fsSet",
       "norm_label": "fsset()"
     },
@@ -10841,7 +10841,7 @@
       "_origin": "ast",
       "id": "lib_services_approval_service",
       "community": 91,
-      "community_name": "fsUpdate",
+      "community_name": "fsSet",
       "norm_label": "approval-service.ts"
     },
     {
@@ -10853,7 +10853,7 @@
       "_origin": "ast",
       "id": "lib_services_approval_service_createapprovalrequest",
       "community": 91,
-      "community_name": "fsUpdate",
+      "community_name": "fsSet",
       "norm_label": "createapprovalrequest()"
     },
     {
@@ -10865,7 +10865,7 @@
       "_origin": "ast",
       "id": "lib_services_approval_service_resolveapprovalrequest",
       "community": 91,
-      "community_name": "fsUpdate",
+      "community_name": "fsSet",
       "norm_label": "resolveapprovalrequest()"
     },
     {
@@ -10877,7 +10877,7 @@
       "_origin": "ast",
       "id": "lib_services_approval_service_executeapprovedaction",
       "community": 91,
-      "community_name": "fsUpdate",
+      "community_name": "fsSet",
       "norm_label": "executeapprovedaction()"
     },
     {
@@ -11237,7 +11237,7 @@
       "_origin": "ast",
       "id": "lib_services_stats_service_updateglobalagentcounts",
       "community": 91,
-      "community_name": "fsUpdate",
+      "community_name": "fsSet",
       "norm_label": "updateglobalagentcounts()"
     },
     {
@@ -11273,7 +11273,7 @@
       "_origin": "ast",
       "id": "lib_services_stats_service_getglobalstats",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "getglobalstats()"
     },
     {
@@ -11491,7 +11491,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_session_server",
-      "community": 12,
+      "community": 16,
       "community_name": "server.ts",
       "norm_label": "server.ts"
     },
@@ -11502,7 +11502,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "lib_session_server_valid_roles",
-      "community": 12,
+      "community": 16,
       "community_name": "server.ts",
       "norm_label": "valid_roles"
     },
@@ -11525,7 +11525,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_server_hasrole",
-      "community": 12,
+      "community": 16,
       "community_name": "server.ts",
       "norm_label": "hasrole()"
     },
@@ -11537,8 +11537,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_server_makesessiontoken",
-      "community": 21,
-      "community_name": "fsSet",
+      "community": 2,
+      "community_name": "firebase-admin.ts",
       "norm_label": "makesessiontoken()"
     },
     {
@@ -11549,7 +11549,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_server_requireauth",
-      "community": 12,
+      "community": 16,
       "community_name": "server.ts",
       "norm_label": "requireauth()"
     },
@@ -11561,8 +11561,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_server_requireadmin",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 91,
+      "community_name": "fsSet",
       "norm_label": "requireadmin()"
     },
     {
@@ -11573,7 +11573,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_server_requirehr",
-      "community": 12,
+      "community": 16,
       "community_name": "server.ts",
       "norm_label": "requirehr()"
     },
@@ -11585,7 +11585,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_server_requireadminorit",
-      "community": 12,
+      "community": 16,
       "community_name": "server.ts",
       "norm_label": "requireadminorit()"
     },
@@ -11598,7 +11598,7 @@
       "_origin": "ast",
       "id": "lib_session_server_requireadminormanager",
       "community": 91,
-      "community_name": "fsUpdate",
+      "community_name": "fsSet",
       "norm_label": "requireadminormanager()"
     },
     {
@@ -11609,7 +11609,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_server_requireevaluator",
-      "community": 12,
+      "community": 16,
       "community_name": "server.ts",
       "norm_label": "requireevaluator()"
     },
@@ -11622,7 +11622,7 @@
       "_origin": "ast",
       "id": "lib_session_server_requireadminmanagerortrainer",
       "community": 16,
-      "community_name": "fsGetAll",
+      "community_name": "server.ts",
       "norm_label": "requireadminmanagerortrainer()"
     },
     {
@@ -11633,8 +11633,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_server_requiretrainer",
-      "community": 91,
-      "community_name": "fsUpdate",
+      "community": 12,
+      "community_name": "fsDelete",
       "norm_label": "requiretrainer()"
     },
     {
@@ -13947,8 +13947,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_approvalrequest",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 91,
+      "community_name": "fsSet",
       "norm_label": "approvalrequest"
     },
     {
@@ -36566,7 +36566,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "components/features/presentation/usePresentation.ts",
-      "source_location": "L34",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_usepresentation_usepresentation",
@@ -50138,5 +50138,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "a4554d6462b746df8c503590a7c6c1042a5f5289"
+  "built_at_commit": "1ed74522e4ffced99fd1dd063cda9f68538b9276"
 }
