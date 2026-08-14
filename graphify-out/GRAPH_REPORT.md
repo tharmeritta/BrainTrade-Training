@@ -1,7 +1,7 @@
 # Graph Report - BrainTrade-Training  (2026-08-14)
 
 ## Corpus Check
-- 300 files · ~170,320 words
+- 300 files · ~170,203 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `18c99e99`
+- Built from commit: `a4554d64`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -69,7 +69,7 @@
 - agy-start.sh
 - LoginForm.tsx
 - CongratulationsCard.tsx
-- typescript
+- postcss
 - ReturningUserBanner.tsx
 - ensure-dev-server.js
 - Karpathy Guidelines
@@ -115,8 +115,8 @@ Cohesion: 0.21
 Nodes (7): BulkImportModal(), BulkImportModalProps, AccessNotes(), AgentSection(), EditState, ROLE_COLORS, StaffSection()
 
 ### Community 2 - "firebase-admin.ts"
-Cohesion: 0.19
-Nodes (13): GET(), GET(), createCustomTokenSafe(), POST(), setSession(), fsGetWhere(), cleanEmail(), cleanId() (+5 more)
+Cohesion: 0.16
+Nodes (14): GET(), createCustomTokenSafe(), POST(), setSession(), GET(), POST(), fsGetWhere(), cleanEmail() (+6 more)
 
 ### Community 3 - "agent-training/index.tsx"
 Cohesion: 0.14
@@ -155,8 +155,8 @@ Cohesion: 0.08
 Nodes (25): firebase, firebase-admin, framer-motion, @google-cloud/storage, @google/generative-ai, lucide-react, next, next-intl (+17 more)
 
 ### Community 12 - "server.ts"
-Cohesion: 0.15
-Nodes (17): GET(), POST(), POST(), GET(), POST(), GET(), POST(), AdminPageContent() (+9 more)
+Cohesion: 0.26
+Nodes (11): GET(), POST(), POST(), hasRole(), requireAdmin(), requireAdminOrIT(), requireAuth(), requireEvaluator() (+3 more)
 
 ### Community 13 - "AdminDashboard.tsx"
 Cohesion: 0.14
@@ -171,8 +171,8 @@ Cohesion: 0.05
 Nodes (42): POST(), maxDuration, POST(), POST(), POST(), DIFF, DIFF_ORDER, EMPTY_FORM (+34 more)
 
 ### Community 16 - "fsGetAll"
-Cohesion: 0.15
-Nodes (12): GET(), GET(), FeedItem, GET(), EMPTY, GET(), normalizeName(), POST() (+4 more)
+Cohesion: 0.11
+Nodes (18): GET(), GET(), FeedItem, GET(), EMPTY, GET(), normalizeName(), POST() (+10 more)
 
 ### Community 17 - "compilerOptions"
 Cohesion: 0.07
@@ -211,8 +211,8 @@ Cohesion: 0.11
 Nodes (21): AuditFlow(), AuditFlowProps, CallSimulatorHud(), CallSimulatorHudProps, ChatView, CoachingCard, ScoreTrend, AiEvaluation() (+13 more)
 
 ### Community 28 - "getAdminDb"
-Cohesion: 0.15
-Nodes (26): DELETE(), GET(), POST(), POST(), POST(), POST(), POST(), PATCH() (+18 more)
+Cohesion: 0.16
+Nodes (25): DELETE(), GET(), POST(), POST(), POST(), POST(), POST(), GET() (+17 more)
 
 ### Community 29 - "seed.mjs"
 Cohesion: 0.39

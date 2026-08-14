@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { getAgentSession } from '@/lib/session/agent';
 import { hasStaffSession } from '@/lib/session/client';
@@ -19,27 +19,19 @@ export default function AgentAuthGuard({
 }) {
   const router   = useRouter();
   const pathname = usePathname();
-  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // If allowStaff is true, we immediately permit access.
     if (allowStaff || hasStaffSession()) {
-      setReady(true);
       return;
     }
 
     const session = getAgentSession();
 
     if (!session) {
-      // Extract locale from path (e.g. /th/quiz → th)
       const locale = pathname.split('/')[1] ?? 'th';
       router.replace(`/${locale}/login/agent`);
-    } else {
-      setReady(true);
     }
   }, [pathname, router, allowStaff]);
-
-  if (!ready) return null;
 
   return <>{children}</>;
 }

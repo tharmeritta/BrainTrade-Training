@@ -90,7 +90,6 @@ export default function NavBar() {
   function handleNavClick(e: React.MouseEvent, href: string) {
     e.preventDefault();
 
-    // Guard navigation logic: check session for non-dashboard routes
     if (href !== '/dashboard') {
       const activeSession = getAgentSession();
       const activeStaff = hasStaffSession();
@@ -101,26 +100,12 @@ export default function NavBar() {
     }
 
     const targetUrl = `/${locale}${href}`;
-
-    // If already on target route, return early
     if (window.location.pathname === targetUrl) {
       return;
     }
 
-    // 1. Instant 0ms visual active tab switch
     setActiveSection(href);
-
-    // 2. Perform shallow window.history.pushState without full page reload
-    window.history.pushState({ path: targetUrl }, '', targetUrl);
-
-    // 3. Dispatch popstate event to notify history/route listeners
-    window.dispatchEvent(new PopStateEvent('popstate', { state: { path: targetUrl } }));
-
-    // 4. Dispatch custom event for UI feedback / progress bar
-    window.dispatchEvent(new Event('nav:start'));
-
-    // 5. Synchronize Next.js URL state without full page reload
-    router.push(targetUrl, { scroll: false });
+    router.push(targetUrl);
   }
 
   function isActive(href: string) {

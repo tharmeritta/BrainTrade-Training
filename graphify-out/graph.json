@@ -10,8 +10,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_locale_admin_page",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "admin/page.tsx"
     },
     {
@@ -22,8 +22,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_locale_admin_page_adminpagecontent",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "adminpagecontent()"
     },
     {
@@ -34,8 +34,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_locale_admin_page_adminpage",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "adminpage()"
     },
     {
@@ -1812,8 +1812,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_ai_eval_config_route",
-      "community": 2,
-      "community_name": "firebase-admin.ts",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "ai-eval/config/route.ts"
     },
     {
@@ -1824,8 +1824,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_ai_eval_config_route_get",
-      "community": 2,
-      "community_name": "firebase-admin.ts",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "get()"
     },
     {
@@ -2171,8 +2171,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_join_route",
-      "community": 28,
-      "community_name": "getAdminDb",
+      "community": 2,
+      "community_name": "firebase-admin.ts",
       "norm_label": "join/route.ts"
     },
     {
@@ -2183,8 +2183,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_join_route_generateinvitecode",
-      "community": 28,
-      "community_name": "getAdminDb",
+      "community": 2,
+      "community_name": "firebase-admin.ts",
       "norm_label": "generateinvitecode()"
     },
     {
@@ -2195,8 +2195,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_join_route_get",
-      "community": 28,
-      "community_name": "getAdminDb",
+      "community": 2,
+      "community_name": "firebase-admin.ts",
       "norm_label": "get()"
     },
     {
@@ -2207,8 +2207,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_join_route_post",
-      "community": 28,
-      "community_name": "getAdminDb",
+      "community": 2,
+      "community_name": "firebase-admin.ts",
       "norm_label": "post()"
     },
     {
@@ -2358,8 +2358,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_trainer_discipline_route",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "discipline/route.ts"
     },
     {
@@ -2370,8 +2370,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_trainer_discipline_route_get",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "get()"
     },
     {
@@ -2382,8 +2382,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_trainer_discipline_route_post",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "post()"
     },
     {
@@ -2463,8 +2463,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_route",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "training-periods/route.ts"
     },
     {
@@ -2475,8 +2475,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_route_get",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "get()"
     },
     {
@@ -2487,8 +2487,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_route_post",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "post()"
     },
     {
@@ -11621,8 +11621,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_server_requireadminmanagerortrainer",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "requireadminmanagerortrainer()"
     },
     {
@@ -12539,8 +12539,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "package_devdependencies_postcss",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 78,
+      "community_name": "postcss",
       "norm_label": "postcss"
     },
     {
@@ -12550,8 +12550,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "postcss",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 78,
+      "community_name": "postcss",
       "norm_label": "postcss"
     },
     {
@@ -12583,8 +12583,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "package_devdependencies_typescript",
-      "community": 78,
-      "community_name": "typescript",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "typescript"
     },
     {
@@ -12594,8 +12594,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "typescript",
-      "community": 78,
-      "community_name": "typescript",
+      "community": 20,
+      "community_name": "devDependencies",
       "norm_label": "typescript"
     },
     {
@@ -40363,7 +40363,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "components/providers/AgentAuthGuard.tsx",
-      "source_location": "L31",
+      "source_location": "L28",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_providers_agentauthguard_agentauthguard",
@@ -40375,7 +40375,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "components/providers/AgentAuthGuard.tsx",
-      "source_location": "L26",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_providers_agentauthguard_agentauthguard",
@@ -50138,5 +50138,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "18c99e9917e044a156abc52dbc0a0122d0a7da86"
+  "built_at_commit": "a4554d6462b746df8c503590a7c6c1042a5f5289"
 }

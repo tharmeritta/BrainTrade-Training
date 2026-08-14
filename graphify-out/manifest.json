@@ -915,8 +915,8 @@
     "semantic_hash": ""
   },
   "components/ui/NavBar.tsx": {
-    "mtime": 1786535598.2815318,
-    "ast_hash": "7734adbc9582662e546e61747761b11a",
+    "mtime": 1786693205.3371012,
+    "ast_hash": "b7fbf8ae20fa3080c93093727a7cb7e7",
     "semantic_hash": ""
   },
   "components/ui/NavigationProgress.tsx": {
@@ -1315,8 +1315,8 @@
     "semantic_hash": ""
   },
   "components/providers/AgentAuthGuard.tsx": {
-    "mtime": 1786174921.9312475,
-    "ast_hash": "c18a9df09f06904ee0919b48408901de",
+    "mtime": 1786693201.609526,
+    "ast_hash": "d7201c3038f6772fd02ff042fc558bbe",
     "semantic_hash": ""
   },
   "components/providers/SessionProvider.tsx": {
