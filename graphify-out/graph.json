@@ -715,8 +715,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_agents_id_route",
-      "community": 10,
-      "community_name": "staff/route.ts",
+      "community": 12,
+      "community_name": "fsUpdate",
       "norm_label": "agents/[id]/route.ts"
     },
     {
@@ -726,8 +726,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "app_api_admin_agents_id_route_patch",
-      "community": 10,
-      "community_name": "staff/route.ts",
+      "community": 12,
+      "community_name": "fsUpdate",
       "norm_label": "patch"
     },
     {
@@ -737,8 +737,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "app_api_admin_agents_id_route_delete",
-      "community": 10,
-      "community_name": "staff/route.ts",
+      "community": 12,
+      "community_name": "fsUpdate",
       "norm_label": "delete"
     },
     {
@@ -900,7 +900,7 @@
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_route_delete",
       "community": 12,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "delete()"
     },
     {
@@ -910,8 +910,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_approvals_route",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 16,
+      "community_name": "server.ts",
       "norm_label": "approvals/route.ts"
     },
     {
@@ -922,8 +922,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_approvals_route_get",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 16,
+      "community_name": "server.ts",
       "norm_label": "get()"
     },
     {
@@ -934,8 +934,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_approvals_route_post",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 16,
+      "community_name": "server.ts",
       "norm_label": "post()"
     },
     {
@@ -1028,8 +1028,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_change_password_route",
-      "community": 2,
-      "community_name": "firebase-admin.ts",
+      "community": 91,
+      "community_name": "fsSet",
       "norm_label": "change-password/route.ts"
     },
     {
@@ -1040,8 +1040,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_change_password_route_post",
-      "community": 2,
-      "community_name": "firebase-admin.ts",
+      "community": 91,
+      "community_name": "fsSet",
       "norm_label": "post()"
     },
     {
@@ -1120,8 +1120,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_config_route",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 12,
+      "community_name": "fsUpdate",
       "norm_label": "admin/config/route.ts"
     },
     {
@@ -1132,8 +1132,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_config_route_get",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 12,
+      "community_name": "fsUpdate",
       "norm_label": "get()"
     },
     {
@@ -1144,8 +1144,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_config_route_patch",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 12,
+      "community_name": "fsUpdate",
       "norm_label": "patch()"
     },
     {
@@ -1327,8 +1327,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_live_feed_route",
-      "community": 16,
-      "community_name": "server.ts",
+      "community": 21,
+      "community_name": "fsGetAll",
       "norm_label": "live-feed/route.ts"
     },
     {
@@ -1340,8 +1340,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "app_api_admin_live_feed_route_feeditem",
-      "community": 16,
-      "community_name": "server.ts",
+      "community": 21,
+      "community_name": "fsGetAll",
       "norm_label": "feeditem"
     },
     {
@@ -1352,8 +1352,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_live_feed_route_get",
-      "community": 16,
-      "community_name": "server.ts",
+      "community": 21,
+      "community_name": "fsGetAll",
       "norm_label": "get()"
     },
     {
@@ -1363,8 +1363,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_overview_route",
-      "community": 16,
-      "community_name": "server.ts",
+      "community": 21,
+      "community_name": "fsGetAll",
       "norm_label": "overview/route.ts"
     },
     {
@@ -1374,8 +1374,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "app_api_admin_overview_route_empty",
-      "community": 16,
-      "community_name": "server.ts",
+      "community": 21,
+      "community_name": "fsGetAll",
       "norm_label": "empty"
     },
     {
@@ -1386,8 +1386,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_overview_route_get",
-      "community": 16,
-      "community_name": "server.ts",
+      "community": 21,
+      "community_name": "fsGetAll",
       "norm_label": "get()"
     },
     {
@@ -1431,8 +1431,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route",
-      "community": 21,
-      "community_name": "fsGetAll",
+      "community": 91,
+      "community_name": "fsSet",
       "norm_label": "seed-mock-agents/route.ts"
     },
     {
@@ -1442,8 +1442,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route_mockup_agents",
-      "community": 21,
-      "community_name": "fsGetAll",
+      "community": 91,
+      "community_name": "fsSet",
       "norm_label": "mockup_agents"
     },
     {
@@ -1454,8 +1454,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route_post",
-      "community": 21,
-      "community_name": "fsGetAll",
+      "community": 91,
+      "community_name": "fsSet",
       "norm_label": "post()"
     },
     {
@@ -1466,8 +1466,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route_get",
-      "community": 21,
-      "community_name": "fsGetAll",
+      "community": 91,
+      "community_name": "fsSet",
       "norm_label": "get()"
     },
     {
@@ -1500,8 +1500,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_staff_id_route",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 12,
+      "community_name": "fsUpdate",
       "norm_label": "staff/[id]/route.ts"
     },
     {
@@ -1512,8 +1512,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_staff_id_route_patch",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 12,
+      "community_name": "fsUpdate",
       "norm_label": "patch()"
     },
     {
@@ -1524,8 +1524,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_staff_id_route_delete",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 12,
+      "community_name": "fsUpdate",
       "norm_label": "delete()"
     },
     {
@@ -1731,8 +1731,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_agents_route",
-      "community": 16,
-      "community_name": "server.ts",
+      "community": 21,
+      "community_name": "fsGetAll",
       "norm_label": "api/agents/route.ts"
     },
     {
@@ -1743,8 +1743,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_agents_route_get",
-      "community": 16,
-      "community_name": "server.ts",
+      "community": 21,
+      "community_name": "fsGetAll",
       "norm_label": "get()"
     },
     {
@@ -1777,8 +1777,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_ai_eval_active_route",
-      "community": 12,
-      "community_name": "fsDelete",
+      "community": 22,
+      "community_name": "db.ts",
       "norm_label": "active/route.ts"
     },
     {
@@ -1789,8 +1789,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_ai_eval_active_route_get",
-      "community": 12,
-      "community_name": "fsDelete",
+      "community": 22,
+      "community_name": "db.ts",
       "norm_label": "get()"
     },
     {
@@ -1801,8 +1801,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_ai_eval_active_route_delete",
-      "community": 12,
-      "community_name": "fsDelete",
+      "community": 22,
+      "community_name": "db.ts",
       "norm_label": "delete()"
     },
     {
@@ -2324,7 +2324,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_discipline_id_route",
       "community": 12,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "discipline/[id]/route.ts"
     },
     {
@@ -2336,7 +2336,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_discipline_id_route_patch",
       "community": 12,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "patch()"
     },
     {
@@ -2348,7 +2348,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_discipline_id_route_delete",
       "community": 12,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "delete()"
     },
     {
@@ -2394,7 +2394,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_days_route",
       "community": 12,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "days/route.ts"
     },
     {
@@ -2406,7 +2406,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_days_route_get",
       "community": 12,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "get()"
     },
     {
@@ -2418,7 +2418,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_days_route_post",
       "community": 12,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "post()"
     },
     {
@@ -2429,7 +2429,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_route",
       "community": 12,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "training-periods/[id]/route.ts"
     },
     {
@@ -2441,7 +2441,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_route_patch",
       "community": 12,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "patch()"
     },
     {
@@ -2453,7 +2453,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_route_delete",
       "community": 12,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "delete()"
     },
     {
@@ -10367,8 +10367,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fsquery",
-      "community": 16,
-      "community_name": "server.ts",
+      "community": 21,
+      "community_name": "fsGetAll",
       "norm_label": "fsquery()"
     },
     {
@@ -10379,8 +10379,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fscount",
-      "community": 16,
-      "community_name": "server.ts",
+      "community": 21,
+      "community_name": "fsGetAll",
       "norm_label": "fscount()"
     },
     {
@@ -10403,8 +10403,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fsupdate",
-      "community": 28,
-      "community_name": "getAdminDb",
+      "community": 12,
+      "community_name": "fsUpdate",
       "norm_label": "fsupdate()"
     },
     {
@@ -10415,8 +10415,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fsupdatemany",
-      "community": 10,
-      "community_name": "staff/route.ts",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "fsupdatemany()"
     },
     {
@@ -10428,7 +10428,7 @@
       "_origin": "ast",
       "id": "lib_server_db_fsdelete",
       "community": 12,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "fsdelete()"
     },
     {
@@ -10840,8 +10840,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_services_approval_service",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 12,
+      "community_name": "fsUpdate",
       "norm_label": "approval-service.ts"
     },
     {
@@ -10852,8 +10852,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_approval_service_createapprovalrequest",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 12,
+      "community_name": "fsUpdate",
       "norm_label": "createapprovalrequest()"
     },
     {
@@ -10864,8 +10864,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_approval_service_resolveapprovalrequest",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 12,
+      "community_name": "fsUpdate",
       "norm_label": "resolveapprovalrequest()"
     },
     {
@@ -10876,8 +10876,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_approval_service_executeapprovedaction",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 12,
+      "community_name": "fsUpdate",
       "norm_label": "executeapprovedaction()"
     },
     {
@@ -11236,8 +11236,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_stats_service_updateglobalagentcounts",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 12,
+      "community_name": "fsUpdate",
       "norm_label": "updateglobalagentcounts()"
     },
     {
@@ -11272,8 +11272,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_stats_service_getglobalstats",
-      "community": 16,
-      "community_name": "server.ts",
+      "community": 21,
+      "community_name": "fsGetAll",
       "norm_label": "getglobalstats()"
     },
     {
@@ -11537,8 +11537,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_server_makesessiontoken",
-      "community": 2,
-      "community_name": "firebase-admin.ts",
+      "community": 91,
+      "community_name": "fsSet",
       "norm_label": "makesessiontoken()"
     },
     {
@@ -11561,8 +11561,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_server_requireadmin",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 16,
+      "community_name": "server.ts",
       "norm_label": "requireadmin()"
     },
     {
@@ -11597,8 +11597,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_server_requireadminormanager",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 12,
+      "community_name": "fsUpdate",
       "norm_label": "requireadminormanager()"
     },
     {
@@ -11634,7 +11634,7 @@
       "_origin": "ast",
       "id": "lib_session_server_requiretrainer",
       "community": 12,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "requiretrainer()"
     },
     {
@@ -13947,8 +13947,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_approvalrequest",
-      "community": 91,
-      "community_name": "fsSet",
+      "community": 16,
+      "community_name": "server.ts",
       "norm_label": "approvalrequest"
     },
     {
@@ -14164,7 +14164,7 @@
       "label": "2. Directory Architecture & Topology",
       "file_type": "document",
       "source_file": "handoff.md",
-      "source_location": "L40",
+      "source_location": "L49",
       "_origin": "ast",
       "id": "handoff_2_directory_architecture_topology",
       "community": 72,
@@ -14175,7 +14175,7 @@
       "label": "3. Core Architectural Conventions & Guidelines",
       "file_type": "document",
       "source_file": "handoff.md",
-      "source_location": "L82",
+      "source_location": "L91",
       "_origin": "ast",
       "id": "handoff_3_core_architectural_conventions_guidelines",
       "community": 72,
@@ -14186,7 +14186,7 @@
       "label": "1. Anti-Hardcoding Rules (Mandatory Compliance)",
       "file_type": "document",
       "source_file": "handoff.md",
-      "source_location": "L84",
+      "source_location": "L93",
       "_origin": "ast",
       "id": "handoff_1_anti_hardcoding_rules_mandatory_compliance",
       "community": 72,
@@ -14197,7 +14197,7 @@
       "label": "2. Audio & Haptic User Feedback",
       "file_type": "document",
       "source_file": "handoff.md",
-      "source_location": "L89",
+      "source_location": "L98",
       "_origin": "ast",
       "id": "handoff_2_audio_haptic_user_feedback",
       "community": 72,
@@ -14208,7 +14208,7 @@
       "label": "3. Session & Access Control",
       "file_type": "document",
       "source_file": "handoff.md",
-      "source_location": "L93",
+      "source_location": "L102",
       "_origin": "ast",
       "id": "handoff_3_session_access_control",
       "community": 72,
@@ -14219,7 +14219,7 @@
       "label": "4. Primary Knowledge Graph God Nodes (Graphify)",
       "file_type": "document",
       "source_file": "handoff.md",
-      "source_location": "L100",
+      "source_location": "L109",
       "_origin": "ast",
       "id": "handoff_4_primary_knowledge_graph_god_nodes_graphify",
       "community": 72,
@@ -14230,7 +14230,7 @@
       "label": "5. Outstanding Tasks & Roadmap for `hands-on-agent`",
       "file_type": "document",
       "source_file": "handoff.md",
-      "source_location": "L113",
+      "source_location": "L122",
       "_origin": "ast",
       "id": "handoff_5_outstanding_tasks_roadmap_for_hands_on_agent",
       "community": 72,
@@ -14241,7 +14241,7 @@
       "label": "\ud83d\udccb Priority Action Items:",
       "file_type": "document",
       "source_file": "handoff.md",
-      "source_location": "L115",
+      "source_location": "L124",
       "_origin": "ast",
       "id": "handoff_priority_action_items",
       "community": 72,
@@ -14252,7 +14252,7 @@
       "label": "6. Execution Directives for `hands-on-agent`",
       "file_type": "document",
       "source_file": "handoff.md",
-      "source_location": "L127",
+      "source_location": "L136",
       "_origin": "ast",
       "id": "handoff_6_execution_directives_for_hands_on_agent",
       "community": 72,
@@ -14263,7 +14263,7 @@
       "label": "7. Quick Commands Reference",
       "file_type": "document",
       "source_file": "handoff.md",
-      "source_location": "L153",
+      "source_location": "L162",
       "_origin": "ast",
       "id": "handoff_7_quick_commands_reference",
       "community": 72,
@@ -49947,7 +49947,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "handoff.md",
-      "source_location": "L40",
+      "source_location": "L49",
       "weight": 1.0,
       "_origin": "ast",
       "source": "handoff_braintrade_training_platform_system_handoff_architecture_guide",
@@ -49958,7 +49958,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "handoff.md",
-      "source_location": "L82",
+      "source_location": "L91",
       "weight": 1.0,
       "_origin": "ast",
       "source": "handoff_braintrade_training_platform_system_handoff_architecture_guide",
@@ -49969,7 +49969,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "handoff.md",
-      "source_location": "L100",
+      "source_location": "L109",
       "weight": 1.0,
       "_origin": "ast",
       "source": "handoff_braintrade_training_platform_system_handoff_architecture_guide",
@@ -49980,7 +49980,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "handoff.md",
-      "source_location": "L113",
+      "source_location": "L122",
       "weight": 1.0,
       "_origin": "ast",
       "source": "handoff_braintrade_training_platform_system_handoff_architecture_guide",
@@ -49991,7 +49991,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "handoff.md",
-      "source_location": "L127",
+      "source_location": "L136",
       "weight": 1.0,
       "_origin": "ast",
       "source": "handoff_braintrade_training_platform_system_handoff_architecture_guide",
@@ -50002,7 +50002,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "handoff.md",
-      "source_location": "L153",
+      "source_location": "L162",
       "weight": 1.0,
       "_origin": "ast",
       "source": "handoff_braintrade_training_platform_system_handoff_architecture_guide",
@@ -50024,7 +50024,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "handoff.md",
-      "source_location": "L84",
+      "source_location": "L93",
       "weight": 1.0,
       "_origin": "ast",
       "source": "handoff_3_core_architectural_conventions_guidelines",
@@ -50035,7 +50035,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "handoff.md",
-      "source_location": "L89",
+      "source_location": "L98",
       "weight": 1.0,
       "_origin": "ast",
       "source": "handoff_3_core_architectural_conventions_guidelines",
@@ -50046,7 +50046,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "handoff.md",
-      "source_location": "L93",
+      "source_location": "L102",
       "weight": 1.0,
       "_origin": "ast",
       "source": "handoff_3_core_architectural_conventions_guidelines",
@@ -50057,7 +50057,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "handoff.md",
-      "source_location": "L115",
+      "source_location": "L124",
       "weight": 1.0,
       "_origin": "ast",
       "source": "handoff_5_outstanding_tasks_roadmap_for_hands_on_agent",
@@ -50138,5 +50138,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "1ed74522e4ffced99fd1dd063cda9f68538b9276"
+  "built_at_commit": "e58021757ad39d9058362ebefff9f153864a3874"
 }

@@ -35,6 +35,15 @@ The **BrainTrade Training Platform** is an enterprise-grade Next.js (App Router)
    - **Wave Invite Code Generator**: Auto-generates unique `WAVE-XXXX` codes in [`NewPeriodModal.tsx`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/components/features/trainer/NewPeriodModal.tsx) and [`app/api/trainer/training-periods/route.ts`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/app/api/trainer/training-periods/route.ts).
    - **Public Join Portal ([`app/[locale]/join/page.tsx`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/app/%5Blocale%5D/join/page.tsx))**: Trainees enter invite code and full name for self-registration. Realtime API validation at [`app/api/join/route.ts`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/app/api/join/route.ts).
 
+6. **Firebase App Hosting & Learn Performance Optimization**:
+   - **Cold Start Prevention ([`apphosting.yaml`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/apphosting.yaml))**: Adjusted `minInstances: 1` to eliminate Cloud Run 0-instance cold starts.
+   - **Server-Side Data Caching ([`lib/server/courses.ts`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/lib/server/courses.ts))**: Wrapped course module queries with Next.js `unstable_cache` (1-hour revalidation tag `course-modules`) and React `cache()`.
+   - **Render Gate & Admin Preview Fast-Path ([`AgentAuthGuard.tsx`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/components/providers/AgentAuthGuard.tsx), [`lib/agents.ts`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/lib/agents.ts))**: Removed blocking `ready` state gate to prevent blank screens on refresh, and short-circuited virtual `'admin-preview-agent'` stats calculations to 0ms latency.
+
+7. **Agent Suite Thai Localization Default**:
+   - Verified system global default locale is `th` (`DEFAULT_LOCALE = 'th'`).
+   - Localized course catalogue badges, loading spinners, presentation slide initializers (`initialLang: lang === 'en' ? 'en' : 'th'`), and locked quiz modals in [`messages/th.json`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/messages/th.json).
+
 ---
 
 ## 2. Directory Architecture & Topology
