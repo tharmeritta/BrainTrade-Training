@@ -53,18 +53,18 @@ export function computeOverallScore(
 
 export async function getAgentStats(agentId: string, agentName: string, targetPeriodId?: string): Promise<AgentStats> {
   const modules = TRAINING_REGISTRY.quiz.required;
-  // Handle Mockup Agent
-  if (agentId === MOCKUP_AGENT_ID) {
+  // Handle Mockup Agent & Admin Preview Agent
+  if (agentId === MOCKUP_AGENT_ID || agentId === 'admin-preview-agent') {
     const partialMock: any = {
-      agent: { id: MOCKUP_AGENT_ID, name: agentName || 'Mockup Agent', active: true, createdAt: new Date() },
+      agent: { id: agentId, name: agentName || 'Admin Preview Agent', active: true, createdAt: new Date() },
       quiz: {
-        foundation: { bestScore: 90, passed: true, attempts: 1, history: [{ score: 9, total: 10, passed: true, timestamp: new Date().toISOString() }] }
+        foundation: { bestScore: 100, passed: true, attempts: 1, history: [{ score: 10, total: 10, passed: true, timestamp: new Date().toISOString() }] }
       },
       aiEval: null,
       lastActive: new Date().toISOString(),
-      evalCompletedLevels: [],
+      evalCompletedLevels: [1, 2, 3, 4],
       evalPassedScenarios: [],
-      learnedModules: ['product'],
+      learnedModules: ['foundation', 'product', 'compliance', 'closing'],
       humanEvaluations: [],
       activeScenariosCount: 3,
     };
