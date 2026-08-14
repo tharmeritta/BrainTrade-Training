@@ -377,7 +377,7 @@ export default function CourseHub({ initialModules }: { initialModules: CourseMo
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <Loader2 className="animate-spin text-primary" size={32} />
-            <p className="text-sm text-muted-foreground animate-pulse">Loading academy...</p>
+            <p className="text-sm text-muted-foreground animate-pulse">{t('loadingPreview') || 'กำลังโหลด...'}</p>
           </div>
         ) : (
           <motion.div 

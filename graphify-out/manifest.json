@@ -110,8 +110,8 @@
     "semantic_hash": "a9439b9a55ef4bd41111b801cc5702ce"
   },
   "app/[locale]/quiz/page.tsx": {
-    "mtime": 1786515937.6507127,
-    "ast_hash": "eb2fb9ee2b41e27850706b461760d939",
+    "mtime": 1786698246.8663528,
+    "ast_hash": "7b201a0698b84ed60a16c3b099fb81ab",
     "semantic_hash": ""
   },
   "app/api/admin/agents/[id]/route.ts": {
@@ -845,8 +845,8 @@
     "semantic_hash": ""
   },
   "components/features/quiz/index.tsx": {
-    "mtime": 1786445415.844084,
-    "ast_hash": "25a42db82b5c6ea84036c3577fae2c61",
+    "mtime": 1786698251.987997,
+    "ast_hash": "d7f4e0b0a8dec89c174cd91d6f9c601d",
     "semantic_hash": ""
   },
   "components/features/quiz/shared.ts": {
@@ -1155,8 +1155,8 @@
     "semantic_hash": ""
   },
   "messages/th.json": {
-    "mtime": 1786524603.3975625,
-    "ast_hash": "6d1e971d782e656a41979f0245bec572",
+    "mtime": 1786698233.5212803,
+    "ast_hash": "ce3ddd6bb48f50facf45484e2f79ad4b",
     "semantic_hash": ""
   },
   "next-env.d.ts": {
@@ -1295,8 +1295,8 @@
     "semantic_hash": "8bd478bb8ac98a2b1d064f3a9eab9b93"
   },
   "components/features/courses/CourseHub.tsx": {
-    "mtime": 1786697024.0252938,
-    "ast_hash": "8bfd581805c880abd666096d4109599f",
+    "mtime": 1786698242.140448,
+    "ast_hash": "0d0fbb65468ec0f00760f097f1f6e9dd",
     "semantic_hash": ""
   },
   "components/features/evaluator/EvaluatorDashboard.tsx": {

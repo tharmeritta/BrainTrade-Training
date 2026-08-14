@@ -536,7 +536,7 @@
     }
   },
   "courseHub": {
-    "internalAcademy": "Internal Academy",
+    "internalAcademy": "ศูนย์การเรียนรู้ภายใน",
     "title": "คอร์สอบรมพนักงาน",
     "subtitle": "เลือกบทเรียนเพื่อเริ่มฝึกอบรมและยกระดับทักษะการขายของคุณ",
     "slides": "สไลด์",
@@ -546,8 +546,8 @@
     "en": "EN",
     "thai": "ไทย",
     "english": "อังกฤษ",
-    "infrastructure": "BrainTrade Training Infrastructure",
-    "proprietary": "Proprietary Material.",
+    "infrastructure": "โครงสร้างพื้นฐานระบบฝึกอบรม BrainTrade",
+    "proprietary": "เอกสารและเนื้อหาสงวนลิขสิทธิ์เฉพาะภายใน",
     "loadingPreview": "กำลังโหลด...",
     "trainingModule": "โมดูลการฝึกอบรม",
     "trainingModules": "โมดูลการฝึกอบรม",

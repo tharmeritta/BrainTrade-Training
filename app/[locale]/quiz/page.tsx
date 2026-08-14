@@ -395,23 +395,23 @@ export default function QuizIndexPage() {
                 <BookOpen size={26} className="text-amber-600 dark:text-amber-400" />
               </div>
               <h2 className="text-lg font-black text-foreground mb-2 tracking-tight">
-                Complete a lesson first
+                กรุณาเข้าเรียนเนื้อหาก่อน
               </h2>
               <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-                You need to finish at least one learning module before taking a quiz. Head to the <strong className="text-foreground">Learn</strong> section to get started.
+                คุณจำเป็นต้องเรียนจบอย่างน้อย 1 โมดูลบทเรียนก่อนเริ่มทำแบบทดสอบ ไปที่หัวข้อ <strong className="text-foreground">เรียนรู้</strong> เพื่อเริ่มต้นศึกษา
               </p>
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => router.push(`/${locale}/learn`)}
                   className="w-full bg-primary text-primary-foreground py-3 min-h-[44px] flex items-center justify-center rounded-xl text-sm font-black hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95"
                 >
-                  Go to Learn
+                  ไปที่หน้าเรียนรู้
                 </button>
                 <button
                   onClick={() => setShowLockedModal(false)}
                   className="w-full py-2.5 min-h-[44px] flex items-center justify-center rounded-xl text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                 >
-                  Maybe Later
+                  ไว้ทีหลัง
                 </button>
               </div>
             </motion.div>
