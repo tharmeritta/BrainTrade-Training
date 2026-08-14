@@ -10,8 +10,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_locale_admin_page",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 12,
+      "community_name": "server.ts",
       "norm_label": "admin/page.tsx"
     },
     {
@@ -22,8 +22,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_locale_admin_page_adminpagecontent",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 12,
+      "community_name": "server.ts",
       "norm_label": "adminpagecontent()"
     },
     {
@@ -34,8 +34,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_locale_admin_page_adminpage",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 12,
+      "community_name": "server.ts",
       "norm_label": "adminpage()"
     },
     {
@@ -172,8 +172,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_locale_demo_page",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "demo/page.tsx"
     },
     {
@@ -184,8 +184,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_locale_demo_page_standaloneclientdemopage",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "standaloneclientdemopage()"
     },
     {
@@ -483,8 +483,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_locale_login_page",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community": 6,
+      "community_name": "TrainingPeriod",
       "norm_label": "login/page.tsx"
     },
     {
@@ -496,8 +496,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "app_locale_login_page_tab",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community": 6,
+      "community_name": "TrainingPeriod",
       "norm_label": "tab"
     },
     {
@@ -508,8 +508,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_locale_login_page_loginpage",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community": 6,
+      "community_name": "TrainingPeriod",
       "norm_label": "loginpage()"
     },
     {
@@ -577,8 +577,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_locale_quiz_layout",
-      "community": 5,
-      "community_name": "agent.ts",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "quiz/layout.tsx"
     },
     {
@@ -589,8 +589,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_locale_quiz_layout_quizlayout",
-      "community": 5,
-      "community_name": "agent.ts",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "quizlayout()"
     },
     {
@@ -715,8 +715,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_agents_id_route",
-      "community": 10,
-      "community_name": "staff/route.ts",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "agents/[id]/route.ts"
     },
     {
@@ -726,8 +726,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "app_api_admin_agents_id_route_patch",
-      "community": 10,
-      "community_name": "staff/route.ts",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "patch"
     },
     {
@@ -737,8 +737,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "app_api_admin_agents_id_route_delete",
-      "community": 10,
-      "community_name": "staff/route.ts",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "delete"
     },
     {
@@ -749,7 +749,7 @@
       "_origin": "ast",
       "id": "app_api_admin_agents_override_route",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "override/route.ts"
     },
     {
@@ -761,7 +761,7 @@
       "_origin": "ast",
       "id": "app_api_admin_agents_override_route_get",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "get()"
     },
     {
@@ -773,7 +773,7 @@
       "_origin": "ast",
       "id": "app_api_admin_agents_override_route_post",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "post()"
     },
     {
@@ -785,7 +785,7 @@
       "_origin": "ast",
       "id": "app_api_admin_agents_override_route_delete",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "delete()"
     },
     {
@@ -829,7 +829,7 @@
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_generate_route",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": "generate/route.ts"
     },
     {
@@ -841,7 +841,7 @@
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_generate_route_post",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": "post()"
     },
     {
@@ -852,7 +852,7 @@
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_route",
       "community": 21,
-      "community_name": "getServerUser",
+      "community_name": "fsSet",
       "norm_label": "ai-scenarios/route.ts"
     },
     {
@@ -863,8 +863,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_route_get",
-      "community": 16,
-      "community_name": "getAdminDb",
+      "community": 21,
+      "community_name": "fsSet",
       "norm_label": "get()"
     },
     {
@@ -876,7 +876,7 @@
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_route_post",
       "community": 21,
-      "community_name": "getServerUser",
+      "community_name": "fsSet",
       "norm_label": "post()"
     },
     {
@@ -888,7 +888,7 @@
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_route_patch",
       "community": 21,
-      "community_name": "getServerUser",
+      "community_name": "fsSet",
       "norm_label": "patch()"
     },
     {
@@ -899,8 +899,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_ai_scenarios_route_delete",
-      "community": 21,
-      "community_name": "getServerUser",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "delete()"
     },
     {
@@ -946,7 +946,7 @@
       "_origin": "ast",
       "id": "app_api_admin_bulk_progress_route",
       "community": 21,
-      "community_name": "getServerUser",
+      "community_name": "fsSet",
       "norm_label": "bulk-progress/route.ts"
     },
     {
@@ -959,7 +959,7 @@
       "_origin": "ast",
       "id": "app_api_admin_bulk_progress_route_progressrecord",
       "community": 21,
-      "community_name": "getServerUser",
+      "community_name": "fsSet",
       "norm_label": "progressrecord"
     },
     {
@@ -971,7 +971,7 @@
       "_origin": "ast",
       "id": "app_api_admin_bulk_progress_route_defaults",
       "community": 21,
-      "community_name": "getServerUser",
+      "community_name": "fsSet",
       "norm_label": "defaults()"
     },
     {
@@ -983,7 +983,7 @@
       "_origin": "ast",
       "id": "app_api_admin_bulk_progress_route_post",
       "community": 21,
-      "community_name": "getServerUser",
+      "community_name": "fsSet",
       "norm_label": "post()"
     },
     {
@@ -993,8 +993,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_certificate_config_route",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 12,
+      "community_name": "server.ts",
       "norm_label": "certificate-config/route.ts"
     },
     {
@@ -1005,8 +1005,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_certificate_config_route_get",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 12,
+      "community_name": "server.ts",
       "norm_label": "get()"
     },
     {
@@ -1017,8 +1017,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_certificate_config_route_post",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 12,
+      "community_name": "server.ts",
       "norm_label": "post()"
     },
     {
@@ -1029,7 +1029,7 @@
       "_origin": "ast",
       "id": "app_api_admin_change_password_route",
       "community": 21,
-      "community_name": "getServerUser",
+      "community_name": "fsSet",
       "norm_label": "change-password/route.ts"
     },
     {
@@ -1041,7 +1041,7 @@
       "_origin": "ast",
       "id": "app_api_admin_change_password_route_post",
       "community": 21,
-      "community_name": "getServerUser",
+      "community_name": "fsSet",
       "norm_label": "post()"
     },
     {
@@ -1051,8 +1051,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_config_diagnostics_ai_audit_route",
-      "community": 21,
-      "community_name": "getServerUser",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "diagnostics/ai-audit/route.ts"
     },
     {
@@ -1063,8 +1063,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_config_diagnostics_ai_audit_route_post",
-      "community": 21,
-      "community_name": "getServerUser",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "post()"
     },
     {
@@ -1075,7 +1075,7 @@
       "_origin": "ast",
       "id": "app_api_admin_config_diagnostics_route",
       "community": 16,
-      "community_name": "getAdminDb",
+      "community_name": "fsGetAll",
       "norm_label": "diagnostics/route.ts"
     },
     {
@@ -1087,7 +1087,7 @@
       "_origin": "ast",
       "id": "app_api_admin_config_diagnostics_route_get",
       "community": 16,
-      "community_name": "getAdminDb",
+      "community_name": "fsGetAll",
       "norm_label": "get()"
     },
     {
@@ -1098,7 +1098,7 @@
       "_origin": "ast",
       "id": "app_api_admin_config_repair_route",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "repair/route.ts"
     },
     {
@@ -1110,7 +1110,7 @@
       "_origin": "ast",
       "id": "app_api_admin_config_repair_route_post",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "post()"
     },
     {
@@ -1120,8 +1120,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_config_route",
-      "community": 16,
-      "community_name": "getAdminDb",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "admin/config/route.ts"
     },
     {
@@ -1132,8 +1132,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_config_route_get",
-      "community": 16,
-      "community_name": "getAdminDb",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "get()"
     },
     {
@@ -1144,8 +1144,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_config_route_patch",
-      "community": 16,
-      "community_name": "getAdminDb",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "patch()"
     },
     {
@@ -1167,7 +1167,7 @@
       "_origin": "ast",
       "id": "app_api_admin_evaluations_route",
       "community": 16,
-      "community_name": "getAdminDb",
+      "community_name": "fsGetAll",
       "norm_label": "admin/evaluations/route.ts"
     },
     {
@@ -1179,7 +1179,7 @@
       "_origin": "ast",
       "id": "app_api_admin_evaluations_route_get",
       "community": 16,
-      "community_name": "getAdminDb",
+      "community_name": "fsGetAll",
       "norm_label": "get()"
     },
     {
@@ -1189,8 +1189,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_export_staff_route",
-      "community": 16,
-      "community_name": "getAdminDb",
+      "community": 22,
+      "community_name": "db.ts",
       "norm_label": "export-staff/route.ts"
     },
     {
@@ -1201,8 +1201,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_export_staff_route_get",
-      "community": 16,
-      "community_name": "getAdminDb",
+      "community": 22,
+      "community_name": "db.ts",
       "norm_label": "get()"
     },
     {
@@ -1327,8 +1327,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_live_feed_route",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "live-feed/route.ts"
     },
     {
@@ -1340,8 +1340,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "app_api_admin_live_feed_route_feeditem",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "feeditem"
     },
     {
@@ -1352,8 +1352,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_live_feed_route_get",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "get()"
     },
     {
@@ -1363,8 +1363,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_overview_route",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "overview/route.ts"
     },
     {
@@ -1374,8 +1374,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "app_api_admin_overview_route_empty",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "empty"
     },
     {
@@ -1386,8 +1386,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_overview_route_get",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "get()"
     },
     {
@@ -1398,7 +1398,7 @@
       "_origin": "ast",
       "id": "app_api_admin_parse_quiz_route",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": "parse-quiz/route.ts"
     },
     {
@@ -1409,7 +1409,7 @@
       "_origin": "ast",
       "id": "app_api_admin_parse_quiz_route_maxduration",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": "maxduration"
     },
     {
@@ -1421,7 +1421,7 @@
       "_origin": "ast",
       "id": "app_api_admin_parse_quiz_route_post",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": "post()"
     },
     {
@@ -1431,8 +1431,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route",
-      "community": 19,
-      "community_name": "Agent",
+      "community": 21,
+      "community_name": "fsSet",
       "norm_label": "seed-mock-agents/route.ts"
     },
     {
@@ -1442,8 +1442,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route_mockup_agents",
-      "community": 19,
-      "community_name": "Agent",
+      "community": 21,
+      "community_name": "fsSet",
       "norm_label": "mockup_agents"
     },
     {
@@ -1454,8 +1454,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route_post",
-      "community": 19,
-      "community_name": "Agent",
+      "community": 21,
+      "community_name": "fsSet",
       "norm_label": "post()"
     },
     {
@@ -1466,8 +1466,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_seed_mock_agents_route_get",
-      "community": 19,
-      "community_name": "Agent",
+      "community": 21,
+      "community_name": "fsSet",
       "norm_label": "get()"
     },
     {
@@ -1477,8 +1477,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_seed_route",
-      "community": 16,
-      "community_name": "getAdminDb",
+      "community": 22,
+      "community_name": "db.ts",
       "norm_label": "seed/route.ts"
     },
     {
@@ -1489,8 +1489,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_seed_route_post",
-      "community": 16,
-      "community_name": "getAdminDb",
+      "community": 22,
+      "community_name": "db.ts",
       "norm_label": "post()"
     },
     {
@@ -1500,8 +1500,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_admin_staff_id_route",
-      "community": 16,
-      "community_name": "getAdminDb",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "staff/[id]/route.ts"
     },
     {
@@ -1512,8 +1512,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_staff_id_route_patch",
-      "community": 16,
-      "community_name": "getAdminDb",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "patch()"
     },
     {
@@ -1524,8 +1524,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_admin_staff_id_route_delete",
-      "community": 16,
-      "community_name": "getAdminDb",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "delete()"
     },
     {
@@ -1580,7 +1580,7 @@
       "_origin": "ast",
       "id": "app_api_admin_training_finalize_route",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "finalize/route.ts"
     },
     {
@@ -1592,7 +1592,7 @@
       "_origin": "ast",
       "id": "app_api_admin_training_finalize_route_post",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "post()"
     },
     {
@@ -1603,7 +1603,7 @@
       "_origin": "ast",
       "id": "app_api_agent_acknowledge_route",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "acknowledge/route.ts"
     },
     {
@@ -1615,7 +1615,7 @@
       "_origin": "ast",
       "id": "app_api_agent_acknowledge_route_post",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "post()"
     },
     {
@@ -1626,7 +1626,7 @@
       "_origin": "ast",
       "id": "app_api_agent_certificate_email_route",
       "community": 22,
-      "community_name": "fsAdd",
+      "community_name": "db.ts",
       "norm_label": "email/route.ts"
     },
     {
@@ -1638,7 +1638,7 @@
       "_origin": "ast",
       "id": "app_api_agent_certificate_email_route_post",
       "community": 22,
-      "community_name": "fsAdd",
+      "community_name": "db.ts",
       "norm_label": "post()"
     },
     {
@@ -1649,7 +1649,7 @@
       "_origin": "ast",
       "id": "app_api_agent_progress_route",
       "community": 22,
-      "community_name": "fsAdd",
+      "community_name": "db.ts",
       "norm_label": "progress/route.ts"
     },
     {
@@ -1662,7 +1662,7 @@
       "_origin": "ast",
       "id": "app_api_agent_progress_route_progressrecord",
       "community": 22,
-      "community_name": "fsAdd",
+      "community_name": "db.ts",
       "norm_label": "progressrecord"
     },
     {
@@ -1674,7 +1674,7 @@
       "_origin": "ast",
       "id": "app_api_agent_progress_route_defaults",
       "community": 22,
-      "community_name": "fsAdd",
+      "community_name": "db.ts",
       "norm_label": "defaults()"
     },
     {
@@ -1685,8 +1685,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_agent_progress_route_get",
-      "community": 7,
-      "community_name": "agents.ts",
+      "community": 22,
+      "community_name": "db.ts",
       "norm_label": "get()"
     },
     {
@@ -1698,7 +1698,7 @@
       "_origin": "ast",
       "id": "app_api_agent_progress_route_post",
       "community": 22,
-      "community_name": "fsAdd",
+      "community_name": "db.ts",
       "norm_label": "post()"
     },
     {
@@ -1731,8 +1731,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_agents_route",
-      "community": 19,
-      "community_name": "Agent",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "api/agents/route.ts"
     },
     {
@@ -1743,8 +1743,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_agents_route_get",
-      "community": 19,
-      "community_name": "Agent",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "get()"
     },
     {
@@ -1755,7 +1755,7 @@
       "_origin": "ast",
       "id": "app_api_ai_audit_route",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": "api/ai-audit/route.ts"
     },
     {
@@ -1767,7 +1767,7 @@
       "_origin": "ast",
       "id": "app_api_ai_audit_route_post",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": "post()"
     },
     {
@@ -1777,8 +1777,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_ai_eval_active_route",
-      "community": 91,
-      "community_name": "fsDelete",
+      "community": 22,
+      "community_name": "db.ts",
       "norm_label": "active/route.ts"
     },
     {
@@ -1789,8 +1789,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_ai_eval_active_route_get",
-      "community": 91,
-      "community_name": "fsDelete",
+      "community": 22,
+      "community_name": "db.ts",
       "norm_label": "get()"
     },
     {
@@ -1801,8 +1801,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_ai_eval_active_route_delete",
-      "community": 91,
-      "community_name": "fsDelete",
+      "community": 22,
+      "community_name": "db.ts",
       "norm_label": "delete()"
     },
     {
@@ -1812,8 +1812,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_ai_eval_config_route",
-      "community": 16,
-      "community_name": "getAdminDb",
+      "community": 2,
+      "community_name": "firebase-admin.ts",
       "norm_label": "ai-eval/config/route.ts"
     },
     {
@@ -1824,8 +1824,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_ai_eval_config_route_get",
-      "community": 16,
-      "community_name": "getAdminDb",
+      "community": 2,
+      "community_name": "firebase-admin.ts",
       "norm_label": "get()"
     },
     {
@@ -1835,8 +1835,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_ai_eval_route",
-      "community": 23,
-      "community_name": "AiEvalScenario",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "ai-eval/route.ts"
     },
     {
@@ -1847,8 +1847,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_ai_eval_route_post",
-      "community": 23,
-      "community_name": "AiEvalScenario",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "post()"
     },
     {
@@ -1881,8 +1881,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_auth_agent_login_route",
-      "community": 19,
-      "community_name": "Agent",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "agent-login/route.ts"
     },
     {
@@ -1893,8 +1893,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_auth_agent_login_route_normalizename",
-      "community": 19,
-      "community_name": "Agent",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "normalizename()"
     },
     {
@@ -1905,8 +1905,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_auth_agent_login_route_post",
-      "community": 19,
-      "community_name": "Agent",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "post()"
     },
     {
@@ -1998,7 +1998,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_config_public_route",
-      "community": 28,
+      "community": 22,
       "community_name": "db.ts",
       "norm_label": "public/route.ts"
     },
@@ -2010,7 +2010,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_config_public_route_get",
-      "community": 28,
+      "community": 22,
       "community_name": "db.ts",
       "norm_label": "get()"
     },
@@ -2114,7 +2114,7 @@
       "_origin": "ast",
       "id": "app_api_evaluator_evaluations_id_route",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "evaluations/[id]/route.ts"
     },
     {
@@ -2126,7 +2126,7 @@
       "_origin": "ast",
       "id": "app_api_evaluator_evaluations_id_route_patch",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "patch()"
     },
     {
@@ -2137,7 +2137,7 @@
       "_origin": "ast",
       "id": "app_api_evaluator_evaluations_route",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "evaluator/evaluations/route.ts"
     },
     {
@@ -2148,8 +2148,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_evaluator_evaluations_route_get",
-      "community": 21,
-      "community_name": "getServerUser",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "get()"
     },
     {
@@ -2161,7 +2161,7 @@
       "_origin": "ast",
       "id": "app_api_evaluator_evaluations_route_post",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "post()"
     },
     {
@@ -2171,8 +2171,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_join_route",
-      "community": 6,
-      "community_name": "index.ts",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "join/route.ts"
     },
     {
@@ -2183,8 +2183,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_join_route_generateinvitecode",
-      "community": 6,
-      "community_name": "index.ts",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "generateinvitecode()"
     },
     {
@@ -2195,8 +2195,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_join_route_get",
-      "community": 6,
-      "community_name": "index.ts",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "get()"
     },
     {
@@ -2207,8 +2207,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_join_route_post",
-      "community": 6,
-      "community_name": "index.ts",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "post()"
     },
     {
@@ -2278,7 +2278,7 @@
       "_origin": "ast",
       "id": "app_api_quiz_submit_route",
       "community": 22,
-      "community_name": "fsAdd",
+      "community_name": "db.ts",
       "norm_label": "submit/route.ts"
     },
     {
@@ -2290,7 +2290,7 @@
       "_origin": "ast",
       "id": "app_api_quiz_submit_route_post",
       "community": 22,
-      "community_name": "fsAdd",
+      "community_name": "db.ts",
       "norm_label": "post()"
     },
     {
@@ -2324,7 +2324,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_discipline_id_route",
       "community": 91,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "discipline/[id]/route.ts"
     },
     {
@@ -2336,7 +2336,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_discipline_id_route_patch",
       "community": 91,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "patch()"
     },
     {
@@ -2348,7 +2348,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_discipline_id_route_delete",
       "community": 91,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "delete()"
     },
     {
@@ -2382,8 +2382,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_trainer_discipline_route_post",
-      "community": 22,
-      "community_name": "fsAdd",
+      "community": 12,
+      "community_name": "server.ts",
       "norm_label": "post()"
     },
     {
@@ -2393,8 +2393,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_days_route",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "days/route.ts"
     },
     {
@@ -2405,8 +2405,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_days_route_get",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "get()"
     },
     {
@@ -2418,7 +2418,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_days_route_post",
       "community": 91,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "post()"
     },
     {
@@ -2429,7 +2429,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_route",
       "community": 91,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "training-periods/[id]/route.ts"
     },
     {
@@ -2441,7 +2441,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_route_patch",
       "community": 91,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "patch()"
     },
     {
@@ -2453,7 +2453,7 @@
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_id_route_delete",
       "community": 91,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "delete()"
     },
     {
@@ -2463,8 +2463,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_route",
-      "community": 21,
-      "community_name": "getServerUser",
+      "community": 12,
+      "community_name": "server.ts",
       "norm_label": "training-periods/route.ts"
     },
     {
@@ -2487,8 +2487,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "app_api_trainer_training_periods_route_post",
-      "community": 21,
-      "community_name": "getServerUser",
+      "community": 12,
+      "community_name": "server.ts",
       "norm_label": "post()"
     },
     {
@@ -2806,8 +2806,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_adminheader",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "adminheader.tsx"
     },
     {
@@ -2843,7 +2843,7 @@
       "_origin": "ast",
       "id": "components_features_admin_adminhelpers",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "adminhelpers.ts"
     },
     {
@@ -2974,7 +2974,7 @@
       "_origin": "ast",
       "id": "components_features_admin_agentdetailmodal",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "agentdetailmodal.tsx"
     },
     {
@@ -2985,8 +2985,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_agentdetailmodal_agentdetailmodal",
-      "community": 14,
-      "community_name": "AdjustmentsTab.tsx",
+      "community": 0,
+      "community_name": "index.ts",
       "norm_label": "agentdetailmodal()"
     },
     {
@@ -2996,8 +2996,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_aiscenarioimportmodal",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "aiscenarioimportmodal.tsx"
     },
     {
@@ -3009,8 +3009,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_aiscenarioimportmodal_aiscenarioimportmodalprops",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "aiscenarioimportmodalprops"
     },
     {
@@ -3021,8 +3021,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_aiscenarioimportmodal_aiscenarioimportmodal",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "aiscenarioimportmodal()"
     },
     {
@@ -3032,8 +3032,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_aiscenariostab",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "aiscenariostab.tsx"
     },
     {
@@ -3043,8 +3043,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "components_features_admin_aiscenariostab_diff_styles",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "diff_styles"
     },
     {
@@ -3055,8 +3055,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_aiscenariostab_aiscenariostab",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "aiscenariostab()"
     },
     {
@@ -3067,7 +3067,7 @@
       "_origin": "ast",
       "id": "components_features_admin_approvalstab",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "approvalstab.tsx"
     },
     {
@@ -3079,7 +3079,7 @@
       "_origin": "ast",
       "id": "components_features_admin_approvalstab_approvalstab",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "approvalstab()"
     },
     {
@@ -3089,8 +3089,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_bulkimportmodal",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 1,
+      "community_name": "StaffTab.tsx",
       "norm_label": "bulkimportmodal.tsx"
     },
     {
@@ -3102,8 +3102,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_bulkimportmodal_bulkimportmodalprops",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 1,
+      "community_name": "StaffTab.tsx",
       "norm_label": "bulkimportmodalprops"
     },
     {
@@ -3114,8 +3114,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_bulkimportmodal_bulkimportmodal",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 1,
+      "community_name": "StaffTab.tsx",
       "norm_label": "bulkimportmodal()"
     },
     {
@@ -3125,8 +3125,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_certificatetab",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "certificatetab.tsx"
     },
     {
@@ -3136,8 +3136,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "components_features_admin_certificatetab_color_presets",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "color_presets"
     },
     {
@@ -3148,8 +3148,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_certificatetab_certificatetab",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "certificatetab()"
     },
     {
@@ -3183,7 +3183,7 @@
       "_origin": "ast",
       "id": "components_features_admin_detailedevaluation",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "detailedevaluation.tsx"
     },
     {
@@ -3196,7 +3196,7 @@
       "_origin": "ast",
       "id": "components_features_admin_detailedevaluation_detailedevaluationprops",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "detailedevaluationprops"
     },
     {
@@ -3208,7 +3208,7 @@
       "_origin": "ast",
       "id": "components_features_admin_detailedevaluation_detailedevaluation",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "detailedevaluation()"
     },
     {
@@ -3219,7 +3219,7 @@
       "_origin": "ast",
       "id": "components_features_admin_evaluationstab",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "evaluationstab.tsx"
     },
     {
@@ -3231,7 +3231,7 @@
       "_origin": "ast",
       "id": "components_features_admin_evaluationstab_evaluationstab",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "evaluationstab()"
     },
     {
@@ -3253,8 +3253,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_hranalyticstab_hranalyticstab",
-      "community": 51,
-      "community_name": "HRAnalyticsTab.tsx",
+      "community": 3,
+      "community_name": "agent-training/index.tsx",
       "norm_label": "hranalyticstab()"
     },
     {
@@ -3289,7 +3289,7 @@
       "_origin": "ast",
       "id": "components_features_admin_historytab",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "historytab.tsx"
     },
     {
@@ -3301,7 +3301,7 @@
       "_origin": "ast",
       "id": "components_features_admin_historytab_historytab",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "historytab()"
     },
     {
@@ -3348,7 +3348,7 @@
       "_origin": "ast",
       "id": "components_features_admin_overviewtab",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "overviewtab.tsx"
     },
     {
@@ -3360,7 +3360,7 @@
       "_origin": "ast",
       "id": "components_features_admin_overviewtab_overviewtab",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "overviewtab()"
     },
     {
@@ -3371,7 +3371,7 @@
       "_origin": "ast",
       "id": "components_features_admin_reportstab",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "reportstab.tsx"
     },
     {
@@ -3383,7 +3383,7 @@
       "_origin": "ast",
       "id": "components_features_admin_reportstab_reportstab",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "reportstab()"
     },
     {
@@ -3395,7 +3395,7 @@
       "_origin": "ast",
       "id": "components_features_admin_reportstab_searchicon",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "searchicon()"
     },
     {
@@ -3407,7 +3407,7 @@
       "_origin": "ast",
       "id": "components_features_admin_reportstab_statuspill",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "statuspill()"
     },
     {
@@ -3419,7 +3419,7 @@
       "_origin": "ast",
       "id": "components_features_admin_reportstab_getcompletionstatus",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "getcompletionstatus()"
     },
     {
@@ -3429,7 +3429,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_sandboxmanagermodal",
-      "community": 25,
+      "community": 15,
       "community_name": "ai-eval.ts",
       "norm_label": "sandboxmanagermodal.tsx"
     },
@@ -3442,7 +3442,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_sandboxmanagermodal_sandboxmanagermodalprops",
-      "community": 25,
+      "community": 15,
       "community_name": "ai-eval.ts",
       "norm_label": "sandboxmanagermodalprops"
     },
@@ -3454,7 +3454,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_sandboxmanagermodal_sandboxmanagermodal",
-      "community": 25,
+      "community": 15,
       "community_name": "ai-eval.ts",
       "norm_label": "sandboxmanagermodal()"
     },
@@ -3512,8 +3512,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_stafftab",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 1,
+      "community_name": "StaffTab.tsx",
       "norm_label": "stafftab.tsx"
     },
     {
@@ -3524,8 +3524,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_stafftab_stafftab",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 1,
+      "community_name": "StaffTab.tsx",
       "norm_label": "stafftab()"
     },
     {
@@ -3715,8 +3715,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_adjustments_overridesmanager",
-      "community": 14,
-      "community_name": "AdjustmentsTab.tsx",
+      "community": 55,
+      "community_name": "CourseHub.tsx",
       "norm_label": "overridesmanager.tsx"
     },
     {
@@ -3727,8 +3727,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_adjustments_overridesmanager_overridesmanager",
-      "community": 14,
-      "community_name": "AdjustmentsTab.tsx",
+      "community": 55,
+      "community_name": "CourseHub.tsx",
       "norm_label": "overridesmanager()"
     },
     {
@@ -3884,7 +3884,7 @@
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_bypassmodal",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "bypassmodal.tsx"
     },
     {
@@ -3897,7 +3897,7 @@
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_bypassmodal_bypassmodalprops",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "bypassmodalprops"
     },
     {
@@ -3909,7 +3909,7 @@
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_bypassmodal_bypassmodal",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "bypassmodal()"
     },
     {
@@ -3920,7 +3920,7 @@
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_historysections",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "historysections.tsx"
     },
     {
@@ -3932,7 +3932,7 @@
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_historysections_actionbtn",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "actionbtn()"
     },
     {
@@ -3944,7 +3944,7 @@
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_historysections_requestoverride",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "requestoverride()"
     },
     {
@@ -3956,7 +3956,7 @@
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_historysections_detailedquizhistory",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "detailedquizhistory()"
     },
     {
@@ -3968,7 +3968,7 @@
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_historysections_detailedaievalhistory",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "detailedaievalhistory()"
     },
     {
@@ -3980,7 +3980,7 @@
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_historysections_detailedhumanevaluations",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "detailedhumanevaluations()"
     },
     {
@@ -3991,7 +3991,7 @@
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_profileheader",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "profileheader.tsx"
     },
     {
@@ -4004,7 +4004,7 @@
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_profileheader_profileheaderprops",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "profileheaderprops"
     },
     {
@@ -4016,7 +4016,7 @@
       "_origin": "ast",
       "id": "components_features_admin_agent_detail_profileheader_profileheader",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "profileheader()"
     },
     {
@@ -4026,8 +4026,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenarioform",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "scenarioform.tsx"
     },
     {
@@ -4037,8 +4037,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenarioform_ai_suggestions",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "ai_suggestions"
     },
     {
@@ -4049,8 +4049,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenarioform_scenarioform",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "scenarioform()"
     },
     {
@@ -4060,8 +4060,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenariolist",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "scenariolist.tsx"
     },
     {
@@ -4072,8 +4072,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenariolist_scenariocard",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "scenariocard()"
     },
     {
@@ -4084,8 +4084,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenariolist_difficultysection",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "difficultysection()"
     },
     {
@@ -4095,8 +4095,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "ai-scenarios/constants.ts"
     },
     {
@@ -4106,8 +4106,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_diff",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "diff"
     },
     {
@@ -4117,8 +4117,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_diff_order",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "diff_order"
     },
     {
@@ -4128,8 +4128,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_empty_form",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "empty_form"
     },
     {
@@ -4139,8 +4139,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_inputcls",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "inputcls"
     },
     {
@@ -4150,8 +4150,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_textareacls",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "textareacls"
     },
     {
@@ -4161,8 +4161,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_templates",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "templates.ts"
     },
     {
@@ -4172,8 +4172,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_templates_preset_templates",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "preset_templates"
     },
     {
@@ -4281,7 +4281,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_evaluations_activebatchheader",
-      "community": 6,
+      "community": 0,
       "community_name": "index.ts",
       "norm_label": "activebatchheader.tsx"
     },
@@ -4294,7 +4294,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluations_activebatchheader_activebatchheaderprops",
-      "community": 6,
+      "community": 0,
       "community_name": "index.ts",
       "norm_label": "activebatchheaderprops"
     },
@@ -4306,7 +4306,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluations_activebatchheader_activebatchheader",
-      "community": 6,
+      "community": 0,
       "community_name": "index.ts",
       "norm_label": "activebatchheader()"
     },
@@ -4317,7 +4317,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_evaluations_archiveselectiongrid",
-      "community": 6,
+      "community": 0,
       "community_name": "index.ts",
       "norm_label": "archiveselectiongrid.tsx"
     },
@@ -4330,7 +4330,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluations_archiveselectiongrid_archiveselectiongridprops",
-      "community": 6,
+      "community": 0,
       "community_name": "index.ts",
       "norm_label": "archiveselectiongridprops"
     },
@@ -4342,7 +4342,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_evaluations_archiveselectiongrid_archiveselectiongrid",
-      "community": 6,
+      "community": 0,
       "community_name": "index.ts",
       "norm_label": "archiveselectiongrid()"
     },
@@ -4354,7 +4354,7 @@
       "_origin": "ast",
       "id": "components_features_admin_evaluations_evalrow",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "evalrow.tsx"
     },
     {
@@ -4366,7 +4366,7 @@
       "_origin": "ast",
       "id": "components_features_admin_evaluations_evalrow_evalrow",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "evalrow()"
     },
     {
@@ -4377,7 +4377,7 @@
       "_origin": "ast",
       "id": "components_features_admin_evaluations_evaluationsdashboard",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "evaluationsdashboard.tsx"
     },
     {
@@ -4390,7 +4390,7 @@
       "_origin": "ast",
       "id": "components_features_admin_evaluations_evaluationsdashboard_evaluationsdashboardprops",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "evaluationsdashboardprops"
     },
     {
@@ -4402,7 +4402,7 @@
       "_origin": "ast",
       "id": "components_features_admin_evaluations_evaluationsdashboard_evaluationsdashboard",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "evaluationsdashboard()"
     },
     {
@@ -4413,7 +4413,7 @@
       "_origin": "ast",
       "id": "components_features_admin_evaluations_useevaluationsdata",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "useevaluationsdata.ts"
     },
     {
@@ -4426,7 +4426,7 @@
       "_origin": "ast",
       "id": "components_features_admin_evaluations_useevaluationsdata_admineval",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "admineval"
     },
     {
@@ -4439,7 +4439,7 @@
       "_origin": "ast",
       "id": "components_features_admin_evaluations_useevaluationsdata_evaltab",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "evaltab"
     },
     {
@@ -4451,7 +4451,7 @@
       "_origin": "ast",
       "id": "components_features_admin_evaluations_useevaluationsdata_useevaluationsdata",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "useevaluationsdata()"
     },
     {
@@ -4462,7 +4462,7 @@
       "_origin": "ast",
       "id": "components_features_admin_overview_completiongrid",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "completiongrid.tsx"
     },
     {
@@ -4475,7 +4475,7 @@
       "_origin": "ast",
       "id": "components_features_admin_overview_completiongrid_completiongridprops",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "completiongridprops"
     },
     {
@@ -4487,7 +4487,7 @@
       "_origin": "ast",
       "id": "components_features_admin_overview_completiongrid_completiongrid",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "completiongrid()"
     },
     {
@@ -4497,8 +4497,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_overview_graduationroster",
-      "community": 9,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community": 0,
+      "community_name": "index.ts",
       "norm_label": "graduationroster.tsx"
     },
     {
@@ -4510,8 +4510,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_graduationroster_graduationrosterprops",
-      "community": 9,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community": 0,
+      "community_name": "index.ts",
       "norm_label": "graduationrosterprops"
     },
     {
@@ -4521,8 +4521,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "components_features_admin_overview_graduationroster_status_order",
-      "community": 9,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community": 0,
+      "community_name": "index.ts",
       "norm_label": "status_order"
     },
     {
@@ -4533,8 +4533,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_overview_graduationroster_graduationroster",
-      "community": 9,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community": 0,
+      "community_name": "index.ts",
       "norm_label": "graduationroster()"
     },
     {
@@ -4545,7 +4545,7 @@
       "_origin": "ast",
       "id": "components_features_admin_overview_kpisection",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "kpisection.tsx"
     },
     {
@@ -4558,7 +4558,7 @@
       "_origin": "ast",
       "id": "components_features_admin_overview_kpisection_kpisectionprops",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "kpisectionprops"
     },
     {
@@ -4570,7 +4570,7 @@
       "_origin": "ast",
       "id": "components_features_admin_overview_kpisection_kpisection",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "kpisection()"
     },
     {
@@ -4581,7 +4581,7 @@
       "_origin": "ast",
       "id": "components_features_admin_overview_leaderboardtable",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "leaderboardtable.tsx"
     },
     {
@@ -4594,7 +4594,7 @@
       "_origin": "ast",
       "id": "components_features_admin_overview_leaderboardtable_leaderboardtableprops",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "leaderboardtableprops"
     },
     {
@@ -4606,7 +4606,7 @@
       "_origin": "ast",
       "id": "components_features_admin_overview_leaderboardtable_leaderboardtable",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "leaderboardtable()"
     },
     {
@@ -4617,7 +4617,7 @@
       "_origin": "ast",
       "id": "components_features_admin_overview_trainingwavessection",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "trainingwavessection.tsx"
     },
     {
@@ -4630,7 +4630,7 @@
       "_origin": "ast",
       "id": "components_features_admin_overview_trainingwavessection_trainingwavessectionprops",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "trainingwavessectionprops"
     },
     {
@@ -4642,7 +4642,7 @@
       "_origin": "ast",
       "id": "components_features_admin_overview_trainingwavessection_trainingwavessection",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "trainingwavessection()"
     },
     {
@@ -4652,8 +4652,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_staff_accessnotes",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 1,
+      "community_name": "StaffTab.tsx",
       "norm_label": "accessnotes.tsx"
     },
     {
@@ -4664,8 +4664,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_staff_accessnotes_accessnotes",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 1,
+      "community_name": "StaffTab.tsx",
       "norm_label": "accessnotes()"
     },
     {
@@ -4675,8 +4675,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_staff_agentsection",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 1,
+      "community_name": "StaffTab.tsx",
       "norm_label": "agentsection.tsx"
     },
     {
@@ -4687,8 +4687,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_staff_agentsection_agentsection",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 1,
+      "community_name": "StaffTab.tsx",
       "norm_label": "agentsection()"
     },
     {
@@ -4698,8 +4698,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_admin_staff_staffsection",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 1,
+      "community_name": "StaffTab.tsx",
       "norm_label": "staffsection.tsx"
     },
     {
@@ -4711,8 +4711,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_admin_staff_staffsection_editstate",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 1,
+      "community_name": "StaffTab.tsx",
       "norm_label": "editstate"
     },
     {
@@ -4722,8 +4722,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "components_features_admin_staff_staffsection_role_colors",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 1,
+      "community_name": "StaffTab.tsx",
       "norm_label": "role_colors"
     },
     {
@@ -4734,8 +4734,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_admin_staff_staffsection_staffsection",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 1,
+      "community_name": "StaffTab.tsx",
       "norm_label": "staffsection()"
     },
     {
@@ -4793,7 +4793,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ui_badgepill",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "badgepill.tsx"
     },
     {
@@ -4805,7 +4805,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ui_badgepill_badgepill",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "badgepill()"
     },
     {
@@ -4816,7 +4816,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ui_livepulse",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "livepulse.tsx"
     },
     {
@@ -4828,7 +4828,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ui_livepulse_livepulse",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "livepulse()"
     },
     {
@@ -4839,7 +4839,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ui_metrics",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "metrics.tsx"
     },
     {
@@ -4851,7 +4851,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ui_metrics_kpicard",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "kpicard()"
     },
     {
@@ -4863,7 +4863,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ui_metrics_donutchart",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "donutchart()"
     },
     {
@@ -4875,7 +4875,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ui_metrics_modulebar",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "modulebar()"
     },
     {
@@ -5320,8 +5320,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_agent_training_certificatemodal",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "certificatemodal.tsx"
     },
     {
@@ -5333,8 +5333,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_agent_training_certificatemodal_certificatemodalprops",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "certificatemodalprops"
     },
     {
@@ -5345,8 +5345,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_agent_training_certificatemodal_certificatemodal",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "certificatemodal()"
     },
     {
@@ -5416,8 +5416,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_agent_training_moduleheader_moduleheaderprops",
-      "community": 0,
-      "community_name": "AgentStats",
+      "community": 3,
+      "community_name": "agent-training/index.tsx",
       "norm_label": "moduleheaderprops"
     },
     {
@@ -5657,8 +5657,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_agent_training_index_props",
-      "community": 0,
-      "community_name": "AgentStats",
+      "community": 3,
+      "community_name": "agent-training/index.tsx",
       "norm_label": "props"
     },
     {
@@ -5669,8 +5669,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_agent_training_index_agenttraininghub",
-      "community": 51,
-      "community_name": "HRAnalyticsTab.tsx",
+      "community": 3,
+      "community_name": "agent-training/index.tsx",
       "norm_label": "agenttraininghub()"
     },
     {
@@ -5819,8 +5819,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_ai_eval_introview",
-      "community": 26,
-      "community_name": "ScenarioPicker.tsx",
+      "community": 18,
+      "community_name": "quiz-data.ts",
       "norm_label": "introview.tsx"
     },
     {
@@ -5832,8 +5832,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_ai_eval_introview_introviewprops",
-      "community": 26,
-      "community_name": "ScenarioPicker.tsx",
+      "community": 18,
+      "community_name": "quiz-data.ts",
       "norm_label": "introviewprops"
     },
     {
@@ -5843,8 +5843,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "components_features_ai_eval_introview_introview",
-      "community": 26,
-      "community_name": "ScenarioPicker.tsx",
+      "community": 27,
+      "community_name": "ai-eval/index.tsx",
       "norm_label": "introview"
     },
     {
@@ -5876,8 +5876,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_ai_eval_multiplechoiceview",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "multiplechoiceview.tsx"
     },
     {
@@ -5888,8 +5888,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_ai_eval_multiplechoiceview_multiplechoiceview",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "multiplechoiceview()"
     },
     {
@@ -5899,8 +5899,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_ai_eval_scenariopicker",
-      "community": 26,
-      "community_name": "ScenarioPicker.tsx",
+      "community": 27,
+      "community_name": "ai-eval/index.tsx",
       "norm_label": "scenariopicker.tsx"
     },
     {
@@ -5910,8 +5910,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "components_features_ai_eval_scenariopicker_difficulty_map",
-      "community": 26,
-      "community_name": "ScenarioPicker.tsx",
+      "community": 27,
+      "community_name": "ai-eval/index.tsx",
       "norm_label": "difficulty_map"
     },
     {
@@ -5923,8 +5923,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_ai_eval_scenariopicker_scenariopickerprops",
-      "community": 26,
-      "community_name": "ScenarioPicker.tsx",
+      "community": 27,
+      "community_name": "ai-eval/index.tsx",
       "norm_label": "scenariopickerprops"
     },
     {
@@ -5934,8 +5934,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "components_features_ai_eval_scenariopicker_scenariopicker",
-      "community": 26,
-      "community_name": "ScenarioPicker.tsx",
+      "community": 27,
+      "community_name": "ai-eval/index.tsx",
       "norm_label": "scenariopicker"
     },
     {
@@ -5945,8 +5945,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_ai_eval_stepprogress",
-      "community": 26,
-      "community_name": "ScenarioPicker.tsx",
+      "community": 27,
+      "community_name": "ai-eval/index.tsx",
       "norm_label": "stepprogress.tsx"
     },
     {
@@ -5957,8 +5957,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_ai_eval_stepprogress_stepprogress",
-      "community": 26,
-      "community_name": "ScenarioPicker.tsx",
+      "community": 27,
+      "community_name": "ai-eval/index.tsx",
       "norm_label": "stepprogress()"
     },
     {
@@ -6014,8 +6014,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_features_ai_eval_types",
-      "community": 25,
-      "community_name": "ai-eval.ts",
+      "community": 27,
+      "community_name": "ai-eval/index.tsx",
       "norm_label": "ai-eval/types.ts"
     },
     {
@@ -6053,8 +6053,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_ai_eval_types_evalstep",
-      "community": 25,
-      "community_name": "ai-eval.ts",
+      "community": 27,
+      "community_name": "ai-eval/index.tsx",
       "norm_label": "evalstep"
     },
     {
@@ -6066,8 +6066,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_ai_eval_types_customerprofile",
-      "community": 25,
-      "community_name": "ai-eval.ts",
+      "community": 27,
+      "community_name": "ai-eval/index.tsx",
       "norm_label": "customerprofile"
     },
     {
@@ -6079,8 +6079,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_ai_eval_types_chatviewprops",
-      "community": 25,
-      "community_name": "ai-eval.ts",
+      "community": 27,
+      "community_name": "ai-eval/index.tsx",
       "norm_label": "chatviewprops"
     },
     {
@@ -7356,7 +7356,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_daystab",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "daystab.tsx"
     },
     {
@@ -7369,7 +7369,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_daystab_dayrecordformprops",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "dayrecordformprops"
     },
     {
@@ -7380,7 +7380,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_daystab_dayrecordform",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "dayrecordform"
     },
     {
@@ -7393,7 +7393,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_daystab_daystabprops",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "daystabprops"
     },
     {
@@ -7405,7 +7405,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_daystab_daystab",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "daystab()"
     },
     {
@@ -7416,7 +7416,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_disciplinetab",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "disciplinetab.tsx"
     },
     {
@@ -7429,7 +7429,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_disciplinetab_disciplinesubtabprops",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "disciplinesubtabprops"
     },
     {
@@ -7441,7 +7441,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_disciplinetab_disciplinetab",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "disciplinetab()"
     },
     {
@@ -7452,7 +7452,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_newperiodmodal",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "newperiodmodal.tsx"
     },
     {
@@ -7465,7 +7465,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_newperiodmodal_newperiodmodalprops",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "newperiodmodalprops"
     },
     {
@@ -7477,7 +7477,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_newperiodmodal_newperiodmodal",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "newperiodmodal()"
     },
     {
@@ -7488,7 +7488,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_perioddetail",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "perioddetail.tsx"
     },
     {
@@ -7501,7 +7501,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_perioddetail_perioddetailprops",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "perioddetailprops"
     },
     {
@@ -7513,7 +7513,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_perioddetail_perioddetail",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "perioddetail()"
     },
     {
@@ -7560,7 +7560,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_trainerconstants",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "trainerconstants.tsx"
     },
     {
@@ -7571,7 +7571,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_trainerconstants_t",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "t"
     },
     {
@@ -7583,7 +7583,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_trainerconstants_fmtdate",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "fmtdate()"
     },
     {
@@ -7595,7 +7595,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_trainerconstants_spinner",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "spinner()"
     },
     {
@@ -7607,7 +7607,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_trainerconstants_fmtelapsed",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "fmtelapsed()"
     },
     {
@@ -7667,7 +7667,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_wavemanagementtab",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "wavemanagementtab.tsx"
     },
     {
@@ -7680,7 +7680,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_wavemanagementtab_wavemanagementtabprops",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "wavemanagementtabprops"
     },
     {
@@ -7692,7 +7692,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_wavemanagementtab_wavemanagementtab",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "wavemanagementtab()"
     },
     {
@@ -7704,7 +7704,7 @@
       "_origin": "ast",
       "id": "components_features_trainer_wavemanagementtab_periodlistitem",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "periodlistitem()"
     },
     {
@@ -7811,7 +7811,7 @@
       "_origin": "ast",
       "id": "components_providers_sessionprovider_usesummon",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "usesummon()"
     },
     {
@@ -7821,8 +7821,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_ui_activeagentui",
-      "community": 26,
-      "community_name": "ScenarioPicker.tsx",
+      "community": 18,
+      "community_name": "quiz-data.ts",
       "norm_label": "activeagentui.tsx"
     },
     {
@@ -7834,8 +7834,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_ui_activeagentui_activeagentuiprops",
-      "community": 26,
-      "community_name": "ScenarioPicker.tsx",
+      "community": 18,
+      "community_name": "quiz-data.ts",
       "norm_label": "activeagentuiprops"
     },
     {
@@ -7846,8 +7846,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_ui_activeagentui_activeagentui",
-      "community": 26,
-      "community_name": "ScenarioPicker.tsx",
+      "community": 18,
+      "community_name": "quiz-data.ts",
       "norm_label": "activeagentui()"
     },
     {
@@ -8047,8 +8047,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_ui_langtoggle",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "langtoggle.tsx"
     },
     {
@@ -8059,8 +8059,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_ui_langtoggle_langtoggle",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "langtoggle()"
     },
     {
@@ -8071,7 +8071,7 @@
       "_origin": "ast",
       "id": "components_ui_liveindicator",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "liveindicator.tsx"
     },
     {
@@ -8084,7 +8084,7 @@
       "_origin": "ast",
       "id": "components_ui_liveindicator_liveindicatorprops",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "liveindicatorprops"
     },
     {
@@ -8096,7 +8096,7 @@
       "_origin": "ast",
       "id": "components_ui_liveindicator_liveindicator",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "liveindicator()"
     },
     {
@@ -8331,7 +8331,7 @@
       "_origin": "ast",
       "id": "components_ui_statusbadge",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "statusbadge.tsx"
     },
     {
@@ -8344,7 +8344,7 @@
       "_origin": "ast",
       "id": "components_ui_statusbadge_statustype",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "statustype"
     },
     {
@@ -8357,7 +8357,7 @@
       "_origin": "ast",
       "id": "components_ui_statusbadge_statusbadgeprops",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "statusbadgeprops"
     },
     {
@@ -8369,7 +8369,7 @@
       "_origin": "ast",
       "id": "components_ui_statusbadge_statusbadge",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "statusbadge()"
     },
     {
@@ -8402,8 +8402,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_ui_themetoggle",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "themetoggle.tsx"
     },
     {
@@ -8414,8 +8414,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "components_ui_themetoggle_themetoggle",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "themetoggle()"
     },
     {
@@ -8746,8 +8746,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "lib_animations_transition",
-      "community": 27,
-      "community_name": "ai-eval/index.tsx",
+      "community": 18,
+      "community_name": "quiz-data.ts",
       "norm_label": "transition"
     },
     {
@@ -8850,8 +8850,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_certificate_types",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "certificate-types.ts"
     },
     {
@@ -8863,8 +8863,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "lib_certificate_types_certificateconfig",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "certificateconfig"
     },
     {
@@ -8874,8 +8874,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "lib_certificate_types_default_cert_config",
-      "community": 13,
-      "community_name": "AdminDashboard.tsx",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "default_cert_config"
     },
     {
@@ -9238,7 +9238,7 @@
       "_origin": "ast",
       "id": "lib_fetcher_fetchwithcache",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "fetchwithcache()"
     },
     {
@@ -9260,8 +9260,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_firebase",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community": 6,
+      "community_name": "TrainingPeriod",
       "norm_label": "firebase.ts"
     },
     {
@@ -9272,8 +9272,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_firebase_clean",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community": 6,
+      "community_name": "TrainingPeriod",
       "norm_label": "clean()"
     },
     {
@@ -9283,8 +9283,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "lib_firebase_firebaseconfig",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community": 6,
+      "community_name": "TrainingPeriod",
       "norm_label": "firebaseconfig"
     },
     {
@@ -9294,8 +9294,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "lib_firebase_db",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community": 6,
+      "community_name": "TrainingPeriod",
       "norm_label": "db"
     },
     {
@@ -9305,8 +9305,8 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "lib_firebase_rtdb",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community": 6,
+      "community_name": "TrainingPeriod",
       "norm_label": "rtdb"
     },
     {
@@ -9316,8 +9316,8 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "lib_firebase_storage",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community": 14,
+      "community_name": "AdjustmentsTab.tsx",
       "norm_label": "storage"
     },
     {
@@ -9327,8 +9327,8 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "lib_firebase_auth",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community": 6,
+      "community_name": "TrainingPeriod",
       "norm_label": "auth"
     },
     {
@@ -9339,8 +9339,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_firebase_getclientanalytics",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community": 6,
+      "community_name": "TrainingPeriod",
       "norm_label": "getclientanalytics()"
     },
     {
@@ -9351,7 +9351,7 @@
       "_origin": "ast",
       "id": "lib_gemini",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": "gemini.ts"
     },
     {
@@ -9363,7 +9363,7 @@
       "_origin": "ast",
       "id": "lib_gemini_getgeminimodel",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": "getgeminimodel()"
     },
     {
@@ -9641,7 +9641,7 @@
       "_origin": "ast",
       "id": "lib_openai",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": "openai.ts"
     },
     {
@@ -9653,7 +9653,7 @@
       "_origin": "ast",
       "id": "lib_openai_getopenai",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": "getopenai()"
     },
     {
@@ -9664,7 +9664,7 @@
       "_origin": "ast",
       "id": "lib_presence",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "presence.ts"
     },
     {
@@ -9677,7 +9677,7 @@
       "_origin": "ast",
       "id": "lib_presence_agentpresencestatus",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "agentpresencestatus"
     },
     {
@@ -9690,7 +9690,7 @@
       "_origin": "ast",
       "id": "lib_presence_presencemap",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "presencemap"
     },
     {
@@ -9702,7 +9702,7 @@
       "_origin": "ast",
       "id": "lib_presence_useagentpresence",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "useagentpresence()"
     },
     {
@@ -10181,7 +10181,7 @@
       "_origin": "ast",
       "id": "lib_scoring",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "scoring.ts"
     },
     {
@@ -10192,7 +10192,7 @@
       "_origin": "ast",
       "id": "lib_scoring_badge_config",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "badge_config"
     },
     {
@@ -10203,7 +10203,7 @@
       "_origin": "ast",
       "id": "lib_scoring_module_labels",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "module_labels"
     },
     {
@@ -10215,7 +10215,7 @@
       "_origin": "ast",
       "id": "lib_scoring_scorecolor",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "scorecolor()"
     },
     {
@@ -10227,7 +10227,7 @@
       "_origin": "ast",
       "id": "lib_scoring_scorebg",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "scorebg()"
     },
     {
@@ -10239,7 +10239,7 @@
       "_origin": "ast",
       "id": "lib_scoring_timeago",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "timeago()"
     },
     {
@@ -10250,8 +10250,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_scoring_getpassthresholdpct",
-      "community": 1,
-      "community_name": "ScenarioForm.tsx",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "getpassthresholdpct()"
     },
     {
@@ -10266,22 +10266,33 @@
       "norm_label": "server/courses.ts"
     },
     {
-      "label": "getCourseModules()",
+      "label": "fetchCourseModulesFromDb()",
       "file_type": "code",
       "source_file": "lib/server/courses.ts",
-      "source_location": "L4",
+      "source_location": "L6",
       "_callable": true,
+      "_origin": "ast",
+      "id": "lib_server_courses_fetchcoursemodulesfromdb",
+      "community": 55,
+      "community_name": "CourseHub.tsx",
+      "norm_label": "fetchcoursemodulesfromdb()"
+    },
+    {
+      "label": "getCourseModules",
+      "file_type": "code",
+      "source_file": "lib/server/courses.ts",
+      "source_location": "L46",
       "_origin": "ast",
       "id": "lib_server_courses_getcoursemodules",
       "community": 55,
       "community_name": "CourseHub.tsx",
-      "norm_label": "getcoursemodules()"
+      "norm_label": "getcoursemodules"
     },
     {
       "label": "getCourseModule()",
       "file_type": "code",
       "source_file": "lib/server/courses.ts",
-      "source_location": "L41",
+      "source_location": "L54",
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_courses_getcoursemodule",
@@ -10296,7 +10307,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_server_db",
-      "community": 28,
+      "community": 22,
       "community_name": "db.ts",
       "norm_label": "db.ts"
     },
@@ -10309,7 +10320,7 @@
       "_origin": "ast",
       "id": "lib_server_db_fsadd",
       "community": 22,
-      "community_name": "fsAdd",
+      "community_name": "db.ts",
       "norm_label": "fsadd()"
     },
     {
@@ -10321,7 +10332,7 @@
       "_origin": "ast",
       "id": "lib_server_db_fsgetall",
       "community": 16,
-      "community_name": "getAdminDb",
+      "community_name": "fsGetAll",
       "norm_label": "fsgetall()"
     },
     {
@@ -10332,7 +10343,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fsget",
-      "community": 28,
+      "community": 22,
       "community_name": "db.ts",
       "norm_label": "fsget()"
     },
@@ -10356,8 +10367,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fsquery",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "fsquery()"
     },
     {
@@ -10368,8 +10379,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fscount",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "fscount()"
     },
     {
@@ -10381,7 +10392,7 @@
       "_origin": "ast",
       "id": "lib_server_db_fsincrement",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "fsincrement()"
     },
     {
@@ -10392,8 +10403,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_db_fsupdate",
-      "community": 28,
-      "community_name": "db.ts",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "fsupdate()"
     },
     {
@@ -10405,7 +10416,7 @@
       "_origin": "ast",
       "id": "lib_server_db_fsupdatemany",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "fsupdatemany()"
     },
     {
@@ -10417,7 +10428,7 @@
       "_origin": "ast",
       "id": "lib_server_db_fsdelete",
       "community": 91,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "fsdelete()"
     },
     {
@@ -10429,7 +10440,7 @@
       "_origin": "ast",
       "id": "lib_server_db_fsset",
       "community": 21,
-      "community_name": "getServerUser",
+      "community_name": "fsSet",
       "norm_label": "fsset()"
     },
     {
@@ -10522,7 +10533,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_server_firebase_admin_getadmindb",
-      "community": 16,
+      "community": 28,
       "community_name": "getAdminDb",
       "norm_label": "getadmindb()"
     },
@@ -10546,7 +10557,7 @@
       "_origin": "ast",
       "id": "lib_server_training",
       "community": 22,
-      "community_name": "fsAdd",
+      "community_name": "db.ts",
       "norm_label": "server/training.ts"
     },
     {
@@ -10558,7 +10569,7 @@
       "_origin": "ast",
       "id": "lib_server_training_getactivetrainingperiod",
       "community": 22,
-      "community_name": "fsAdd",
+      "community_name": "db.ts",
       "norm_label": "getactivetrainingperiod()"
     },
     {
@@ -10568,8 +10579,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_services_ai_audit_service",
-      "community": 28,
-      "community_name": "db.ts",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "ai-audit-service.ts"
     },
     {
@@ -10582,7 +10593,7 @@
       "_origin": "ast",
       "id": "lib_services_ai_audit_service_aiauditservice",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": "aiauditservice"
     },
     {
@@ -10594,7 +10605,7 @@
       "_origin": "ast",
       "id": "lib_services_ai_audit_service_aiauditservice_fetchchattranscript",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": ".fetchchattranscript()"
     },
     {
@@ -10606,7 +10617,7 @@
       "_origin": "ast",
       "id": "lib_services_ai_audit_service_aiauditservice_audittranscript",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": ".audittranscript()"
     },
     {
@@ -10617,8 +10628,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_audit_service_aiauditservice_logauditcompletion",
-      "community": 22,
-      "community_name": "fsAdd",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": ".logauditcompletion()"
     },
     {
@@ -10629,7 +10640,7 @@
       "_origin": "ast",
       "id": "lib_services_ai_eval_service",
       "community": 22,
-      "community_name": "fsAdd",
+      "community_name": "db.ts",
       "norm_label": "ai-eval-service.ts"
     },
     {
@@ -10641,8 +10652,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice",
-      "community": 23,
-      "community_name": "AiEvalScenario",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "aievalservice"
     },
     {
@@ -10653,8 +10664,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_getscenario",
-      "community": 23,
-      "community_name": "AiEvalScenario",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": ".getscenario()"
     },
     {
@@ -10665,8 +10676,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_startsession",
-      "community": 23,
-      "community_name": "AiEvalScenario",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": ".startsession()"
     },
     {
@@ -10677,8 +10688,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_processturn",
-      "community": 23,
-      "community_name": "AiEvalScenario",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": ".processturn()"
     },
     {
@@ -10689,8 +10700,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_callchatgpt",
-      "community": 23,
-      "community_name": "AiEvalScenario",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": ".callchatgpt()"
     },
     {
@@ -10701,8 +10712,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_injectvariables",
-      "community": 23,
-      "community_name": "AiEvalScenario",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": ".injectvariables()"
     },
     {
@@ -10713,8 +10724,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_buildfallbacksystemprompt",
-      "community": 23,
-      "community_name": "AiEvalScenario",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": ".buildfallbacksystemprompt()"
     },
     {
@@ -10725,8 +10736,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_seedallscenarios",
-      "community": 23,
-      "community_name": "AiEvalScenario",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": ".seedallscenarios()"
     },
     {
@@ -10737,8 +10748,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_cleanjson",
-      "community": 23,
-      "community_name": "AiEvalScenario",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": ".cleanjson()"
     },
     {
@@ -10749,8 +10760,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_logcompletion",
-      "community": 23,
-      "community_name": "AiEvalScenario",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": ".logcompletion()"
     },
     {
@@ -10761,8 +10772,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_eval_service_aievalservice_seeddefaultscenario",
-      "community": 23,
-      "community_name": "AiEvalScenario",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": ".seeddefaultscenario()"
     },
     {
@@ -10772,8 +10783,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_services_ai_scenarios_utils",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "utils.ts"
     },
     {
@@ -10783,8 +10794,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "lib_services_ai_scenarios_utils_default_criteria",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "default_criteria"
     },
     {
@@ -10794,8 +10805,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "lib_services_ai_scenarios_utils_ai_scenario_template",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "ai_scenario_template"
     },
     {
@@ -10806,8 +10817,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_scenarios_utils_downloadscenariotemplate",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "downloadscenariotemplate()"
     },
     {
@@ -10818,8 +10829,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_ai_scenarios_utils_parsescenariofile",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "parsescenariofile()"
     },
     {
@@ -10829,8 +10840,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_services_approval_service",
-      "community": 21,
-      "community_name": "getServerUser",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "approval-service.ts"
     },
     {
@@ -10841,8 +10852,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_approval_service_createapprovalrequest",
-      "community": 21,
-      "community_name": "getServerUser",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "createapprovalrequest()"
     },
     {
@@ -10853,8 +10864,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_approval_service_resolveapprovalrequest",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "resolveapprovalrequest()"
     },
     {
@@ -10865,8 +10876,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_approval_service_executeapprovedaction",
-      "community": 21,
-      "community_name": "getServerUser",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "executeapprovedaction()"
     },
     {
@@ -10877,7 +10888,7 @@
       "_origin": "ast",
       "id": "lib_services_audit_service",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "audit-service.ts"
     },
     {
@@ -10890,7 +10901,7 @@
       "_origin": "ast",
       "id": "lib_services_audit_service_auditaction",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "auditaction"
     },
     {
@@ -10903,7 +10914,7 @@
       "_origin": "ast",
       "id": "lib_services_audit_service_auditlog",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "auditlog"
     },
     {
@@ -10916,7 +10927,7 @@
       "_origin": "ast",
       "id": "lib_services_audit_service_auditservice",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "auditservice"
     },
     {
@@ -10928,7 +10939,7 @@
       "_origin": "ast",
       "id": "lib_services_audit_service_auditservice_log",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": ".log()"
     },
     {
@@ -10939,7 +10950,7 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_audit_service_auditservice_getrecentlogs",
-      "community": 16,
+      "community": 28,
       "community_name": "getAdminDb",
       "norm_label": ".getrecentlogs()"
     },
@@ -10951,7 +10962,7 @@
       "_origin": "ast",
       "id": "lib_services_batch_service",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "batch-service.ts"
     },
     {
@@ -10962,7 +10973,7 @@
       "_origin": "ast",
       "id": "lib_services_batch_service_batchservice",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "batchservice"
     },
     {
@@ -11044,7 +11055,7 @@
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": "semantic-audit-service.ts"
     },
     {
@@ -11057,7 +11068,7 @@
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditresult",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": "semanticauditresult"
     },
     {
@@ -11070,7 +11081,7 @@
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": "semanticauditservice"
     },
     {
@@ -11082,7 +11093,7 @@
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_runfullaudit",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": ".runfullaudit()"
     },
     {
@@ -11094,7 +11105,7 @@
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_fetchconfigs",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": ".fetchconfigs()"
     },
     {
@@ -11106,7 +11117,7 @@
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_fetchevaluations",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": ".fetchevaluations()"
     },
     {
@@ -11118,7 +11129,7 @@
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_fetchagents",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": ".fetchagents()"
     },
     {
@@ -11130,7 +11141,7 @@
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_auditconfigs",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": ".auditconfigs()"
     },
     {
@@ -11142,7 +11153,7 @@
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_auditevaluations",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": ".auditevaluations()"
     },
     {
@@ -11154,7 +11165,7 @@
       "_origin": "ast",
       "id": "lib_services_semantic_audit_service_semanticauditservice_auditagentjourneys",
       "community": 15,
-      "community_name": "semantic-audit-service.ts",
+      "community_name": "ai-eval.ts",
       "norm_label": ".auditagentjourneys()"
     },
     {
@@ -11165,7 +11176,7 @@
       "_origin": "ast",
       "id": "lib_services_stats_service",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "stats-service.ts"
     },
     {
@@ -11178,7 +11189,7 @@
       "_origin": "ast",
       "id": "lib_services_stats_service_globalstats",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "globalstats"
     },
     {
@@ -11189,8 +11200,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_stats_service_updateglobalquizstats",
-      "community": 22,
-      "community_name": "fsAdd",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "updateglobalquizstats()"
     },
     {
@@ -11202,7 +11213,7 @@
       "_origin": "ast",
       "id": "lib_services_stats_service_updateglobalaievalstats",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "updateglobalaievalstats()"
     },
     {
@@ -11214,7 +11225,7 @@
       "_origin": "ast",
       "id": "lib_services_stats_service_updategloballearningstats",
       "community": 22,
-      "community_name": "fsAdd",
+      "community_name": "db.ts",
       "norm_label": "updategloballearningstats()"
     },
     {
@@ -11225,8 +11236,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_stats_service_updateglobalagentcounts",
-      "community": 21,
-      "community_name": "getServerUser",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "updateglobalagentcounts()"
     },
     {
@@ -11238,7 +11249,7 @@
       "_origin": "ast",
       "id": "lib_services_stats_service_updateagentoverallscore",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "updateagentoverallscore()"
     },
     {
@@ -11250,7 +11261,7 @@
       "_origin": "ast",
       "id": "lib_services_stats_service_recalculateglobalstats",
       "community": 28,
-      "community_name": "db.ts",
+      "community_name": "getAdminDb",
       "norm_label": "recalculateglobalstats()"
     },
     {
@@ -11261,8 +11272,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_services_stats_service_getglobalstats",
-      "community": 12,
-      "community_name": "server.ts",
+      "community": 16,
+      "community_name": "fsGetAll",
       "norm_label": "getglobalstats()"
     },
     {
@@ -11309,7 +11320,7 @@
       "_origin": "ast",
       "id": "lib_services_trainer_service",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "trainer-service.ts"
     },
     {
@@ -11320,7 +11331,7 @@
       "_origin": "ast",
       "id": "lib_services_trainer_service_trainerservice",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "trainerservice"
     },
     {
@@ -11385,8 +11396,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "lib_session_agent_mockup_agent_id",
-      "community": 22,
-      "community_name": "fsAdd",
+      "community": 5,
+      "community_name": "agent.ts",
       "norm_label": "mockup_agent_id"
     },
     {
@@ -11434,8 +11445,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_agent_setagentsession",
-      "community": 9,
-      "community_name": "EvaluatorDashboard.tsx",
+      "community": 0,
+      "community_name": "index.ts",
       "norm_label": "setagentsession()"
     },
     {
@@ -11502,8 +11513,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "lib_session_server_getserveruser",
-      "community": 21,
-      "community_name": "getServerUser",
+      "community": 28,
+      "community_name": "getAdminDb",
       "norm_label": "getserveruser"
     },
     {
@@ -11526,8 +11537,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_server_makesessiontoken",
-      "community": 2,
-      "community_name": "firebase-admin.ts",
+      "community": 21,
+      "community_name": "fsSet",
       "norm_label": "makesessiontoken()"
     },
     {
@@ -11586,8 +11597,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_session_server_requireadminormanager",
-      "community": 16,
-      "community_name": "getAdminDb",
+      "community": 91,
+      "community_name": "fsUpdate",
       "norm_label": "requireadminormanager()"
     },
     {
@@ -11623,7 +11634,7 @@
       "_origin": "ast",
       "id": "lib_session_server_requiretrainer",
       "community": 91,
-      "community_name": "fsDelete",
+      "community_name": "fsUpdate",
       "norm_label": "requiretrainer()"
     },
     {
@@ -11633,8 +11644,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "lib_training",
-      "community": 51,
-      "community_name": "HRAnalyticsTab.tsx",
+      "community": 3,
+      "community_name": "agent-training/index.tsx",
       "norm_label": "lib/training.ts"
     },
     {
@@ -11658,8 +11669,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_training_scorecolor",
-      "community": 51,
-      "community_name": "HRAnalyticsTab.tsx",
+      "community": 3,
+      "community_name": "agent-training/index.tsx",
       "norm_label": "scorecolor()"
     },
     {
@@ -11670,8 +11681,8 @@
       "_callable": true,
       "_origin": "ast",
       "id": "lib_training_derivesteps",
-      "community": 51,
-      "community_name": "HRAnalyticsTab.tsx",
+      "community": 3,
+      "community_name": "agent-training/index.tsx",
       "norm_label": "derivesteps()"
     },
     {
@@ -11758,8 +11769,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "package",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 23,
+      "community_name": "package.json",
       "norm_label": "package.json"
     },
     {
@@ -11769,8 +11780,8 @@
       "source_location": "L2",
       "_origin": "ast",
       "id": "package_name",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 23,
+      "community_name": "package.json",
       "norm_label": "name"
     },
     {
@@ -11780,8 +11791,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "package_version",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 23,
+      "community_name": "package.json",
       "norm_label": "version"
     },
     {
@@ -11791,8 +11802,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "package_private",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 23,
+      "community_name": "package.json",
       "norm_label": "private"
     },
     {
@@ -11802,8 +11813,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "package_scripts",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 19,
+      "community_name": "scripts",
       "norm_label": "scripts"
     },
     {
@@ -11813,8 +11824,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "package_scripts_dev",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 19,
+      "community_name": "scripts",
       "norm_label": "dev"
     },
     {
@@ -11824,8 +11835,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "package_scripts_dev_auto",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 19,
+      "community_name": "scripts",
       "norm_label": "dev:auto"
     },
     {
@@ -11835,8 +11846,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "package_scripts_build",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 19,
+      "community_name": "scripts",
       "norm_label": "build"
     },
     {
@@ -11846,8 +11857,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "package_scripts_start",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 19,
+      "community_name": "scripts",
       "norm_label": "start"
     },
     {
@@ -11857,8 +11868,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "package_scripts_lint",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 19,
+      "community_name": "scripts",
       "norm_label": "lint"
     },
     {
@@ -11868,8 +11879,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "package_scripts_check",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 19,
+      "community_name": "scripts",
       "norm_label": "check"
     },
     {
@@ -11879,8 +11890,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "package_scripts_seed",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 19,
+      "community_name": "scripts",
       "norm_label": "seed"
     },
     {
@@ -11890,8 +11901,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "package_scripts_seed_agents",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 19,
+      "community_name": "scripts",
       "norm_label": "seed:agents"
     },
     {
@@ -11901,8 +11912,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "package_scripts_agy_start",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 19,
+      "community_name": "scripts",
       "norm_label": "agy:start"
     },
     {
@@ -11912,8 +11923,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "package_scripts_agy_check",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 19,
+      "community_name": "scripts",
       "norm_label": "agy:check"
     },
     {
@@ -11923,8 +11934,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "package_scripts_agy_commit",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 19,
+      "community_name": "scripts",
       "norm_label": "agy:commit"
     },
     {
@@ -12165,8 +12176,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "package_dependencies_react",
-      "community": 51,
-      "community_name": "HRAnalyticsTab.tsx",
+      "community": 55,
+      "community_name": "CourseHub.tsx",
       "norm_label": "react"
     },
     {
@@ -12176,8 +12187,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "react",
-      "community": 51,
-      "community_name": "HRAnalyticsTab.tsx",
+      "community": 55,
+      "community_name": "CourseHub.tsx",
       "norm_label": "react"
     },
     {
@@ -12209,8 +12220,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "package_dependencies_xlsx",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "xlsx"
     },
     {
@@ -12220,8 +12231,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "xlsx",
-      "community": 11,
-      "community_name": "dependencies",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "xlsx"
     },
     {
@@ -12308,8 +12319,8 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "package_devdependencies_types_node",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 25,
+      "community_name": "@types/node",
       "norm_label": "@types/node"
     },
     {
@@ -12319,8 +12330,8 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "types_node",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 25,
+      "community_name": "@types/node",
       "norm_label": "@types/node"
     },
     {
@@ -12330,8 +12341,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "package_devdependencies_types_nodemailer",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 26,
+      "community_name": "@types/nodemailer",
       "norm_label": "@types/nodemailer"
     },
     {
@@ -12341,8 +12352,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "types_nodemailer",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 26,
+      "community_name": "@types/nodemailer",
       "norm_label": "@types/nodemailer"
     },
     {
@@ -12352,8 +12363,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "package_devdependencies_types_react",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 74,
+      "community_name": "@types/react",
       "norm_label": "@types/react"
     },
     {
@@ -12363,8 +12374,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "types_react",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 74,
+      "community_name": "@types/react",
       "norm_label": "@types/react"
     },
     {
@@ -12572,8 +12583,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "package_devdependencies_typescript",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 78,
+      "community_name": "typescript",
       "norm_label": "typescript"
     },
     {
@@ -12583,8 +12594,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "typescript",
-      "community": 20,
-      "community_name": "devDependencies",
+      "community": 78,
+      "community_name": "typescript",
       "norm_label": "typescript"
     },
     {
@@ -13513,7 +13524,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "types_ai_eval",
-      "community": 25,
+      "community": 15,
       "community_name": "ai-eval.ts",
       "norm_label": "ai-eval.ts"
     },
@@ -13526,7 +13537,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_ai_eval_localizedstring",
-      "community": 25,
+      "community": 15,
       "community_name": "ai-eval.ts",
       "norm_label": "localizedstring"
     },
@@ -13539,7 +13550,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_ai_eval_scenariochoice",
-      "community": 25,
+      "community": 15,
       "community_name": "ai-eval.ts",
       "norm_label": "scenariochoice"
     },
@@ -13550,7 +13561,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "types_ai_eval_aievalscenarioschema",
-      "community": 25,
+      "community": 15,
       "community_name": "ai-eval.ts",
       "norm_label": "aievalscenarioschema"
     },
@@ -13563,8 +13574,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_ai_eval_aievalscenario",
-      "community": 23,
-      "community_name": "AiEvalScenario",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "aievalscenario"
     },
     {
@@ -13576,7 +13587,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_ai_eval_scenariosubmitresult",
-      "community": 25,
+      "community": 15,
       "community_name": "ai-eval.ts",
       "norm_label": "scenariosubmitresult"
     },
@@ -13587,7 +13598,7 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "types_ai_eval_aievalturnresponseschema",
-      "community": 25,
+      "community": 15,
       "community_name": "ai-eval.ts",
       "norm_label": "aievalturnresponseschema"
     },
@@ -13600,7 +13611,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_ai_eval_aievalturnresponse",
-      "community": 25,
+      "community": 15,
       "community_name": "ai-eval.ts",
       "norm_label": "aievalturnresponse"
     },
@@ -13613,8 +13624,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_ai_eval_aievalsession",
-      "community": 23,
-      "community_name": "AiEvalScenario",
+      "community": 15,
+      "community_name": "ai-eval.ts",
       "norm_label": "aievalsession"
     },
     {
@@ -13624,7 +13635,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "types_index",
-      "community": 6,
+      "community": 0,
       "community_name": "index.ts",
       "norm_label": "index.ts"
     },
@@ -13637,8 +13648,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_userrole",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community": 10,
+      "community_name": "staff/route.ts",
       "norm_label": "userrole"
     },
     {
@@ -13650,8 +13661,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_staffaccount",
-      "community": 16,
-      "community_name": "getAdminDb",
+      "community": 22,
+      "community_name": "db.ts",
       "norm_label": "staffaccount"
     },
     {
@@ -13663,8 +13674,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_pitchmessage",
-      "community": 25,
-      "community_name": "ai-eval.ts",
+      "community": 27,
+      "community_name": "ai-eval/index.tsx",
       "norm_label": "pitchmessage"
     },
     {
@@ -13676,8 +13687,8 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_agent",
-      "community": 19,
-      "community_name": "Agent",
+      "community": 9,
+      "community_name": "EvaluatorDashboard.tsx",
       "norm_label": "agent"
     },
     {
@@ -13689,7 +13700,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_modulequizstat",
-      "community": 6,
+      "community": 0,
       "community_name": "index.ts",
       "norm_label": "modulequizstat"
     },
@@ -13703,7 +13714,7 @@
       "_origin": "ast",
       "id": "types_index_agentstats",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "agentstats"
     },
     {
@@ -13729,7 +13740,7 @@
       "_origin": "ast",
       "id": "types_index_adminoverviewdata",
       "community": 0,
-      "community_name": "AgentStats",
+      "community_name": "index.ts",
       "norm_label": "adminoverviewdata"
     },
     {
@@ -13741,7 +13752,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_evaluator",
-      "community": 6,
+      "community": 0,
       "community_name": "index.ts",
       "norm_label": "evaluator"
     },
@@ -13780,7 +13791,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_evaluationcriteria",
-      "community": 6,
+      "community": 0,
       "community_name": "index.ts",
       "norm_label": "evaluationcriteria"
     },
@@ -13793,7 +13804,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_evaluationsessiontype",
-      "community": 6,
+      "community": 0,
       "community_name": "index.ts",
       "norm_label": "evaluationsessiontype"
     },
@@ -13819,7 +13830,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_modulestatus",
-      "community": 6,
+      "community": 0,
       "community_name": "index.ts",
       "norm_label": "modulestatus"
     },
@@ -13832,7 +13843,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_trainingmodule",
-      "community": 6,
+      "community": 0,
       "community_name": "index.ts",
       "norm_label": "trainingmodule"
     },
@@ -13845,7 +13856,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_agentprogress",
-      "community": 6,
+      "community": 0,
       "community_name": "index.ts",
       "norm_label": "agentprogress"
     },
@@ -13859,7 +13870,7 @@
       "_origin": "ast",
       "id": "types_index_trainingperiod",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "trainingperiod"
     },
     {
@@ -13872,7 +13883,7 @@
       "_origin": "ast",
       "id": "types_index_trainingdayrecord",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "trainingdayrecord"
     },
     {
@@ -13885,7 +13896,7 @@
       "_origin": "ast",
       "id": "types_index_disciplinetype",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "disciplinetype"
     },
     {
@@ -13898,7 +13909,7 @@
       "_origin": "ast",
       "id": "types_index_disciplinerecord",
       "community": 6,
-      "community_name": "index.ts",
+      "community_name": "TrainingPeriod",
       "norm_label": "disciplinerecord"
     },
     {
@@ -13910,7 +13921,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_livesessionrecord",
-      "community": 6,
+      "community": 0,
       "community_name": "index.ts",
       "norm_label": "livesessionrecord"
     },
@@ -13923,7 +13934,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "id": "types_index_approvalactiontype",
-      "community": 6,
+      "community": 0,
       "community_name": "index.ts",
       "norm_label": "approvalactiontype"
     },
@@ -42523,7 +42534,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "lib/server/courses.ts",
-      "source_location": "L2",
+      "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
       "source": "lib_server_courses",
@@ -42535,7 +42546,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "lib/server/courses.ts",
-      "source_location": "L2",
+      "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
       "source": "lib_server_courses",
@@ -42547,7 +42558,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "lib/server/courses.ts",
-      "source_location": "L2",
+      "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
       "source": "lib_server_courses",
@@ -43980,10 +43991,22 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "indirect_call",
+      "confidence": "INFERRED",
+      "source_file": "lib/server/courses.ts",
+      "source_location": "L48",
+      "weight": 1.0,
+      "_origin": "ast",
+      "context": "argument",
+      "source": "lib_server_courses",
+      "target": "lib_server_courses_fetchcoursemodulesfromdb",
+      "confidence_score": 0.5
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "lib/server/courses.ts",
-      "source_location": "L41",
+      "source_location": "L54",
       "weight": 1.0,
       "_origin": "ast",
       "source": "lib_server_courses",
@@ -43994,7 +44017,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "lib/server/courses.ts",
-      "source_location": "L4",
+      "source_location": "L46",
       "weight": 1.0,
       "_origin": "ast",
       "source": "lib_server_courses",
@@ -44006,7 +44029,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "lib/server/courses.ts",
-      "source_location": "L1",
+      "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
       "source": "lib_server_courses",
@@ -44018,7 +44041,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "lib/server/courses.ts",
-      "source_location": "L1",
+      "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
       "source": "lib_server_courses",
@@ -44030,24 +44053,24 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "lib/server/courses.ts",
-      "source_location": "L42",
+      "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "lib_server_courses_getcoursemodule",
-      "target": "lib_server_courses_getcoursemodules",
+      "source": "lib_server_courses_fetchcoursemodulesfromdb",
+      "target": "lib_server_firebase_admin_getadmindb",
       "confidence_score": 1.0
     },
     {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
       "source_file": "lib/server/courses.ts",
-      "source_location": "L6",
+      "source_location": "L55",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "lib_server_courses_getcoursemodules",
-      "target": "lib_server_firebase_admin_getadmindb"
+      "source": "lib_server_courses_getcoursemodule",
+      "target": "lib_server_courses_getcoursemodules",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -50115,5 +50138,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "c33d61814e35e5de26e51d129e79901b56ce962a"
+  "built_at_commit": "18c99e9917e044a156abc52dbc0a0122d0a7da86"
 }

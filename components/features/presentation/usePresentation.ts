@@ -317,9 +317,10 @@ export function usePresentation(
         if (n >= 1 && !preloadedSlides.has(n)) priority.push(n);
       }
 
-      if (priority.length === 0) return;
       const currentReady = preloadedSlides.has(slide);
       if (!currentReady) {
+        // Immediately mark the current slide preloaded so the presentation displays without blocking UI
+        setPreloadedSlides(prev => new Set(prev).add(slide));
         setIsPreloading(true);
         setPreloadingProgress(0);
       }

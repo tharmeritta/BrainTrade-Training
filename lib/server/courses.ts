@@ -1,7 +1,9 @@
+import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { getAdminDb } from './firebase-admin';
 import { COURSE_MODULES, type CourseModule } from '@/lib/courses';
 
-export async function getCourseModules(): Promise<Record<string, CourseModule>> {
+async function fetchCourseModulesFromDb(): Promise<Record<string, CourseModule>> {
   try {
     const db = getAdminDb();
     const doc = await db.collection('module_config').doc('learn').get();
@@ -37,6 +39,17 @@ export async function getCourseModules(): Promise<Record<string, CourseModule>> 
     return COURSE_MODULES;
   }
 }
+
+/**
+ * Cached fetcher for course modules with 1-hour revalidation and request-deduplication.
+ */
+export const getCourseModules = cache(
+  unstable_cache(
+    fetchCourseModulesFromDb,
+    ['learn-course-modules'],
+    { revalidate: 3600, tags: ['course-modules'] }
+  )
+);
 
 export async function getCourseModule(id: string): Promise<CourseModule | undefined> {
   const modules = await getCourseModules();

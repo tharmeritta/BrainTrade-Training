@@ -165,9 +165,9 @@
     "semantic_hash": "296cfe94018e460266c935c9c0fe221d"
   },
   "app/api/admin/config/route.ts": {
-    "mtime": 1786083165.6018813,
-    "ast_hash": "b431bc43283ba9839519e08dd0d870c2",
-    "semantic_hash": "b431bc43283ba9839519e08dd0d870c2"
+    "mtime": 1786692083.3297014,
+    "ast_hash": "611b17b08b62f1c2a164a3fbd2159c26",
+    "semantic_hash": ""
   },
   "app/api/admin/create-user/route.ts": {
     "mtime": 1786083165.6020005,
@@ -825,8 +825,8 @@
     "semantic_hash": ""
   },
   "components/features/presentation/usePresentation.ts": {
-    "mtime": 1786509043.6036496,
-    "ast_hash": "a2b60b5f6fa4b0c9be7cca606339562b",
+    "mtime": 1786692057.7131069,
+    "ast_hash": "00ee02bacc85ef35c738b671c2a6b8b0",
     "semantic_hash": ""
   },
   "components/features/quiz/QuizBriefing.tsx": {
@@ -1060,9 +1060,9 @@
     "semantic_hash": "f90199e805b28f5f445542434d08650e"
   },
   "lib/server/courses.ts": {
-    "mtime": 1786087159.7982874,
-    "ast_hash": "07e8a43116e4ed7d5ee9bab2c921bbf4",
-    "semantic_hash": "07e8a43116e4ed7d5ee9bab2c921bbf4"
+    "mtime": 1786692020.8001382,
+    "ast_hash": "b718d383c5c4b1ed7c98fe56afca9738",
+    "semantic_hash": ""
   },
   "lib/server/db.ts": {
     "mtime": 1786083165.6726053,
@@ -1160,8 +1160,8 @@
     "semantic_hash": ""
   },
   "next-env.d.ts": {
-    "mtime": 1786535346.0165267,
-    "ast_hash": "d0f8375ae1199dc7acd3977fc33b78b8",
+    "mtime": 1786692048.850026,
+    "ast_hash": "2a74d3909800ca5467fa83b0ab4a4890",
     "semantic_hash": ""
   },
   "next.config.ts": {
@@ -1225,8 +1225,8 @@
     "semantic_hash": ""
   },
   "apphosting.yaml": {
-    "mtime": 1786096075.7057586,
-    "ast_hash": "2d09fa8137677656906b2118a91d1497",
+    "mtime": 1786692017.692087,
+    "ast_hash": "491e585459706b624cf061cbeef4647c",
     "semantic_hash": ""
   },
   "cloudbuild.yaml": {

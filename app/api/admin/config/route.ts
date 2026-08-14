@@ -45,6 +45,15 @@ export async function PATCH(req: NextRequest) {
       updatedAt: new Date().toISOString()
     });
 
+    if (id === 'learn') {
+      try {
+        const { revalidateTag } = await import('next/cache');
+        (revalidateTag as (tag: string, profile?: any) => void)('course-modules', 'default');
+      } catch (e) {
+        console.warn('revalidateTag failed:', e);
+      }
+    }
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error('Update config error:', err);
