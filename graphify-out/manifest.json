@@ -1295,8 +1295,8 @@
     "semantic_hash": "8bd478bb8ac98a2b1d064f3a9eab9b93"
   },
   "components/features/courses/CourseHub.tsx": {
-    "mtime": 1786509054.7684371,
-    "ast_hash": "d49d13e7b2ca655e0f6d9bf1b331314d",
+    "mtime": 1786697024.0252938,
+    "ast_hash": "8bfd581805c880abd666096d4109599f",
     "semantic_hash": ""
   },
   "components/features/evaluator/EvaluatorDashboard.tsx": {

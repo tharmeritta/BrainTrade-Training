@@ -244,7 +244,7 @@ const CourseCard = memo(({ module, lang, index, onStart, isCompleted, onMarkComp
                          : 'bg-secondary/50 border-black/5 dark:border-white/10 text-foreground hover:bg-primary hover:text-white hover:border-primary hover:shadow-lg hover:shadow-primary/30'
                        }`}
           >
-            {isCompleted ? t('reviewTraining') || 'Review Training' : t('beginTraining')}
+            {isCompleted ? t('reviewTraining') || 'ทบทวนบทเรียน' : t('beginTraining')}
             <ChevronRight
               size={16}
               className="group-hover/btn:translate-x-1 transition-transform"
