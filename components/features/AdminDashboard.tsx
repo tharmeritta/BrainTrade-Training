@@ -5,6 +5,7 @@ import AdminSidebar from './admin/AdminSidebar';
 import AdminHeader from './admin/AdminHeader';
 import AdminTabContent from './admin/AdminTabContent';
 import ChangePasswordModal from './admin/ChangePasswordModal';
+import CommandPalette from '@/components/ui/CommandPalette';
 
 interface AdminDashboardProps {
   role: 'admin' | 'manager' | 'it' | 'trainer' | 'hr';
@@ -27,6 +28,8 @@ export default function AdminDashboard(props: AdminDashboardProps) {
 
   return (
     <div className="min-h-screen bg-background relative selection:bg-primary/20">
+      <CommandPalette />
+
       <ChangePasswordModal 
         isOpen={state.isPwModalOpen} 
         onClose={() => actions.setIsPwModalOpen(false)} 
@@ -51,7 +54,9 @@ export default function AdminDashboard(props: AdminDashboardProps) {
             mounted={state.mounted}
             role={props.role}
             activeRoleView={state.activeRoleView}
+            viewMode={state.viewMode}
             onRoleViewChange={actions.setActiveRoleView}
+            onViewModeChange={actions.setViewMode}
             t={t}
           />
 

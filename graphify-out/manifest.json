@@ -375,8 +375,8 @@
     "semantic_hash": "a78f94e4a3fc4cc20f83a024b7d1404e"
   },
   "components/features/AdminDashboard.tsx": {
-    "mtime": 1786096636.3663886,
-    "ast_hash": "b632408cd32f68641361b2855c13de44",
+    "mtime": 1786943383.6136985,
+    "ast_hash": "9db0337449dc0ac0e1337dbcf793f339",
     "semantic_hash": ""
   },
   "components/features/AgentEntry.tsx": {
@@ -400,8 +400,8 @@
     "semantic_hash": ""
   },
   "components/features/admin/AdminHeader.tsx": {
-    "mtime": 1786420633.8372996,
-    "ast_hash": "120677af67885f1fdb7eec69384ddb67",
+    "mtime": 1786943375.2310624,
+    "ast_hash": "24eab4ebb66dc8f2aba85716396151ac",
     "semantic_hash": ""
   },
   "components/features/admin/AdminHelpers.ts": {
@@ -410,13 +410,13 @@
     "semantic_hash": "932da802743a94f6589e10c41bf05af7"
   },
   "components/features/admin/AdminSidebar.tsx": {
-    "mtime": 1786510606.868023,
-    "ast_hash": "3f1bc091494ed1bcf4c5e7af8d384210",
+    "mtime": 1786943368.3400774,
+    "ast_hash": "dfd6b0010ef12db3633e9b514f828d48",
     "semantic_hash": ""
   },
   "components/features/admin/AdminTabContent.tsx": {
-    "mtime": 1786535821.499213,
-    "ast_hash": "962bb13ab90677a6f6ccc7504d6a6ef0",
+    "mtime": 1786943336.460555,
+    "ast_hash": "07f9a9f0e0cf31bc62a0d8578e6c0fd4",
     "semantic_hash": ""
   },
   "components/features/admin/AgentDetailModal.tsx": {
@@ -565,8 +565,8 @@
     "semantic_hash": "7bda29227097b2da8c731323d0ea826b"
   },
   "components/features/admin/dashboard-policy.ts": {
-    "mtime": 1786510599.6813715,
-    "ast_hash": "ad423535d56d52a49be30abc4413f499",
+    "mtime": 1786943282.6520045,
+    "ast_hash": "5a8dec17e04f605381e230fbaf8a910c",
     "semantic_hash": ""
   },
   "components/features/admin/evaluations/ActiveBatchHeader.tsx": {
@@ -655,8 +655,8 @@
     "semantic_hash": "afa3432a7d661a1e5ffdb4c8ec798452"
   },
   "components/features/admin/useAdminDashboard.ts": {
-    "mtime": 1786510602.1677399,
-    "ast_hash": "99c3c765a5dc5182d2370a42676a6255",
+    "mtime": 1786943359.1579645,
+    "ast_hash": "df9ece69a73c69fc66a7ee3f48456feb",
     "semantic_hash": ""
   },
   "components/features/agent-entry/BrandingPanel.tsx": {
@@ -1150,18 +1150,18 @@
     "semantic_hash": "f2218e8722ac3ccfc7ab7adec1f11fe0"
   },
   "messages/en.json": {
-    "mtime": 1786524602.3162732,
-    "ast_hash": "7a2e53494876eca8dbb9b227c1788ffd",
+    "mtime": 1786943266.0721734,
+    "ast_hash": "ec517f30484b67d98320c4c3f65f5356",
     "semantic_hash": ""
   },
   "messages/th.json": {
-    "mtime": 1786698233.5212803,
-    "ast_hash": "ce3ddd6bb48f50facf45484e2f79ad4b",
+    "mtime": 1786943269.860732,
+    "ast_hash": "44c12feeaca6302ca0f372a2459f0729",
     "semantic_hash": ""
   },
   "next-env.d.ts": {
-    "mtime": 1786692048.850026,
-    "ast_hash": "2a74d3909800ca5467fa83b0ab4a4890",
+    "mtime": 1786939923.9562685,
+    "ast_hash": "d0f8375ae1199dc7acd3977fc33b78b8",
     "semantic_hash": ""
   },
   "next.config.ts": {
@@ -1380,8 +1380,8 @@
     "semantic_hash": "65851656936cfd2b35f0b68baf42b001"
   },
   "components/ui/CommandPalette.tsx": {
-    "mtime": 1786420636.6085289,
-    "ast_hash": "c7643701529c18dbadf255f79de58650",
+    "mtime": 1786943394.7808478,
+    "ast_hash": "337f6518142004897ea29b69dd0174f2",
     "semantic_hash": ""
   },
   "components/ui/StaffAiCopilot.tsx": {
@@ -1577,6 +1577,26 @@
   "app/[locale]/template.tsx": {
     "mtime": 1786535817.7247527,
     "ast_hash": "d649e83bced3e592fa7c647513da34f7",
+    "semantic_hash": ""
+  },
+  "components/features/admin/analytics/AnalyticsHub.tsx": {
+    "mtime": 1786943457.1739702,
+    "ast_hash": "49ad336192e0e4c375ab998c2c1615ff",
+    "semantic_hash": ""
+  },
+  "components/features/admin/operations/OperationsHub.tsx": {
+    "mtime": 1786943450.7098408,
+    "ast_hash": "f1681d2133b6169b054b97d306643772",
+    "semantic_hash": ""
+  },
+  "components/features/admin/roster/RosterHub.tsx": {
+    "mtime": 1786943326.2713997,
+    "ast_hash": "36e04ca5c3a84d7dc6456735452cc414",
+    "semantic_hash": ""
+  },
+  "components/features/admin/studio/AcademyStudio.tsx": {
+    "mtime": 1786943436.499585,
+    "ast_hash": "ef1603f47d7d54cce14f34c714031cb9",
     "semantic_hash": ""
   }
 }

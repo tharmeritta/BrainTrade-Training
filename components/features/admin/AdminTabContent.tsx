@@ -19,6 +19,13 @@ const TabLoader = () => (
 
 // Tab Registry for dynamic imports
 const TAB_REGISTRY: Record<Tab, any> = {
+  // New 4 Workspaces
+  operations:  dynamic(() => import('./operations/OperationsHub'), { loading: TabLoader }),
+  studio:      dynamic(() => import('./studio/AcademyStudio'), { loading: TabLoader }),
+  roster:      dynamic(() => import('./roster/RosterHub'), { loading: TabLoader }),
+  analytics:   dynamic(() => import('./analytics/AnalyticsHub'), { loading: TabLoader }),
+
+  // Legacy Tabs (Backwards-compatible)
   overview:    dynamic(() => import('./OverviewTab'), { loading: TabLoader }),
   hranalytics: dynamic(() => import('./HRAnalyticsTab'), { loading: TabLoader }),
   training:    dynamic(() => import('@/components/features/trainer/TrainerPanel'), { loading: TabLoader }),
@@ -42,7 +49,7 @@ interface AdminTabContentProps {
 }
 
 export default function AdminTabContent({ tab, role, uid, name, isInteractive }: AdminTabContentProps) {
-  const TabComponent = TAB_REGISTRY[tab];
+  const TabComponent = TAB_REGISTRY[tab] || TAB_REGISTRY.operations;
   const isReadOnlyRole = role === 'it' || role === 'manager' || role === 'hr';
 
   // Permission check for sensitive tabs
@@ -54,7 +61,7 @@ export default function AdminTabContent({ tab, role, uid, name, isInteractive }:
   }
 
   return (
-    <motion.main className="flex-1 px-6 py-8 overflow-auto min-h-0 w-full flex flex-col">
+    <motion.main className="flex-1 px-4 sm:px-6 py-6 sm:py-8 overflow-auto min-h-0 w-full flex flex-col">
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={tab}
@@ -78,4 +85,3 @@ export default function AdminTabContent({ tab, role, uid, name, isInteractive }:
     </motion.main>
   );
 }
-

@@ -44,6 +44,15 @@ The **BrainTrade Training Platform** is an enterprise-grade Next.js (App Router)
    - Verified system global default locale is `th` (`DEFAULT_LOCALE = 'th'`).
    - Localized course catalogue badges, loading spinners, presentation slide initializers (`initialLang: lang === 'en' ? 'en' : 'th'`), and locked quiz modals in [`messages/th.json`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/messages/th.json).
 
+8. **Admin Suite UX Modernization & 4 Unified Workspaces**:
+   - **4 Core Workspaces ([`dashboard-policy.ts`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/components/features/admin/dashboard-policy.ts))**: Reorganized 12 flat tabs into 4 goal-oriented workspaces:
+     - 🚀 **Operations Hub ([`OperationsHub.tsx`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/components/features/admin/operations/OperationsHub.tsx))**: Realtime overview, live stream, and pending access approvals.
+     - 🎓 **Academy Studio ([`AcademyStudio.tsx`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/components/features/admin/studio/AcademyStudio.tsx))**: Unified course, quiz, and AI scenario builder with **Live Split-Screen Agent Preview**.
+     - 👥 **Staff & Roster ([`RosterHub.tsx`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/components/features/admin/roster/RosterHub.tsx))**: Trainee directory, staff roles, sandbox, and AI Copilot.
+     - 📊 **Analytics & Governance ([`AnalyticsHub.tsx`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/components/features/admin/analytics/AnalyticsHub.tsx))**: Cohort progress heatmap, Excel exports, certificates, and system health radar.
+   - **Global Command Palette ([`CommandPalette.tsx`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/components/ui/CommandPalette.tsx))**: Instant search and tab jumping via `⌘K`.
+   - **Essentials vs. Power Mode ([`AdminHeader.tsx`](file:///Users/prinmacpro/Documents/Antigravity%20Projects/BrainTrade-Training/components/features/admin/AdminHeader.tsx))**: Clean priority dashboard view for trainers/managers with expandable JSON controls for superadmins.
+
 ---
 
 ## 2. Directory Architecture & Topology

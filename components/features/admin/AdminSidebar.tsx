@@ -1,73 +1,11 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Zap, ChevronRight } from 'lucide-react';
-import { Tab, TabItem, UserRole } from './dashboard-policy';
-
-interface NavGroupProps {
-  label?: string;
-  items: TabItem[];
-  sidebarCollapsed: boolean;
-  activeTabId: Tab;
-  onSelectTab: (id: Tab) => void;
-  t: any;
-}
-
-function NavGroup({ 
-  label, 
-  items, 
-  sidebarCollapsed, 
-  activeTabId, 
-  onSelectTab,
-  t
-}: NavGroupProps) {
-  if (items.length === 0) return null;
-  return (
-    <div className="mb-2">
-      {label && !sidebarCollapsed && (
-        <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 px-3 mb-1.5 mt-3">
-          {label}
-        </p>
-      )}
-      {label && sidebarCollapsed && <div className="my-2 border-t border-border/30" />}
-      <div className="flex flex-col gap-0.5">
-        {items.map(item => {
-          const Icon = item.icon;
-          const active = activeTabId === item.id;
-          return (
-            <button
-              type="button"
-              key={item.id}
-              onClick={() => onSelectTab(item.id)}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectTab(item.id); } }}
-              title={sidebarCollapsed ? t(`tabs.${item.labelKey}`) : undefined}
-              aria-label={t(`tabs.${item.labelKey}`)}
-              className={`relative flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-sm font-semibold transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
-                ${active
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
-                }
-                ${sidebarCollapsed ? 'justify-center px-2' : ''}
-              `}
-            >
-              {active && (
-                <motion.div
-                  layoutId="sidebar-indicator"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-full"
-                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                />
-              )}
-              <Icon size={16} className={`shrink-0 ${active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
-              {!sidebarCollapsed && (
-                <span className="flex-1 text-left">{t(`tabs.${item.labelKey}`)}</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+import { 
+  LogOut, Zap, ChevronRight, Sparkles, Activity, 
+  Users, BarChart3, Search, Command
+} from 'lucide-react';
+import { Tab, TabItem, UserRole, Workspace, WorkspaceItem } from './dashboard-policy';
 
 interface AdminSidebarProps {
   role: string;
@@ -75,6 +13,9 @@ interface AdminSidebarProps {
   interactiveAccessUntil?: string;
   state: {
     tab: Tab;
+    rawTab: string;
+    activeWorkspace: Workspace;
+    activeSubTab: string;
     sidebarCollapsed: boolean;
     profileOpen: boolean;
     requestingAccess: boolean;
@@ -83,6 +24,7 @@ interface AdminSidebarProps {
   };
   actions: {
     setTab: (tab: Tab) => void;
+    setWorkspace: (ws: Workspace, sub?: string) => void;
     setSidebarCollapsed: (v: boolean) => void;
     setProfileOpen: (v: boolean | ((v: boolean) => boolean)) => void;
     setIsPwModalOpen: (v: boolean) => void;
@@ -90,6 +32,9 @@ interface AdminSidebarProps {
     logout: () => void;
   };
   navigation: {
+    visibleWorkspaces: WorkspaceItem[];
+    activeWorkspace: Workspace;
+    activeSubTab: string;
     monitoringTabs: TabItem[];
     academyTabs: TabItem[];
     analyticsTabs: TabItem[];
@@ -114,37 +59,50 @@ export default function AdminSidebar({
                          'bg-slate-500/15 text-slate-700 dark:text-slate-400 border-slate-500/20';
 
   return (
-    <aside className={`flex flex-col shrink-0 bg-background/70 backdrop-blur-2xl border-r border-border/40 sticky top-0 h-dvh pt-safe pb-safe transition-all duration-300 ${state.sidebarCollapsed ? 'w-[60px]' : 'w-[220px]'}`}>
+    <aside className={`flex flex-col shrink-0 bg-background/80 backdrop-blur-2xl border-r border-border/60 sticky top-0 h-dvh pt-safe pb-safe transition-all duration-300 ${state.sidebarCollapsed ? 'w-[68px]' : 'w-[250px]'}`}>
       
-      {/* Logo */}
-      <div className={`flex items-center h-16 border-b border-border/40 px-4 ${state.sidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
-        <div className="relative w-8 h-8 rounded-xl overflow-hidden shrink-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan to-brand-purple" />
-          <span className="relative z-10 flex items-center justify-center w-full h-full text-xs font-black text-white tracking-tight">
-            B
-          </span>
-        </div>
-        {!state.sidebarCollapsed && (
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-black text-foreground tracking-tight truncate">{t('title')}</p>
-            <p className="text-[10px] text-muted-foreground truncate">{t('controlPanel', { role: t(`roles.${role}`) })}</p>
+      {/* Logo & Header */}
+      <div className={`flex items-center h-16 border-b border-border/50 px-4 ${state.sidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="relative w-8 h-8 rounded-xl overflow-hidden shrink-0 shadow-md shadow-primary/20">
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan via-primary to-brand-purple" />
+            <span className="relative z-10 flex items-center justify-center w-full h-full text-xs font-black text-white tracking-tight">
+              B
+            </span>
           </div>
+          {!state.sidebarCollapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-black text-foreground tracking-tight truncate">{t('title')}</p>
+              <p className="text-[10px] text-muted-foreground truncate">{t('controlPanel', { role: t(`roles.${role}`) })}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Collapse toggle */}
+        {!state.sidebarCollapsed && (
+          <button
+            onClick={() => actions.setSidebarCollapsed(true)}
+            className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/60 text-xs"
+            title="Collapse sidebar"
+          >
+            ←
+          </button>
         )}
       </div>
 
-      {/* User badge */}
-      <div className={`px-3 pt-4 pb-2 relative`}>
+      {/* User profile & Role */}
+      <div className={`px-3 pt-3 pb-2 relative`}>
         <button
           type="button"
           onClick={() => actions.setProfileOpen(v => !v)}
           aria-label={`User menu for ${name}`}
-          className={`w-full flex items-center gap-2.5 min-h-[44px] rounded-xl border transition-all hover:opacity-80 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+          className={`w-full flex items-center gap-2.5 min-h-[44px] rounded-xl border transition-all hover:opacity-85 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
             ${roleBadgeClass}
             ${state.sidebarCollapsed ? 'justify-center p-2' : 'px-3 py-2'}
           `}
           title={state.sidebarCollapsed ? name : undefined}
         >
-          <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black uppercase shrink-0 ${roleBadgeClass}`}>
+          <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-black uppercase shrink-0 ${roleBadgeClass}`}>
             {name.charAt(0)}
           </div>
           {!state.sidebarCollapsed && (
@@ -186,14 +144,22 @@ export default function AdminSidebar({
                     <p className={`text-[10px] font-black uppercase tracking-wider`}>{t(`roles.${role}`)}</p>
                   </div>
                 </div>
-                <div className="p-2">
+                <div className="p-2 space-y-1">
                   <button
                     type="button"
                     onClick={() => { actions.setIsPwModalOpen(true); actions.setProfileOpen(false); }}
-                    className="w-full flex items-center gap-2.5 px-3 min-h-[44px] rounded-xl text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full flex items-center gap-2.5 px-3 min-h-[40px] rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all"
                   >
                     <Zap size={14} className="shrink-0" />
                     {t('changePw')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={actions.logout}
+                    className="w-full flex items-center gap-2.5 px-3 min-h-[40px] rounded-xl text-xs font-semibold text-rose-500 hover:bg-rose-500/10 transition-all"
+                  >
+                    <LogOut size={14} className="shrink-0" />
+                    {t('signOut')}
                   </button>
                 </div>
               </motion.div>
@@ -202,89 +168,98 @@ export default function AdminSidebar({
         </AnimatePresence>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-2 py-2 scrollbar-hide">
-        <NavGroup 
-          label={t('groups.monitoring')}
-          items={navigation.monitoringTabs} 
-          sidebarCollapsed={state.sidebarCollapsed} 
-          activeTabId={state.tab} 
-          onSelectTab={actions.setTab} 
-          t={t}
-        />
-        <NavGroup 
-          label={t('groups.academy')}
-          items={navigation.academyTabs} 
-          sidebarCollapsed={state.sidebarCollapsed} 
-          activeTabId={state.tab} 
-          onSelectTab={actions.setTab} 
-          t={t}
-        />
-        <NavGroup 
-          label={t('groups.analytics')}
-          items={navigation.analyticsTabs} 
-          sidebarCollapsed={state.sidebarCollapsed} 
-          activeTabId={state.tab} 
-          onSelectTab={actions.setTab} 
-          t={t}
-        />
-        <NavGroup 
-          label={t('groups.governance')}
-          items={navigation.governanceTabs} 
-          sidebarCollapsed={state.sidebarCollapsed} 
-          activeTabId={state.tab} 
-          onSelectTab={actions.setTab} 
-          t={t}
-        />
-        
-        {state.isReadOnlyRole && !state.sidebarCollapsed && (
-          <div className="mt-6 px-3">
-            <div className={`p-4 rounded-2xl border ${state.isInteractive ? 'bg-blue-500/10 border-blue-500/20' : 'bg-amber-500/10 border-amber-500/20'}`}>
-              <p className={`text-[10px] font-bold uppercase tracking-wider mb-2 ${state.isInteractive ? 'text-blue-600 dark:text-blue-400' : 'text-amber-700 dark:text-amber-400'}`}>
-                {state.isInteractive ? t('it.interactiveActive') : t('it.readOnlyMode')}
-              </p>
-              {!state.isInteractive && (
+      {/* 4 Core Workspaces Navigation */}
+      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-3 scrollbar-hide">
+        {!state.sidebarCollapsed && (
+          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 px-2 pt-1">
+            Workspaces
+          </p>
+        )}
+
+        <div className="flex flex-col gap-1.5">
+          {navigation.visibleWorkspaces.map(ws => {
+            const Icon = ws.icon;
+            const active = state.activeWorkspace === ws.id;
+            return (
+              <div key={ws.id} className="space-y-1">
+                {/* Workspace Main Button */}
                 <button
                   type="button"
-                  onClick={actions.requestInteractiveAccess}
-                  disabled={state.requestingAccess}
-                  className="w-full py-2.5 min-h-[44px] bg-amber-500 text-white text-xs font-bold rounded-xl hover:bg-amber-600 transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={() => actions.setWorkspace(ws.id, ws.defaultSubTab)}
+                  title={state.sidebarCollapsed ? t(`workspaces.${ws.labelKey}`) : undefined}
+                  className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+                    ${active 
+                      ? 'bg-primary/10 text-primary border border-primary/20 shadow-xs' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60 border border-transparent'
+                    }
+                    ${state.sidebarCollapsed ? 'justify-center px-2' : ''}
+                  `}
                 >
-                  {state.requestingAccess ? '...' : t('it.requestInteractive')}
+                  {active && (
+                    <motion.div
+                      layoutId="workspace-active-bar"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full"
+                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                    />
+                  )}
+                  <Icon size={18} className={`shrink-0 ${active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
+                  
+                  {!state.sidebarCollapsed && (
+                    <div className="flex-1 text-left min-w-0">
+                      <p className="truncate leading-tight">{t(`workspaces.${ws.labelKey}`)}</p>
+                      <p className="text-[10px] font-normal text-muted-foreground truncate">{t(`workspaces.${ws.descKey}`)}</p>
+                    </div>
+                  )}
                 </button>
-              )}
-              {state.isInteractive && interactiveAccessUntil && (
-                <p className="text-[9px] text-blue-600 dark:text-blue-400/80 leading-tight">
-                  {t('it.expiresAt', { time: new Date(interactiveAccessUntil).toLocaleTimeString() })}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
+
+                {/* SubTabs List (shown when active and sidebar is expanded) */}
+                {active && !state.sidebarCollapsed && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="pl-6 pr-1 space-y-0.5"
+                  >
+                    {ws.subTabs.map(sub => {
+                      const SubIcon = sub.icon;
+                      const subActive = state.activeSubTab === sub.id;
+                      return (
+                        <button
+                          key={sub.id}
+                          type="button"
+                          onClick={() => actions.setWorkspace(ws.id, sub.id)}
+                          className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all
+                            ${subActive 
+                              ? 'text-primary bg-primary/10 font-bold' 
+                              : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'
+                            }
+                          `}
+                        >
+                          <SubIcon size={13} className="shrink-0" />
+                          <span className="truncate">{t(`workspaces.subTabs.${sub.id}`)}</span>
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </nav>
 
-      {/* Bottom */}
-      <div className={`border-t border-border/40 p-2 flex flex-col gap-1`}>
-        <button
-          type="button"
-          onClick={actions.logout}
-          title={t('signOut')}
-          aria-label={t('signOut')}
-          className={`flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-sm font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${state.sidebarCollapsed ? 'justify-center' : ''}`}
-        >
-          <LogOut size={15} className="shrink-0" />
-          {!state.sidebarCollapsed && <span>{t('signOut')}</span>}
-        </button>
-        <button
-          type="button"
-          onClick={() => actions.setSidebarCollapsed(!state.sidebarCollapsed)}
-          aria-label="Toggle sidebar collapse"
-          className={`flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-xs text-muted-foreground/60 hover:text-muted-foreground hover:bg-secondary/40 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${state.sidebarCollapsed ? 'justify-center' : ''}`}
-        >
-          <ChevronRight size={13} className={`shrink-0 transition-transform duration-300 ${state.sidebarCollapsed ? '' : 'rotate-180'}`} />
-          {!state.sidebarCollapsed && <span>Collapse</span>}
-        </button>
-      </div>
+      {/* Footer / Expand & Shortcut helper */}
+      {state.sidebarCollapsed && (
+        <div className="p-3 border-t border-border/40 flex justify-center">
+          <button
+            onClick={() => actions.setSidebarCollapsed(false)}
+            className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/60 text-xs"
+            title="Expand sidebar"
+          >
+            →
+          </button>
+        </div>
+      )}
     </aside>
   );
 }
