@@ -443,6 +443,48 @@ export function usePresentation(
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [goToSlide, toggleFullscreen]);
 
+  // macOS Trackpad Two-Finger Horizontal Swipe Gesture for standard presentation viewer
+  const swipeCooldownRef = useRef(false);
+  const accumulatedDeltaXRef = useRef(0);
+
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT' || target.isContentEditable) return;
+
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 10) {
+        if (swipeCooldownRef.current) return;
+
+        accumulatedDeltaXRef.current += e.deltaX;
+
+        if (accumulatedDeltaXRef.current > 35) {
+          if (slideRef.current < total) {
+            goToSlide(slideRef.current + 1);
+            swipeCooldownRef.current = true;
+            accumulatedDeltaXRef.current = 0;
+            setTimeout(() => {
+              swipeCooldownRef.current = false;
+            }, 400);
+          }
+        } else if (accumulatedDeltaXRef.current < -35) {
+          if (slideRef.current > 1) {
+            goToSlide(slideRef.current - 1);
+            swipeCooldownRef.current = true;
+            accumulatedDeltaXRef.current = 0;
+            setTimeout(() => {
+              swipeCooldownRef.current = false;
+            }, 400);
+          }
+        }
+      } else {
+        accumulatedDeltaXRef.current = 0;
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: true });
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, [goToSlide, total]);
+
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
   }, []);

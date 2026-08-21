@@ -193,6 +193,53 @@ export function PresenterViewModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, slide, total, goToSlide, onClose, showGrid]);
 
+  // macOS Trackpad Two-Finger Horizontal Swipe Gesture
+  const swipeCooldownRef = useRef(false);
+  const accumulatedDeltaXRef = useRef(0);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'TEXTAREA' || target.closest('#speaker-notes-textarea') || showGrid) return;
+
+      // Check if it's primarily a horizontal two-finger trackpad swipe
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 10) {
+        if (swipeCooldownRef.current) return;
+
+        accumulatedDeltaXRef.current += e.deltaX;
+
+        if (accumulatedDeltaXRef.current > 35) {
+          // Two-finger swipe left -> Next slide
+          if (slide < total) {
+            goToSlide(slide + 1);
+            swipeCooldownRef.current = true;
+            accumulatedDeltaXRef.current = 0;
+            setTimeout(() => {
+              swipeCooldownRef.current = false;
+            }, 400);
+          }
+        } else if (accumulatedDeltaXRef.current < -35) {
+          // Two-finger swipe right -> Previous slide
+          if (slide > 1) {
+            goToSlide(slide - 1);
+            swipeCooldownRef.current = true;
+            accumulatedDeltaXRef.current = 0;
+            setTimeout(() => {
+              swipeCooldownRef.current = false;
+            }, 400);
+          }
+        }
+      } else {
+        accumulatedDeltaXRef.current = 0;
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: true });
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, [isOpen, slide, total, goToSlide, showGrid]);
+
   // Broadcast state to audience window whenever slide/lang changes
   useEffect(() => {
     if (channelRef.current) {
