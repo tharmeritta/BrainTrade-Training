@@ -209,6 +209,9 @@ export function PresenterViewModal({
 
       // Check if it's primarily a horizontal two-finger trackpad swipe
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 2) {
+        // CRITICAL: Prevent browser native back/forward history swipe navigation
+        e.preventDefault();
+
         if (isTransitioningRef.current) return;
 
         setIsSwiping(true);
@@ -249,7 +252,7 @@ export function PresenterViewModal({
       }
     };
 
-    window.addEventListener('wheel', handleWheel, { passive: true });
+    window.addEventListener('wheel', handleWheel, { passive: false });
     return () => {
       window.removeEventListener('wheel', handleWheel);
       if (wheelTimeoutRef.current) clearTimeout(wheelTimeoutRef.current);
@@ -328,7 +331,7 @@ export function PresenterViewModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="presenter-view-title"
-        className="fixed inset-0 z-[10000] flex flex-col bg-slate-950 text-white font-sans overflow-hidden select-none"
+        className="fixed inset-0 z-[10000] flex flex-col bg-slate-950 text-white font-sans overflow-hidden select-none overscroll-none"
       >
         {/* -- Presenter Mode Top Bar -- */}
         <header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-800 bg-slate-900/90 px-4 backdrop-blur-md gap-3">

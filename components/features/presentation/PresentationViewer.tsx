@@ -82,7 +82,7 @@ export default function PresentationViewer({
   return (
     <div
       ref={containerRef}
-      className={`flex flex-col overflow-hidden text-foreground ${embedded ? 'bg-transparent' : 'bg-muted/20 dark:bg-black/20'}`}
+      className={`flex flex-col overflow-hidden text-foreground select-none overscroll-none ${embedded ? 'bg-transparent' : 'bg-muted/20 dark:bg-black/20'}`}
       style={{ height: embedded ? '100%' : 'calc(100dvh - 3.5rem)' }}
     >
       {/* -- Presenter View Modal (macOS Dual Screen Presenter) -- */}

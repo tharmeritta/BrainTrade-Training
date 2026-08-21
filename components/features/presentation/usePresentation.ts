@@ -456,6 +456,9 @@ export function usePresentation(
       if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT' || target.isContentEditable) return;
 
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 2) {
+        // Prevent Safari & Chrome from triggering back/forward history navigation
+        e.preventDefault();
+
         if (isTransitioningRef.current) return;
 
         setIsSwiping(true);
@@ -493,7 +496,7 @@ export function usePresentation(
       }
     };
 
-    window.addEventListener('wheel', handleWheel, { passive: true });
+    window.addEventListener('wheel', handleWheel, { passive: false });
     return () => {
       window.removeEventListener('wheel', handleWheel);
       if (wheelTimeoutRef.current) clearTimeout(wheelTimeoutRef.current);
