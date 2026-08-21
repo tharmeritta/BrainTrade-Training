@@ -65,6 +65,7 @@ export default function PresentationViewer({
     activeTool, setActiveTool,
     isTrainer,
     markAsComplete, isSaving,
+    dragOffset, isSwiping,
     session, startLive, stopLive, updateLaser, addDrawingPath, clearDrawings, isLive, isControlledByOthers
   } = usePresentation(module, user, initialLang, locale);
 
@@ -239,9 +240,13 @@ export default function PresentationViewer({
                     }
                   }}
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  animate={{ opacity: 1, x: dragOffset }}
                   exit={{ opacity: 0 }}
-                  transition={TRANSITION.base}
+                  transition={
+                    isSwiping
+                      ? { type: 'tween', duration: 0.04 }
+                      : { type: 'spring', stiffness: 400, damping: 32 }
+                  }
                   className={`relative h-full w-full select-none ${
                     isControlledByOthers || (isTrainer && activeTool)
                       ? ''

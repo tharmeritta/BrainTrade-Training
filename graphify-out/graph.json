@@ -18631,7 +18631,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "components/features/presentation/PresentationViewer.tsx",
-      "source_location": "L69",
+      "source_location": "L70",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presentationviewer_presentationviewer",
@@ -52761,5 +52761,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "b01e60237df26f7e1e5f66bdb85f0e7fc26a476c"
+  "built_at_commit": "1f071f908fa723decb65cf1dfae62fc8e700547e"
 }

@@ -443,46 +443,61 @@ export function usePresentation(
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [goToSlide, toggleFullscreen]);
 
-  // macOS Trackpad Two-Finger Horizontal Swipe Gesture for standard presentation viewer
-  const swipeCooldownRef = useRef(false);
-  const accumulatedDeltaXRef = useRef(0);
+  // macOS Trackpad Two-Finger Horizontal Sticky Swipe Gesture for standard presentation viewer
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const wheelTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const swipeDeltaRef = useRef(0);
+  const isTransitioningRef = useRef(false);
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT' || target.isContentEditable) return;
 
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 10) {
-        if (swipeCooldownRef.current) return;
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 2) {
+        if (isTransitioningRef.current) return;
 
-        accumulatedDeltaXRef.current += e.deltaX;
+        setIsSwiping(true);
+        swipeDeltaRef.current -= e.deltaX * 1.0;
 
-        if (accumulatedDeltaXRef.current > 35) {
-          if (slideRef.current < total) {
-            goToSlide(slideRef.current + 1);
-            swipeCooldownRef.current = true;
-            accumulatedDeltaXRef.current = 0;
-            setTimeout(() => {
-              swipeCooldownRef.current = false;
-            }, 400);
-          }
-        } else if (accumulatedDeltaXRef.current < -35) {
-          if (slideRef.current > 1) {
-            goToSlide(slideRef.current - 1);
-            swipeCooldownRef.current = true;
-            accumulatedDeltaXRef.current = 0;
-            setTimeout(() => {
-              swipeCooldownRef.current = false;
-            }, 400);
-          }
+        let effectiveOffset = swipeDeltaRef.current;
+        if ((slideRef.current === 1 && effectiveOffset > 0) || (slideRef.current === total && effectiveOffset < 0)) {
+          effectiveOffset = effectiveOffset * 0.25;
         }
-      } else {
-        accumulatedDeltaXRef.current = 0;
+
+        const clampedOffset = Math.max(-250, Math.min(250, effectiveOffset));
+        setDragOffset(clampedOffset);
+
+        if (wheelTimeoutRef.current) clearTimeout(wheelTimeoutRef.current);
+        wheelTimeoutRef.current = setTimeout(() => {
+          const threshold = 60;
+          if (swipeDeltaRef.current < -threshold && slideRef.current < total) {
+            isTransitioningRef.current = true;
+            goToSlide(slideRef.current + 1);
+            setTimeout(() => {
+              isTransitioningRef.current = false;
+            }, 300);
+          } else if (swipeDeltaRef.current > threshold && slideRef.current > 1) {
+            isTransitioningRef.current = true;
+            goToSlide(slideRef.current - 1);
+            setTimeout(() => {
+              isTransitioningRef.current = false;
+            }, 300);
+          }
+
+          swipeDeltaRef.current = 0;
+          setDragOffset(0);
+          setIsSwiping(false);
+        }, 110);
       }
     };
 
     window.addEventListener('wheel', handleWheel, { passive: true });
-    return () => window.removeEventListener('wheel', handleWheel);
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      if (wheelTimeoutRef.current) clearTimeout(wheelTimeoutRef.current);
+    };
   }, [goToSlide, total]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -529,6 +544,7 @@ export function usePresentation(
     activeTool, setActiveTool,
     isTrainer,
     markAsComplete, isSaving,
+    dragOffset, isSwiping,
     session, startLive, stopLive, updateLaser, addDrawingPath, clearDrawings, isLive, isControlledByOthers
   };
 }

@@ -193,9 +193,12 @@ export function PresenterViewModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, slide, total, goToSlide, onClose, showGrid]);
 
-  // macOS Trackpad Two-Finger Horizontal Swipe Gesture
-  const swipeCooldownRef = useRef(false);
-  const accumulatedDeltaXRef = useRef(0);
+  // macOS Trackpad Two-Finger Horizontal Sticky Swipe Gesture
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const wheelTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const swipeDeltaRef = useRef(0);
+  const isTransitioningRef = useRef(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -205,39 +208,52 @@ export function PresenterViewModal({
       if (target.tagName === 'TEXTAREA' || target.closest('#speaker-notes-textarea') || showGrid) return;
 
       // Check if it's primarily a horizontal two-finger trackpad swipe
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 10) {
-        if (swipeCooldownRef.current) return;
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 2) {
+        if (isTransitioningRef.current) return;
 
-        accumulatedDeltaXRef.current += e.deltaX;
+        setIsSwiping(true);
+        // Swiping left moves slide left (-x), swiping right moves slide right (+x)
+        swipeDeltaRef.current -= e.deltaX * 1.0;
 
-        if (accumulatedDeltaXRef.current > 35) {
-          // Two-finger swipe left -> Next slide
-          if (slide < total) {
-            goToSlide(slide + 1);
-            swipeCooldownRef.current = true;
-            accumulatedDeltaXRef.current = 0;
-            setTimeout(() => {
-              swipeCooldownRef.current = false;
-            }, 400);
-          }
-        } else if (accumulatedDeltaXRef.current < -35) {
-          // Two-finger swipe right -> Previous slide
-          if (slide > 1) {
-            goToSlide(slide - 1);
-            swipeCooldownRef.current = true;
-            accumulatedDeltaXRef.current = 0;
-            setTimeout(() => {
-              swipeCooldownRef.current = false;
-            }, 400);
-          }
+        // Apply boundary resistance (rubber-band) if at first or last slide
+        let effectiveOffset = swipeDeltaRef.current;
+        if ((slide === 1 && effectiveOffset > 0) || (slide === total && effectiveOffset < 0)) {
+          effectiveOffset = effectiveOffset * 0.25;
         }
-      } else {
-        accumulatedDeltaXRef.current = 0;
+
+        const clampedOffset = Math.max(-250, Math.min(250, effectiveOffset));
+        setDragOffset(clampedOffset);
+
+        if (wheelTimeoutRef.current) clearTimeout(wheelTimeoutRef.current);
+        wheelTimeoutRef.current = setTimeout(() => {
+          const threshold = 60;
+          if (swipeDeltaRef.current < -threshold && slide < total) {
+            isTransitioningRef.current = true;
+            goToSlide(slide + 1);
+            setTimeout(() => {
+              isTransitioningRef.current = false;
+            }, 300);
+          } else if (swipeDeltaRef.current > threshold && slide > 1) {
+            isTransitioningRef.current = true;
+            goToSlide(slide - 1);
+            setTimeout(() => {
+              isTransitioningRef.current = false;
+            }, 300);
+          }
+
+          // Spring bounce back to center
+          swipeDeltaRef.current = 0;
+          setDragOffset(0);
+          setIsSwiping(false);
+        }, 110);
       }
     };
 
     window.addEventListener('wheel', handleWheel, { passive: true });
-    return () => window.removeEventListener('wheel', handleWheel);
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      if (wheelTimeoutRef.current) clearTimeout(wheelTimeoutRef.current);
+    };
   }, [isOpen, slide, total, goToSlide, showGrid]);
 
   // Broadcast state to audience window whenever slide/lang changes
@@ -457,21 +473,49 @@ export function PresenterViewModal({
           {/* LEFT/CENTER: Current Main Slide + Toolbar (Adaptive Container) */}
           <div className="flex flex-1 flex-col gap-3 min-w-0 h-full">
             <div className="relative flex-1 rounded-2xl border border-slate-800 bg-black overflow-hidden shadow-2xl flex items-center justify-center min-h-0">
-              <img
-                src={slideImageUrl}
-                alt={lang === 'th' ? `สไลด์ปัจจุบันที่ ${slide} จาก ${total}` : `Current slide ${slide} of ${total}`}
-                className="max-h-full max-w-full object-contain pointer-events-none select-none"
-              />
-              <DrawingCanvas
-                isTrainer={true}
-                isActive={true}
-                mode={activeTool}
-                color={penColor}
-                drawings={session?.drawings || []}
-                laserPos={session?.laserPos || null}
-                onDrawEnd={addDrawingPath}
-                onLaserMove={updateLaser}
-              />
+              <motion.div
+                className={`relative w-full h-full flex items-center justify-center select-none ${
+                  activeTool ? '' : 'cursor-grab active:cursor-grabbing'
+                }`}
+                drag={activeTool ? false : 'x'}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.25}
+                onDragEnd={(_e, info) => {
+                  const threshold = 60;
+                  const velocityThreshold = 250;
+                  const offset = info.offset.x;
+                  const velocity = info.velocity.x;
+
+                  if (offset < -threshold || velocity < -velocityThreshold) {
+                    if (slide < total) goToSlide(slide + 1);
+                  } else if (offset > threshold || velocity > velocityThreshold) {
+                    if (slide > 1) goToSlide(slide - 1);
+                  }
+                }}
+                animate={{ x: dragOffset }}
+                transition={
+                  isSwiping
+                    ? { type: 'tween', duration: 0.04 }
+                    : { type: 'spring', stiffness: 400, damping: 32 }
+                }
+              >
+                <img
+                  src={slideImageUrl}
+                  alt={lang === 'th' ? `สไลด์ปัจจุบันที่ ${slide} จาก ${total}` : `Current slide ${slide} of ${total}`}
+                  className="max-h-full max-w-full object-contain pointer-events-none select-none"
+                  draggable={false}
+                />
+                <DrawingCanvas
+                  isTrainer={true}
+                  isActive={true}
+                  mode={activeTool}
+                  color={penColor}
+                  drawings={session?.drawings || []}
+                  laserPos={session?.laserPos || null}
+                  onDrawEnd={addDrawingPath}
+                  onLaserMove={updateLaser}
+                />
+              </motion.div>
             </div>
 
             {/* Slide Navigation & Canvas Toolbar */}
