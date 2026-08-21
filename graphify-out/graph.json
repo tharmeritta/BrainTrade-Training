@@ -4,6 +4,19 @@
   "graph": {},
   "nodes": [
     {
+      "label": "EntryAvatarProps",
+      "file_type": "code",
+      "source_file": "components/features/agent-entry/EntryAvatar.tsx",
+      "source_location": "L10",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_features_agent_entry_entryavatar_entryavatarprops",
+      "community": 0,
+      "community_name": "animations.ts",
+      "norm_label": "entryavatarprops"
+    },
+    {
       "label": "BulkImportModalProps",
       "file_type": "code",
       "source_file": "components/features/admin/BulkImportModal.tsx",
@@ -355,19 +368,6 @@
       "norm_label": "aievalconfig"
     },
     {
-      "label": "DiagnosticResult",
-      "file_type": "code",
-      "source_file": "components/features/admin/adjustments/DiagnosticRunner.tsx",
-      "source_location": "L10",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_features_admin_adjustments_diagnosticrunner_diagnosticresult",
-      "community": 14,
-      "community_name": "AdjustmentsTab.tsx",
-      "norm_label": "diagnosticresult"
-    },
-    {
       "label": "LearnConfig",
       "file_type": "code",
       "source_file": "components/features/admin/adjustments/LearnEditor.tsx",
@@ -511,19 +511,6 @@
       "norm_label": "studiosubtab"
     },
     {
-      "label": "GlassCardProps",
-      "file_type": "code",
-      "source_file": "components/ui/GlassCard.tsx",
-      "source_location": "L6",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_ui_glasscard_glasscardprops",
-      "community": 14,
-      "community_name": "AdjustmentsTab.tsx",
-      "norm_label": "glasscardprops"
-    },
-    {
       "label": "SkeletonProps",
       "file_type": "code",
       "source_file": "components/ui/Skeleton.tsx",
@@ -548,110 +535,6 @@
       "community": 14,
       "community_name": "AdjustmentsTab.tsx",
       "norm_label": "configdata"
-    },
-    {
-      "label": "AiScenarioImportModalProps",
-      "file_type": "code",
-      "source_file": "components/features/admin/AiScenarioImportModal.tsx",
-      "source_location": "L10",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_features_admin_aiscenarioimportmodal_aiscenarioimportmodalprops",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "aiscenarioimportmodalprops"
-    },
-    {
-      "label": "SandboxManagerModalProps",
-      "file_type": "code",
-      "source_file": "components/features/admin/SandboxManagerModal.tsx",
-      "source_location": "L9",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_features_admin_sandboxmanagermodal_sandboxmanagermodalprops",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "sandboxmanagermodalprops"
-    },
-    {
-      "label": "AiEvalService",
-      "file_type": "code",
-      "source_file": "lib/services/ai-eval-service.ts",
-      "source_location": "L16",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "lib_services_ai_eval_service_aievalservice",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "aievalservice"
-    },
-    {
-      "label": "AiEvalScenario",
-      "file_type": "code",
-      "source_file": "types/ai-eval.ts",
-      "source_location": "L62",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "types_ai_eval_aievalscenario",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "aievalscenario"
-    },
-    {
-      "label": "AiEvalSession",
-      "file_type": "code",
-      "source_file": "types/ai-eval.ts",
-      "source_location": "L101",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "types_ai_eval_aievalsession",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "aievalsession"
-    },
-    {
-      "label": "LocalizedString",
-      "file_type": "code",
-      "source_file": "types/ai-eval.ts",
-      "source_location": "L4",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "types_ai_eval_localizedstring",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "localizedstring"
-    },
-    {
-      "label": "ScenarioChoice",
-      "file_type": "code",
-      "source_file": "types/ai-eval.ts",
-      "source_location": "L9",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "types_ai_eval_scenariochoice",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "scenariochoice"
-    },
-    {
-      "label": "ScenarioSubmitResult",
-      "file_type": "code",
-      "source_file": "types/ai-eval.ts",
-      "source_location": "L67",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "types_ai_eval_scenariosubmitresult",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "scenariosubmitresult"
     },
     {
       "label": "FeedItem",
@@ -1369,19 +1252,6 @@
       "norm_label": "agentstats"
     },
     {
-      "label": "AuditFlowProps",
-      "file_type": "code",
-      "source_file": "components/features/ai-eval/AuditFlow.tsx",
-      "source_location": "L13",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_features_ai_eval_auditflow_auditflowprops",
-      "community": 27,
-      "community_name": "ai-eval/index.tsx",
-      "norm_label": "auditflowprops"
-    },
-    {
       "label": "CallSimulatorHudProps",
       "file_type": "code",
       "source_file": "components/features/ai-eval/CallSimulatorHud.tsx",
@@ -1393,32 +1263,6 @@
       "community": 27,
       "community_name": "ai-eval/index.tsx",
       "norm_label": "callsimulatorhudprops"
-    },
-    {
-      "label": "IntroViewProps",
-      "file_type": "code",
-      "source_file": "components/features/ai-eval/IntroView.tsx",
-      "source_location": "L11",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_features_ai_eval_introview_introviewprops",
-      "community": 27,
-      "community_name": "ai-eval/index.tsx",
-      "norm_label": "introviewprops"
-    },
-    {
-      "label": "ScenarioPickerProps",
-      "file_type": "code",
-      "source_file": "components/features/ai-eval/ScenarioPicker.tsx",
-      "source_location": "L22",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_features_ai_eval_scenariopicker_scenariopickerprops",
-      "community": 27,
-      "community_name": "ai-eval/index.tsx",
-      "norm_label": "scenariopickerprops"
     },
     {
       "label": "ChatViewProps",
@@ -1460,19 +1304,6 @@
       "norm_label": "customerprofile"
     },
     {
-      "label": "EvalScenario",
-      "file_type": "code",
-      "source_file": "components/features/ai-eval/types.ts",
-      "source_location": "L6",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_features_ai_eval_types_evalscenario",
-      "community": 27,
-      "community_name": "ai-eval/index.tsx",
-      "norm_label": "evalscenario"
-    },
-    {
       "label": "EvalStep",
       "file_type": "code",
       "source_file": "components/features/ai-eval/types.ts",
@@ -1484,19 +1315,6 @@
       "community": 27,
       "community_name": "ai-eval/index.tsx",
       "norm_label": "evalstep"
-    },
-    {
-      "label": "ActiveAgentUIProps",
-      "file_type": "code",
-      "source_file": "components/ui/ActiveAgentUI.tsx",
-      "source_location": "L7",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_ui_activeagentui_activeagentuiprops",
-      "community": 27,
-      "community_name": "ai-eval/index.tsx",
-      "norm_label": "activeagentuiprops"
     },
     {
       "label": "PitchMessage",
@@ -1616,6 +1434,19 @@
       "norm_label": "steptimelineprops"
     },
     {
+      "label": "WelcomeOnboardingModalProps",
+      "file_type": "code",
+      "source_file": "components/ui/WelcomeOnboardingModal.tsx",
+      "source_location": "L8",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_ui_welcomeonboardingmodal_welcomeonboardingmodalprops",
+      "community": 3,
+      "community_name": "agent-training/index.tsx",
+      "norm_label": "welcomeonboardingmodalprops"
+    },
+    {
       "label": "BadgeType",
       "file_type": "code",
       "source_file": "constants/training.ts",
@@ -1668,6 +1499,32 @@
       "norm_label": "feeditem"
     },
     {
+      "label": "ModuleItem",
+      "file_type": "code",
+      "source_file": "components/features/Dashboard.tsx",
+      "source_location": "L17",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_features_dashboard_moduleitem",
+      "community": 4,
+      "community_name": "Dashboard.tsx",
+      "norm_label": "moduleitem"
+    },
+    {
+      "label": "BrandedTitleProps",
+      "file_type": "code",
+      "source_file": "components/ui/BrandedTitle.tsx",
+      "source_location": "L5",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_ui_brandedtitle_brandedtitleprops",
+      "community": 4,
+      "community_name": "Dashboard.tsx",
+      "norm_label": "brandedtitleprops"
+    },
+    {
       "label": "StatCounterProps",
       "file_type": "code",
       "source_file": "components/ui/StatCounter.tsx",
@@ -1677,7 +1534,7 @@
       "_origin": "ast",
       "id": "components_ui_statcounter_statcounterprops",
       "community": 4,
-      "community_name": "BrandingPanel.tsx",
+      "community_name": "Dashboard.tsx",
       "norm_label": "statcounterprops"
     },
     {
@@ -1768,47 +1625,8 @@
       "_origin": "ast",
       "id": "components_features_courses_coursehub_coursecardprops",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "coursecardprops"
-    },
-    {
-      "label": "CourseHeaderProps",
-      "file_type": "code",
-      "source_file": "components/features/courses/CourseHub.tsx",
-      "source_location": "L24",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_features_courses_coursehub_courseheaderprops",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "courseheaderprops"
-    },
-    {
-      "label": "LanguagePickerProps",
-      "file_type": "code",
-      "source_file": "components/features/courses/CourseHub.tsx",
-      "source_location": "L19",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_features_courses_coursehub_languagepickerprops",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "languagepickerprops"
-    },
-    {
-      "label": "PlaceholderCardProps",
-      "file_type": "code",
-      "source_file": "components/features/courses/CourseHub.tsx",
-      "source_location": "L39",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_features_courses_coursehub_placeholdercardprops",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "placeholdercardprops"
     },
     {
       "label": "DrawingCanvasProps",
@@ -1820,7 +1638,7 @@
       "_origin": "ast",
       "id": "components_features_drawingcanvas_drawingcanvasprops",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "drawingcanvasprops"
     },
     {
@@ -1833,7 +1651,7 @@
       "_origin": "ast",
       "id": "components_features_presentation_presentationcontrols_presentationcontrolsprops",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "presentationcontrolsprops"
     },
     {
@@ -1846,7 +1664,7 @@
       "_origin": "ast",
       "id": "components_features_presentation_presentationheader_presentationheaderprops",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "presentationheaderprops"
     },
     {
@@ -1859,20 +1677,20 @@
       "_origin": "ast",
       "id": "components_features_presentation_presentationviewer_presentationviewerprops",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "presentationviewerprops"
     },
     {
       "label": "PresenterViewModalProps",
       "file_type": "code",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L29",
+      "source_location": "L36",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "id": "components_features_presentation_presenterviewmodal_presenterviewmodalprops",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "presenterviewmodalprops"
     },
     {
@@ -1885,47 +1703,8 @@
       "_origin": "ast",
       "id": "components_features_presentation_trainertoolbar_trainertoolbarprops",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "trainertoolbarprops"
-    },
-    {
-      "label": "PresentationSystemTabProps",
-      "file_type": "code",
-      "source_file": "components/features/trainer/PresentationSystemTab.tsx",
-      "source_location": "L27",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_features_trainer_presentationsystemtab_presentationsystemtabprops",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "presentationsystemtabprops"
-    },
-    {
-      "label": "TrainerPanelProps",
-      "file_type": "code",
-      "source_file": "components/features/trainer/TrainerPanel.tsx",
-      "source_location": "L10",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_features_trainer_trainerpanel_trainerpanelprops",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "trainerpanelprops"
-    },
-    {
-      "label": "TrainingSubDomain",
-      "file_type": "code",
-      "source_file": "components/features/trainer/TrainerPanel.tsx",
-      "source_location": "L17",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_features_trainer_trainerpanel_trainingsubdomain",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "trainingsubdomain"
     },
     {
       "label": "CourseLang",
@@ -1937,7 +1716,7 @@
       "_origin": "ast",
       "id": "lib_courses_courselang",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "courselang"
     },
     {
@@ -1950,7 +1729,7 @@
       "_origin": "ast",
       "id": "lib_courses_coursemodule",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "coursemodule"
     },
     {
@@ -1963,21 +1742,8 @@
       "_origin": "ast",
       "id": "lib_courses_coursepresentation",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "coursepresentation"
-    },
-    {
-      "label": "CacheEntry",
-      "file_type": "code",
-      "source_file": "lib/fetcher.ts",
-      "source_location": "L6",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "lib_fetcher_cacheentry",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "cacheentry"
     },
     {
       "label": "DrawingPath",
@@ -1989,7 +1755,7 @@
       "_origin": "ast",
       "id": "lib_live_presentation_drawingpath",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "drawingpath"
     },
     {
@@ -2002,7 +1768,7 @@
       "_origin": "ast",
       "id": "lib_live_presentation_livesessionstate",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "livesessionstate"
     },
     {
@@ -2015,7 +1781,7 @@
       "_origin": "ast",
       "id": "lib_live_presentation_point",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "point"
     },
     {
@@ -2028,21 +1794,8 @@
       "_origin": "ast",
       "id": "types_index_userrole",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "userrole"
-    },
-    {
-      "label": "Tab",
-      "file_type": "code",
-      "source_file": "app/[locale]/login/page.tsx",
-      "source_location": "L13",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "app_locale_login_page_tab",
-      "community": 6,
-      "community_name": "TrainingPeriod",
-      "norm_label": "tab"
     },
     {
       "label": "ActiveBatchHeaderProps",
@@ -2134,6 +1887,32 @@
       "community": 6,
       "community_name": "TrainingPeriod",
       "norm_label": "perioddetailprops"
+    },
+    {
+      "label": "TrainerPanelProps",
+      "file_type": "code",
+      "source_file": "components/features/trainer/TrainerPanel.tsx",
+      "source_location": "L10",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_features_trainer_trainerpanel_trainerpanelprops",
+      "community": 6,
+      "community_name": "TrainingPeriod",
+      "norm_label": "trainerpanelprops"
+    },
+    {
+      "label": "TrainingSubDomain",
+      "file_type": "code",
+      "source_file": "components/features/trainer/TrainerPanel.tsx",
+      "source_location": "L17",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_features_trainer_trainerpanel_trainingsubdomain",
+      "community": 6,
+      "community_name": "TrainingPeriod",
+      "norm_label": "trainingsubdomain"
     },
     {
       "label": "WaveManagementTabProps",
@@ -2565,30 +2344,43 @@
       "norm_label": "congratulationscardprops"
     },
     {
-      "label": "ReturningUserBannerProps",
+      "label": "DiagnosticResult",
       "file_type": "code",
-      "source_file": "components/features/agent-entry/ReturningUserBanner.tsx",
+      "source_file": "components/features/admin/adjustments/DiagnosticRunner.tsx",
       "source_location": "L10",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "id": "components_features_agent_entry_returninguserbanner_returninguserbannerprops",
+      "id": "components_features_admin_adjustments_diagnosticrunner_diagnosticresult",
       "community": 78,
-      "community_name": "ReturningUserBanner.tsx",
-      "norm_label": "returninguserbannerprops"
+      "community_name": "PresentationSystemTab.tsx",
+      "norm_label": "diagnosticresult"
     },
     {
-      "label": "EntryAvatarProps",
+      "label": "PresentationSystemTabProps",
       "file_type": "code",
-      "source_file": "components/features/agent-entry/EntryAvatar.tsx",
-      "source_location": "L10",
+      "source_file": "components/features/trainer/PresentationSystemTab.tsx",
+      "source_location": "L27",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "id": "components_features_agent_entry_entryavatar_entryavatarprops",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "entryavatarprops"
+      "id": "components_features_trainer_presentationsystemtab_presentationsystemtabprops",
+      "community": 78,
+      "community_name": "PresentationSystemTab.tsx",
+      "norm_label": "presentationsystemtabprops"
+    },
+    {
+      "label": "GlassCardProps",
+      "file_type": "code",
+      "source_file": "components/ui/GlassCard.tsx",
+      "source_location": "L6",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_ui_glasscard_glasscardprops",
+      "community": 78,
+      "community_name": "PresentationSystemTab.tsx",
+      "norm_label": "glasscardprops"
     },
     {
       "label": "MobileHeaderProps",
@@ -2600,7 +2392,7 @@
       "_origin": "ast",
       "id": "components_features_agent_entry_mobileheader_mobileheaderprops",
       "community": 8,
-      "community_name": "animations.ts",
+      "community_name": "AgentEntry.tsx",
       "norm_label": "mobileheaderprops"
     },
     {
@@ -2613,8 +2405,21 @@
       "_origin": "ast",
       "id": "components_features_agent_entry_mobileheader_modulechip",
       "community": 8,
-      "community_name": "animations.ts",
+      "community_name": "AgentEntry.tsx",
       "norm_label": "modulechip"
+    },
+    {
+      "label": "ReturningUserBannerProps",
+      "file_type": "code",
+      "source_file": "components/features/agent-entry/ReturningUserBanner.tsx",
+      "source_location": "L10",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_features_agent_entry_returninguserbanner_returninguserbannerprops",
+      "community": 8,
+      "community_name": "AgentEntry.tsx",
+      "norm_label": "returninguserbannerprops"
     },
     {
       "label": "AgentEntryProps",
@@ -2626,47 +2431,60 @@
       "_origin": "ast",
       "id": "components_features_agententry_agententryprops",
       "community": 8,
-      "community_name": "animations.ts",
+      "community_name": "AgentEntry.tsx",
       "norm_label": "agententryprops"
     },
     {
-      "label": "ModuleItem",
+      "label": "CourseHeaderProps",
       "file_type": "code",
-      "source_file": "components/features/Dashboard.tsx",
-      "source_location": "L17",
+      "source_file": "components/features/courses/CourseHub.tsx",
+      "source_location": "L24",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "id": "components_features_dashboard_moduleitem",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "moduleitem"
-    },
-    {
-      "label": "BrandedTitleProps",
-      "file_type": "code",
-      "source_file": "components/ui/BrandedTitle.tsx",
-      "source_location": "L5",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_ui_brandedtitle_brandedtitleprops",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "brandedtitleprops"
-    },
-    {
-      "label": "WelcomeOnboardingModalProps",
-      "file_type": "code",
-      "source_file": "components/ui/WelcomeOnboardingModal.tsx",
-      "source_location": "L8",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "id": "components_ui_welcomeonboardingmodal_welcomeonboardingmodalprops",
+      "id": "components_features_courses_coursehub_courseheaderprops",
       "community": 82,
-      "community_name": "WelcomeOnboardingModal.tsx",
-      "norm_label": "welcomeonboardingmodalprops"
+      "community_name": "CourseHub.tsx",
+      "norm_label": "courseheaderprops"
+    },
+    {
+      "label": "LanguagePickerProps",
+      "file_type": "code",
+      "source_file": "components/features/courses/CourseHub.tsx",
+      "source_location": "L19",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_features_courses_coursehub_languagepickerprops",
+      "community": 82,
+      "community_name": "CourseHub.tsx",
+      "norm_label": "languagepickerprops"
+    },
+    {
+      "label": "PlaceholderCardProps",
+      "file_type": "code",
+      "source_file": "components/features/courses/CourseHub.tsx",
+      "source_location": "L39",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_features_courses_coursehub_placeholdercardprops",
+      "community": 82,
+      "community_name": "CourseHub.tsx",
+      "norm_label": "placeholdercardprops"
+    },
+    {
+      "label": "CacheEntry",
+      "file_type": "code",
+      "source_file": "lib/fetcher.ts",
+      "source_location": "L6",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "lib_fetcher_cacheentry",
+      "community": 82,
+      "community_name": "CourseHub.tsx",
+      "norm_label": "cacheentry"
     },
     {
       "label": "ElementRect",
@@ -2706,6 +2524,123 @@
       "community": 85,
       "community_name": "FeatureSpotlightTour.tsx",
       "norm_label": "spotlightstep"
+    },
+    {
+      "label": "AiEvalService",
+      "file_type": "code",
+      "source_file": "lib/services/ai-eval-service.ts",
+      "source_location": "L16",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "lib_services_ai_eval_service_aievalservice",
+      "community": 86,
+      "community_name": "AiEvalScenario",
+      "norm_label": "aievalservice"
+    },
+    {
+      "label": "AiEvalScenario",
+      "file_type": "code",
+      "source_file": "types/ai-eval.ts",
+      "source_location": "L62",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "types_ai_eval_aievalscenario",
+      "community": 86,
+      "community_name": "AiEvalScenario",
+      "norm_label": "aievalscenario"
+    },
+    {
+      "label": "AiEvalSession",
+      "file_type": "code",
+      "source_file": "types/ai-eval.ts",
+      "source_location": "L101",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "types_ai_eval_aievalsession",
+      "community": 86,
+      "community_name": "AiEvalScenario",
+      "norm_label": "aievalsession"
+    },
+    {
+      "label": "AuditFlowProps",
+      "file_type": "code",
+      "source_file": "components/features/ai-eval/AuditFlow.tsx",
+      "source_location": "L13",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_features_ai_eval_auditflow_auditflowprops",
+      "community": 88,
+      "community_name": "ScenarioPicker.tsx",
+      "norm_label": "auditflowprops"
+    },
+    {
+      "label": "IntroViewProps",
+      "file_type": "code",
+      "source_file": "components/features/ai-eval/IntroView.tsx",
+      "source_location": "L11",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_features_ai_eval_introview_introviewprops",
+      "community": 88,
+      "community_name": "ScenarioPicker.tsx",
+      "norm_label": "introviewprops"
+    },
+    {
+      "label": "ScenarioPickerProps",
+      "file_type": "code",
+      "source_file": "components/features/ai-eval/ScenarioPicker.tsx",
+      "source_location": "L22",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_features_ai_eval_scenariopicker_scenariopickerprops",
+      "community": 88,
+      "community_name": "ScenarioPicker.tsx",
+      "norm_label": "scenariopickerprops"
+    },
+    {
+      "label": "EvalScenario",
+      "file_type": "code",
+      "source_file": "components/features/ai-eval/types.ts",
+      "source_location": "L6",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_features_ai_eval_types_evalscenario",
+      "community": 88,
+      "community_name": "ScenarioPicker.tsx",
+      "norm_label": "evalscenario"
+    },
+    {
+      "label": "ActiveAgentUIProps",
+      "file_type": "code",
+      "source_file": "components/ui/ActiveAgentUI.tsx",
+      "source_location": "L7",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_ui_activeagentui_activeagentuiprops",
+      "community": 88,
+      "community_name": "ScenarioPicker.tsx",
+      "norm_label": "activeagentuiprops"
+    },
+    {
+      "label": "AiScenarioImportModalProps",
+      "file_type": "code",
+      "source_file": "components/features/admin/AiScenarioImportModal.tsx",
+      "source_location": "L10",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_features_admin_aiscenarioimportmodal_aiscenarioimportmodalprops",
+      "community": 89,
+      "community_name": "AiScenariosTab.tsx",
+      "norm_label": "aiscenarioimportmodalprops"
     },
     {
       "label": "AgentPerformancePanelProps",
@@ -2864,6 +2799,71 @@
       "norm_label": "salescallperformanceitem"
     },
     {
+      "label": "Tab",
+      "file_type": "code",
+      "source_file": "app/[locale]/login/page.tsx",
+      "source_location": "L13",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "app_locale_login_page_tab",
+      "community": 90,
+      "community_name": "firebase.ts",
+      "norm_label": "tab"
+    },
+    {
+      "label": "SandboxManagerModalProps",
+      "file_type": "code",
+      "source_file": "components/features/admin/SandboxManagerModal.tsx",
+      "source_location": "L9",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "components_features_admin_sandboxmanagermodal_sandboxmanagermodalprops",
+      "community": 91,
+      "community_name": "ai-eval.ts",
+      "norm_label": "sandboxmanagermodalprops"
+    },
+    {
+      "label": "LocalizedString",
+      "file_type": "code",
+      "source_file": "types/ai-eval.ts",
+      "source_location": "L4",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "types_ai_eval_localizedstring",
+      "community": 91,
+      "community_name": "ai-eval.ts",
+      "norm_label": "localizedstring"
+    },
+    {
+      "label": "ScenarioChoice",
+      "file_type": "code",
+      "source_file": "types/ai-eval.ts",
+      "source_location": "L9",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "types_ai_eval_scenariochoice",
+      "community": 91,
+      "community_name": "ai-eval.ts",
+      "norm_label": "scenariochoice"
+    },
+    {
+      "label": "ScenarioSubmitResult",
+      "file_type": "code",
+      "source_file": "types/ai-eval.ts",
+      "source_location": "L67",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "id": "types_ai_eval_scenariosubmitresult",
+      "community": 91,
+      "community_name": "ai-eval.ts",
+      "norm_label": "scenariosubmitresult"
+    },
+    {
       "label": "JoinWavePage()",
       "file_type": "code",
       "source_file": "app/[locale]/join/page.tsx",
@@ -2872,7 +2872,7 @@
       "_origin": "ast",
       "id": "app_locale_join_page_joinwavepage",
       "community": 0,
-      "community_name": "JoinWavePage",
+      "community_name": "animations.ts",
       "norm_label": "joinwavepage()"
     },
     {
@@ -2884,7 +2884,7 @@
       "_origin": "ast",
       "id": "app_locale_join_page_joinwavepage_handlejoin",
       "community": 0,
-      "community_name": "JoinWavePage",
+      "community_name": "animations.ts",
       "norm_label": "handlejoin()"
     },
     {
@@ -2896,8 +2896,20 @@
       "_origin": "ast",
       "id": "app_locale_join_page_joinwavepage_verifycode",
       "community": 0,
-      "community_name": "JoinWavePage",
+      "community_name": "animations.ts",
       "norm_label": "verifycode()"
+    },
+    {
+      "label": "LandingPage()",
+      "file_type": "code",
+      "source_file": "app/[locale]/page.tsx",
+      "source_location": "L16",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "app_locale_page_landingpage",
+      "community": 0,
+      "community_name": "animations.ts",
+      "norm_label": "landingpage()"
     },
     {
       "label": "BulkImportModal()",
@@ -3800,30 +3812,6 @@
       "norm_label": "aievaleditor()"
     },
     {
-      "label": "DiagnosticRunner()",
-      "file_type": "code",
-      "source_file": "components/features/admin/adjustments/DiagnosticRunner.tsx",
-      "source_location": "L21",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_admin_adjustments_diagnosticrunner_diagnosticrunner",
-      "community": 14,
-      "community_name": "AdjustmentsTab.tsx",
-      "norm_label": "diagnosticrunner()"
-    },
-    {
-      "label": "HealthManager()",
-      "file_type": "code",
-      "source_file": "components/features/admin/adjustments/HealthManager.tsx",
-      "source_location": "L8",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_admin_adjustments_healthmanager_healthmanager",
-      "community": 14,
-      "community_name": "AdjustmentsTab.tsx",
-      "norm_label": "healthmanager()"
-    },
-    {
       "label": "LearnEditor()",
       "file_type": "code",
       "source_file": "components/features/admin/adjustments/LearnEditor.tsx",
@@ -3944,18 +3932,6 @@
       "norm_label": "academystudio()"
     },
     {
-      "label": "GlassCard()",
-      "file_type": "code",
-      "source_file": "components/ui/GlassCard.tsx",
-      "source_location": "L14",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_ui_glasscard_glasscard",
-      "community": 14,
-      "community_name": "AdjustmentsTab.tsx",
-      "norm_label": "glasscard()"
-    },
-    {
       "label": "Skeleton()",
       "file_type": "code",
       "source_file": "components/ui/Skeleton.tsx",
@@ -4016,30 +3992,6 @@
       "norm_label": "useconfigeditor()"
     },
     {
-      "label": "POST()",
-      "file_type": "code",
-      "source_file": "app/api/ai-eval/route.ts",
-      "source_location": "L4",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "app_api_ai_eval_route_post",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "post()"
-    },
-    {
-      "label": "ScenarioForm()",
-      "file_type": "code",
-      "source_file": "components/features/admin/ai-scenarios/ScenarioForm.tsx",
-      "source_location": "L21",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_admin_ai_scenarios_scenarioform_scenarioform",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "scenarioform()"
-    },
-    {
       "label": "DifficultySection()",
       "file_type": "code",
       "source_file": "components/features/admin/ai-scenarios/ScenarioList.tsx",
@@ -4048,7 +4000,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenariolist_difficultysection",
       "community": 15,
-      "community_name": "ai-eval.ts",
+      "community_name": "ScenarioForm.tsx",
       "norm_label": "difficultysection()"
     },
     {
@@ -4060,20 +4012,8 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenariolist_scenariocard",
       "community": 15,
-      "community_name": "ai-eval.ts",
+      "community_name": "ScenarioForm.tsx",
       "norm_label": "scenariocard()"
-    },
-    {
-      "label": "AiScenarioImportModal()",
-      "file_type": "code",
-      "source_file": "components/features/admin/AiScenarioImportModal.tsx",
-      "source_location": "L15",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_admin_aiscenarioimportmodal_aiscenarioimportmodal",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "aiscenarioimportmodal()"
     },
     {
       "label": "AiScenariosTab()",
@@ -4084,20 +4024,8 @@
       "_origin": "ast",
       "id": "components_features_admin_aiscenariostab_aiscenariostab",
       "community": 15,
-      "community_name": "ai-eval.ts",
+      "community_name": "ScenarioForm.tsx",
       "norm_label": "aiscenariostab()"
-    },
-    {
-      "label": "SandboxManagerModal()",
-      "file_type": "code",
-      "source_file": "components/features/admin/SandboxManagerModal.tsx",
-      "source_location": "L14",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_admin_sandboxmanagermodal_sandboxmanagermodal",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "sandboxmanagermodal()"
     },
     {
       "label": "MultipleChoiceView()",
@@ -4108,7 +4036,7 @@
       "_origin": "ast",
       "id": "components_features_ai_eval_multiplechoiceview_multiplechoiceview",
       "community": 15,
-      "community_name": "ai-eval.ts",
+      "community_name": "ScenarioForm.tsx",
       "norm_label": "multiplechoiceview()"
     },
     {
@@ -4120,140 +4048,8 @@
       "_origin": "ast",
       "id": "lib_scoring_getpassthresholdpct",
       "community": 15,
-      "community_name": "ai-eval.ts",
+      "community_name": "ScenarioForm.tsx",
       "norm_label": "getpassthresholdpct()"
-    },
-    {
-      "label": ".buildFallbackSystemPrompt()",
-      "file_type": "code",
-      "source_file": "lib/services/ai-eval-service.ts",
-      "source_location": "L277",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_services_ai_eval_service_aievalservice_buildfallbacksystemprompt",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": ".buildfallbacksystemprompt()"
-    },
-    {
-      "label": ".callChatGPT()",
-      "file_type": "code",
-      "source_file": "lib/services/ai-eval-service.ts",
-      "source_location": "L171",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_services_ai_eval_service_aievalservice_callchatgpt",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": ".callchatgpt()"
-    },
-    {
-      "label": ".cleanJson()",
-      "file_type": "code",
-      "source_file": "lib/services/ai-eval-service.ts",
-      "source_location": "L456",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_services_ai_eval_service_aievalservice_cleanjson",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": ".cleanjson()"
-    },
-    {
-      "label": ".getScenario()",
-      "file_type": "code",
-      "source_file": "lib/services/ai-eval-service.ts",
-      "source_location": "L28",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_services_ai_eval_service_aievalservice_getscenario",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": ".getscenario()"
-    },
-    {
-      "label": ".injectVariables()",
-      "file_type": "code",
-      "source_file": "lib/services/ai-eval-service.ts",
-      "source_location": "L263",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_services_ai_eval_service_aievalservice_injectvariables",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": ".injectvariables()"
-    },
-    {
-      "label": ".processTurn()",
-      "file_type": "code",
-      "source_file": "lib/services/ai-eval-service.ts",
-      "source_location": "L86",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_services_ai_eval_service_aievalservice_processturn",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": ".processturn()"
-    },
-    {
-      "label": ".seedAllScenarios()",
-      "file_type": "code",
-      "source_file": "lib/services/ai-eval-service.ts",
-      "source_location": "L309",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_services_ai_eval_service_aievalservice_seedallscenarios",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": ".seedallscenarios()"
-    },
-    {
-      "label": ".seedDefaultScenario()",
-      "file_type": "code",
-      "source_file": "lib/services/ai-eval-service.ts",
-      "source_location": "L500",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_services_ai_eval_service_aievalservice_seeddefaultscenario",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": ".seeddefaultscenario()"
-    },
-    {
-      "label": ".startSession()",
-      "file_type": "code",
-      "source_file": "lib/services/ai-eval-service.ts",
-      "source_location": "L47",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_services_ai_eval_service_aievalservice_startsession",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": ".startsession()"
-    },
-    {
-      "label": "downloadScenarioTemplate()",
-      "file_type": "code",
-      "source_file": "lib/services/ai-scenarios/utils.ts",
-      "source_location": "L23",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_services_ai_scenarios_utils_downloadscenariotemplate",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "downloadscenariotemplate()"
-    },
-    {
-      "label": "parseScenarioFile()",
-      "file_type": "code",
-      "source_file": "lib/services/ai-scenarios/utils.ts",
-      "source_location": "L30",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_services_ai_scenarios_utils_parsescenariofile",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "parsescenariofile()"
     },
     {
       "label": "GET()",
@@ -5672,30 +5468,6 @@
       "norm_label": "startsession()"
     },
     {
-      "label": "StepProgress()",
-      "file_type": "code",
-      "source_file": "components/features/ai-eval/StepProgress.tsx",
-      "source_location": "L3",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_ai_eval_stepprogress_stepprogress",
-      "community": 27,
-      "community_name": "ai-eval/index.tsx",
-      "norm_label": "stepprogress()"
-    },
-    {
-      "label": "ActiveAgentUI()",
-      "file_type": "code",
-      "source_file": "components/ui/ActiveAgentUI.tsx",
-      "source_location": "L11",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_ui_activeagentui_activeagentui",
-      "community": 27,
-      "community_name": "ai-eval/index.tsx",
-      "norm_label": "activeagentui()"
-    },
-    {
       "label": "DELETE()",
       "file_type": "code",
       "source_file": "app/api/admin/agents/override/route.ts",
@@ -6068,6 +5840,18 @@
       "norm_label": "target()"
     },
     {
+      "label": "WelcomeOnboardingModal()",
+      "file_type": "code",
+      "source_file": "components/ui/WelcomeOnboardingModal.tsx",
+      "source_location": "L15",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_ui_welcomeonboardingmodal_welcomeonboardingmodal",
+      "community": 3,
+      "community_name": "agent-training/index.tsx",
+      "norm_label": "welcomeonboardingmodal()"
+    },
+    {
       "label": "scoreColor()",
       "file_type": "code",
       "source_file": "lib/training.ts",
@@ -6184,7 +5968,7 @@
       "_origin": "ast",
       "id": "components_features_agent_entry_brandingpanel_brandingpanel",
       "community": 4,
-      "community_name": "BrandingPanel.tsx",
+      "community_name": "Dashboard.tsx",
       "norm_label": "brandingpanel()"
     },
     {
@@ -6196,8 +5980,44 @@
       "_origin": "ast",
       "id": "components_features_agent_entry_floatingdecoration_floatingdecoration",
       "community": 4,
-      "community_name": "BrandingPanel.tsx",
+      "community_name": "Dashboard.tsx",
       "norm_label": "floatingdecoration()"
+    },
+    {
+      "label": "Dashboard()",
+      "file_type": "code",
+      "source_file": "components/features/Dashboard.tsx",
+      "source_location": "L110",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_dashboard_dashboard",
+      "community": 4,
+      "community_name": "Dashboard.tsx",
+      "norm_label": "dashboard()"
+    },
+    {
+      "label": "ModuleCard()",
+      "file_type": "code",
+      "source_file": "components/features/Dashboard.tsx",
+      "source_location": "L83",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_dashboard_modulecard",
+      "community": 4,
+      "community_name": "Dashboard.tsx",
+      "norm_label": "modulecard()"
+    },
+    {
+      "label": "BrandedTitle()",
+      "file_type": "code",
+      "source_file": "components/ui/BrandedTitle.tsx",
+      "source_location": "L11",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_ui_brandedtitle_brandedtitle",
+      "community": 4,
+      "community_name": "Dashboard.tsx",
+      "norm_label": "brandedtitle()"
     },
     {
       "label": "StatCounter()",
@@ -6208,7 +6028,7 @@
       "_origin": "ast",
       "id": "components_ui_statcounter_statcounter",
       "community": 4,
-      "community_name": "BrandingPanel.tsx",
+      "community_name": "Dashboard.tsx",
       "norm_label": "statcounter()"
     },
     {
@@ -6220,7 +6040,7 @@
       "_origin": "ast",
       "id": "components_ui_statcounter_statcounter_tick",
       "community": 4,
-      "community_name": "BrandingPanel.tsx",
+      "community_name": "Dashboard.tsx",
       "norm_label": "tick()"
     },
     {
@@ -6860,78 +6680,6 @@
       "norm_label": "seed()"
     },
     {
-      "label": "GET()",
-      "file_type": "code",
-      "source_file": "app/api/courses/[id]/route.ts",
-      "source_location": "L4",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "app_api_courses_id_route_get",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "get()"
-    },
-    {
-      "label": "GET()",
-      "file_type": "code",
-      "source_file": "app/api/courses/route.ts",
-      "source_location": "L4",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "app_api_courses_route_get",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "get()"
-    },
-    {
-      "label": "LearnPage()",
-      "file_type": "code",
-      "source_file": "app/[locale]/learn/[module]/page.tsx",
-      "source_location": "L35",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "app_locale_learn_module_page_learnpage",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "learnpage()"
-    },
-    {
-      "label": "LearnPageContent()",
-      "file_type": "code",
-      "source_file": "app/[locale]/learn/[module]/page.tsx",
-      "source_location": "L10",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "app_locale_learn_module_page_learnpagecontent",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "learnpagecontent()"
-    },
-    {
-      "label": "LearnIndexPage()",
-      "file_type": "code",
-      "source_file": "app/[locale]/learn/page.tsx",
-      "source_location": "L4",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "app_locale_learn_page_learnindexpage",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "learnindexpage()"
-    },
-    {
-      "label": "CourseHub()",
-      "file_type": "code",
-      "source_file": "components/features/courses/CourseHub.tsx",
-      "source_location": "L297",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_courses_coursehub_coursehub",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "coursehub()"
-    },
-    {
       "label": "DrawingCanvas()",
       "file_type": "code",
       "source_file": "components/features/DrawingCanvas.tsx",
@@ -6940,7 +6688,7 @@
       "_origin": "ast",
       "id": "components_features_drawingcanvas_drawingcanvas",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "drawingcanvas()"
     },
     {
@@ -6952,7 +6700,7 @@
       "_origin": "ast",
       "id": "components_features_presentation_presentationcontrols_presentationcontrols",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "presentationcontrols()"
     },
     {
@@ -6964,31 +6712,19 @@
       "_origin": "ast",
       "id": "components_features_presentation_presentationheader_presentationheader",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "presentationheader()"
-    },
-    {
-      "label": "PresentationViewer()",
-      "file_type": "code",
-      "source_file": "components/features/presentation/PresentationViewer.tsx",
-      "source_location": "L42",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_presentation_presentationviewer_presentationviewer",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "presentationviewer()"
     },
     {
       "label": "PresenterViewModal()",
       "file_type": "code",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L50",
+      "source_location": "L57",
       "_callable": true,
       "_origin": "ast",
       "id": "components_features_presentation_presenterviewmodal_presenterviewmodal",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "presenterviewmodal()"
     },
     {
@@ -7000,176 +6736,8 @@
       "_origin": "ast",
       "id": "components_features_presentation_trainertoolbar_trainertoolbar",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "trainertoolbar()"
-    },
-    {
-      "label": "slideKey()",
-      "file_type": "code",
-      "source_file": "components/features/presentation/usePresentation.ts",
-      "source_location": "L13",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_presentation_usepresentation_slidekey",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "slidekey()"
-    },
-    {
-      "label": "usePresentation()",
-      "file_type": "code",
-      "source_file": "components/features/presentation/usePresentation.ts",
-      "source_location": "L19",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_presentation_usepresentation_usepresentation",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "usepresentation()"
-    },
-    {
-      "label": "viewedKey()",
-      "file_type": "code",
-      "source_file": "components/features/presentation/usePresentation.ts",
-      "source_location": "L16",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_presentation_usepresentation_viewedkey",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "viewedkey()"
-    },
-    {
-      "label": "PresentationSystemTab()",
-      "file_type": "code",
-      "source_file": "components/features/trainer/PresentationSystemTab.tsx",
-      "source_location": "L34",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_trainer_presentationsystemtab_presentationsystemtab",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "presentationsystemtab()"
-    },
-    {
-      "label": "TrainerPanel()",
-      "file_type": "code",
-      "source_file": "components/features/trainer/TrainerPanel.tsx",
-      "source_location": "L19",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_trainer_trainerpanel_trainerpanel",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "trainerpanel()"
-    },
-    {
-      "label": "WaveManagementTab()",
-      "file_type": "code",
-      "source_file": "components/features/trainer/WaveManagementTab.tsx",
-      "source_location": "L24",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_trainer_wavemanagementtab_wavemanagementtab",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "wavemanagementtab()"
-    },
-    {
-      "label": "handlePeriodCreated()",
-      "file_type": "code",
-      "source_file": "components/features/trainer/WaveManagementTab.tsx",
-      "source_location": "L101",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_trainer_wavemanagementtab_wavemanagementtab_handleperiodcreated",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "handleperiodcreated()"
-    },
-    {
-      "label": "handlePeriodDeleted()",
-      "file_type": "code",
-      "source_file": "components/features/trainer/WaveManagementTab.tsx",
-      "source_location": "L111",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_trainer_wavemanagementtab_wavemanagementtab_handleperioddeleted",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "handleperioddeleted()"
-    },
-    {
-      "label": "handlePeriodUpdated()",
-      "file_type": "code",
-      "source_file": "components/features/trainer/WaveManagementTab.tsx",
-      "source_location": "L107",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_trainer_wavemanagementtab_wavemanagementtab_handleperiodupdated",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "handleperiodupdated()"
-    },
-    {
-      "label": "stagger()",
-      "file_type": "code",
-      "source_file": "lib/animations.ts",
-      "source_location": "L15",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_animations_stagger",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "stagger()"
-    },
-    {
-      "label": "invalidateCache()",
-      "file_type": "code",
-      "source_file": "lib/fetcher.ts",
-      "source_location": "L56",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_fetcher_invalidatecache",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "invalidatecache()"
-    },
-    {
-      "label": "useLivePresentation()",
-      "file_type": "code",
-      "source_file": "lib/live-presentation.ts",
-      "source_location": "L31",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_live_presentation_uselivepresentation",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "uselivepresentation()"
-    },
-    {
-      "label": "fetchCourseModulesFromDb()",
-      "file_type": "code",
-      "source_file": "lib/server/courses.ts",
-      "source_location": "L6",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_server_courses_fetchcoursemodulesfromdb",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "fetchcoursemodulesfromdb()"
-    },
-    {
-      "label": "getCourseModule()",
-      "file_type": "code",
-      "source_file": "lib/server/courses.ts",
-      "source_location": "L54",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_server_courses_getcoursemodule",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "getcoursemodule()"
     },
     {
       "label": "listModels()",
@@ -7182,42 +6750,6 @@
       "community": 57,
       "community_name": "list-models.mjs",
       "norm_label": "listmodels()"
-    },
-    {
-      "label": "LoginPage()",
-      "file_type": "code",
-      "source_file": "app/[locale]/login/page.tsx",
-      "source_location": "L18",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "app_locale_login_page_loginpage",
-      "community": 6,
-      "community_name": "TrainingPeriod",
-      "norm_label": "loginpage()"
-    },
-    {
-      "label": "handleLogin()",
-      "file_type": "code",
-      "source_file": "app/[locale]/login/page.tsx",
-      "source_location": "L75",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "app_locale_login_page_loginpage_handlelogin",
-      "community": 6,
-      "community_name": "TrainingPeriod",
-      "norm_label": "handlelogin()"
-    },
-    {
-      "label": "switchRole()",
-      "file_type": "code",
-      "source_file": "app/[locale]/login/page.tsx",
-      "source_location": "L68",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "app_locale_login_page_loginpage_switchrole",
-      "community": 6,
-      "community_name": "TrainingPeriod",
-      "norm_label": "switchrole()"
     },
     {
       "label": "ActiveBatchHeader()",
@@ -7520,6 +7052,18 @@
       "norm_label": "spinner()"
     },
     {
+      "label": "TrainerPanel()",
+      "file_type": "code",
+      "source_file": "components/features/trainer/TrainerPanel.tsx",
+      "source_location": "L19",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_trainer_trainerpanel_trainerpanel",
+      "community": 6,
+      "community_name": "TrainingPeriod",
+      "norm_label": "trainerpanel()"
+    },
+    {
       "label": "PeriodListItem()",
       "file_type": "code",
       "source_file": "components/features/trainer/WaveManagementTab.tsx",
@@ -7530,6 +7074,54 @@
       "community": 6,
       "community_name": "TrainingPeriod",
       "norm_label": "periodlistitem()"
+    },
+    {
+      "label": "WaveManagementTab()",
+      "file_type": "code",
+      "source_file": "components/features/trainer/WaveManagementTab.tsx",
+      "source_location": "L24",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_trainer_wavemanagementtab_wavemanagementtab",
+      "community": 6,
+      "community_name": "TrainingPeriod",
+      "norm_label": "wavemanagementtab()"
+    },
+    {
+      "label": "handlePeriodCreated()",
+      "file_type": "code",
+      "source_file": "components/features/trainer/WaveManagementTab.tsx",
+      "source_location": "L101",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_trainer_wavemanagementtab_wavemanagementtab_handleperiodcreated",
+      "community": 6,
+      "community_name": "TrainingPeriod",
+      "norm_label": "handleperiodcreated()"
+    },
+    {
+      "label": "handlePeriodDeleted()",
+      "file_type": "code",
+      "source_file": "components/features/trainer/WaveManagementTab.tsx",
+      "source_location": "L111",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_trainer_wavemanagementtab_wavemanagementtab_handleperioddeleted",
+      "community": 6,
+      "community_name": "TrainingPeriod",
+      "norm_label": "handleperioddeleted()"
+    },
+    {
+      "label": "handlePeriodUpdated()",
+      "file_type": "code",
+      "source_file": "components/features/trainer/WaveManagementTab.tsx",
+      "source_location": "L107",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_trainer_wavemanagementtab_wavemanagementtab_handleperiodupdated",
+      "community": 6,
+      "community_name": "TrainingPeriod",
+      "norm_label": "handleperiodupdated()"
     },
     {
       "label": "useSummon()",
@@ -7566,30 +7158,6 @@
       "community": 6,
       "community_name": "TrainingPeriod",
       "norm_label": "statusbadge()"
-    },
-    {
-      "label": "clean()",
-      "file_type": "code",
-      "source_file": "lib/firebase.ts",
-      "source_location": "L13",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_firebase_clean",
-      "community": 6,
-      "community_name": "TrainingPeriod",
-      "norm_label": "clean()"
-    },
-    {
-      "label": "getClientAnalytics()",
-      "file_type": "code",
-      "source_file": "lib/firebase.ts",
-      "source_location": "L83",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "lib_firebase_getclientanalytics",
-      "community": 6,
-      "community_name": "TrainingPeriod",
-      "norm_label": "getclientanalytics()"
     },
     {
       "label": "useAgentPresence()",
@@ -8072,40 +7640,100 @@
       "norm_label": "loginform()"
     },
     {
-      "label": "getInitials()",
+      "label": "DiagnosticRunner()",
       "file_type": "code",
-      "source_file": "components/features/agent-entry/ReturningUserBanner.tsx",
-      "source_location": "L23",
+      "source_file": "components/features/admin/adjustments/DiagnosticRunner.tsx",
+      "source_location": "L21",
       "_callable": true,
       "_origin": "ast",
-      "id": "components_features_agent_entry_returninguserbanner_getinitials",
+      "id": "components_features_admin_adjustments_diagnosticrunner_diagnosticrunner",
       "community": 78,
-      "community_name": "ReturningUserBanner.tsx",
-      "norm_label": "getinitials()"
+      "community_name": "PresentationSystemTab.tsx",
+      "norm_label": "diagnosticrunner()"
     },
     {
-      "label": "normalizeName()",
+      "label": "HealthManager()",
       "file_type": "code",
-      "source_file": "components/features/agent-entry/ReturningUserBanner.tsx",
+      "source_file": "components/features/admin/adjustments/HealthManager.tsx",
+      "source_location": "L8",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_admin_adjustments_healthmanager_healthmanager",
+      "community": 78,
+      "community_name": "PresentationSystemTab.tsx",
+      "norm_label": "healthmanager()"
+    },
+    {
+      "label": "slideKey()",
+      "file_type": "code",
+      "source_file": "components/features/presentation/usePresentation.ts",
+      "source_location": "L13",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_presentation_usepresentation_slidekey",
+      "community": 78,
+      "community_name": "PresentationSystemTab.tsx",
+      "norm_label": "slidekey()"
+    },
+    {
+      "label": "usePresentation()",
+      "file_type": "code",
+      "source_file": "components/features/presentation/usePresentation.ts",
       "source_location": "L19",
       "_callable": true,
       "_origin": "ast",
-      "id": "components_features_agent_entry_returninguserbanner_normalizename",
+      "id": "components_features_presentation_usepresentation_usepresentation",
       "community": 78,
-      "community_name": "ReturningUserBanner.tsx",
-      "norm_label": "normalizename()"
+      "community_name": "PresentationSystemTab.tsx",
+      "norm_label": "usepresentation()"
     },
     {
-      "label": "ReturningUserBanner()",
+      "label": "viewedKey()",
       "file_type": "code",
-      "source_file": "components/features/agent-entry/ReturningUserBanner.tsx",
-      "source_location": "L29",
+      "source_file": "components/features/presentation/usePresentation.ts",
+      "source_location": "L16",
       "_callable": true,
       "_origin": "ast",
-      "id": "components_features_agent_entry_returninguserbanner_returninguserbanner",
+      "id": "components_features_presentation_usepresentation_viewedkey",
       "community": 78,
-      "community_name": "ReturningUserBanner.tsx",
-      "norm_label": "returninguserbanner()"
+      "community_name": "PresentationSystemTab.tsx",
+      "norm_label": "viewedkey()"
+    },
+    {
+      "label": "PresentationSystemTab()",
+      "file_type": "code",
+      "source_file": "components/features/trainer/PresentationSystemTab.tsx",
+      "source_location": "L34",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_trainer_presentationsystemtab_presentationsystemtab",
+      "community": 78,
+      "community_name": "PresentationSystemTab.tsx",
+      "norm_label": "presentationsystemtab()"
+    },
+    {
+      "label": "GlassCard()",
+      "file_type": "code",
+      "source_file": "components/ui/GlassCard.tsx",
+      "source_location": "L14",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_ui_glasscard_glasscard",
+      "community": 78,
+      "community_name": "PresentationSystemTab.tsx",
+      "norm_label": "glasscard()"
+    },
+    {
+      "label": "useLivePresentation()",
+      "file_type": "code",
+      "source_file": "lib/live-presentation.ts",
+      "source_location": "L32",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_live_presentation_uselivepresentation",
+      "community": 78,
+      "community_name": "PresentationSystemTab.tsx",
+      "norm_label": "uselivepresentation()"
     },
     {
       "label": "AgentLoginPage()",
@@ -8116,7 +7744,7 @@
       "_origin": "ast",
       "id": "app_locale_login_agent_page_agentloginpage",
       "community": 8,
-      "community_name": "animations.ts",
+      "community_name": "AgentEntry.tsx",
       "norm_label": "agentloginpage()"
     },
     {
@@ -8128,20 +7756,8 @@
       "_origin": "ast",
       "id": "app_locale_login_agent_page_agentloginpage_handleagentselected",
       "community": 8,
-      "community_name": "animations.ts",
+      "community_name": "AgentEntry.tsx",
       "norm_label": "handleagentselected()"
-    },
-    {
-      "label": "LandingPage()",
-      "file_type": "code",
-      "source_file": "app/[locale]/page.tsx",
-      "source_location": "L16",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "app_locale_page_landingpage",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "landingpage()"
     },
     {
       "label": "EntryAvatar()",
@@ -8152,7 +7768,7 @@
       "_origin": "ast",
       "id": "components_features_agent_entry_entryavatar_entryavatar",
       "community": 8,
-      "community_name": "animations.ts",
+      "community_name": "AgentEntry.tsx",
       "norm_label": "entryavatar()"
     },
     {
@@ -8164,7 +7780,7 @@
       "_origin": "ast",
       "id": "components_features_agent_entry_mobileheader_mobileheader",
       "community": 8,
-      "community_name": "animations.ts",
+      "community_name": "AgentEntry.tsx",
       "norm_label": "mobileheader()"
     },
     {
@@ -8176,8 +7792,44 @@
       "_origin": "ast",
       "id": "components_features_agent_entry_mobileheader_mobilemodulechips",
       "community": 8,
-      "community_name": "animations.ts",
+      "community_name": "AgentEntry.tsx",
       "norm_label": "mobilemodulechips()"
+    },
+    {
+      "label": "getInitials()",
+      "file_type": "code",
+      "source_file": "components/features/agent-entry/ReturningUserBanner.tsx",
+      "source_location": "L23",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_agent_entry_returninguserbanner_getinitials",
+      "community": 8,
+      "community_name": "AgentEntry.tsx",
+      "norm_label": "getinitials()"
+    },
+    {
+      "label": "normalizeName()",
+      "file_type": "code",
+      "source_file": "components/features/agent-entry/ReturningUserBanner.tsx",
+      "source_location": "L19",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_agent_entry_returninguserbanner_normalizename",
+      "community": 8,
+      "community_name": "AgentEntry.tsx",
+      "norm_label": "normalizename()"
+    },
+    {
+      "label": "ReturningUserBanner()",
+      "file_type": "code",
+      "source_file": "components/features/agent-entry/ReturningUserBanner.tsx",
+      "source_location": "L29",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_agent_entry_returninguserbanner_returninguserbanner",
+      "community": 8,
+      "community_name": "AgentEntry.tsx",
+      "norm_label": "returninguserbanner()"
     },
     {
       "label": "AgentEntry()",
@@ -8188,7 +7840,7 @@
       "_origin": "ast",
       "id": "components_features_agententry_agententry",
       "community": 8,
-      "community_name": "animations.ts",
+      "community_name": "AgentEntry.tsx",
       "norm_label": "agententry()"
     },
     {
@@ -8200,7 +7852,7 @@
       "_origin": "ast",
       "id": "components_features_agententry_getinitials",
       "community": 8,
-      "community_name": "animations.ts",
+      "community_name": "AgentEntry.tsx",
       "norm_label": "getinitials()"
     },
     {
@@ -8212,56 +7864,44 @@
       "_origin": "ast",
       "id": "components_features_agententry_normalizename",
       "community": 8,
-      "community_name": "animations.ts",
+      "community_name": "AgentEntry.tsx",
       "norm_label": "normalizename()"
     },
     {
-      "label": "Dashboard()",
+      "label": "CourseHub()",
       "file_type": "code",
-      "source_file": "components/features/Dashboard.tsx",
-      "source_location": "L110",
+      "source_file": "components/features/courses/CourseHub.tsx",
+      "source_location": "L297",
       "_callable": true,
       "_origin": "ast",
-      "id": "components_features_dashboard_dashboard",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "dashboard()"
+      "id": "components_features_courses_coursehub_coursehub",
+      "community": 82,
+      "community_name": "CourseHub.tsx",
+      "norm_label": "coursehub()"
     },
     {
-      "label": "ModuleCard()",
+      "label": "stagger()",
       "file_type": "code",
-      "source_file": "components/features/Dashboard.tsx",
-      "source_location": "L83",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_features_dashboard_modulecard",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "modulecard()"
-    },
-    {
-      "label": "BrandedTitle()",
-      "file_type": "code",
-      "source_file": "components/ui/BrandedTitle.tsx",
-      "source_location": "L11",
-      "_callable": true,
-      "_origin": "ast",
-      "id": "components_ui_brandedtitle_brandedtitle",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "brandedtitle()"
-    },
-    {
-      "label": "WelcomeOnboardingModal()",
-      "file_type": "code",
-      "source_file": "components/ui/WelcomeOnboardingModal.tsx",
+      "source_file": "lib/animations.ts",
       "source_location": "L15",
       "_callable": true,
       "_origin": "ast",
-      "id": "components_ui_welcomeonboardingmodal_welcomeonboardingmodal",
+      "id": "lib_animations_stagger",
       "community": 82,
-      "community_name": "WelcomeOnboardingModal.tsx",
-      "norm_label": "welcomeonboardingmodal()"
+      "community_name": "CourseHub.tsx",
+      "norm_label": "stagger()"
+    },
+    {
+      "label": "invalidateCache()",
+      "file_type": "code",
+      "source_file": "lib/fetcher.ts",
+      "source_location": "L56",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_fetcher_invalidatecache",
+      "community": 82,
+      "community_name": "CourseHub.tsx",
+      "norm_label": "invalidatecache()"
     },
     {
       "label": "checkServerReady()",
@@ -8310,6 +7950,294 @@
       "community": 85,
       "community_name": "FeatureSpotlightTour.tsx",
       "norm_label": "featurespotlighttour()"
+    },
+    {
+      "label": "POST()",
+      "file_type": "code",
+      "source_file": "app/api/ai-eval/route.ts",
+      "source_location": "L4",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "app_api_ai_eval_route_post",
+      "community": 86,
+      "community_name": "AiEvalScenario",
+      "norm_label": "post()"
+    },
+    {
+      "label": ".buildFallbackSystemPrompt()",
+      "file_type": "code",
+      "source_file": "lib/services/ai-eval-service.ts",
+      "source_location": "L277",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_services_ai_eval_service_aievalservice_buildfallbacksystemprompt",
+      "community": 86,
+      "community_name": "AiEvalScenario",
+      "norm_label": ".buildfallbacksystemprompt()"
+    },
+    {
+      "label": ".callChatGPT()",
+      "file_type": "code",
+      "source_file": "lib/services/ai-eval-service.ts",
+      "source_location": "L171",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_services_ai_eval_service_aievalservice_callchatgpt",
+      "community": 86,
+      "community_name": "AiEvalScenario",
+      "norm_label": ".callchatgpt()"
+    },
+    {
+      "label": ".cleanJson()",
+      "file_type": "code",
+      "source_file": "lib/services/ai-eval-service.ts",
+      "source_location": "L456",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_services_ai_eval_service_aievalservice_cleanjson",
+      "community": 86,
+      "community_name": "AiEvalScenario",
+      "norm_label": ".cleanjson()"
+    },
+    {
+      "label": ".getScenario()",
+      "file_type": "code",
+      "source_file": "lib/services/ai-eval-service.ts",
+      "source_location": "L28",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_services_ai_eval_service_aievalservice_getscenario",
+      "community": 86,
+      "community_name": "AiEvalScenario",
+      "norm_label": ".getscenario()"
+    },
+    {
+      "label": ".injectVariables()",
+      "file_type": "code",
+      "source_file": "lib/services/ai-eval-service.ts",
+      "source_location": "L263",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_services_ai_eval_service_aievalservice_injectvariables",
+      "community": 86,
+      "community_name": "AiEvalScenario",
+      "norm_label": ".injectvariables()"
+    },
+    {
+      "label": ".processTurn()",
+      "file_type": "code",
+      "source_file": "lib/services/ai-eval-service.ts",
+      "source_location": "L86",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_services_ai_eval_service_aievalservice_processturn",
+      "community": 86,
+      "community_name": "AiEvalScenario",
+      "norm_label": ".processturn()"
+    },
+    {
+      "label": ".seedAllScenarios()",
+      "file_type": "code",
+      "source_file": "lib/services/ai-eval-service.ts",
+      "source_location": "L309",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_services_ai_eval_service_aievalservice_seedallscenarios",
+      "community": 86,
+      "community_name": "AiEvalScenario",
+      "norm_label": ".seedallscenarios()"
+    },
+    {
+      "label": ".seedDefaultScenario()",
+      "file_type": "code",
+      "source_file": "lib/services/ai-eval-service.ts",
+      "source_location": "L500",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_services_ai_eval_service_aievalservice_seeddefaultscenario",
+      "community": 86,
+      "community_name": "AiEvalScenario",
+      "norm_label": ".seeddefaultscenario()"
+    },
+    {
+      "label": ".startSession()",
+      "file_type": "code",
+      "source_file": "lib/services/ai-eval-service.ts",
+      "source_location": "L47",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_services_ai_eval_service_aievalservice_startsession",
+      "community": 86,
+      "community_name": "AiEvalScenario",
+      "norm_label": ".startsession()"
+    },
+    {
+      "label": "GET()",
+      "file_type": "code",
+      "source_file": "app/api/courses/[id]/route.ts",
+      "source_location": "L4",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "app_api_courses_id_route_get",
+      "community": 87,
+      "community_name": "server/courses.ts",
+      "norm_label": "get()"
+    },
+    {
+      "label": "GET()",
+      "file_type": "code",
+      "source_file": "app/api/courses/route.ts",
+      "source_location": "L4",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "app_api_courses_route_get",
+      "community": 87,
+      "community_name": "server/courses.ts",
+      "norm_label": "get()"
+    },
+    {
+      "label": "LearnPage()",
+      "file_type": "code",
+      "source_file": "app/[locale]/learn/[module]/page.tsx",
+      "source_location": "L35",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "app_locale_learn_module_page_learnpage",
+      "community": 87,
+      "community_name": "server/courses.ts",
+      "norm_label": "learnpage()"
+    },
+    {
+      "label": "LearnPageContent()",
+      "file_type": "code",
+      "source_file": "app/[locale]/learn/[module]/page.tsx",
+      "source_location": "L10",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "app_locale_learn_module_page_learnpagecontent",
+      "community": 87,
+      "community_name": "server/courses.ts",
+      "norm_label": "learnpagecontent()"
+    },
+    {
+      "label": "LearnIndexPage()",
+      "file_type": "code",
+      "source_file": "app/[locale]/learn/page.tsx",
+      "source_location": "L4",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "app_locale_learn_page_learnindexpage",
+      "community": 87,
+      "community_name": "server/courses.ts",
+      "norm_label": "learnindexpage()"
+    },
+    {
+      "label": "PresentationViewer()",
+      "file_type": "code",
+      "source_file": "components/features/presentation/PresentationViewer.tsx",
+      "source_location": "L42",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_presentation_presentationviewer_presentationviewer",
+      "community": 87,
+      "community_name": "server/courses.ts",
+      "norm_label": "presentationviewer()"
+    },
+    {
+      "label": "fetchCourseModulesFromDb()",
+      "file_type": "code",
+      "source_file": "lib/server/courses.ts",
+      "source_location": "L6",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_server_courses_fetchcoursemodulesfromdb",
+      "community": 87,
+      "community_name": "server/courses.ts",
+      "norm_label": "fetchcoursemodulesfromdb()"
+    },
+    {
+      "label": "getCourseModule()",
+      "file_type": "code",
+      "source_file": "lib/server/courses.ts",
+      "source_location": "L54",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_server_courses_getcoursemodule",
+      "community": 87,
+      "community_name": "server/courses.ts",
+      "norm_label": "getcoursemodule()"
+    },
+    {
+      "label": "StepProgress()",
+      "file_type": "code",
+      "source_file": "components/features/ai-eval/StepProgress.tsx",
+      "source_location": "L3",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_ai_eval_stepprogress_stepprogress",
+      "community": 88,
+      "community_name": "ScenarioPicker.tsx",
+      "norm_label": "stepprogress()"
+    },
+    {
+      "label": "ActiveAgentUI()",
+      "file_type": "code",
+      "source_file": "components/ui/ActiveAgentUI.tsx",
+      "source_location": "L11",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_ui_activeagentui_activeagentui",
+      "community": 88,
+      "community_name": "ScenarioPicker.tsx",
+      "norm_label": "activeagentui()"
+    },
+    {
+      "label": "ScenarioForm()",
+      "file_type": "code",
+      "source_file": "components/features/admin/ai-scenarios/ScenarioForm.tsx",
+      "source_location": "L21",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_admin_ai_scenarios_scenarioform_scenarioform",
+      "community": 89,
+      "community_name": "AiScenariosTab.tsx",
+      "norm_label": "scenarioform()"
+    },
+    {
+      "label": "AiScenarioImportModal()",
+      "file_type": "code",
+      "source_file": "components/features/admin/AiScenarioImportModal.tsx",
+      "source_location": "L15",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_admin_aiscenarioimportmodal_aiscenarioimportmodal",
+      "community": 89,
+      "community_name": "AiScenariosTab.tsx",
+      "norm_label": "aiscenarioimportmodal()"
+    },
+    {
+      "label": "downloadScenarioTemplate()",
+      "file_type": "code",
+      "source_file": "lib/services/ai-scenarios/utils.ts",
+      "source_location": "L23",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_services_ai_scenarios_utils_downloadscenariotemplate",
+      "community": 89,
+      "community_name": "AiScenariosTab.tsx",
+      "norm_label": "downloadscenariotemplate()"
+    },
+    {
+      "label": "parseScenarioFile()",
+      "file_type": "code",
+      "source_file": "lib/services/ai-scenarios/utils.ts",
+      "source_location": "L30",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_services_ai_scenarios_utils_parsescenariofile",
+      "community": 89,
+      "community_name": "AiScenariosTab.tsx",
+      "norm_label": "parsescenariofile()"
     },
     {
       "label": "EvaluatorPage()",
@@ -8550,6 +8478,199 @@
       "community": 9,
       "community_name": "EvaluatorDashboard.tsx",
       "norm_label": "timeago()"
+    },
+    {
+      "label": "LoginPage()",
+      "file_type": "code",
+      "source_file": "app/[locale]/login/page.tsx",
+      "source_location": "L18",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "app_locale_login_page_loginpage",
+      "community": 90,
+      "community_name": "firebase.ts",
+      "norm_label": "loginpage()"
+    },
+    {
+      "label": "handleLogin()",
+      "file_type": "code",
+      "source_file": "app/[locale]/login/page.tsx",
+      "source_location": "L75",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "app_locale_login_page_loginpage_handlelogin",
+      "community": 90,
+      "community_name": "firebase.ts",
+      "norm_label": "handlelogin()"
+    },
+    {
+      "label": "switchRole()",
+      "file_type": "code",
+      "source_file": "app/[locale]/login/page.tsx",
+      "source_location": "L68",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "app_locale_login_page_loginpage_switchrole",
+      "community": 90,
+      "community_name": "firebase.ts",
+      "norm_label": "switchrole()"
+    },
+    {
+      "label": "clean()",
+      "file_type": "code",
+      "source_file": "lib/firebase.ts",
+      "source_location": "L13",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_firebase_clean",
+      "community": 90,
+      "community_name": "firebase.ts",
+      "norm_label": "clean()"
+    },
+    {
+      "label": "getClientAnalytics()",
+      "file_type": "code",
+      "source_file": "lib/firebase.ts",
+      "source_location": "L83",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "lib_firebase_getclientanalytics",
+      "community": 90,
+      "community_name": "firebase.ts",
+      "norm_label": "getclientanalytics()"
+    },
+    {
+      "label": "SandboxManagerModal()",
+      "file_type": "code",
+      "source_file": "components/features/admin/SandboxManagerModal.tsx",
+      "source_location": "L14",
+      "_callable": true,
+      "_origin": "ast",
+      "id": "components_features_admin_sandboxmanagermodal_sandboxmanagermodal",
+      "community": 91,
+      "community_name": "ai-eval.ts",
+      "norm_label": "sandboxmanagermodal()"
+    },
+    {
+      "label": "join/page.tsx",
+      "file_type": "code",
+      "source_file": "app/[locale]/join/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "app_locale_join_page",
+      "community": 0,
+      "community_name": "animations.ts",
+      "norm_label": "join/page.tsx"
+    },
+    {
+      "label": "[locale]/page.tsx",
+      "file_type": "code",
+      "source_file": "app/[locale]/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "app_locale_page",
+      "community": 0,
+      "community_name": "animations.ts",
+      "norm_label": "[locale]/page.tsx"
+    },
+    {
+      "label": "EntryAvatar.tsx",
+      "file_type": "code",
+      "source_file": "components/features/agent-entry/EntryAvatar.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_features_agent_entry_entryavatar",
+      "community": 0,
+      "community_name": "animations.ts",
+      "norm_label": "entryavatar.tsx"
+    },
+    {
+      "label": "ModuleHeader.tsx",
+      "file_type": "code",
+      "source_file": "components/features/agent-training/ModuleHeader.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_features_agent_training_moduleheader",
+      "community": 0,
+      "community_name": "animations.ts",
+      "norm_label": "moduleheader.tsx"
+    },
+    {
+      "label": "ModuleHeader",
+      "file_type": "code",
+      "source_file": "components/features/agent-training/ModuleHeader.tsx",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "components_features_agent_training_moduleheader_moduleheader",
+      "community": 0,
+      "community_name": "animations.ts",
+      "norm_label": "moduleheader"
+    },
+    {
+      "label": "ui/BackgroundEffects.tsx",
+      "file_type": "code",
+      "source_file": "components/ui/BackgroundEffects.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_ui_backgroundeffects",
+      "community": 0,
+      "community_name": "animations.ts",
+      "norm_label": "ui/backgroundeffects.tsx"
+    },
+    {
+      "label": "BackgroundEffects",
+      "file_type": "code",
+      "source_file": "components/ui/BackgroundEffects.tsx",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "components_ui_backgroundeffects_backgroundeffects",
+      "community": 0,
+      "community_name": "animations.ts",
+      "norm_label": "backgroundeffects"
+    },
+    {
+      "label": "animations.ts",
+      "file_type": "code",
+      "source_file": "lib/animations.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "lib_animations",
+      "community": 0,
+      "community_name": "animations.ts",
+      "norm_label": "animations.ts"
+    },
+    {
+      "label": "EASE",
+      "file_type": "code",
+      "source_file": "lib/animations.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "lib_animations_ease",
+      "community": 0,
+      "community_name": "animations.ts",
+      "norm_label": "ease"
+    },
+    {
+      "label": "FADE_IN",
+      "file_type": "code",
+      "source_file": "lib/animations.ts",
+      "source_location": "L19",
+      "_origin": "ast",
+      "id": "lib_animations_fade_in",
+      "community": 0,
+      "community_name": "animations.ts",
+      "norm_label": "fade_in"
+    },
+    {
+      "label": "STAGGER_ITEM",
+      "file_type": "code",
+      "source_file": "lib/animations.ts",
+      "source_location": "L35",
+      "_origin": "ast",
+      "id": "lib_animations_stagger_item",
+      "community": 0,
+      "community_name": "animations.ts",
+      "norm_label": "stagger_item"
     },
     {
       "label": "BulkImportModal.tsx",
@@ -9432,28 +9553,6 @@
       "norm_label": "aievaleditor.tsx"
     },
     {
-      "label": "DiagnosticRunner.tsx",
-      "file_type": "code",
-      "source_file": "components/features/admin/adjustments/DiagnosticRunner.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_features_admin_adjustments_diagnosticrunner",
-      "community": 14,
-      "community_name": "AdjustmentsTab.tsx",
-      "norm_label": "diagnosticrunner.tsx"
-    },
-    {
-      "label": "HealthManager.tsx",
-      "file_type": "code",
-      "source_file": "components/features/admin/adjustments/HealthManager.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_features_admin_adjustments_healthmanager",
-      "community": 14,
-      "community_name": "AdjustmentsTab.tsx",
-      "norm_label": "healthmanager.tsx"
-    },
-    {
       "label": "LearnEditor.tsx",
       "file_type": "code",
       "source_file": "components/features/admin/adjustments/LearnEditor.tsx",
@@ -9564,17 +9663,6 @@
       "norm_label": "academystudio.tsx"
     },
     {
-      "label": "GlassCard.tsx",
-      "file_type": "code",
-      "source_file": "components/ui/GlassCard.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_ui_glasscard",
-      "community": 14,
-      "community_name": "AdjustmentsTab.tsx",
-      "norm_label": "glasscard.tsx"
-    },
-    {
       "label": "Skeleton.tsx",
       "file_type": "code",
       "source_file": "components/ui/Skeleton.tsx",
@@ -9597,6 +9685,17 @@
       "norm_label": "course_modules"
     },
     {
+      "label": "storage",
+      "file_type": "code",
+      "source_file": "lib/firebase.ts",
+      "source_location": "L66",
+      "_origin": "ast",
+      "id": "lib_firebase_storage",
+      "community": 14,
+      "community_name": "AdjustmentsTab.tsx",
+      "norm_label": "storage"
+    },
+    {
       "label": "useConfigEditor.ts",
       "file_type": "code",
       "source_file": "lib/hooks/useConfigEditor.ts",
@@ -9608,17 +9707,6 @@
       "norm_label": "useconfigeditor.ts"
     },
     {
-      "label": "ai-eval/route.ts",
-      "file_type": "code",
-      "source_file": "app/api/ai-eval/route.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "app_api_ai_eval_route",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "ai-eval/route.ts"
-    },
-    {
       "label": "ai-scenarios/constants.ts",
       "file_type": "code",
       "source_file": "components/features/admin/ai-scenarios/constants.ts",
@@ -9626,7 +9714,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants",
       "community": 15,
-      "community_name": "ai-eval.ts",
+      "community_name": "ScenarioForm.tsx",
       "norm_label": "ai-scenarios/constants.ts"
     },
     {
@@ -9637,7 +9725,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_diff",
       "community": 15,
-      "community_name": "ai-eval.ts",
+      "community_name": "ScenarioForm.tsx",
       "norm_label": "diff"
     },
     {
@@ -9648,7 +9736,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_diff_order",
       "community": 15,
-      "community_name": "ai-eval.ts",
+      "community_name": "ScenarioForm.tsx",
       "norm_label": "diff_order"
     },
     {
@@ -9659,7 +9747,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_empty_form",
       "community": 15,
-      "community_name": "ai-eval.ts",
+      "community_name": "ScenarioForm.tsx",
       "norm_label": "empty_form"
     },
     {
@@ -9670,7 +9758,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_inputcls",
       "community": 15,
-      "community_name": "ai-eval.ts",
+      "community_name": "ScenarioForm.tsx",
       "norm_label": "inputcls"
     },
     {
@@ -9681,7 +9769,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_constants_textareacls",
       "community": 15,
-      "community_name": "ai-eval.ts",
+      "community_name": "ScenarioForm.tsx",
       "norm_label": "textareacls"
     },
     {
@@ -9692,7 +9780,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenarioform",
       "community": 15,
-      "community_name": "ai-eval.ts",
+      "community_name": "ScenarioForm.tsx",
       "norm_label": "scenarioform.tsx"
     },
     {
@@ -9703,7 +9791,7 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenarioform_ai_suggestions",
       "community": 15,
-      "community_name": "ai-eval.ts",
+      "community_name": "ScenarioForm.tsx",
       "norm_label": "ai_suggestions"
     },
     {
@@ -9714,74 +9802,8 @@
       "_origin": "ast",
       "id": "components_features_admin_ai_scenarios_scenariolist",
       "community": 15,
-      "community_name": "ai-eval.ts",
+      "community_name": "ScenarioForm.tsx",
       "norm_label": "scenariolist.tsx"
-    },
-    {
-      "label": "templates.ts",
-      "file_type": "code",
-      "source_file": "components/features/admin/ai-scenarios/templates.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_features_admin_ai_scenarios_templates",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "templates.ts"
-    },
-    {
-      "label": "PRESET_TEMPLATES",
-      "file_type": "code",
-      "source_file": "components/features/admin/ai-scenarios/templates.ts",
-      "source_location": "L3",
-      "_origin": "ast",
-      "id": "components_features_admin_ai_scenarios_templates_preset_templates",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "preset_templates"
-    },
-    {
-      "label": "AiScenarioImportModal.tsx",
-      "file_type": "code",
-      "source_file": "components/features/admin/AiScenarioImportModal.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_features_admin_aiscenarioimportmodal",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "aiscenarioimportmodal.tsx"
-    },
-    {
-      "label": "AiScenariosTab.tsx",
-      "file_type": "code",
-      "source_file": "components/features/admin/AiScenariosTab.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_features_admin_aiscenariostab",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "aiscenariostab.tsx"
-    },
-    {
-      "label": "DIFF_STYLES",
-      "file_type": "code",
-      "source_file": "components/features/admin/AiScenariosTab.tsx",
-      "source_location": "L14",
-      "_origin": "ast",
-      "id": "components_features_admin_aiscenariostab_diff_styles",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "diff_styles"
-    },
-    {
-      "label": "SandboxManagerModal.tsx",
-      "file_type": "code",
-      "source_file": "components/features/admin/SandboxManagerModal.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_features_admin_sandboxmanagermodal",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "sandboxmanagermodal.tsx"
     },
     {
       "label": "MultipleChoiceView.tsx",
@@ -9791,85 +9813,8 @@
       "_origin": "ast",
       "id": "components_features_ai_eval_multiplechoiceview",
       "community": 15,
-      "community_name": "ai-eval.ts",
+      "community_name": "ScenarioForm.tsx",
       "norm_label": "multiplechoiceview.tsx"
-    },
-    {
-      "label": "ScenarioPicker",
-      "file_type": "code",
-      "source_file": "components/features/ai-eval/ScenarioPicker.tsx",
-      "source_location": "L36",
-      "_origin": "ast",
-      "id": "components_features_ai_eval_scenariopicker_scenariopicker",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "scenariopicker"
-    },
-    {
-      "label": "utils.ts",
-      "file_type": "code",
-      "source_file": "lib/services/ai-scenarios/utils.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "lib_services_ai_scenarios_utils",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "utils.ts"
-    },
-    {
-      "label": "AI_SCENARIO_TEMPLATE",
-      "file_type": "code",
-      "source_file": "lib/services/ai-scenarios/utils.ts",
-      "source_location": "L5",
-      "_origin": "ast",
-      "id": "lib_services_ai_scenarios_utils_ai_scenario_template",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "ai_scenario_template"
-    },
-    {
-      "label": "DEFAULT_CRITERIA",
-      "file_type": "code",
-      "source_file": "lib/services/ai-scenarios/utils.ts",
-      "source_location": "L3",
-      "_origin": "ast",
-      "id": "lib_services_ai_scenarios_utils_default_criteria",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "default_criteria"
-    },
-    {
-      "label": "ai-eval.ts",
-      "file_type": "code",
-      "source_file": "types/ai-eval.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "types_ai_eval",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "ai-eval.ts"
-    },
-    {
-      "label": "AiEvalScenarioSchema",
-      "file_type": "code",
-      "source_file": "types/ai-eval.ts",
-      "source_location": "L20",
-      "_origin": "ast",
-      "id": "types_ai_eval_aievalscenarioschema",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "aievalscenarioschema"
-    },
-    {
-      "label": "AiEvalTurnResponseSchema",
-      "file_type": "code",
-      "source_file": "types/ai-eval.ts",
-      "source_location": "L82",
-      "_origin": "ast",
-      "id": "types_ai_eval_aievalturnresponseschema",
-      "community": 15,
-      "community_name": "ai-eval.ts",
-      "norm_label": "aievalturnresponseschema"
     },
     {
       "label": "approvals/route.ts",
@@ -11016,17 +10961,6 @@
       "norm_label": "babel-plugin-react-compiler"
     },
     {
-      "label": "eslint",
-      "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L43",
-      "_origin": "ast",
-      "id": "package_devdependencies_eslint",
-      "community": 20,
-      "community_name": "devDependencies",
-      "norm_label": "eslint"
-    },
-    {
       "label": "eslint-config-next",
       "file_type": "code",
       "source_file": "package.json",
@@ -11058,6 +10992,17 @@
       "community": 20,
       "community_name": "devDependencies",
       "norm_label": "@eslint/js"
+    },
+    {
+      "label": "eslint-plugin-jsx-a11y",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L45",
+      "_origin": "ast",
+      "id": "package_devdependencies_eslint_plugin_jsx_a11y",
+      "community": 20,
+      "community_name": "devDependencies",
+      "norm_label": "eslint-plugin-jsx-a11y"
     },
     {
       "label": "eslint-plugin-react-hooks",
@@ -11181,6 +11126,17 @@
       "norm_label": "@eslint/js"
     },
     {
+      "label": "eslint-plugin-jsx-a11y",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L45",
+      "_origin": "ast",
+      "id": "eslint_plugin_jsx_a11y",
+      "community": 20,
+      "community_name": "devDependencies",
+      "norm_label": "eslint-plugin-jsx-a11y"
+    },
+    {
       "label": "eslint-plugin-react-hooks",
       "file_type": "concept",
       "source_file": "package.json",
@@ -11190,17 +11146,6 @@
       "community": 20,
       "community_name": "devDependencies",
       "norm_label": "eslint-plugin-react-hooks"
-    },
-    {
-      "label": "eslint",
-      "file_type": "concept",
-      "source_file": "package.json",
-      "source_location": "L43",
-      "_origin": "ast",
-      "id": "package_json_eslint",
-      "community": 20,
-      "community_name": "devDependencies",
-      "norm_label": "eslint"
     },
     {
       "label": "postcss",
@@ -11896,28 +11841,6 @@
       "norm_label": "default_criteria"
     },
     {
-      "label": "IntroView.tsx",
-      "file_type": "code",
-      "source_file": "components/features/ai-eval/IntroView.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_features_ai_eval_introview",
-      "community": 27,
-      "community_name": "ai-eval/index.tsx",
-      "norm_label": "introview.tsx"
-    },
-    {
-      "label": "IntroView",
-      "file_type": "code",
-      "source_file": "components/features/ai-eval/IntroView.tsx",
-      "source_location": "L19",
-      "_origin": "ast",
-      "id": "components_features_ai_eval_introview_introview",
-      "community": 27,
-      "community_name": "ai-eval/index.tsx",
-      "norm_label": "introview"
-    },
-    {
       "label": "MessageBubble.tsx",
       "file_type": "code",
       "source_file": "components/features/ai-eval/MessageBubble.tsx",
@@ -11940,39 +11863,6 @@
       "norm_label": "messagebubble"
     },
     {
-      "label": "ScenarioPicker.tsx",
-      "file_type": "code",
-      "source_file": "components/features/ai-eval/ScenarioPicker.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_features_ai_eval_scenariopicker",
-      "community": 27,
-      "community_name": "ai-eval/index.tsx",
-      "norm_label": "scenariopicker.tsx"
-    },
-    {
-      "label": "DIFFICULTY_MAP",
-      "file_type": "code",
-      "source_file": "components/features/ai-eval/ScenarioPicker.tsx",
-      "source_location": "L15",
-      "_origin": "ast",
-      "id": "components_features_ai_eval_scenariopicker_difficulty_map",
-      "community": 27,
-      "community_name": "ai-eval/index.tsx",
-      "norm_label": "difficulty_map"
-    },
-    {
-      "label": "StepProgress.tsx",
-      "file_type": "code",
-      "source_file": "components/features/ai-eval/StepProgress.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_features_ai_eval_stepprogress",
-      "community": 27,
-      "community_name": "ai-eval/index.tsx",
-      "norm_label": "stepprogress.tsx"
-    },
-    {
       "label": "ai-eval/types.ts",
       "file_type": "code",
       "source_file": "components/features/ai-eval/types.ts",
@@ -11982,17 +11872,6 @@
       "community": 27,
       "community_name": "ai-eval/index.tsx",
       "norm_label": "ai-eval/types.ts"
-    },
-    {
-      "label": "ActiveAgentUI.tsx",
-      "file_type": "code",
-      "source_file": "components/ui/ActiveAgentUI.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_ui_activeagentui",
-      "community": 27,
-      "community_name": "ai-eval/index.tsx",
-      "norm_label": "activeagentui.tsx"
     },
     {
       "label": "TRANSITION",
@@ -12248,28 +12127,6 @@
       "norm_label": "modulecard"
     },
     {
-      "label": "ModuleHeader.tsx",
-      "file_type": "code",
-      "source_file": "components/features/agent-training/ModuleHeader.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_features_agent_training_moduleheader",
-      "community": 3,
-      "community_name": "agent-training/index.tsx",
-      "norm_label": "moduleheader.tsx"
-    },
-    {
-      "label": "ModuleHeader",
-      "file_type": "code",
-      "source_file": "components/features/agent-training/ModuleHeader.tsx",
-      "source_location": "L15",
-      "_origin": "ast",
-      "id": "components_features_agent_training_moduleheader_moduleheader",
-      "community": 3,
-      "community_name": "agent-training/index.tsx",
-      "norm_label": "moduleheader"
-    },
-    {
       "label": "ProfileSidebar.tsx",
       "file_type": "code",
       "source_file": "components/features/agent-training/ProfileSidebar.tsx",
@@ -12325,6 +12182,17 @@
       "norm_label": "steptimeline"
     },
     {
+      "label": "WelcomeOnboardingModal.tsx",
+      "file_type": "code",
+      "source_file": "components/ui/WelcomeOnboardingModal.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_ui_welcomeonboardingmodal",
+      "community": 3,
+      "community_name": "agent-training/index.tsx",
+      "norm_label": "welcomeonboardingmodal.tsx"
+    },
+    {
       "label": "constants/training.ts",
       "file_type": "code",
       "source_file": "constants/training.ts",
@@ -12356,17 +12224,6 @@
       "community": 3,
       "community_name": "agent-training/index.tsx",
       "norm_label": "steps"
-    },
-    {
-      "label": "FADE_IN",
-      "file_type": "code",
-      "source_file": "lib/animations.ts",
-      "source_location": "L19",
-      "_origin": "ast",
-      "id": "lib_animations_fade_in",
-      "community": 3,
-      "community_name": "agent-training/index.tsx",
-      "norm_label": "fade_in"
     },
     {
       "label": "lib/training.ts",
@@ -12579,7 +12436,7 @@
       "_origin": "ast",
       "id": "components_features_agent_entry_brandingpanel",
       "community": 4,
-      "community_name": "BrandingPanel.tsx",
+      "community_name": "Dashboard.tsx",
       "norm_label": "brandingpanel.tsx"
     },
     {
@@ -12590,7 +12447,7 @@
       "_origin": "ast",
       "id": "components_features_agent_entry_brandingpanel_modules",
       "community": 4,
-      "community_name": "BrandingPanel.tsx",
+      "community_name": "Dashboard.tsx",
       "norm_label": "modules"
     },
     {
@@ -12601,7 +12458,7 @@
       "_origin": "ast",
       "id": "components_features_agent_entry_brandingpanel_stats_config",
       "community": 4,
-      "community_name": "BrandingPanel.tsx",
+      "community_name": "Dashboard.tsx",
       "norm_label": "stats_config"
     },
     {
@@ -12612,8 +12469,41 @@
       "_origin": "ast",
       "id": "components_features_agent_entry_floatingdecoration",
       "community": 4,
-      "community_name": "BrandingPanel.tsx",
+      "community_name": "Dashboard.tsx",
       "norm_label": "floatingdecoration.tsx"
+    },
+    {
+      "label": "Dashboard.tsx",
+      "file_type": "code",
+      "source_file": "components/features/Dashboard.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_features_dashboard",
+      "community": 4,
+      "community_name": "Dashboard.tsx",
+      "norm_label": "dashboard.tsx"
+    },
+    {
+      "label": "MODULES",
+      "file_type": "code",
+      "source_file": "components/features/Dashboard.tsx",
+      "source_location": "L24",
+      "_origin": "ast",
+      "id": "components_features_dashboard_modules",
+      "community": 4,
+      "community_name": "Dashboard.tsx",
+      "norm_label": "modules"
+    },
+    {
+      "label": "BrandedTitle.tsx",
+      "file_type": "code",
+      "source_file": "components/ui/BrandedTitle.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_ui_brandedtitle",
+      "community": 4,
+      "community_name": "Dashboard.tsx",
+      "norm_label": "brandedtitle.tsx"
     },
     {
       "label": "StatCounter.tsx",
@@ -12623,8 +12513,19 @@
       "_origin": "ast",
       "id": "components_ui_statcounter",
       "community": 4,
-      "community_name": "BrandingPanel.tsx",
+      "community_name": "Dashboard.tsx",
       "norm_label": "statcounter.tsx"
+    },
+    {
+      "label": "STAGGER_CONTAINER",
+      "file_type": "code",
+      "source_file": "lib/animations.ts",
+      "source_location": "L25",
+      "_origin": "ast",
+      "id": "lib_animations_stagger_container",
+      "community": 4,
+      "community_name": "Dashboard.tsx",
+      "norm_label": "stagger_container"
     },
     {
       "label": "ai-eval/loading.tsx",
@@ -13141,105 +13042,6 @@
       "norm_label": "git-auto-commit.sh script"
     },
     {
-      "label": "courses/[id]/route.ts",
-      "file_type": "code",
-      "source_file": "app/api/courses/[id]/route.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "app_api_courses_id_route",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "courses/[id]/route.ts"
-    },
-    {
-      "label": "courses/route.ts",
-      "file_type": "code",
-      "source_file": "app/api/courses/route.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "app_api_courses_route",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "courses/route.ts"
-    },
-    {
-      "label": "learn/[module]/page.tsx",
-      "file_type": "code",
-      "source_file": "app/[locale]/learn/[module]/page.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "app_locale_learn_module_page",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "learn/[module]/page.tsx"
-    },
-    {
-      "label": "learn/page.tsx",
-      "file_type": "code",
-      "source_file": "app/[locale]/learn/page.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "app_locale_learn_page",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "learn/page.tsx"
-    },
-    {
-      "label": "CourseHub.tsx",
-      "file_type": "code",
-      "source_file": "components/features/courses/CourseHub.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_features_courses_coursehub",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "coursehub.tsx"
-    },
-    {
-      "label": "CourseCard",
-      "file_type": "code",
-      "source_file": "components/features/courses/CourseHub.tsx",
-      "source_location": "L121",
-      "_origin": "ast",
-      "id": "components_features_courses_coursehub_coursecard",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "coursecard"
-    },
-    {
-      "label": "CourseHeader",
-      "file_type": "code",
-      "source_file": "components/features/courses/CourseHub.tsx",
-      "source_location": "L84",
-      "_origin": "ast",
-      "id": "components_features_courses_coursehub_courseheader",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "courseheader"
-    },
-    {
-      "label": "LanguagePicker",
-      "file_type": "code",
-      "source_file": "components/features/courses/CourseHub.tsx",
-      "source_location": "L49",
-      "_origin": "ast",
-      "id": "components_features_courses_coursehub_languagepicker",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "languagepicker"
-    },
-    {
-      "label": "PlaceholderCard",
-      "file_type": "code",
-      "source_file": "components/features/courses/CourseHub.tsx",
-      "source_location": "L264",
-      "_origin": "ast",
-      "id": "components_features_courses_coursehub_placeholdercard",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "placeholdercard"
-    },
-    {
       "label": "DrawingCanvas.tsx",
       "file_type": "code",
       "source_file": "components/features/DrawingCanvas.tsx",
@@ -13247,7 +13049,7 @@
       "_origin": "ast",
       "id": "components_features_drawingcanvas",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "drawingcanvas.tsx"
     },
     {
@@ -13258,7 +13060,7 @@
       "_origin": "ast",
       "id": "components_features_presentation_presentationcontrols",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "presentationcontrols.tsx"
     },
     {
@@ -13269,7 +13071,7 @@
       "_origin": "ast",
       "id": "components_features_presentation_presentationheader",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "presentationheader.tsx"
     },
     {
@@ -13280,7 +13082,7 @@
       "_origin": "ast",
       "id": "components_features_presentation_presentationviewer",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "presentationviewer.tsx"
     },
     {
@@ -13291,7 +13093,7 @@
       "_origin": "ast",
       "id": "components_features_presentation_presenterviewmodal",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "presenterviewmodal.tsx"
     },
     {
@@ -13302,41 +13104,8 @@
       "_origin": "ast",
       "id": "components_features_presentation_trainertoolbar",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "trainertoolbar.tsx"
-    },
-    {
-      "label": "usePresentation.ts",
-      "file_type": "code",
-      "source_file": "components/features/presentation/usePresentation.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_features_presentation_usepresentation",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "usepresentation.ts"
-    },
-    {
-      "label": "PresentationSystemTab.tsx",
-      "file_type": "code",
-      "source_file": "components/features/trainer/PresentationSystemTab.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_features_trainer_presentationsystemtab",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "presentationsystemtab.tsx"
-    },
-    {
-      "label": "TrainerPanel.tsx",
-      "file_type": "code",
-      "source_file": "components/features/trainer/TrainerPanel.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_features_trainer_trainerpanel",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "trainerpanel.tsx"
     },
     {
       "label": "lib/courses.ts",
@@ -13346,41 +13115,8 @@
       "_origin": "ast",
       "id": "lib_courses",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "lib/courses.ts"
-    },
-    {
-      "label": "fetcher.ts",
-      "file_type": "code",
-      "source_file": "lib/fetcher.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "lib_fetcher",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "fetcher.ts"
-    },
-    {
-      "label": "cache",
-      "file_type": "code",
-      "source_file": "lib/fetcher.ts",
-      "source_location": "L11",
-      "_origin": "ast",
-      "id": "lib_fetcher_cache",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "cache"
-    },
-    {
-      "label": "pending",
-      "file_type": "code",
-      "source_file": "lib/fetcher.ts",
-      "source_location": "L12",
-      "_origin": "ast",
-      "id": "lib_fetcher_pending",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "pending"
     },
     {
       "label": "live-presentation.ts",
@@ -13390,30 +13126,8 @@
       "_origin": "ast",
       "id": "lib_live_presentation",
       "community": 55,
-      "community_name": "CourseHub.tsx",
+      "community_name": "PresentationViewer.tsx",
       "norm_label": "live-presentation.ts"
-    },
-    {
-      "label": "server/courses.ts",
-      "file_type": "code",
-      "source_file": "lib/server/courses.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "lib_server_courses",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "server/courses.ts"
-    },
-    {
-      "label": "getCourseModules",
-      "file_type": "code",
-      "source_file": "lib/server/courses.ts",
-      "source_location": "L46",
-      "_origin": "ast",
-      "id": "lib_server_courses_getcoursemodules",
-      "community": 55,
-      "community_name": "CourseHub.tsx",
-      "norm_label": "getcoursemodules"
     },
     {
       "label": "token-optimization-and-handoff/SKILL.md",
@@ -13572,17 +13286,6 @@
       "norm_label": "create-user/route.ts"
     },
     {
-      "label": "login/page.tsx",
-      "file_type": "code",
-      "source_file": "app/[locale]/login/page.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "app_locale_login_page",
-      "community": 6,
-      "community_name": "TrainingPeriod",
-      "norm_label": "login/page.tsx"
-    },
-    {
       "label": "ActiveBatchHeader.tsx",
       "file_type": "code",
       "source_file": "components/features/admin/evaluations/ActiveBatchHeader.tsx",
@@ -13693,6 +13396,17 @@
       "norm_label": "t"
     },
     {
+      "label": "TrainerPanel.tsx",
+      "file_type": "code",
+      "source_file": "components/features/trainer/TrainerPanel.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_features_trainer_trainerpanel",
+      "community": 6,
+      "community_name": "TrainingPeriod",
+      "norm_label": "trainerpanel.tsx"
+    },
+    {
       "label": "WaveManagementTab.tsx",
       "file_type": "code",
       "source_file": "components/features/trainer/WaveManagementTab.tsx",
@@ -13724,72 +13438,6 @@
       "community": 6,
       "community_name": "TrainingPeriod",
       "norm_label": "statusbadge.tsx"
-    },
-    {
-      "label": "firebase.ts",
-      "file_type": "code",
-      "source_file": "lib/firebase.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "lib_firebase",
-      "community": 6,
-      "community_name": "TrainingPeriod",
-      "norm_label": "firebase.ts"
-    },
-    {
-      "label": "auth",
-      "file_type": "code",
-      "source_file": "lib/firebase.ts",
-      "source_location": "L67",
-      "_origin": "ast",
-      "id": "lib_firebase_auth",
-      "community": 6,
-      "community_name": "TrainingPeriod",
-      "norm_label": "auth"
-    },
-    {
-      "label": "db",
-      "file_type": "code",
-      "source_file": "lib/firebase.ts",
-      "source_location": "L64",
-      "_origin": "ast",
-      "id": "lib_firebase_db",
-      "community": 6,
-      "community_name": "TrainingPeriod",
-      "norm_label": "db"
-    },
-    {
-      "label": "firebaseConfig",
-      "file_type": "code",
-      "source_file": "lib/firebase.ts",
-      "source_location": "L35",
-      "_origin": "ast",
-      "id": "lib_firebase_firebaseconfig",
-      "community": 6,
-      "community_name": "TrainingPeriod",
-      "norm_label": "firebaseconfig"
-    },
-    {
-      "label": "rtdb",
-      "file_type": "code",
-      "source_file": "lib/firebase.ts",
-      "source_location": "L65",
-      "_origin": "ast",
-      "id": "lib_firebase_rtdb",
-      "community": 6,
-      "community_name": "TrainingPeriod",
-      "norm_label": "rtdb"
-    },
-    {
-      "label": "storage",
-      "file_type": "code",
-      "source_file": "lib/firebase.ts",
-      "source_location": "L66",
-      "_origin": "ast",
-      "id": "lib_firebase_storage",
-      "community": 6,
-      "community_name": "TrainingPeriod",
-      "norm_label": "storage"
     },
     {
       "label": "presence.ts",
@@ -14584,15 +14232,59 @@
       "norm_label": "congratulationscard"
     },
     {
-      "label": "ReturningUserBanner.tsx",
+      "label": "DiagnosticRunner.tsx",
       "file_type": "code",
-      "source_file": "components/features/agent-entry/ReturningUserBanner.tsx",
+      "source_file": "components/features/admin/adjustments/DiagnosticRunner.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "components_features_agent_entry_returninguserbanner",
+      "id": "components_features_admin_adjustments_diagnosticrunner",
       "community": 78,
-      "community_name": "ReturningUserBanner.tsx",
-      "norm_label": "returninguserbanner.tsx"
+      "community_name": "PresentationSystemTab.tsx",
+      "norm_label": "diagnosticrunner.tsx"
+    },
+    {
+      "label": "HealthManager.tsx",
+      "file_type": "code",
+      "source_file": "components/features/admin/adjustments/HealthManager.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_features_admin_adjustments_healthmanager",
+      "community": 78,
+      "community_name": "PresentationSystemTab.tsx",
+      "norm_label": "healthmanager.tsx"
+    },
+    {
+      "label": "usePresentation.ts",
+      "file_type": "code",
+      "source_file": "components/features/presentation/usePresentation.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_features_presentation_usepresentation",
+      "community": 78,
+      "community_name": "PresentationSystemTab.tsx",
+      "norm_label": "usepresentation.ts"
+    },
+    {
+      "label": "PresentationSystemTab.tsx",
+      "file_type": "code",
+      "source_file": "components/features/trainer/PresentationSystemTab.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_features_trainer_presentationsystemtab",
+      "community": 78,
+      "community_name": "PresentationSystemTab.tsx",
+      "norm_label": "presentationsystemtab.tsx"
+    },
+    {
+      "label": "GlassCard.tsx",
+      "file_type": "code",
+      "source_file": "components/ui/GlassCard.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_ui_glasscard",
+      "community": 78,
+      "community_name": "PresentationSystemTab.tsx",
+      "norm_label": "glasscard.tsx"
     },
     {
       "label": "@types/nodemailer",
@@ -14617,17 +14309,6 @@
       "norm_label": "@types/nodemailer"
     },
     {
-      "label": "join/page.tsx",
-      "file_type": "code",
-      "source_file": "app/[locale]/join/page.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "app_locale_join_page",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "join/page.tsx"
-    },
-    {
       "label": "agent/page.tsx",
       "file_type": "code",
       "source_file": "app/[locale]/login/agent/page.tsx",
@@ -14635,30 +14316,8 @@
       "_origin": "ast",
       "id": "app_locale_login_agent_page",
       "community": 8,
-      "community_name": "animations.ts",
+      "community_name": "AgentEntry.tsx",
       "norm_label": "agent/page.tsx"
-    },
-    {
-      "label": "[locale]/page.tsx",
-      "file_type": "code",
-      "source_file": "app/[locale]/page.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "app_locale_page",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "[locale]/page.tsx"
-    },
-    {
-      "label": "EntryAvatar.tsx",
-      "file_type": "code",
-      "source_file": "components/features/agent-entry/EntryAvatar.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_features_agent_entry_entryavatar",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "entryavatar.tsx"
     },
     {
       "label": "MobileHeader.tsx",
@@ -14668,7 +14327,7 @@
       "_origin": "ast",
       "id": "components_features_agent_entry_mobileheader",
       "community": 8,
-      "community_name": "animations.ts",
+      "community_name": "AgentEntry.tsx",
       "norm_label": "mobileheader.tsx"
     },
     {
@@ -14679,8 +14338,19 @@
       "_origin": "ast",
       "id": "components_features_agent_entry_mobileheader_modules",
       "community": 8,
-      "community_name": "animations.ts",
+      "community_name": "AgentEntry.tsx",
       "norm_label": "modules"
+    },
+    {
+      "label": "ReturningUserBanner.tsx",
+      "file_type": "code",
+      "source_file": "components/features/agent-entry/ReturningUserBanner.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_features_agent_entry_returninguserbanner",
+      "community": 8,
+      "community_name": "AgentEntry.tsx",
+      "norm_label": "returninguserbanner.tsx"
     },
     {
       "label": "AgentEntry.tsx",
@@ -14690,107 +14360,8 @@
       "_origin": "ast",
       "id": "components_features_agententry",
       "community": 8,
-      "community_name": "animations.ts",
+      "community_name": "AgentEntry.tsx",
       "norm_label": "agententry.tsx"
-    },
-    {
-      "label": "Dashboard.tsx",
-      "file_type": "code",
-      "source_file": "components/features/Dashboard.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_features_dashboard",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "dashboard.tsx"
-    },
-    {
-      "label": "MODULES",
-      "file_type": "code",
-      "source_file": "components/features/Dashboard.tsx",
-      "source_location": "L24",
-      "_origin": "ast",
-      "id": "components_features_dashboard_modules",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "modules"
-    },
-    {
-      "label": "ui/BackgroundEffects.tsx",
-      "file_type": "code",
-      "source_file": "components/ui/BackgroundEffects.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_ui_backgroundeffects",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "ui/backgroundeffects.tsx"
-    },
-    {
-      "label": "BackgroundEffects",
-      "file_type": "code",
-      "source_file": "components/ui/BackgroundEffects.tsx",
-      "source_location": "L10",
-      "_origin": "ast",
-      "id": "components_ui_backgroundeffects_backgroundeffects",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "backgroundeffects"
-    },
-    {
-      "label": "BrandedTitle.tsx",
-      "file_type": "code",
-      "source_file": "components/ui/BrandedTitle.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "components_ui_brandedtitle",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "brandedtitle.tsx"
-    },
-    {
-      "label": "animations.ts",
-      "file_type": "code",
-      "source_file": "lib/animations.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "lib_animations",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "animations.ts"
-    },
-    {
-      "label": "EASE",
-      "file_type": "code",
-      "source_file": "lib/animations.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "lib_animations_ease",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "ease"
-    },
-    {
-      "label": "STAGGER_CONTAINER",
-      "file_type": "code",
-      "source_file": "lib/animations.ts",
-      "source_location": "L25",
-      "_origin": "ast",
-      "id": "lib_animations_stagger_container",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "stagger_container"
-    },
-    {
-      "label": "STAGGER_ITEM",
-      "file_type": "code",
-      "source_file": "lib/animations.ts",
-      "source_location": "L35",
-      "_origin": "ast",
-      "id": "lib_animations_stagger_item",
-      "community": 8,
-      "community_name": "animations.ts",
-      "norm_label": "stagger_item"
     },
     {
       "label": "eslint",
@@ -14815,15 +14386,92 @@
       "norm_label": "xlsx"
     },
     {
-      "label": "WelcomeOnboardingModal.tsx",
+      "label": "CourseHub.tsx",
       "file_type": "code",
-      "source_file": "components/ui/WelcomeOnboardingModal.tsx",
+      "source_file": "components/features/courses/CourseHub.tsx",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "components_ui_welcomeonboardingmodal",
+      "id": "components_features_courses_coursehub",
       "community": 82,
-      "community_name": "WelcomeOnboardingModal.tsx",
-      "norm_label": "welcomeonboardingmodal.tsx"
+      "community_name": "CourseHub.tsx",
+      "norm_label": "coursehub.tsx"
+    },
+    {
+      "label": "CourseCard",
+      "file_type": "code",
+      "source_file": "components/features/courses/CourseHub.tsx",
+      "source_location": "L121",
+      "_origin": "ast",
+      "id": "components_features_courses_coursehub_coursecard",
+      "community": 82,
+      "community_name": "CourseHub.tsx",
+      "norm_label": "coursecard"
+    },
+    {
+      "label": "CourseHeader",
+      "file_type": "code",
+      "source_file": "components/features/courses/CourseHub.tsx",
+      "source_location": "L84",
+      "_origin": "ast",
+      "id": "components_features_courses_coursehub_courseheader",
+      "community": 82,
+      "community_name": "CourseHub.tsx",
+      "norm_label": "courseheader"
+    },
+    {
+      "label": "LanguagePicker",
+      "file_type": "code",
+      "source_file": "components/features/courses/CourseHub.tsx",
+      "source_location": "L49",
+      "_origin": "ast",
+      "id": "components_features_courses_coursehub_languagepicker",
+      "community": 82,
+      "community_name": "CourseHub.tsx",
+      "norm_label": "languagepicker"
+    },
+    {
+      "label": "PlaceholderCard",
+      "file_type": "code",
+      "source_file": "components/features/courses/CourseHub.tsx",
+      "source_location": "L264",
+      "_origin": "ast",
+      "id": "components_features_courses_coursehub_placeholdercard",
+      "community": 82,
+      "community_name": "CourseHub.tsx",
+      "norm_label": "placeholdercard"
+    },
+    {
+      "label": "fetcher.ts",
+      "file_type": "code",
+      "source_file": "lib/fetcher.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "lib_fetcher",
+      "community": 82,
+      "community_name": "CourseHub.tsx",
+      "norm_label": "fetcher.ts"
+    },
+    {
+      "label": "cache",
+      "file_type": "code",
+      "source_file": "lib/fetcher.ts",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "lib_fetcher_cache",
+      "community": 82,
+      "community_name": "CourseHub.tsx",
+      "norm_label": "cache"
+    },
+    {
+      "label": "pending",
+      "file_type": "code",
+      "source_file": "lib/fetcher.ts",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "lib_fetcher_pending",
+      "community": 82,
+      "community_name": "CourseHub.tsx",
+      "norm_label": "pending"
     },
     {
       "label": "ensure-dev-server.js",
@@ -14980,26 +14628,246 @@
       "norm_label": "default_steps"
     },
     {
-      "label": "eslint-plugin-jsx-a11y",
+      "label": "ai-eval/route.ts",
       "file_type": "code",
-      "source_file": "package.json",
-      "source_location": "L45",
+      "source_file": "app/api/ai-eval/route.ts",
+      "source_location": "L1",
       "_origin": "ast",
-      "id": "package_devdependencies_eslint_plugin_jsx_a11y",
+      "id": "app_api_ai_eval_route",
       "community": 86,
-      "community_name": "eslint-plugin-jsx-a11y",
-      "norm_label": "eslint-plugin-jsx-a11y"
+      "community_name": "AiEvalScenario",
+      "norm_label": "ai-eval/route.ts"
     },
     {
-      "label": "eslint-plugin-jsx-a11y",
-      "file_type": "concept",
-      "source_file": "package.json",
-      "source_location": "L45",
+      "label": "courses/[id]/route.ts",
+      "file_type": "code",
+      "source_file": "app/api/courses/[id]/route.ts",
+      "source_location": "L1",
       "_origin": "ast",
-      "id": "eslint_plugin_jsx_a11y",
-      "community": 86,
-      "community_name": "eslint-plugin-jsx-a11y",
-      "norm_label": "eslint-plugin-jsx-a11y"
+      "id": "app_api_courses_id_route",
+      "community": 87,
+      "community_name": "server/courses.ts",
+      "norm_label": "courses/[id]/route.ts"
+    },
+    {
+      "label": "courses/route.ts",
+      "file_type": "code",
+      "source_file": "app/api/courses/route.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "app_api_courses_route",
+      "community": 87,
+      "community_name": "server/courses.ts",
+      "norm_label": "courses/route.ts"
+    },
+    {
+      "label": "learn/[module]/page.tsx",
+      "file_type": "code",
+      "source_file": "app/[locale]/learn/[module]/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "app_locale_learn_module_page",
+      "community": 87,
+      "community_name": "server/courses.ts",
+      "norm_label": "learn/[module]/page.tsx"
+    },
+    {
+      "label": "learn/page.tsx",
+      "file_type": "code",
+      "source_file": "app/[locale]/learn/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "app_locale_learn_page",
+      "community": 87,
+      "community_name": "server/courses.ts",
+      "norm_label": "learn/page.tsx"
+    },
+    {
+      "label": "server/courses.ts",
+      "file_type": "code",
+      "source_file": "lib/server/courses.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "lib_server_courses",
+      "community": 87,
+      "community_name": "server/courses.ts",
+      "norm_label": "server/courses.ts"
+    },
+    {
+      "label": "getCourseModules",
+      "file_type": "code",
+      "source_file": "lib/server/courses.ts",
+      "source_location": "L46",
+      "_origin": "ast",
+      "id": "lib_server_courses_getcoursemodules",
+      "community": 87,
+      "community_name": "server/courses.ts",
+      "norm_label": "getcoursemodules"
+    },
+    {
+      "label": "IntroView.tsx",
+      "file_type": "code",
+      "source_file": "components/features/ai-eval/IntroView.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_features_ai_eval_introview",
+      "community": 88,
+      "community_name": "ScenarioPicker.tsx",
+      "norm_label": "introview.tsx"
+    },
+    {
+      "label": "IntroView",
+      "file_type": "code",
+      "source_file": "components/features/ai-eval/IntroView.tsx",
+      "source_location": "L19",
+      "_origin": "ast",
+      "id": "components_features_ai_eval_introview_introview",
+      "community": 88,
+      "community_name": "ScenarioPicker.tsx",
+      "norm_label": "introview"
+    },
+    {
+      "label": "ScenarioPicker.tsx",
+      "file_type": "code",
+      "source_file": "components/features/ai-eval/ScenarioPicker.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_features_ai_eval_scenariopicker",
+      "community": 88,
+      "community_name": "ScenarioPicker.tsx",
+      "norm_label": "scenariopicker.tsx"
+    },
+    {
+      "label": "DIFFICULTY_MAP",
+      "file_type": "code",
+      "source_file": "components/features/ai-eval/ScenarioPicker.tsx",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "components_features_ai_eval_scenariopicker_difficulty_map",
+      "community": 88,
+      "community_name": "ScenarioPicker.tsx",
+      "norm_label": "difficulty_map"
+    },
+    {
+      "label": "ScenarioPicker",
+      "file_type": "code",
+      "source_file": "components/features/ai-eval/ScenarioPicker.tsx",
+      "source_location": "L36",
+      "_origin": "ast",
+      "id": "components_features_ai_eval_scenariopicker_scenariopicker",
+      "community": 88,
+      "community_name": "ScenarioPicker.tsx",
+      "norm_label": "scenariopicker"
+    },
+    {
+      "label": "StepProgress.tsx",
+      "file_type": "code",
+      "source_file": "components/features/ai-eval/StepProgress.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_features_ai_eval_stepprogress",
+      "community": 88,
+      "community_name": "ScenarioPicker.tsx",
+      "norm_label": "stepprogress.tsx"
+    },
+    {
+      "label": "ActiveAgentUI.tsx",
+      "file_type": "code",
+      "source_file": "components/ui/ActiveAgentUI.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_ui_activeagentui",
+      "community": 88,
+      "community_name": "ScenarioPicker.tsx",
+      "norm_label": "activeagentui.tsx"
+    },
+    {
+      "label": "templates.ts",
+      "file_type": "code",
+      "source_file": "components/features/admin/ai-scenarios/templates.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_features_admin_ai_scenarios_templates",
+      "community": 89,
+      "community_name": "AiScenariosTab.tsx",
+      "norm_label": "templates.ts"
+    },
+    {
+      "label": "PRESET_TEMPLATES",
+      "file_type": "code",
+      "source_file": "components/features/admin/ai-scenarios/templates.ts",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "components_features_admin_ai_scenarios_templates_preset_templates",
+      "community": 89,
+      "community_name": "AiScenariosTab.tsx",
+      "norm_label": "preset_templates"
+    },
+    {
+      "label": "AiScenarioImportModal.tsx",
+      "file_type": "code",
+      "source_file": "components/features/admin/AiScenarioImportModal.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_features_admin_aiscenarioimportmodal",
+      "community": 89,
+      "community_name": "AiScenariosTab.tsx",
+      "norm_label": "aiscenarioimportmodal.tsx"
+    },
+    {
+      "label": "AiScenariosTab.tsx",
+      "file_type": "code",
+      "source_file": "components/features/admin/AiScenariosTab.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_features_admin_aiscenariostab",
+      "community": 89,
+      "community_name": "AiScenariosTab.tsx",
+      "norm_label": "aiscenariostab.tsx"
+    },
+    {
+      "label": "DIFF_STYLES",
+      "file_type": "code",
+      "source_file": "components/features/admin/AiScenariosTab.tsx",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "components_features_admin_aiscenariostab_diff_styles",
+      "community": 89,
+      "community_name": "AiScenariosTab.tsx",
+      "norm_label": "diff_styles"
+    },
+    {
+      "label": "utils.ts",
+      "file_type": "code",
+      "source_file": "lib/services/ai-scenarios/utils.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "lib_services_ai_scenarios_utils",
+      "community": 89,
+      "community_name": "AiScenariosTab.tsx",
+      "norm_label": "utils.ts"
+    },
+    {
+      "label": "AI_SCENARIO_TEMPLATE",
+      "file_type": "code",
+      "source_file": "lib/services/ai-scenarios/utils.ts",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "lib_services_ai_scenarios_utils_ai_scenario_template",
+      "community": 89,
+      "community_name": "AiScenariosTab.tsx",
+      "norm_label": "ai_scenario_template"
+    },
+    {
+      "label": "DEFAULT_CRITERIA",
+      "file_type": "code",
+      "source_file": "lib/services/ai-scenarios/utils.ts",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "lib_services_ai_scenarios_utils_default_criteria",
+      "community": 89,
+      "community_name": "AiScenariosTab.tsx",
+      "norm_label": "default_criteria"
     },
     {
       "label": "evaluator/page.tsx",
@@ -15187,6 +15055,138 @@
       "community": 9,
       "community_name": "EvaluatorDashboard.tsx",
       "norm_label": "status_order"
+    },
+    {
+      "label": "login/page.tsx",
+      "file_type": "code",
+      "source_file": "app/[locale]/login/page.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "app_locale_login_page",
+      "community": 90,
+      "community_name": "firebase.ts",
+      "norm_label": "login/page.tsx"
+    },
+    {
+      "label": "firebase.ts",
+      "file_type": "code",
+      "source_file": "lib/firebase.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "lib_firebase",
+      "community": 90,
+      "community_name": "firebase.ts",
+      "norm_label": "firebase.ts"
+    },
+    {
+      "label": "auth",
+      "file_type": "code",
+      "source_file": "lib/firebase.ts",
+      "source_location": "L67",
+      "_origin": "ast",
+      "id": "lib_firebase_auth",
+      "community": 90,
+      "community_name": "firebase.ts",
+      "norm_label": "auth"
+    },
+    {
+      "label": "db",
+      "file_type": "code",
+      "source_file": "lib/firebase.ts",
+      "source_location": "L64",
+      "_origin": "ast",
+      "id": "lib_firebase_db",
+      "community": 90,
+      "community_name": "firebase.ts",
+      "norm_label": "db"
+    },
+    {
+      "label": "firebaseConfig",
+      "file_type": "code",
+      "source_file": "lib/firebase.ts",
+      "source_location": "L35",
+      "_origin": "ast",
+      "id": "lib_firebase_firebaseconfig",
+      "community": 90,
+      "community_name": "firebase.ts",
+      "norm_label": "firebaseconfig"
+    },
+    {
+      "label": "rtdb",
+      "file_type": "code",
+      "source_file": "lib/firebase.ts",
+      "source_location": "L65",
+      "_origin": "ast",
+      "id": "lib_firebase_rtdb",
+      "community": 90,
+      "community_name": "firebase.ts",
+      "norm_label": "rtdb"
+    },
+    {
+      "label": "SandboxManagerModal.tsx",
+      "file_type": "code",
+      "source_file": "components/features/admin/SandboxManagerModal.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "components_features_admin_sandboxmanagermodal",
+      "community": 91,
+      "community_name": "ai-eval.ts",
+      "norm_label": "sandboxmanagermodal.tsx"
+    },
+    {
+      "label": "ai-eval.ts",
+      "file_type": "code",
+      "source_file": "types/ai-eval.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "types_ai_eval",
+      "community": 91,
+      "community_name": "ai-eval.ts",
+      "norm_label": "ai-eval.ts"
+    },
+    {
+      "label": "AiEvalScenarioSchema",
+      "file_type": "code",
+      "source_file": "types/ai-eval.ts",
+      "source_location": "L20",
+      "_origin": "ast",
+      "id": "types_ai_eval_aievalscenarioschema",
+      "community": 91,
+      "community_name": "ai-eval.ts",
+      "norm_label": "aievalscenarioschema"
+    },
+    {
+      "label": "AiEvalTurnResponseSchema",
+      "file_type": "code",
+      "source_file": "types/ai-eval.ts",
+      "source_location": "L82",
+      "_origin": "ast",
+      "id": "types_ai_eval_aievalturnresponseschema",
+      "community": 91,
+      "community_name": "ai-eval.ts",
+      "norm_label": "aievalturnresponseschema"
+    },
+    {
+      "label": "eslint",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L43",
+      "_origin": "ast",
+      "id": "package_devdependencies_eslint",
+      "community": 92,
+      "community_name": "eslint",
+      "norm_label": "eslint"
+    },
+    {
+      "label": "eslint",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L43",
+      "_origin": "ast",
+      "id": "package_json_eslint",
+      "community": 92,
+      "community_name": "eslint",
+      "norm_label": "eslint"
     },
     {
       "label": "Pitch Prompt",
@@ -18019,7 +18019,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "components/features/admin/studio/AcademyStudio.tsx",
-      "source_location": "L66",
+      "source_location": "L68",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_admin_studio_academystudio_academystudio",
@@ -21618,7 +21618,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L32",
+      "source_location": "L39",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presenterviewmodal_presenterviewmodalprops",
@@ -21630,7 +21630,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L35",
+      "source_location": "L42",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presenterviewmodal_presenterviewmodalprops",
@@ -21642,7 +21642,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L45",
+      "source_location": "L52",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presenterviewmodal_presenterviewmodalprops",
@@ -21654,7 +21654,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L46",
+      "source_location": "L53",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presenterviewmodal_presenterviewmodalprops",
@@ -21666,7 +21666,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L47",
+      "source_location": "L54",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presenterviewmodal_presenterviewmodalprops",
@@ -30583,7 +30583,19 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L25",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "components_features_presentation_presenterviewmodal",
+      "target": "lib_firebase_rtdb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "components/features/presentation/PresenterViewModal.tsx",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presenterviewmodal",
@@ -30595,7 +30607,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L25",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presenterviewmodal",
@@ -30607,7 +30619,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L26",
+      "source_location": "L33",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presenterviewmodal",
@@ -30619,7 +30631,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L27",
+      "source_location": "L34",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presenterviewmodal",
@@ -30631,7 +30643,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L27",
+      "source_location": "L34",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presenterviewmodal",
@@ -30643,7 +30655,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L27",
+      "source_location": "L34",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presenterviewmodal",
@@ -40159,7 +40171,19 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L25",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "components_features_presentation_presenterviewmodal",
+      "target": "lib_firebase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "components/features/presentation/PresenterViewModal.tsx",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presenterviewmodal",
@@ -40171,7 +40195,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L26",
+      "source_location": "L33",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presenterviewmodal",
@@ -40183,7 +40207,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L27",
+      "source_location": "L34",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presenterviewmodal",
@@ -46766,7 +46790,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L29",
+      "source_location": "L36",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presenterviewmodal",
@@ -46777,7 +46801,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "components/features/presentation/PresenterViewModal.tsx",
-      "source_location": "L50",
+      "source_location": "L57",
       "weight": 1.0,
       "_origin": "ast",
       "source": "components_features_presentation_presenterviewmodal",
@@ -49087,7 +49111,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "lib/live-presentation.ts",
-      "source_location": "L31",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast",
       "source": "lib_live_presentation",
@@ -52737,5 +52761,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "716c6f856a34bf4cabf9e9215ffd4b77a4d6d8fd"
+  "built_at_commit": "b01e60237df26f7e1e5f66bdb85f0e7fc26a476c"
 }

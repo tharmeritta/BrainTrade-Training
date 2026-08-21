@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import NextImage from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -20,7 +21,13 @@ import {
   X,
   FileText,
   Grid,
+  Users,
+  AlertTriangle,
+  PanelRightClose,
+  PanelRightOpen,
 } from 'lucide-react';
+import { ref, onValue } from 'firebase/database';
+import { rtdb } from '@/lib/firebase';
 
 import type { CourseModule, CourseLang } from '@/lib/courses';
 import DrawingCanvas from '../DrawingCanvas';
@@ -67,12 +74,23 @@ export function PresenterViewModal({
   addDrawingPath,
   updateLaser,
 }: PresenterViewModalProps) {
+  const [mounted, setMounted] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [currentTime, setCurrentTime] = useState<string>('');
   const [audienceWindow, setAudienceWindow] = useState<Window | null>(null);
   const [notes, setNotes] = useState<Record<number, string>>({});
   const [currentNote, setCurrentNote] = useState<string>('');
   const [showGrid, setShowGrid] = useState(false);
+  const [noteFontSize, setNoteFontSize] = useState<'sm' | 'base' | 'lg' | 'xl'>('base');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [popupBlocked, setPopupBlocked] = useState(false);
+  const [activeViewers, setActiveViewers] = useState<number>(0);
+  const [penColor, setPenColor] = useState<string>('#ef4444');
+  const [targetMinutes, setTargetMinutes] = useState<number>(30);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const title = lang === 'th' ? module.titleTh : module.title;
 
@@ -103,6 +121,27 @@ export function PresenterViewModal({
   useEffect(() => {
     setCurrentNote(notes[slide] || '');
   }, [slide, notes]);
+
+  // Listen to live viewers presence from Firebase RTDB
+  useEffect(() => {
+    if (!isOpen || !isLive) {
+      setActiveViewers(0);
+      return;
+    }
+    const viewersRef = ref(rtdb, `live_sessions/${module.id}/viewers`);
+    const unsubscribe = onValue(viewersRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data && typeof data === 'object') {
+        setActiveViewers(Object.keys(data).length);
+      } else if (typeof data === 'number') {
+        setActiveViewers(data);
+      } else {
+        setActiveViewers(session?.viewersCount || 0);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [isOpen, isLive, module.id, session?.viewersCount]);
 
   const handleNoteChange = (text: string) => {
     setCurrentNote(text);
@@ -138,6 +177,9 @@ export function PresenterViewModal({
       } else if (prevKeys.includes(e.key)) {
         e.preventDefault();
         if (slide > 1) goToSlide(slide - 1);
+      } else if (e.key === 'g' || e.key === 'G') {
+        e.preventDefault();
+        setShowGrid((prev) => !prev);
       } else if (e.key === 'Escape') {
         if (showGrid) {
           setShowGrid(false);
@@ -166,19 +208,26 @@ export function PresenterViewModal({
 
   // Launch Audience Display Window (for Mac Secondary Screen / External Monitor)
   const openAudienceWindow = () => {
+    setPopupBlocked(false);
     const width = 1280;
     const height = 720;
     const left = window.screen.width ? window.screen.width : 0;
     const top = 0;
 
-    const popup = window.open(
-      `/${lang}/learn/${module.id}?slide=${slide}&embedded=true&audienceView=true`,
-      'BrainTradeAudienceWindow',
-      `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=no,resizable=yes`
-    );
+    try {
+      const popup = window.open(
+        `/${lang}/learn/${module.id}?slide=${slide}&embedded=true&audienceView=true`,
+        'BrainTradeAudienceWindow',
+        `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=no,resizable=yes`
+      );
 
-    if (popup) {
-      setAudienceWindow(popup);
+      if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+        setPopupBlocked(true);
+      } else {
+        setAudienceWindow(popup);
+      }
+    } catch {
+      setPopupBlocked(true);
     }
   };
 
@@ -195,7 +244,19 @@ export function PresenterViewModal({
     return `${String(displayMins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  return (
+  const getNoteFontClass = () => {
+    switch (noteFontSize) {
+      case 'sm': return 'text-xs leading-relaxed';
+      case 'base': return 'text-sm leading-relaxed';
+      case 'lg': return 'text-base leading-relaxed';
+      case 'xl': return 'text-lg leading-loose';
+      default: return 'text-sm leading-relaxed';
+    }
+  };
+
+  if (!isOpen || !mounted) return null;
+
+  const modalContent = (
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
@@ -204,31 +265,54 @@ export function PresenterViewModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="presenter-view-title"
-        className="fixed inset-0 z-[10000] flex flex-col bg-slate-950 text-white font-sans overflow-hidden"
+        className="fixed inset-0 z-[10000] flex flex-col bg-slate-950 text-white font-sans overflow-hidden select-none"
       >
         {/* -- Presenter Mode Top Bar -- */}
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-800 bg-slate-900/90 px-4 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/20 text-primary">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-800 bg-slate-900/90 px-4 backdrop-blur-md gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/20 text-primary shrink-0">
               <BookOpen size={18} aria-hidden="true" />
             </div>
-            <div>
-              <h2 id="presenter-view-title" className="text-sm font-black tracking-tight text-slate-100">
+            <div className="min-w-0">
+              <h2 id="presenter-view-title" className="text-sm font-black tracking-tight text-slate-100 truncate">
                 {title}
               </h2>
-              <p className="text-[10px] font-bold text-slate-300">
+              <p className="text-[10px] font-bold text-slate-400 truncate">
                 {lang === 'th' ? 'โหมดผู้สอน (macOS Presenter View)' : 'macOS Presenter View'}
               </p>
             </div>
           </div>
 
           {/* Timers & Status */}
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 rounded-xl bg-slate-800/80 px-3 py-1.5 text-xs font-mono text-slate-200 border border-slate-700">
-              <Clock size={14} className="text-amber-400" aria-hidden="true" />
-              <span>Elapsed: {formatElapsed(elapsedSeconds)}</span>
-              <span className="text-slate-500" aria-hidden="true">|</span>
-              <span className="text-slate-300">{currentTime}</span>
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+            {/* Live Trainee Audience Presence Counter */}
+            {isLive && (
+              <div className="flex items-center gap-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 text-xs font-bold text-emerald-400 animate-pulse">
+                <Users size={13} aria-hidden="true" />
+                <span>{activeViewers} {lang === 'th' ? 'ผู้เรียนกำลังรับชม' : 'Connected'}</span>
+              </div>
+            )}
+
+            {/* Session Pacing & Timer Gauge */}
+            <div className="hidden sm:flex items-center gap-2 rounded-xl bg-slate-800/80 px-2.5 py-1 text-xs font-mono text-slate-200 border border-slate-700">
+              <Clock size={13} className="text-amber-400" aria-hidden="true" />
+              <span className={elapsedSeconds > targetMinutes * 60 ? 'text-rose-400 font-black' : ''}>
+                {formatElapsed(elapsedSeconds)}
+              </span>
+              <span className="text-slate-600">/</span>
+              <select
+                value={targetMinutes}
+                onChange={(e) => setTargetMinutes(Number(e.target.value))}
+                aria-label="Target session duration"
+                className="bg-transparent text-slate-400 hover:text-slate-200 cursor-pointer focus:outline-none text-[11px] font-bold"
+              >
+                <option value={15} className="bg-slate-900 text-white">15m Target</option>
+                <option value={30} className="bg-slate-900 text-white">30m Target</option>
+                <option value={45} className="bg-slate-900 text-white">45m Target</option>
+                <option value={60} className="bg-slate-900 text-white">60m Target</option>
+              </select>
+              <span className="text-slate-600" aria-hidden="true">|</span>
+              <span className="text-slate-400">{currentTime}</span>
             </div>
 
             {/* Live Indicator */}
@@ -244,7 +328,7 @@ export function PresenterViewModal({
                     : 'Go Live Broadcast'
               }
               aria-pressed={isLive}
-              className={`flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-bold transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
+              className={`flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-bold transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 isLive
                   ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20 hover:bg-rose-600'
                   : 'bg-emerald-600 text-white hover:bg-emerald-500'
@@ -266,7 +350,7 @@ export function PresenterViewModal({
                     ? 'เปิดหน้าต่างผู้เรียนสำหรับจอเสริม'
                     : 'Launch audience window for external monitor'
               }
-              className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold border transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
+              className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold border transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                 audienceWindow && !audienceWindow.closed
                   ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400'
                   : 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700'
@@ -274,11 +358,21 @@ export function PresenterViewModal({
               title="Open Audience Window for Mac External Monitor / Projector"
             >
               <ExternalLink size={14} aria-hidden="true" />
-              <span>
+              <span className="hidden md:inline">
                 {audienceWindow && !audienceWindow.closed
                   ? (lang === 'th' ? 'จอผู้เรียนเปิดอยู่' : 'Audience Window Active')
-                  : (lang === 'th' ? 'เปิดจอผู้เรียน (Dual Screen)' : 'Launch Audience Window')}
+                  : (lang === 'th' ? 'เปิดจอผู้เรียน (Dual Screen)' : 'Dual Screen')}
               </span>
+            </button>
+
+            {/* Toggle Sidebar Button */}
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              aria-label="Toggle notes sidebar"
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              title={isSidebarOpen ? 'Maximize Slide View' : 'Show Notes & Next Slide'}
+            >
+              {isSidebarOpen ? <PanelRightClose size={16} /> : <PanelRightOpen size={16} />}
             </button>
 
             <button
@@ -291,20 +385,41 @@ export function PresenterViewModal({
           </div>
         </header>
 
+        {/* Popup Blocked Alert Banner */}
+        {popupBlocked && (
+          <div className="bg-amber-500/15 border-b border-amber-500/30 px-4 py-2 flex items-center justify-between text-xs text-amber-300">
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={15} className="text-amber-400 shrink-0" />
+              <span>
+                {lang === 'th'
+                  ? 'หน้าต่างแสดงผลผู้เรียนถูกบล็อกโดยเบราว์เซอร์ กรุณาอนุญาตป๊อปอัปสำหรับเว็บไซต์นี้เพื่อแสดงผลบนจอเสริม'
+                  : 'Audience window popup was blocked by your browser. Please allow popups for this site to enable secondary screen projection.'}
+              </span>
+            </div>
+            <button
+              onClick={() => setPopupBlocked(false)}
+              className="text-amber-400 hover:text-white text-xs font-bold px-2 py-0.5"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* -- Main Presenter Body -- */}
-        <div className="flex flex-1 overflow-hidden p-4 gap-4">
-          {/* LEFT/CENTER: Current Main Slide + Toolbar */}
-          <div className="flex flex-1 flex-col gap-3 min-w-0">
-            <div className="relative flex-1 rounded-2xl border border-slate-800 bg-black overflow-hidden shadow-2xl flex items-center justify-center">
+        <div className="flex flex-1 overflow-hidden p-3 sm:p-4 gap-3 sm:gap-4">
+          {/* LEFT/CENTER: Current Main Slide + Toolbar (Adaptive Container) */}
+          <div className="flex flex-1 flex-col gap-3 min-w-0 h-full">
+            <div className="relative flex-1 rounded-2xl border border-slate-800 bg-black overflow-hidden shadow-2xl flex items-center justify-center min-h-0">
               <img
                 src={slideImageUrl}
                 alt={lang === 'th' ? `สไลด์ปัจจุบันที่ ${slide} จาก ${total}` : `Current slide ${slide} of ${total}`}
-                className="absolute inset-0 h-full w-full object-contain pointer-events-none select-none"
+                className="max-h-full max-w-full object-contain pointer-events-none select-none"
               />
               <DrawingCanvas
                 isTrainer={true}
                 isActive={true}
                 mode={activeTool}
+                color={penColor}
                 drawings={session?.drawings || []}
                 laserPos={session?.laserPos || null}
                 onDrawEnd={addDrawingPath}
@@ -316,10 +431,10 @@ export function PresenterViewModal({
             <div
               role="toolbar"
               aria-label={lang === 'th' ? 'การนำทางและเครื่องมือวาด' : 'Slide navigation and drawing tools'}
-              className="flex h-14 items-center justify-between rounded-2xl border border-slate-800 bg-slate-900 px-4"
+              className="flex h-14 shrink-0 items-center justify-between rounded-2xl border border-slate-800 bg-slate-900 px-3 sm:px-4"
             >
               {/* Prev / Next Controls */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <button
                   disabled={slide <= 1}
                   onClick={() => goToSlide(slide - 1)}
@@ -328,7 +443,7 @@ export function PresenterViewModal({
                 >
                   <ChevronLeft size={20} aria-hidden="true" />
                 </button>
-                <span className="text-sm font-black text-slate-200 px-2" aria-live="polite">
+                <span className="text-xs sm:text-sm font-black text-slate-200 px-1 sm:px-2 font-mono" aria-live="polite">
                   {slide} / {total}
                 </span>
                 <button
@@ -349,7 +464,7 @@ export function PresenterViewModal({
                       ? 'border-primary bg-primary/20 text-primary'
                       : 'border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700'
                   }`}
-                  title="Slide Grid Picker"
+                  title="Slide Grid Picker (G)"
                 >
                   <Grid size={18} aria-hidden="true" />
                 </button>
@@ -359,7 +474,7 @@ export function PresenterViewModal({
               <div
                 role="group"
                 aria-label={lang === 'th' ? 'เครื่องมือคำอธิบายภาพ' : 'Annotation tools'}
-                className="flex items-center gap-2 rounded-xl bg-slate-800/80 p-1 border border-slate-700"
+                className="flex items-center gap-1.5 rounded-xl bg-slate-800/80 p-1 border border-slate-700"
               >
                 <button
                   onClick={() => setActiveTool(activeTool === 'pen' ? null : 'pen')}
@@ -372,6 +487,29 @@ export function PresenterViewModal({
                 >
                   <Pencil size={16} aria-hidden="true" />
                 </button>
+
+                {/* Pen Color Palette */}
+                {activeTool === 'pen' && (
+                  <div className="flex items-center gap-1 px-1 border-l border-slate-700">
+                    {[
+                      { color: '#ef4444', label: 'Red' },
+                      { color: '#f59e0b', label: 'Amber' },
+                      { color: '#10b981', label: 'Green' },
+                      { color: '#38bdf8', label: 'Sky' },
+                      { color: '#ffffff', label: 'White' },
+                    ].map((c) => (
+                      <button
+                        key={c.color}
+                        onClick={() => setPenColor(c.color)}
+                        aria-label={`Pen color ${c.label}`}
+                        className={`h-4 w-4 rounded-full transition-transform ${
+                          penColor === c.color ? 'scale-125 ring-2 ring-white/80' : 'opacity-70 hover:opacity-100'
+                        }`}
+                        style={{ backgroundColor: c.color }}
+                      />
+                    ))}
+                  </div>
+                )}
 
                 <button
                   onClick={() => setActiveTool(activeTool === 'laser' ? null : 'laser')}
@@ -397,62 +535,103 @@ export function PresenterViewModal({
             </div>
           </div>
 
-          {/* RIGHT SIDEBAR: Next Slide Preview + Speaker Notes */}
-          <div className="flex w-96 flex-col gap-4 shrink-0">
-            {/* NEXT SLIDE PREVIEW BOX */}
-            <div className="flex flex-col gap-2 rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-xl">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase tracking-wider text-slate-300">
-                  {lang === 'th' ? 'สไลด์ถัดไป (Next Slide Preview)' : 'Next Slide Preview'}
-                </span>
-                <span className="text-xs font-mono font-bold text-slate-400">
-                  {slide < total ? `Slide ${slide + 1}` : 'End of Deck'}
-                </span>
+          {/* RIGHT SIDEBAR: Next Slide Preview + Speaker Notes (Adaptive Collapsible) */}
+          {isSidebarOpen && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.2 }}
+              className="flex w-80 lg:w-96 flex-col gap-3 shrink-0 h-full overflow-hidden"
+            >
+              {/* NEXT SLIDE PREVIEW BOX */}
+              <div className="flex flex-col gap-2 rounded-2xl border border-slate-800 bg-slate-900 p-3.5 shadow-xl shrink-0">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-300">
+                    {lang === 'th' ? 'สไลด์ถัดไป' : 'Next Slide'}
+                  </span>
+                  <span className="text-xs font-mono font-bold text-slate-400">
+                    {slide < total ? `Slide ${slide + 1}` : 'End'}
+                  </span>
+                </div>
+
+                <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-slate-800 bg-black flex items-center justify-center">
+                  {nextSlideImageUrl ? (
+                    <img
+                      src={nextSlideImageUrl}
+                      alt={lang === 'th' ? `สไลด์ถัดไปที่ ${slide + 1}` : `Preview of next slide ${slide + 1}`}
+                      className="max-h-full max-w-full object-contain pointer-events-none select-none opacity-90"
+                    />
+                  ) : (
+                    <div className="text-center p-4">
+                      <p className="text-xs font-bold text-slate-400">
+                        {lang === 'th' ? 'สิ้นสุดสไลด์บทเรียน' : 'Final Slide Reached'}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-slate-800 bg-black flex items-center justify-center">
-                {nextSlideImageUrl ? (
-                  <img
-                    src={nextSlideImageUrl}
-                    alt={lang === 'th' ? `สไลด์ถัดไปที่ ${slide + 1}` : `Preview of next slide ${slide + 1}`}
-                    className="absolute inset-0 h-full w-full object-contain pointer-events-none select-none opacity-90"
-                  />
-                ) : (
-                  <div className="text-center p-4">
-                    <p className="text-xs font-bold text-slate-400">
-                      {lang === 'th' ? 'สิ้นสุดสไลด์บทเรียน' : 'Final Slide Reached'}
-                    </p>
+              {/* SPEAKER NOTES AREA (Teleprompter Scalable) */}
+              <div className="flex flex-1 flex-col gap-2 rounded-2xl border border-slate-800 bg-slate-900 p-3.5 shadow-xl min-h-0 overflow-hidden">
+                <div className="flex items-center justify-between text-slate-200">
+                  <div className="flex items-center gap-2">
+                    <FileText size={15} className="text-primary" aria-hidden="true" />
+                    <label htmlFor="speaker-notes-textarea" className="text-xs font-black uppercase tracking-wider cursor-pointer">
+                      {lang === 'th' ? 'โน้ตผู้สอน' : 'Notes'}
+                    </label>
                   </div>
-                )}
-              </div>
-            </div>
 
-            {/* SPEAKER NOTES AREA */}
-            <div className="flex flex-1 flex-col gap-2 rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-xl min-h-0">
-              <div className="flex items-center gap-2 text-slate-200">
-                <FileText size={16} className="text-primary" aria-hidden="true" />
-                <label htmlFor="speaker-notes-textarea" className="text-xs font-black uppercase tracking-wider cursor-pointer">
-                  {lang === 'th' ? 'โน้ตสำหรับผู้สอน (Speaker Notes)' : 'Speaker Notes'}
-                </label>
-              </div>
+                  {/* Teleprompter Font Size Controls */}
+                  <div className="flex items-center gap-1 bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-700 text-[10px] font-mono font-bold">
+                    <button
+                      onClick={() => {
+                        if (noteFontSize === 'xl') setNoteFontSize('lg');
+                        else if (noteFontSize === 'lg') setNoteFontSize('base');
+                        else if (noteFontSize === 'base') setNoteFontSize('sm');
+                      }}
+                      disabled={noteFontSize === 'sm'}
+                      aria-label="Decrease note font size"
+                      className="px-1.5 py-0.5 hover:text-primary disabled:opacity-30 transition-colors"
+                      title="Smaller text"
+                    >
+                      A-
+                    </button>
+                    <span className="text-slate-500 font-normal">|</span>
+                    <button
+                      onClick={() => {
+                        if (noteFontSize === 'sm') setNoteFontSize('base');
+                        else if (noteFontSize === 'base') setNoteFontSize('lg');
+                        else if (noteFontSize === 'lg') setNoteFontSize('xl');
+                      }}
+                      disabled={noteFontSize === 'xl'}
+                      aria-label="Increase note font size"
+                      className="px-1.5 py-0.5 hover:text-primary disabled:opacity-30 transition-colors"
+                      title="Larger text (Podium)"
+                    >
+                      A+
+                    </button>
+                  </div>
+                </div>
 
-              <textarea
-                id="speaker-notes-textarea"
-                value={currentNote}
-                onChange={(e) => handleNoteChange(e.target.value)}
-                aria-label={lang === 'th' ? `โน้ตผู้สอนสำหรับสไลด์ที่ ${slide}` : `Presenter notes for slide ${slide}`}
-                placeholder={
-                  lang === 'th'
-                    ? `พิมพ์บันทึกย่อสำหรับสไลด์ที่ ${slide} ที่นี่...`
-                    : `Add presenter notes for slide ${slide} here...`
-                }
-                className="flex-1 w-full rounded-xl border border-slate-800 bg-slate-950 p-3 text-xs text-slate-200 placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-none leading-relaxed"
-              />
-            </div>
-          </div>
+                <textarea
+                  id="speaker-notes-textarea"
+                  value={currentNote}
+                  onChange={(e) => handleNoteChange(e.target.value)}
+                  aria-label={lang === 'th' ? `โน้ตผู้สอนสำหรับสไลด์ที่ ${slide}` : `Presenter notes for slide ${slide}`}
+                  placeholder={
+                    lang === 'th'
+                      ? `พิมพ์บันทึกย่อสำหรับสไลด์ที่ ${slide} ที่นี่...`
+                      : `Add presenter notes for slide ${slide} here...`
+                  }
+                  className={`flex-1 w-full rounded-xl border border-slate-800 bg-slate-950 p-3 text-slate-100 placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-none ${getNoteFontClass()}`}
+                />
+              </div>
+            </motion.div>
+          )}
         </div>
 
-        {/* SLIDE GRID MATRIX MODAL */}
+        {/* VISUAL SLIDE GRID MATRIX MODAL */}
         <AnimatePresence>
           {showGrid && (
             <motion.div
@@ -464,10 +643,16 @@ export function PresenterViewModal({
               aria-labelledby="slide-grid-title"
               className="absolute inset-x-4 top-16 bottom-4 z-50 rounded-3xl border border-slate-800 bg-slate-950/95 p-6 backdrop-blur-xl shadow-2xl overflow-y-auto flex flex-col gap-4"
             >
-              <div className="flex items-center justify-between">
-                <h3 id="slide-grid-title" className="text-lg font-black text-white">
-                  {lang === 'th' ? 'เลือกสไลด์ที่ต้องการ (Slide Selector)' : 'Jump to Slide'}
-                </h3>
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                  <h3 id="slide-grid-title" className="text-base sm:text-lg font-black text-white flex items-center gap-2">
+                    <Grid size={18} className="text-primary" />
+                    <span>{lang === 'th' ? 'เลือกสไลด์ที่ต้องการ (Visual Slide Matrix)' : 'Jump to Slide (Visual Matrix)'}</span>
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    {lang === 'th' ? `ทั้งหมด ${total} สไลด์ · กดที่ภาพเพื่อข้ามไปยังสไลด์ทันที` : `Total ${total} slides · Click any thumbnail to jump`}
+                  </p>
+                </div>
                 <button
                   onClick={() => setShowGrid(false)}
                   aria-label={lang === 'th' ? 'ปิดผังเลือกสไลด์' : 'Close slide grid'}
@@ -477,30 +662,46 @@ export function PresenterViewModal({
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
-                {Array.from({ length: total }, (_, i) => i + 1).map((n) => (
-                  <button
-                    key={n}
-                    onClick={() => {
-                      goToSlide(n);
-                      setShowGrid(false);
-                    }}
-                    aria-label={lang === 'th' ? `ไปยังสไลด์ที่ ${n}` : `Jump to slide ${n}`}
-                    aria-current={n === slide ? 'true' : undefined}
-                    className={`flex flex-col items-center gap-2 rounded-xl p-2 border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                      n === slide
-                        ? 'border-primary bg-primary/20 ring-2 ring-primary/40'
-                        : 'border-slate-800 bg-slate-900 hover:border-slate-700 hover:bg-slate-850'
-                    }`}
-                  >
-                    <div className="relative aspect-video w-full rounded-lg bg-black overflow-hidden flex items-center justify-center text-xs font-mono text-slate-400">
-                      <span>Slide {n}</span>
-                    </div>
-                    <span className={`text-xs font-bold ${n === slide ? 'text-primary' : 'text-slate-300'}`}>
-                      #{n}
-                    </span>
-                  </button>
-                ))}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 pt-2">
+                {Array.from({ length: total }, (_, i) => i + 1).map((n) => {
+                  const pres = module.presentations[lang];
+                  const thumbUrl = pres.slideUrls && pres.slideUrls[n - 1]
+                    ? pres.slideUrls[n - 1]
+                    : `/api/slide?page=${n}`;
+
+                  return (
+                    <button
+                      key={n}
+                      onClick={() => {
+                        goToSlide(n);
+                        setShowGrid(false);
+                      }}
+                      aria-label={lang === 'th' ? `ไปยังสไลด์ที่ ${n}` : `Jump to slide ${n}`}
+                      aria-current={n === slide ? 'true' : undefined}
+                      className={`group relative flex flex-col items-center gap-1.5 rounded-xl p-1.5 border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                        n === slide
+                          ? 'border-primary bg-primary/20 ring-2 ring-primary/40 shadow-lg'
+                          : 'border-slate-800 bg-slate-900 hover:border-primary/50 hover:bg-slate-850'
+                      }`}
+                    >
+                      <div className="relative aspect-video w-full rounded-lg bg-black overflow-hidden flex items-center justify-center">
+                        <img
+                          src={thumbUrl}
+                          alt={`Slide ${n}`}
+                          className="absolute inset-0 h-full w-full object-cover opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-200"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                        <span className="absolute bottom-1 right-1.5 rounded bg-black/80 px-1.5 py-0.5 text-[9px] font-mono font-bold text-white z-10 backdrop-blur-xs">
+                          #{n}
+                        </span>
+                      </div>
+                      <span className={`text-[11px] font-bold ${n === slide ? 'text-primary font-black' : 'text-slate-300'}`}>
+                        {lang === 'th' ? `สไลด์ ${n}` : `Slide ${n}`}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </motion.div>
           )}
@@ -508,4 +709,6 @@ export function PresenterViewModal({
       </motion.div>
     </AnimatePresence>
   );
+
+  return createPortal(modalContent, document.body);
 }

@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import NextImage from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -46,6 +46,14 @@ export function PresentationSystemTab({ role, uid, name, readOnly }: Presentatio
   );
 
   const [modules, setModules] = useState<CourseModule[]>(Object.values(COURSE_MODULES));
+  const activeThumbnailRef = useRef<HTMLButtonElement | null>(null);
+
+  // Auto-scroll active thumbnail into view when slide changes
+  useEffect(() => {
+    if (activeThumbnailRef.current) {
+      activeThumbnailRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+    }
+  }, [presentationHook.slide]);
 
   // Fetch live course module configuration from Firebase server
   useEffect(() => {
@@ -256,7 +264,7 @@ export function PresentationSystemTab({ role, uid, name, readOnly }: Presentatio
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[420px] overflow-y-auto pr-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 max-h-[440px] overflow-y-auto pr-1">
               {Array.from(
                 { length: selectedModule.presentations[lang].totalSlides },
                 (_, i) => i + 1
@@ -269,6 +277,7 @@ export function PresentationSystemTab({ role, uid, name, readOnly }: Presentatio
                 return (
                   <button
                     key={n}
+                    ref={n === presentationHook.slide ? activeThumbnailRef : null}
                     onClick={() => presentationHook.goToSlide(n)}
                     aria-label={lang === 'th' ? `ไปยังสไลด์ที่ ${n}` : `Jump to slide ${n}`}
                     aria-current={n === presentationHook.slide ? 'true' : undefined}
@@ -281,7 +290,7 @@ export function PresentationSystemTab({ role, uid, name, readOnly }: Presentatio
                     <img
                       src={slideThumbUrl}
                       alt={`Slide ${n}`}
-                      className="absolute inset-0 h-full w-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                      className="absolute inset-0 h-full w-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-200"
                       loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />

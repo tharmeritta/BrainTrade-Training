@@ -603,7 +603,10 @@
     "moduleComplete": "Module Complete",
     "markComplete": "Complete",
     "preloading": "Pre-loading Presentation...",
-    "preloadingDetail": "Downloading high-quality slides for instant access"
+    "preloadingDetail": "Downloading high-quality slides for instant access",
+    "traineesConnected": "Trainees Connected",
+    "fontSize": "Notes Font Size",
+    "popupBlockedAlert": "Audience window popup was blocked by your browser. Please allow popups for this site to enable secondary screen projection."
   },
   "trainer": {
     "management": "Training Management",

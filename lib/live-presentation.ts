@@ -25,6 +25,7 @@ export interface LiveSessionState {
   lang: 'en' | 'th';
   laserPos: Point | null;
   drawings: DrawingPath[];
+  viewersCount?: number;
   updatedAt: number;
 }
 

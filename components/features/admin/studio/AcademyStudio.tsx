@@ -55,6 +55,8 @@ export default function AcademyStudio({
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
   const [previewLang, setPreviewLang] = useState<'th' | 'en'>('th');
 
+  const isFullWidthSubTab = activeSubTab === 'presentation' || activeSubTab === 'showcase';
+
   const { 
     configs, 
     loading, 
@@ -154,26 +156,28 @@ export default function AcademyStudio({
             )}
           </div>
 
-          {/* Toggle Live Preview */}
-          <button
-            onClick={() => setShowLivePreview(prev => !prev)}
-            title="Toggle Live Agent Preview"
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all
-              ${showLivePreview 
-                ? 'bg-primary/10 border-primary/30 text-primary font-bold' 
-                : 'bg-secondary/60 border-border text-muted-foreground hover:text-foreground'
-              }`}
-          >
-            {showLivePreview ? <Eye size={14} /> : <EyeOff size={14} />}
-            <span className="hidden sm:inline">{showLivePreview ? 'Live Preview ON' : 'Live Preview OFF'}</span>
-          </button>
+          {/* Toggle Live Preview (Hide for presentation and showcase) */}
+          {!isFullWidthSubTab && (
+            <button
+              onClick={() => setShowLivePreview(prev => !prev)}
+              title="Toggle Live Agent Preview"
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all
+                ${showLivePreview 
+                  ? 'bg-primary/10 border-primary/30 text-primary font-bold' 
+                  : 'bg-secondary/60 border-border text-muted-foreground hover:text-foreground'
+                }`}
+            >
+              {showLivePreview ? <Eye size={14} /> : <EyeOff size={14} />}
+              <span className="hidden sm:inline">{showLivePreview ? 'Live Preview ON' : 'Live Preview OFF'}</span>
+            </button>
+          )}
         </div>
       </div>
 
       {/* Main Studio Body: Editor + Split-Screen Live Preview */}
-      <div className={`grid gap-6 transition-all duration-300 ${showLivePreview ? 'lg:grid-cols-12' : 'grid-cols-1'}`}>
+      <div className={`grid gap-6 transition-all duration-300 ${showLivePreview && !isFullWidthSubTab ? 'lg:grid-cols-12' : 'grid-cols-1'}`}>
         {/* Left / Main Column: Active Editor */}
-        <div className={showLivePreview ? 'lg:col-span-7 xl:col-span-8' : 'w-full'}>
+        <div className={showLivePreview && !isFullWidthSubTab ? 'lg:col-span-7 xl:col-span-8' : 'w-full'}>
           <AnimatePresence mode="wait">
             <motion.div
               key={activeSubTab}
@@ -181,7 +185,7 @@ export default function AcademyStudio({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.18 }}
-              className="w-full bg-card/60 backdrop-blur-md border border-border/70 rounded-2xl p-4 sm:p-6 shadow-sm"
+              className={`w-full ${isFullWidthSubTab ? '' : 'bg-card/60 backdrop-blur-md border border-border/70 rounded-2xl p-4 sm:p-6 shadow-sm'}`}
             >
               {activeSubTab === 'courses' && (
                 <LearnEditor
@@ -229,7 +233,7 @@ export default function AcademyStudio({
         </div>
 
         {/* Right Column: Live Agent Preview Device */}
-        {showLivePreview && (
+        {showLivePreview && !isFullWidthSubTab && (
           <div className="lg:col-span-5 xl:col-span-4 sticky top-6 self-start space-y-3">
             <div className="bg-card border border-border rounded-2xl p-4 shadow-lg space-y-4">
               {/* Preview Header & Controls */}
@@ -360,21 +364,7 @@ export default function AcademyStudio({
                   </div>
                 )}
 
-                {activeSubTab === 'presentation' && (
-                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center space-y-2">
-                    <Presentation size={24} className="mx-auto text-amber-500 animate-pulse" />
-                    <p className="text-xs font-bold text-foreground">Trainer Presenter HUD Active</p>
-                    <p className="text-[10px] text-muted-foreground">Laser pointer, drawing board, speaker notes, and live trainee sync are active.</p>
-                  </div>
-                )}
 
-                {activeSubTab === 'showcase' && (
-                  <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-center space-y-2">
-                    <Presentation size={24} className="mx-auto text-purple-500" />
-                    <p className="text-xs font-bold text-foreground">Full Presentation Mode Ready</p>
-                    <p className="text-[10px] text-muted-foreground">Real-time slide synchronization & drawing board active.</p>
-                  </div>
-                )}
 
                 {activeSubTab === 'overrides' && (
                   <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 space-y-1.5">
