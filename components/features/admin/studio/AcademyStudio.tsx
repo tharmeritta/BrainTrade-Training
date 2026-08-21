@@ -19,18 +19,38 @@ import QuizzesEditor from '../adjustments/QuizzesEditor';
 import OverridesManager from '../adjustments/OverridesManager';
 import AiScenariosTab from '../AiScenariosTab';
 import ShowcaseTab from '../ShowcaseTab';
+import { PresentationSystemTab } from '../../trainer/PresentationSystemTab';
 
-export type StudioSubTab = 'courses' | 'quizzes' | 'scenarios' | 'showcase' | 'overrides';
+export type StudioSubTab = 'courses' | 'quizzes' | 'scenarios' | 'presentation' | 'showcase' | 'overrides';
 
 interface AcademyStudioProps {
   role: string;
   readOnly?: boolean;
+  activeSubTab?: string;
   initialSubTab?: string;
+  onSubTabChange?: (sub: string) => void;
 }
 
-export default function AcademyStudio({ role, readOnly, initialSubTab = 'courses' }: AcademyStudioProps) {
+export default function AcademyStudio({ 
+  role, 
+  readOnly, 
+  activeSubTab: controlledSubTab,
+  initialSubTab = 'courses',
+  onSubTabChange 
+}: AcademyStudioProps) {
   const t = useTranslations('admin');
-  const [activeSubTab, setActiveSubTab] = useState<StudioSubTab>((initialSubTab as StudioSubTab) || 'courses');
+  const [internalSubTab, setInternalSubTab] = useState<StudioSubTab>(
+    (controlledSubTab as StudioSubTab) || (initialSubTab as StudioSubTab) || 'courses'
+  );
+
+  const activeSubTab = (controlledSubTab as StudioSubTab) || internalSubTab;
+
+  const handleSubTabClick = (sub: StudioSubTab) => {
+    setInternalSubTab(sub);
+    setHasUnsavedChanges(false);
+    onSubTabChange?.(sub);
+  };
+
   const [showLivePreview, setShowLivePreview] = useState(true);
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
   const [previewLang, setPreviewLang] = useState<'th' | 'en'>('th');
@@ -53,11 +73,12 @@ export default function AcademyStudio({ role, readOnly, initialSubTab = 'courses
   }, [configs.learn]);
 
   const SUB_TABS = useMemo(() => [
-    { id: 'courses',   label: t('workspaces.subTabs.courses'),   icon: GraduationCap, desc: 'Curriculum & Slide Decks' },
-    { id: 'quizzes',   label: t('workspaces.subTabs.quizzes'),   icon: Edit3,         desc: 'Phase Assessments & MCQs' },
-    { id: 'scenarios', label: t('workspaces.subTabs.scenarios'), icon: Zap,           desc: 'AI Call Simulator Personas' },
-    { id: 'showcase',  label: t('workspaces.subTabs.showcase'),  icon: Presentation,  desc: 'Client Presentation Suite', adminOnly: true },
-    { id: 'overrides', label: t('workspaces.subTabs.overrides'), icon: ShieldCheck,   desc: 'Pass Scores & Exemptions', adminOnly: true },
+    { id: 'courses',      label: t('workspaces.subTabs.courses'),      icon: GraduationCap, desc: 'Curriculum & Slide Decks' },
+    { id: 'quizzes',      label: t('workspaces.subTabs.quizzes'),      icon: Edit3,         desc: 'Phase Assessments & MCQs' },
+    { id: 'scenarios',    label: t('workspaces.subTabs.scenarios'),    icon: Zap,           desc: 'AI Call Simulator Personas' },
+    { id: 'presentation', label: t('workspaces.subTabs.presentation'), icon: Presentation,  desc: 'Live Trainer Deck & Broadcast' },
+    { id: 'showcase',     label: t('workspaces.subTabs.showcase'),     icon: Presentation,  desc: 'Client Presentation Suite', adminOnly: true },
+    { id: 'overrides',    label: t('workspaces.subTabs.overrides'),    icon: ShieldCheck,   desc: 'Pass Scores & Exemptions', adminOnly: true },
   ], [t]);
 
   const visibleSubTabs = useMemo(() => {
@@ -85,10 +106,7 @@ export default function AcademyStudio({ role, readOnly, initialSubTab = 'courses
             return (
               <button
                 key={tab.id}
-                onClick={() => {
-                  setActiveSubTab(tab.id as StudioSubTab);
-                  setHasUnsavedChanges(false);
-                }}
+                onClick={() => handleSubTabClick(tab.id as StudioSubTab)}
                 className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
                   ${active 
                     ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/25' 
@@ -97,6 +115,16 @@ export default function AcademyStudio({ role, readOnly, initialSubTab = 'courses
               >
                 <Icon size={16} className="shrink-0" />
                 <span>{tab.label}</span>
+                {tab.id === 'presentation' && (
+                  <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md transition-colors ${active ? 'bg-white/20 text-white' : 'bg-amber-500/20 text-amber-600 dark:text-amber-400'}`}>
+                    LIVE
+                  </span>
+                )}
+                {tab.id === 'showcase' && (
+                  <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md transition-colors ${active ? 'bg-white/20 text-white' : 'bg-purple-500/20 text-purple-600 dark:text-purple-400'}`}>
+                    DEMO
+                  </span>
+                )}
               </button>
             );
           })}
@@ -178,6 +206,13 @@ export default function AcademyStudio({ role, readOnly, initialSubTab = 'courses
 
               {activeSubTab === 'scenarios' && (
                 <AiScenariosTab readOnly={readOnly} />
+              )}
+
+              {activeSubTab === 'presentation' && (
+                <PresentationSystemTab 
+                  role={role as any} 
+                  readOnly={readOnly}
+                />
               )}
 
               {activeSubTab === 'showcase' && (
@@ -322,6 +357,14 @@ export default function AcademyStudio({ role, readOnly, initialSubTab = 'courses
                         <span className="text-rose-500 font-bold">⚠️ Avoid: Cheapening</span>
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {activeSubTab === 'presentation' && (
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center space-y-2">
+                    <Presentation size={24} className="mx-auto text-amber-500 animate-pulse" />
+                    <p className="text-xs font-bold text-foreground">Trainer Presenter HUD Active</p>
+                    <p className="text-[10px] text-muted-foreground">Laser pointer, drawing board, speaker notes, and live trainee sync are active.</p>
                   </div>
                 )}
 

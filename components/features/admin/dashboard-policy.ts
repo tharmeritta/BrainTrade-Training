@@ -65,11 +65,12 @@ export const WORKSPACES: WorkspaceItem[] = [
     icon: Sparkles,
     defaultSubTab: 'courses',
     subTabs: [
-      { id: 'courses',    labelKey: 'courses',    icon: GraduationCap },
-      { id: 'quizzes',    labelKey: 'quizzes',    icon: Edit3 },
-      { id: 'scenarios',  labelKey: 'scenarios',  icon: Zap, hideForIT: true },
-      { id: 'showcase',   labelKey: 'showcase',   icon: Presentation, adminOnly: true },
-      { id: 'overrides',  labelKey: 'overrides',  icon: ShieldCheck, adminOnly: true, hideForIT: true },
+      { id: 'courses',      labelKey: 'courses',      icon: GraduationCap },
+      { id: 'quizzes',      labelKey: 'quizzes',      icon: Edit3 },
+      { id: 'scenarios',    labelKey: 'scenarios',    icon: Zap, hideForIT: true },
+      { id: 'presentation', labelKey: 'presentation', icon: Presentation },
+      { id: 'showcase',     labelKey: 'showcase',     icon: Presentation, adminOnly: true },
+      { id: 'overrides',    labelKey: 'overrides',    icon: ShieldCheck, adminOnly: true, hideForIT: true },
     ]
   },
   {
@@ -165,6 +166,9 @@ export function resolveWorkspaceAndSubTab(rawTab: string, rawSubTab?: string | n
     case 'learn':
     case 'adjustments':
       return { workspace: 'studio', subTab: rawSubTab || 'courses' };
+    case 'presentation':
+    case 'presenter':
+      return { workspace: 'studio', subTab: 'presentation' };
     case 'aiscenarios':
       return { workspace: 'studio', subTab: 'scenarios' };
     case 'showcase':

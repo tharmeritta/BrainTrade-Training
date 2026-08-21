@@ -17,14 +17,32 @@ export type OperationsSubTab = 'overview' | 'approvals' | 'history';
 interface OperationsHubProps {
   role: string;
   uid: string;
-  name: string;
+  name?: string;
   readOnly?: boolean;
+  activeSubTab?: string;
   initialSubTab?: string;
+  onSubTabChange?: (sub: string) => void;
 }
 
-export default function OperationsHub({ role, uid, readOnly, initialSubTab = 'overview' }: OperationsHubProps) {
+export default function OperationsHub({ 
+  role, 
+  uid, 
+  readOnly, 
+  activeSubTab: controlledSubTab,
+  initialSubTab = 'overview',
+  onSubTabChange 
+}: OperationsHubProps) {
   const t = useTranslations('admin');
-  const [activeSubTab, setActiveSubTab] = useState<OperationsSubTab>((initialSubTab as OperationsSubTab) || 'overview');
+  const [internalSubTab, setInternalSubTab] = useState<OperationsSubTab>(
+    (controlledSubTab as OperationsSubTab) || (initialSubTab as OperationsSubTab) || 'overview'
+  );
+
+  const activeSubTab = (controlledSubTab as OperationsSubTab) || internalSubTab;
+
+  const handleSubTabClick = (sub: OperationsSubTab) => {
+    setInternalSubTab(sub);
+    onSubTabChange?.(sub);
+  };
 
   const SUB_TABS = useMemo(() => [
     { id: 'overview',  label: t('workspaces.subTabs.overview'),  icon: LayoutDashboard, desc: 'Realtime KPIs & Pipeline' },
@@ -49,7 +67,7 @@ export default function OperationsHub({ role, uid, readOnly, initialSubTab = 'ov
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveSubTab(tab.id as OperationsSubTab)}
+                onClick={() => handleSubTabClick(tab.id as OperationsSubTab)}
                 className={`relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
                   ${active 
                     ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/25' 

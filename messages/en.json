@@ -226,6 +226,7 @@
         "quizzes": "Quiz Assessments",
         "scenarios": "AI Call Simulator",
         "showcase": "Slide Showcase",
+        "presentation": "Live Presentation Deck",
         "overrides": "Pass Thresholds",
         "agents": "Trainee Directory",
         "staff": "Staff Accounts",
@@ -233,7 +234,9 @@
         "heatmap": "Cohort Heatmap",
         "reports": "Excel & Reports",
         "certification": "Certificates",
-        "health": "System Radar"
+        "health": "System Radar",
+        "presenterMode": "Presenter Mode",
+        "launchPresentation": "Launch Presentation Deck"
       }
     },
     "groups": {

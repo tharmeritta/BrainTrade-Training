@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { 
   BookOpen, Plus, Edit3, Trash2, Layers, Upload, 
-  ExternalLink, FileText, ArrowUp, ArrowDown, Loader2
+  ExternalLink, FileText, ArrowUp, ArrowDown, Loader2, Presentation
 } from 'lucide-react';
 import { storage, auth } from '@/lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -126,6 +127,13 @@ export default function LearnEditor({ initialModules, data, onSave, onChange, sa
               <div className="flex justify-between items-start mb-3">
                 <span className="text-[10px] font-black uppercase opacity-40">{id}</span>
                 <div className="flex items-center gap-1">
+                  <Link 
+                    href="?tab=studio&sub=presentation" 
+                    title="Launch Live Presentation Deck"
+                    className="p-1.5 rounded-lg hover:bg-amber-500/10 text-amber-500 transition-colors"
+                  >
+                    <Presentation size={16} />
+                  </Link>
                   <button onClick={() => setEditingId(editingId === id ? null : id)} className="p-1.5 rounded-lg hover:bg-primary/10 text-primary transition-colors"><Edit3 size={16} /></button>
                   <button onClick={() => {
                     if (window.confirm(`Delete course "${mod.title}"?`)) {

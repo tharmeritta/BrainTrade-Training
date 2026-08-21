@@ -51,6 +51,8 @@ export default function AdminDashboard(props: AdminDashboardProps) {
         <div className="flex flex-col flex-1 min-w-0">
           <AdminHeader 
             activeTab={navigation.activeTab} 
+            activeWorkspace={state.activeWorkspace}
+            activeSubTab={state.activeSubTab}
             mounted={state.mounted}
             role={props.role}
             activeRoleView={state.activeRoleView}
@@ -62,6 +64,8 @@ export default function AdminDashboard(props: AdminDashboardProps) {
 
           <AdminTabContent 
             tab={state.tab}
+            activeSubTab={state.activeSubTab}
+            onSubTabChange={(sub) => actions.setWorkspace(state.activeWorkspace, sub)}
             role={props.role}
             uid={props.uid}
             name={props.name}

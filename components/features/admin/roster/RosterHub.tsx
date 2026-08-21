@@ -3,7 +3,8 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { Users, ShieldCheck, ClipboardCheck, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { Users, ShieldCheck, ClipboardCheck, Sparkles, FileSpreadsheet } from 'lucide-react';
 
 import AgentSection from '../staff/AgentSection';
 import StaffSection from '../staff/StaffSection';
@@ -18,12 +19,31 @@ interface RosterHubProps {
   uid: string;
   name: string;
   readOnly?: boolean;
+  activeSubTab?: string;
   initialSubTab?: string;
+  onSubTabChange?: (sub: string) => void;
 }
 
-export default function RosterHub({ role, uid, name, readOnly, initialSubTab = 'agents' }: RosterHubProps) {
+export default function RosterHub({ 
+  role, 
+  uid, 
+  name, 
+  readOnly, 
+  activeSubTab: controlledSubTab,
+  initialSubTab = 'agents',
+  onSubTabChange 
+}: RosterHubProps) {
   const t = useTranslations('admin');
-  const [activeSubTab, setActiveSubTab] = useState<RosterSubTab>((initialSubTab as RosterSubTab) || 'agents');
+  const [internalSubTab, setInternalSubTab] = useState<RosterSubTab>(
+    (controlledSubTab as RosterSubTab) || (initialSubTab as RosterSubTab) || 'agents'
+  );
+
+  const activeSubTab = (controlledSubTab as RosterSubTab) || internalSubTab;
+
+  const handleSubTabClick = (sub: RosterSubTab) => {
+    setInternalSubTab(sub);
+    onSubTabChange?.(sub);
+  };
 
   const SUB_TABS = useMemo(() => [
     { id: 'agents',      label: t('workspaces.subTabs.agents'),      icon: Users,          desc: 'Trainee Directory & Status' },
@@ -52,7 +72,7 @@ export default function RosterHub({ role, uid, name, readOnly, initialSubTab = '
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveSubTab(tab.id as RosterSubTab)}
+                onClick={() => handleSubTabClick(tab.id as RosterSubTab)}
                 className={`relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
                   ${active 
                     ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/25' 
@@ -66,10 +86,23 @@ export default function RosterHub({ role, uid, name, readOnly, initialSubTab = '
           })}
         </div>
 
-        {/* Right: AI Copilot trigger badge */}
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-xs font-semibold shrink-0 self-end sm:self-auto">
-          <Sparkles size={14} className="text-primary" />
-          <span>Staff Copilot Enabled</span>
+        {/* Right: Cross Link or AI Copilot trigger badge */}
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+          {activeSubTab === 'evaluations' && (
+            <Link
+              href="?tab=analytics&sub=reports"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-xs font-bold transition-all active:scale-95"
+              title="Open Excel Reports & Export Matrix"
+            >
+              <FileSpreadsheet size={13} />
+              <span>Export Reports</span>
+            </Link>
+          )}
+
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-xs font-semibold">
+            <Sparkles size={14} className="text-primary" />
+            <span>Staff Copilot</span>
+          </div>
         </div>
       </div>
 

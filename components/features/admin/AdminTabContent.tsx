@@ -42,13 +42,23 @@ const TAB_REGISTRY: Record<Tab, any> = {
 
 interface AdminTabContentProps {
   tab: Tab;
+  activeSubTab?: string;
+  onSubTabChange?: (sub: string) => void;
   role: UserRole;
   uid: string;
   name: string;
   isInteractive: boolean;
 }
 
-export default function AdminTabContent({ tab, role, uid, name, isInteractive }: AdminTabContentProps) {
+export default function AdminTabContent({ 
+  tab, 
+  activeSubTab,
+  onSubTabChange,
+  role, 
+  uid, 
+  name, 
+  isInteractive 
+}: AdminTabContentProps) {
   const TabComponent = TAB_REGISTRY[tab] || TAB_REGISTRY.operations;
   const isReadOnlyRole = role === 'it' || role === 'manager' || role === 'hr';
 
@@ -78,6 +88,9 @@ export default function AdminTabContent({ tab, role, uid, name, isInteractive }:
               name={name} 
               readOnly={!isInteractive}
               currentUserId={uid} // For ApprovalsTab
+              activeSubTab={activeSubTab}
+              initialSubTab={activeSubTab}
+              onSubTabChange={onSubTabChange}
             />
           )}
         </motion.div>

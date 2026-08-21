@@ -48,6 +48,7 @@ export default function CommandPalette() {
     { id: 'act-courses', title: 'Course Module & Slide Builder', category: 'Studio', href: `/${locale}/admin?tab=studio&sub=courses`, icon: GraduationCap },
     { id: 'act-quizzes', title: 'Quiz Assessment Builder & MCQs', category: 'Studio', href: `/${locale}/admin?tab=studio&sub=quizzes`, icon: Edit3 },
     { id: 'act-scenarios', title: 'AI Call Simulator Personas & Prompts', category: 'Studio', href: `/${locale}/admin?tab=studio&sub=scenarios`, icon: Zap },
+    { id: 'act-presentation', title: 'Live Presentation Deck (Trainer Mode & Drawing Canvas)', category: 'Studio', href: `/${locale}/admin?tab=studio&sub=presentation`, icon: Presentation },
     { id: 'act-showcase', title: 'Client Presentation Showcase Hub', category: 'Studio', href: `/${locale}/admin?tab=studio&sub=showcase`, icon: Presentation },
 
     // Roster & Analytics
@@ -119,44 +120,58 @@ export default function CommandPalette() {
             </div>
 
             {/* Command Results List */}
-            <div className="max-h-84 overflow-y-auto p-2 space-y-1">
+            <div className="max-h-96 overflow-y-auto p-2 space-y-3">
               {filtered.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground text-sm">
                   No matching workspace commands found for &ldquo;{query}&rdquo;
                 </div>
               ) : (
-                filtered.map(item => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => handleSelect(item.href)}
-                      className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-secondary/70 transition-all text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-primary/10 text-primary border border-primary/20 group-hover:scale-105 transition-transform">
-                          <Icon size={16} />
-                        </div>
-                        <div>
-                          <p className="text-xs sm:text-sm font-bold text-foreground group-hover:text-primary transition-colors">
-                            {item.title}
-                          </p>
-                          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                            {item.category}
-                          </span>
-                        </div>
-                      </div>
-                      <ArrowRight size={14} className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                    </button>
-                  );
-                })
+                Object.entries(
+                  filtered.reduce((acc, item) => {
+                    if (!acc[item.category]) acc[item.category] = [];
+                    acc[item.category].push(item);
+                    return acc;
+                  }, {} as Record<string, typeof COMMAND_ITEMS>)
+                ).map(([category, items]) => (
+                  <div key={category} className="space-y-1">
+                    <div className="px-3 pt-1 text-[10px] font-black uppercase tracking-wider text-muted-foreground/60 flex items-center justify-between">
+                      <span>{category}</span>
+                      <span className="text-[9px] font-bold">{items.length}</span>
+                    </div>
+                    {items.map(item => {
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleSelect(item.href)}
+                          className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-secondary/70 transition-all text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="p-2 rounded-lg bg-primary/10 text-primary border border-primary/20 group-hover:scale-105 transition-transform shrink-0">
+                              <Icon size={16} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs sm:text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate">
+                                {item.title}
+                              </p>
+                              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                {item.category}
+                              </span>
+                            </div>
+                          </div>
+                          <ArrowRight size={14} className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0 ml-2" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))
               )}
             </div>
 
             {/* Footer */}
             <div className="px-4 py-2 bg-muted/40 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground font-medium">
-              <span>Navigation shortcut</span>
-              <span>Press <kbd className="px-1.5 py-0.5 bg-background border border-border rounded text-[10px] font-mono">↑</kbd> <kbd className="px-1.5 py-0.5 bg-background border border-border rounded text-[10px] font-mono">↓</kbd> to navigate, <kbd className="px-1.5 py-0.5 bg-background border border-border rounded text-[10px] font-mono">ESC</kbd> to close</span>
+              <span>Quick Navigator</span>
+              <span>Press <kbd className="px-1.5 py-0.5 bg-background border border-border rounded text-[10px] font-mono">ESC</kbd> to close, <kbd className="px-1.5 py-0.5 bg-background border border-border rounded text-[10px] font-mono">⌘K</kbd> to toggle</span>
             </div>
           </motion.div>
         </motion.div>

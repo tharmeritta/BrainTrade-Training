@@ -18,15 +18,32 @@ export type AnalyticsSubTab = 'heatmap' | 'reports' | 'certification' | 'health'
 
 interface AnalyticsHubProps {
   role: string;
-  uid: string;
-  name: string;
+  uid?: string;
+  name?: string;
   readOnly?: boolean;
+  activeSubTab?: string;
   initialSubTab?: string;
+  onSubTabChange?: (sub: string) => void;
 }
 
-export default function AnalyticsHub({ role, readOnly, initialSubTab = 'heatmap' }: AnalyticsHubProps) {
+export default function AnalyticsHub({ 
+  role, 
+  readOnly, 
+  activeSubTab: controlledSubTab,
+  initialSubTab = 'heatmap',
+  onSubTabChange 
+}: AnalyticsHubProps) {
   const t = useTranslations('admin');
-  const [activeSubTab, setActiveSubTab] = useState<AnalyticsSubTab>((initialSubTab as AnalyticsSubTab) || 'heatmap');
+  const [internalSubTab, setInternalSubTab] = useState<AnalyticsSubTab>(
+    (controlledSubTab as AnalyticsSubTab) || (initialSubTab as AnalyticsSubTab) || 'heatmap'
+  );
+
+  const activeSubTab = (controlledSubTab as AnalyticsSubTab) || internalSubTab;
+
+  const handleSubTabClick = (sub: AnalyticsSubTab) => {
+    setInternalSubTab(sub);
+    onSubTabChange?.(sub);
+  };
 
   const SUB_TABS = useMemo(() => [
     { id: 'heatmap',       label: t('workspaces.subTabs.heatmap'),       icon: BarChart3,       desc: 'Cohort Progress Matrix' },
@@ -57,7 +74,7 @@ export default function AnalyticsHub({ role, readOnly, initialSubTab = 'heatmap'
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveSubTab(tab.id as AnalyticsSubTab)}
+                onClick={() => handleSubTabClick(tab.id as AnalyticsSubTab)}
                 className={`relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
                   ${active 
                     ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/25' 
